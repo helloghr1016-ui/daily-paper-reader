@@ -1,0 +1,455 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-25T21:35:25.803257+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 4,
+    "deep_cap": 8,
+    "deep_selected": 4,
+    "quick_candidates": 6,
+    "quick_skim_target": 13,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2607.19903v1",
+      "source": "arxiv",
+      "title": "What Matters in Humanoid General Motion Tracking? An Empirical Study",
+      "abstract": "Humanoid general motion tracking requires policies that can follow diverse whole-body references while maintaining balance. Building such policies involves many practical design choices, and their individual effects are often hard to assess. We address this issue with an empirical study of common modeling and training factors used in recent humanoid motion-imitation pipelines. To make the study controlled and reproducible, we developed YAHMP, an open-source modular framework for training, evaluating, and deploying whole-body motion tracking policies on the Unitree G1. Within YAHMP, we define a nominal configuration and compare variants that differ in motion-command representation, observation history, action representation, actuation profile, hand-force randomization during training, and training approach. We evaluate the resulting policies on a test set of retargeted human motions and compare the nominal policy with TWIST2 as an external baseline trained on the same motion set. The results distinguish choices with clear tracking effects from choices that mainly change actuation effort, training complexity, or physical interaction capability. Finally, we deploy YAHMP policies zero-shot on the real Unitree G1, demonstrating diverse whole-body motion tracking, balance under external perturbations, and forceful interaction.",
+      "authors": [
+        "Fabio Amadio",
+        "Enrico Mingo Hoffman"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-22T08:37:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.19903v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "empirical study of humanoid whole-body motion imitation and tracking",
+      "llm_evidence_cn": "对人形机器人全身运动模仿与跟踪的实证研究",
+      "llm_evidence": "对人形机器人全身运动模仿与跟踪的实证研究",
+      "canonical_evidence": "对人形机器人全身运动模仿与跟踪的实证研究",
+      "llm_tldr_en": "This paper conducts an empirical study of design choices in humanoid whole-body motion tracking policies, using an open-source modular framework.",
+      "llm_tldr_cn": "人形机器人全身运动跟踪策略的设计涉及众多因素，难以独立评估。该论文通过开发开源模块化框架YAHMP，对运动命令表示、观测历史、动作表示、驱动模型等关键设计因素进行了系统性实证研究。在Unitree G1机器人上的实验揭示了不同因素对跟踪性能的影响，为构建高效的人形运动模仿系统提供了实用指南。",
+      "llm_tldr": "人形机器人全身运动跟踪策略的设计涉及众多因素，难以独立评估。该论文通过开发开源模块化框架YAHMP，对运动命令表示、观测历史、动作表示、驱动模型等关键设计因素进行了系统性实证研究。在Unitree G1机器人上的实验揭示了不同因素对跟踪性能的影响，为构建高效的人形运动模仿系统提供了实用指南。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "humanoid robot locomotion and control",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.20771v1",
+      "source": "arxiv",
+      "title": "Emergent Compositional Skills in Mixture-of-Experts VLAs",
+      "abstract": "We consider the problem of learning compositional robot policies end-to-end from expert demonstrations, without any pre-specified notion of task decomposition or hierarchy. We ask whether a VLA trained with a simplified Mixture-of-Experts (MoE) action head can emergently learn to decompose tasks into reusable, interpretable primitives. We find that learned experts are heavily reused across tasks and consistently correspond to qualitatively distinct low-level behaviors, suggesting that the router implicitly learns to perform high-level sequencing while experts serve as compositional primitives. Our MoE matches the task performance of a monolithic baseline while demonstrating meaningful expert specialization, a step toward modular, interpretable robot policies that emerge from data alone.",
+      "authors": [
+        "Shlok Shah",
+        "Rhiaan Jhaveri",
+        "Tharun Kumar Tiruppali Kalidoss",
+        "Chirayu Nimonkar",
+        "Ishaan Javali"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-22T22:36:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.20771v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "end-to-end learning from expert demonstrations with mixture-of-experts",
+      "llm_evidence_cn": "从专家演示中端到端学习，采用混合专家模型，属于模仿学习",
+      "llm_evidence": "从专家演示中端到端学习，采用混合专家模型，属于模仿学习",
+      "canonical_evidence": "从专家演示中端到端学习，采用混合专家模型，属于模仿学习",
+      "llm_tldr_en": "This paper learns compositional robot policies from expert demonstrations using a Mixture-of-Experts VLA, achieving reusable primitives without task decomposition.",
+      "llm_tldr_cn": "该论文探讨了从专家演示中端到端学习复合机器人策略的问题，无需预定义任务分解。通过提出简化混合专家（MoE）动作头，模型能够涌现出可重用、可解释的低级行为原语。实验表明，MoE在保持与基线相当性能的同时，专家之间出现有意义的专业化分工，为模块化、可解释的机器人策略学习提供了新方法。",
+      "llm_tldr": "该论文探讨了从专家演示中端到端学习复合机器人策略的问题，无需预定义任务分解。通过提出简化混合专家（MoE）动作头，模型能够涌现出可重用、可解释的低级行为原语。实验表明，MoE在保持与基线相当性能的同时，专家之间出现有意义的专业化分工，为模块化、可解释的机器人策略学习提供了新方法。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21049v1",
+      "source": "arxiv",
+      "title": "GuidedAttention: Interpretable and Correctable Visual Attention for OOD-Robust Robot Manipulation via Imitation Learning",
+      "abstract": "End-to-end visuomotor policies provide little opportunity for humans to understand or correct the policy's visual attention. We propose GuidedAttention, a visuomotor imitation learning framework that introduces interpretable and correctable visual attention as an explicit intermediate representation. Task-relevant attention keypoints are predicted from camera images and condition a diffusion-based action policy. Users can inspect and optionally correct selected keypoints once at rollout initialization, after which the corrected attention is automatically propagated throughout execution by a tracking module. Experiments in simulation and the real world demonstrate that GuidedAttention consistently improves robot manipulation performance, particularly under positional and appearance out-of-distribution (OOD) conditions.",
+      "authors": [
+        "Masaki Murooka",
+        "Ryoichi Nakajo",
+        "Keisuke Shirai",
+        "Tomohiro Motoda",
+        "Hanbit Oh",
+        "Ryo Hanai",
+        "Yukiyasu Domae"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-23T08:33:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.21049v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "framework for imitation learning with interpretable attention",
+      "llm_evidence_cn": "可解释注意力机制的模仿学习框架",
+      "llm_evidence": "可解释注意力机制的模仿学习框架",
+      "canonical_evidence": "可解释注意力机制的模仿学习框架",
+      "llm_tldr_en": "GuidedAttention introduces interpretable and correctable visual attention as an explicit intermediate representation for visuomotor imitation learning.",
+      "llm_tldr_cn": "现有端到端视觉运动策略缺乏可解释性和人为纠正注意力机制的能力。GuidedAttention提出一种基于可解释和可纠正视觉注意力的模仿学习框架，将任务相关注意力关键点作为显式中间表示，用户可在初始化时检查和纠正，并通过跟踪模块自动传播。实验证明该方法在仿真和真实环境中持续提升策略的鲁棒性和泛化能力。",
+      "llm_tldr": "现有端到端视觉运动策略缺乏可解释性和人为纠正注意力机制的能力。GuidedAttention提出一种基于可解释和可纠正视觉注意力的模仿学习框架，将任务相关注意力关键点作为显式中间表示，用户可在初始化时检查和纠正，并通过跟踪模块自动传播。实验证明该方法在仿真和真实环境中持续提升策略的鲁棒性和泛化能力。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21588v1",
+      "source": "arxiv",
+      "title": "AXIS: A Growable Community-Driven Data Engine for Scalable Robot Manipulation",
+      "abstract": "Learning effective robot manipulation policies requires diverse, high-quality demonstrations, yet existing data pipelines are often difficult to scale because they rely on specialized hardware, centralized operators, or fixed task suites. We present AXIS, a growable community-driven data engine and benchmark for scalable robot learning, which enables browser-based teleoperation for large-scale demonstration collection, automatically generates and validates new manipulation tasks, and transforms community-collected demonstrations into training-ready data through automated success checking, quality filtering, trajectory smoothing, and visual and physics-based augmentation. The AXIS dataset currently contains 207 diverse tasks and 50K+ trajectories. Meanwhile, AXIS organizes data into task snapshots and evaluates policies with a systematic held-out protocol. We compare vision-language-action (VLA) policies under a unified AXIS evaluation suite and analyze scaling behavior across different data volumes. Continual pretraining on AXIS substantially improves the overall success rate of $π_{0.5}$ by 5.8%, outperforms the model pretrained on RoboCasa365 by 37.3%, and exhibits consistent scaling with increasing data volume, with the largest gains observed under layout, sensor-noise, and camera perturbations.",
+      "authors": [
+        "Mengfei Zhao",
+        "Dihong Huang",
+        "Yikai Tang",
+        "Peihao Li",
+        "Mingxuan Yan",
+        "Ruiqi Zhuang",
+        "Yanjia Huang",
+        "Jie Wang",
+        "Hai Zhai",
+        "Tony Zhou",
+        "Rui Zhang",
+        "Zhexi Luo",
+        "Yuchen Huang",
+        "Jianfei Yang",
+        "Jiachen Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-23T17:58:08+00:00",
+      "link": "https://arxiv.org/pdf/2607.21588v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Community-driven data engine for imitation learning via demonstration collection and augmentation",
+      "llm_evidence_cn": "社区驱动数据引擎支持基于示范的模仿学习",
+      "llm_evidence": "社区驱动数据引擎支持基于示范的模仿学习",
+      "canonical_evidence": "社区驱动数据引擎支持基于示范的模仿学习",
+      "llm_tldr_en": "AXIS is a growable data engine and benchmark for scalable robot learning, enabling browser-based teleoperation, automatic task generation, and demonstration processing to support imitation learning across diverse manipulation tasks.",
+      "llm_tldr_cn": "针对机器人模仿学习缺乏大规模高质量示范数据的问题，本文提出AXIS——一个可增长的社区驱动数据引擎。它通过浏览器遥操作收集数据，自动生成新任务，并对示范进行质量过滤、轨迹平滑和增强。当前数据集包含207个任务和5万条轨迹，为模仿学习研究提供了可扩展的基础设施。",
+      "llm_tldr": "针对机器人模仿学习缺乏大规模高质量示范数据的问题，本文提出AXIS——一个可增长的社区驱动数据引擎。它通过浏览器遥操作收集数据，自动生成新任务，并对示范进行质量过滤、轨迹平滑和增强。当前数据集包含207个任务和5万条轨迹，为模仿学习研究提供了可扩展的基础设施。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.18004v1",
+      "source": "arxiv",
+      "title": "PAMD: Structured Adaptive Distances for Bisimulation Representations in Visual Reinforcement Learning",
+      "abstract": "Many visual reinforcement learning (RL) algorithms learn representations by matching latent distances to a behavioral distance induced by reward and transition similarity. In practice, the choice of the latent distance can strongly affect performance: using a fixed, pre-specified global norms (e.g., $\\ell_p$ norms or other hand-designed metrics) may be overly restrictive to capture the behavioral distance. In contrast, unconstrained pairwise distances may admit degenerate solutions that drive the metric loss down without improving the representation. To address this gap, we introduce **PAMD: Pairwise Adaptive Mahalanobis Distance**, which parameterizes a positive-definite, pair-conditioned metric for measuring latent state similarity.   PAMD is a simple plug-in for existing bisimulation-based methods, offering a more expressive yet structured alternative to fixed, pre-specified latent distances. We empirically validate our method on visual MuJoCo continuous-control tasks, where final performance of several recent bisimulation-based RL algorithms is substantially improved when equipped with the distance we propose.",
+      "authors": [
+        "Daegyeong Roh",
+        "Juho Bae",
+        "Han-Lim Choi"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-20T14:36:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.18004v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "learning reward-related bisimulation representations",
+      "llm_evidence_cn": "学习与奖励相关的双模拟表示",
+      "llm_evidence": "学习与奖励相关的双模拟表示",
+      "canonical_evidence": "学习与奖励相关的双模拟表示",
+      "llm_tldr_en": "Proposes PAMD, a pairwise adaptive Mahalanobis distance for learning bisimulation representations in visual RL, enabling better latent space structure without fixed norms.",
+      "llm_tldr_cn": "针对视觉强化学习中使用固定距离度量限制表征质量的问题，提出一种成对自适应马氏距离（PAMD），用于学习双模拟表征。该方法参数化正定距离矩阵，避免全局固定范数的局限。实验表明PAMD能更准确地捕捉行为距离，提升强化学习表征学习性能，有助于样本效率提升。",
+      "llm_tldr": "针对视觉强化学习中使用固定距离度量限制表征质量的问题，提出一种成对自适应马氏距离（PAMD），用于学习双模拟表征。该方法参数化正定距离矩阵，避免全局固定范数的局限。实验表明PAMD能更准确地捕捉行为距离，提升强化学习表征学习性能，有助于样本效率提升。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.17542v1",
+      "source": "arxiv",
+      "title": "Finite-Time Curvature-Constrained Vector Field for Saturation-Free Motion Planning of Nonholonomic Robots",
+      "abstract": "Accurately steering a robot to a target configuration is fundamental in engineering, yet remains challenging for nonholonomic mobile robots. Vector fields (VFs) provide a natural framework by specifying desired motion directions throughout the workspace and enabling direct integration with feedback control. However, most existing VF-based methods cannot explicitly generate trajectories satisfying curvature constraints. Actuator limits are therefore often enforced by input saturation, which may invalidate stability guarantees and degrade closed-loop performance when not considered in controller design. In addition, these methods usually ensure only asymptotic convergence without an explicit settling-time bound. To address these issues, we propose a generalized motion planning and control framework consisting of a finite-time curvature-constrained vector field (FT-C2VF) and a saturation-free control law. Depending on the motion objective, the framework drives the robot to the target configuration in finite time or through it periodically. First, the FT-C2VF is constructed using complementary gains to achieve finite-time convergence while ensuring that the curvature of its integral curves is continuous, bounded, and monotonically decreasing with the radial ratio. Second, an almost globally C1-smooth, saturation-free controller is developed to track the FT-C2VF without Jacobian information, while keeping all control inputs within prescribed actuator limits. Third, dynamical-systems analysis establishes almost-global finite-time stability of the target equilibrium. Numerical simulations show improved performance over representative VF-based methods, and outdoor experiments on an Ackermann-steered vehicle confirm the effectiveness and robustness of the proposed approach.",
+      "authors": [
+        "Zhouru Xiao",
+        "Sha Luo",
+        "Yang Lu",
+        "Héctor García de Marina",
+        "Zhenyang Xu",
+        "Chaosong Gong",
+        "Yaonan Wang",
+        "Weijia Yao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-20T04:36:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.17542v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "motion planning for nonholonomic robots with curvature constraint",
+      "llm_evidence_cn": "非完整机器人曲率约束运动规划",
+      "llm_evidence": "非完整机器人曲率约束运动规划",
+      "canonical_evidence": "非完整机器人曲率约束运动规划",
+      "llm_tldr_en": "A finite-time curvature-constrained vector field for nonholonomic robots that directly generates saturation-free trajectories, guaranteeing stability and constraint satisfaction.",
+      "llm_tldr_cn": "针对非完整移动机器人在曲率约束下常需输入饱和而影响稳定性的问题，提出一种有限时间收敛的曲率约束向量场方法。该方法直接在规划层面考虑曲率限制，生成满足执行器能力的轨迹，无需后续饱和处理。理论证明和仿真验证表明，机器人能在有限时间内到达目标且不违反约束，为运动规划提供了新工具。",
+      "llm_tldr": "针对非完整移动机器人在曲率约束下常需输入饱和而影响稳定性的问题，提出一种有限时间收敛的曲率约束向量场方法。该方法直接在规划层面考虑曲率限制，生成满足执行器能力的轨迹，无需后续饱和处理。理论证明和仿真验证表明，机器人能在有限时间内到达目标且不违反约束，为运动规划提供了新工具。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.18016v1",
+      "source": "arxiv",
+      "title": "Closing the Loop in Humanoid VLA: Persistent 3D Object Tokens for Verifiable Loco-Manipulation",
+      "abstract": "Vision-language-action policies are a promising foundation for general robot control, but long-horizon humanoid loco-manipulation requires the robot to treat task objects as persistent physical entities across movement, contact, occlusion, and recovery. We study this problem as object-state divergence: the object state used to condition a whole-body action can differ from the state used to decide whether the action achieved the intended physical relation. We propose \\emph{Persistent Object Tokenization} (POT), which maintains role-indexed 3D object records from RGB-D observations and converts them into object tokens for a whole-body action expert. Instantiated as \\emph{POT-VLA}, the same object records condition action generation and support geometric predicate checks, yielding a closed-loop execution system in which object state is both actionable and verifiable. On a Unitree G1, POT-VLA improves a matched direct GR00T-N1.7 baseline from 39/80 to 71/80 successes over eight real-world task families. In an external Being-0-aligned reference, POT-VLA achieves 44/50 successes on aligned service tasks, compared with the 37/50 success reported by the Being-0 paper. The largest gains occur on tasks requiring maintained 3D relations, suggesting that persistent object-centered state is a useful abstraction for verifiable humanoid VLA execution.",
+      "authors": [
+        "Peng Ren",
+        "Haoyang Ge",
+        "Jiang Zhao",
+        "Cong Huang",
+        "Yukun Shi",
+        "Pei Chi",
+        "Kai Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-20T14:52:46+00:00",
+      "link": "https://arxiv.org/pdf/2607.18016v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "humanoid loco-manipulation with whole-body action expert",
+      "llm_evidence_cn": "仿人全身动作专家的运动操控",
+      "llm_evidence": "仿人全身动作专家的运动操控",
+      "canonical_evidence": "仿人全身动作专家的运动操控",
+      "llm_tldr_en": "POT-VLA proposes Persistent Object Tokenization for humanoid loco-manipulation, maintaining 3D object records from RGB-D and converting them into object tokens for a whole-body action expert.",
+      "llm_tldr_cn": "该论文提出持久化对象标记化方法，解决仿人机器人长时间跨度运动操控中的对象状态不一致问题。从RGB-D观测中维护对象3D记录并转化为对象令牌，供全身动作专家使用。该方法确保对象在整个运动过程中保持持久性，提升了操作可靠性。",
+      "llm_tldr": "该论文提出持久化对象标记化方法，解决仿人机器人长时间跨度运动操控中的对象状态不一致问题。从RGB-D观测中维护对象3D记录并转化为对象令牌，供全身动作专家使用。该方法确保对象在整个运动过程中保持持久性，提升了操作可靠性。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "humanoid robot locomotion and control",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.18362v1",
+      "source": "arxiv",
+      "title": "FARO: Feasibility-Aware Robot Motion Optimization",
+      "abstract": "Fast planning of novel behaviors in unseen scenarios remains a fundamental challenge in robotics. The high-dimensional, hybrid, and underactuated nature of humanoid loco-manipulation continues to hinder the realization of this goal. In this paper, we address this challenge by proposing a nested kino-dynamic framework for rapid feasibility checking and dynamically consistent trajectory generation given a candidate contact sequence. By integrating this module with a feasibility-guided tree search and a Large Language Model (LLM)-based contact plan sampling strategy, we demonstrate that the proposed framework can substantially improve the search process. Furthermore, we show that the generated trajectories can be tracked using a reinforcement learning (RL)-based controller and show that the resulting trajectories are of sufficiently high quality for execution in real-world loco-manipulation scenarios. A supplementary video is available at: https://youtu.be/R6qCHoCormQ.",
+      "authors": [
+        "Michal Ciebielski",
+        "Shafeef Omar",
+        "Aaron Johnson",
+        "Majid Khadiv"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-20T14:22:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.18362v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "motion optimization for humanoid loco-manipulation",
+      "llm_evidence_cn": "仿人机器人的运动优化与可行性检查",
+      "llm_evidence": "仿人机器人的运动优化与可行性检查",
+      "canonical_evidence": "仿人机器人的运动优化与可行性检查",
+      "llm_tldr_en": "FARO proposes a nested kino-dynamic framework for humanoid loco-manipulation, integrating feasibility-guided tree search and LLM-based contact planning, with RL-based trajectory tracking.",
+      "llm_tldr_cn": "该论文提出FARO框架，用于仿人机器人的快速可行性检查和运动规划。通过嵌套的动力学运动学框架，结合可行性引导的树搜索和大语言模型驱动的接触规划，能够高效生成动态一致的轨迹，并使用强化学习控制器进行跟踪。",
+      "llm_tldr": "该论文提出FARO框架，用于仿人机器人的快速可行性检查和运动规划。通过嵌套的动力学运动学框架，结合可行性引导的树搜索和大语言模型驱动的接触规划，能够高效生成动态一致的轨迹，并使用强化学习控制器进行跟踪。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.20992v1",
+      "source": "arxiv",
+      "title": "Distributed Model-Based Diffusion For Scalable Multi-Robot Trajectory Optimization",
+      "abstract": "Trajectory optimization for multi-robot systems remains a critical challenge, particularly when navigating highly non-convex, non-linear, and non-differentiable environments. While Model-Based Diffusion (MBD) has recently emerged as a promising sampling-based optimization paradigm for single-robot trajectory generation, extending it to multi-robot systems results in a centralized, high-dimensional inference problem that (i) suffers from poor sample efficiency due to the curse of dimensionality and (ii) requires global access to all robots' dynamics, constraints, and objectives. To address this, we propose Distributed Model-Based Diffusion (DMBD), a distributed server-robot framework that decomposes the reverse diffusion process into local conditional reverse diffusion processes. This decomposition enables each robot to iteratively perform denoising independently within its own control subspace while conditioning on the current trajectory estimates of the other robots that are aggregated and broadcast by the server. Extensive simulations in goal swapping, multi-floor coverage, parking, and rush-hour scenarios demonstrate that DMBD achieves strong scalability, solving many challenging coordination tasks in sub-seconds and significantly outperforming existing baselines.",
+      "authors": [
+        "Haejoon Lee",
+        "Xinyi Wang",
+        "Taekyung Kim",
+        "Dimitra Panagou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-23T07:16:59+00:00",
+      "link": "https://arxiv.org/pdf/2607.20992v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-robot trajectory optimization for motion planning",
+      "llm_evidence_cn": "多机器人轨迹优化方法可用于运动规划",
+      "llm_evidence": "多机器人轨迹优化方法可用于运动规划",
+      "canonical_evidence": "多机器人轨迹优化方法可用于运动规划",
+      "llm_tldr_en": "Proposes distributed model-based diffusion (DMBD) for scalable multi-robot trajectory optimization, decomposing reverse diffusion into local client subproblems to handle non-convex constraints efficiently.",
+      "llm_tldr_cn": "针对多机器人系统在高度非凸、非线性环境中的轨迹优化难题，本文提出分布式基于模型的扩散（DMBD）框架。它将逆扩散过程分解为局部子问题，避免了集中式高维推理的样本效率低下问题。实验表明该方法可扩展至多机器人场景，为运动规划提供了新的采样优化工具。",
+      "llm_tldr": "针对多机器人系统在高度非凸、非线性环境中的轨迹优化难题，本文提出分布式基于模型的扩散（DMBD）框架。它将逆扩散过程分解为局部子问题，避免了集中式高维推理的样本效率低下问题。实验表明该方法可扩展至多机器人场景，为运动规划提供了新的采样优化工具。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.21302v1",
+      "source": "arxiv",
+      "title": "Expert Behavior Prior Reinforcement Learning",
+      "abstract": "Behavior prior reinforcement learning (BPRL) has emerged as a promising paradigm to improve sample efficiency in online reinforcement learning (RL) by leveraging policy priors derived from offline demonstrations. However, most existing BPRL methods rely on static offline datasets, which often suffer from low data diversity and suboptimal trajectory quality. This reliance restricts the effectiveness of policy priors, hindering both policy exploitation and stability during online training. Consequently, agents are prone to inefficient exploration and unstable learning dynamics. To address these limitations, we deviate from existing offline pre-training methods and propose an Expert Behavior Prior (EBP) algorithm. Specifically, we introduce a Q-guided conditional variational autoencoder (Q-CVAE) that learns to generate expert policy priors directly from the online replay buffer. This enables the generation of high-value actions for guiding policy updates without relying on pre-collected expert trajectories. To further enhance policy exploitation, we propose an expert policy guidance (EPG) mechanism that selects expert actions from a generative support set, and we integrate a policy gradient correction (PGC) module to harmonize Q-guidance with expert supervision, promoting stable and consistent policy improvement. Extensive experiments conducted on robotic control (Gym, PyBullet) and industrial control (DMControl) benchmarks demonstrate that EBP significantly outperforms state-of-the-art online RL algorithms, achieving higher sample efficiency and more stable convergence.",
+      "authors": [
+        "Gong Gao",
+        "Weidong Zhao",
+        "Xianhui Liu",
+        "Ning Jia"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-23T13:26:57+00:00",
+      "link": "https://arxiv.org/pdf/2607.21302v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "expert behavior prior from demonstrations",
+      "llm_evidence_cn": "从示范中学习专家行为先验",
+      "llm_evidence": "从示范中学习专家行为先验",
+      "canonical_evidence": "从示范中学习专家行为先验",
+      "llm_tldr_en": "Proposes Expert Behavior Prior (EBP) algorithm that uses a Q-guided conditional VAE to learn a policy prior from demonstrations for sample-efficient online RL.",
+      "llm_tldr_cn": "针对基于离线静态数据集的先验学习限制，提出专家行为先验（EBP）算法。利用Q引导的条件变分自编码器从示范中学习政策先验，而非使用固定数据集。该方法鼓励在线探索与利用，提高样本效率。实验表明EBP在多个连续控制任务上优于现有BPRL方法。",
+      "llm_tldr": "针对基于离线静态数据集的先验学习限制，提出专家行为先验（EBP）算法。利用Q引导的条件变分自编码器从示范中学习政策先验，而非使用固定数据集。该方法鼓励在线探索与利用，提高样本效率。实验表明EBP在多个连续控制任务上优于现有BPRL方法。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "apprenticeship learning",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

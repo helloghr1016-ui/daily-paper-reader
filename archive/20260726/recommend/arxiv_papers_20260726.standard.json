@@ -1,0 +1,254 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-26T21:30:54.746938+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 1,
+    "deep_cap": 8,
+    "deep_selected": 1,
+    "quick_candidates": 4,
+    "quick_skim_target": 13,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.19745v1",
+      "source": "arxiv",
+      "title": "EgoRecovery: Acquiring Failure Recovery Ability Through Human Recovery Demonstration",
+      "abstract": "Robust embodied robots should be able to recover from failures and retry tasks in order to operate reliably in unstructured and noisy real-world environments. Achieving this capability requires training policies on data that captures recovery behaviors. However, collecting such data through robot teleoperation is difficult to scale, as it is time-consuming to induce diverse failure states, perform corrective actions, and reset the environment. This challenge is further exacerbated by the high diversity of failure modes, which demands substantially more recovery data than success demonstrations. In this work, we show that egocentric human data capturing failure recovery processes provides a scalable alternative. By efficiently arranging task-level failure configurations and recording short recovery segments, human operators can generate more than 10x as much valid recovery data per hour compared to robot teleoperation under our protocol. To address the embodiment gap between human and robot, we propose EgoRecovery, a co-training framework for learning recovery behavior, where human recovery demonstrations are aligned to a compact corrective-intent space shared with robot data, which captures the timing and magnitude of correction. Only a small number of robot recovery demonstrations are required to connect this intent to executable robot actions. At deployment, a learned recovery gate predicts when correction is needed from robot observations and activates the corrective intent only in recovery states. Experiments on real-world recovery tasks show that EgoRecovery improves success from failure starts over robot-only recovery, direct co-training with human recovery data, and direct intent-transfer baselines.",
+      "authors": [
+        "Zuhao Ge",
+        "Yuchen Zhou",
+        "Weitao Zhou",
+        "Minglei Li",
+        "Xinyu Li",
+        "Chao Wu",
+        "Hanwen Zhao",
+        "Haotian Wang",
+        "Zuxuan Wu",
+        "Xiaosong Jia",
+        "Yu-Gang Jiang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-22T04:44:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.19745v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses human demonstrations for imitation learning of failure recovery",
+      "llm_evidence_cn": "使用人类演示进行模仿学习以获取失败恢复能力",
+      "llm_evidence": "使用人类演示进行模仿学习以获取失败恢复能力",
+      "canonical_evidence": "使用人类演示进行模仿学习以获取失败恢复能力",
+      "llm_tldr_en": "EgoRecovery learns failure recovery policies from egocentric human recovery demonstrations, addressing data scarcity in robot recovery; experiments show effective transfer to robot.",
+      "llm_tldr_cn": "该论文提出EgoRecovery，利用自我中心人类恢复演示来学习机器人失败恢复策略，解决了机器人恢复数据难以收集的问题。通过高效安排演示数据，方法能够从人类自然恢复行为中迁移到机器人，提升机器人在复杂环境中的鲁棒性。",
+      "llm_tldr": "该论文提出EgoRecovery，利用自我中心人类恢复演示来学习机器人失败恢复策略，解决了机器人恢复数据难以收集的问题。通过高效安排演示数据，方法能够从人类自然恢复行为中迁移到机器人，提升机器人在复杂环境中的鲁棒性。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.19302v1",
+      "source": "arxiv",
+      "title": "Real-time optimal control with shallow recurrent decoder networks",
+      "abstract": "Controlling dynamical systems in real-time across multiple scenarios is critical to enabling adaptive control strategies, ensuring stability and efficiency. However, to tailor control actions in response to varying scenarios, traditional optimal control problems typically require several system simulations, which are often computationally demanding due to the high-dimensionality of the underlying spatio-temporal dynamics. In this work, we exploit SHallow REcurrent Decoder networks-based Reduced Order Modeling (SHRED-ROM) to synthesize a real-time closed-loop controller for high-dimensional and parametric dynamics, relying solely on limited state sensor readings. After training the model on a few optimal examples given by an expert demonstrator, SHRED-ROM mimics the expert behavior with effective distributed control actions in new scenarios, alleviating the curse of dimensionality. Moreover, a sensor forecaster is synthesized and used to close the loop at the latent level, thus efficiently mitigating possible sensor failures or delays. The performance of the proposed optimal control strategy is finally assessed on three challenging high-dimensional cases dealing with either parametric density control or fluid flow control.",
+      "authors": [
+        "Matteo Tomasetto",
+        "Francesco Braghin",
+        "J. Nathan Kutz",
+        "Andrea Manzoni"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.OC"
+      ],
+      "published": "2026-07-21T17:13:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.19302v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Learns optimal controller from expert demonstrations using SHRED-ROM, relates to inverse optimal control",
+      "llm_evidence_cn": "利用SHRED-ROM从专家演示学习最优控制器，与逆最优控制相关",
+      "llm_evidence": "利用SHRED-ROM从专家演示学习最优控制器，与逆最优控制相关",
+      "canonical_evidence": "利用SHRED-ROM从专家演示学习最优控制器，与逆最优控制相关",
+      "llm_tldr_en": "Uses shallow recurrent decoder networks with reduced order modeling to synthesize real-time closed-loop controllers from limited expert demonstrations, enabling efficient optimal control across scenarios.",
+      "llm_tldr_cn": "针对高维动力学系统实时最优控制计算量大且需要多次仿真的问题，提出基于浅层循环解码网络降阶模型的方法。通过从少量专家演示中学习，即可合成高效闭环控制器，实现对不同场景的快速自适应最优控制。",
+      "llm_tldr": "针对高维动力学系统实时最优控制计算量大且需要多次仿真的问题，提出基于浅层循环解码网络降阶模型的方法。通过从少量专家演示中学习，即可合成高效闭环控制器，实现对不同场景的快速自适应最优控制。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "inverse optimal control",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.19343v1",
+      "source": "arxiv",
+      "title": "Masked Visual Actions for Unified World Modeling",
+      "abstract": "Video models absorb rich priors over how the visual world moves, interacts, and responds to contact, making them promising substrates for robotic world modeling. The central challenge is how to communicate action to such models in a form aligned with the visual space in which they learned these interaction priors, yet still grounded in physical manipulation. We introduce Masked Visual Actions, a pixel-space control interface that expresses action as a partially revealed trajectory of an arbitrary entity in a video. Revealing robot motion makes the model act as a forward dynamics model that predicts the scene's response to low-level robot actions, while revealing desired object motion makes the same model recover robot behavior consistent with that outcome. Finetuned with only 15 hours of masked examples from real videos and simulation, a single checkpoint achieves strong visual fidelity and controllability across diverse scenes and multiple embodiments. In downstream manipulation settings, the model produces imagined rollouts whose outcomes correlate with real-world execution for policy evaluation, improves decision making by ranking candidate futures in model-based planning, and supports inverse modeling by synthesizing robot motion from desired object motion.",
+      "authors": [
+        "Hadi Alzayer",
+        "Wenlong Huang",
+        "Haonan Chen",
+        "Christopher Luey",
+        "Lvmin Zhang",
+        "Maneesh Agrawala",
+        "Gordon Wetzstein",
+        "Li Fei-Fei",
+        "Yilun Du",
+        "Jiajun Wu",
+        "Jia-Bin Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-07-21T17:59:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.19343v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Visual action representation for robot world model, can be used for imitation learning",
+      "llm_evidence_cn": "视觉动作表示用于机器人世界模型，可应用于模仿学习",
+      "llm_evidence": "视觉动作表示用于机器人世界模型，可应用于模仿学习",
+      "canonical_evidence": "视觉动作表示用于机器人世界模型，可应用于模仿学习",
+      "llm_tldr_en": "Introduces Masked Visual Actions, a pixel-space control interface that enables video models to act as forward dynamics and recover robot behavior from desired outcomes, supporting imitation learning.",
+      "llm_tldr_cn": "针对机器人世界模型中的动作表示问题，提出掩码视觉动作接口，将动作表示为视频中任意实体的部分轨迹，使视频模型能预测场景响应或恢复机器人行为。该方法可用于模仿学习，高效利用视觉先验。",
+      "llm_tldr": "针对机器人世界模型中的动作表示问题，提出掩码视觉动作接口，将动作表示为视频中任意实体的部分轨迹，使视频模型能预测场景响应或恢复机器人行为。该方法可用于模仿学习，高效利用视觉先验。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.19745v2",
+      "source": "arxiv",
+      "title": "EgoRecovery: Acquiring Failure Recovery Ability Through Human Recovery Demonstration",
+      "abstract": "Robust embodied robots should be able to recover from failures and retry tasks in order to operate reliably in unstructured and noisy real-world environments. Achieving this capability requires training policies on data that captures recovery behaviors. However, collecting such data through robot teleoperation is difficult to scale, as it is time-consuming to induce diverse failure states, perform corrective actions, and reset the environment. This challenge is further exacerbated by the high diversity of failure modes, which demands substantially more recovery data than success demonstrations. In this work, we show that egocentric human data capturing failure recovery processes provides a scalable alternative. By efficiently arranging task-level failure configurations and recording short recovery segments, human operators can generate more than 10x as much valid recovery data per hour compared to robot teleoperation under our protocol. To address the embodiment gap between human and robot, we propose EgoRecovery, a co-training framework for learning recovery behavior, where human recovery demonstrations are aligned to a compact corrective-intent space shared with robot data, which captures the timing and magnitude of correction. Only a small number of robot recovery demonstrations are required to connect this intent to executable robot actions. At deployment, a learned recovery gate predicts when correction is needed from robot observations and activates the corrective intent only in recovery states. Experiments on real-world recovery tasks show that EgoRecovery improves success from failure starts over robot-only recovery, direct co-training with human recovery data, and direct intent-transfer baselines.",
+      "authors": [
+        "Zuhao Ge",
+        "Yuchen Zhou",
+        "Weitao Zhou",
+        "Minglei Li",
+        "Xinyu Li",
+        "Chao Wu",
+        "Hanwen Zhao",
+        "Haotian Wang",
+        "Zuxuan Wu",
+        "Xiaosong Jia",
+        "Yu-Gang Jiang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-22T04:44:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.19745v2",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "human recovery demonstration for imitation learning",
+      "llm_evidence_cn": "人类恢复演示用于模仿学习",
+      "llm_evidence": "人类恢复演示用于模仿学习",
+      "canonical_evidence": "人类恢复演示用于模仿学习",
+      "llm_tldr_en": "EgoRecovery learns robot failure recovery policies from egocentric human demonstration data, using imitation learning to scale recovery data collection and improve robot robustness.",
+      "llm_tldr_cn": "EgoRecovery通过利用第一人称人类恢复演示数据来训练机器人故障恢复策略，解决了传统遥操作收集恢复数据难以扩展的问题。该方法采用模仿学习框架，从人类演示中提取恢复行为。实验表明，该方法能有效提升机器人在各种故障场景下的恢复能力，为机器人鲁棒操作提供了可扩展的示范学习新途径。",
+      "llm_tldr": "EgoRecovery通过利用第一人称人类恢复演示数据来训练机器人故障恢复策略，解决了传统遥操作收集恢复数据难以扩展的问题。该方法采用模仿学习框架，从人类演示中提取恢复行为。实验表明，该方法能有效提升机器人在各种故障场景下的恢复能力，为机器人鲁棒操作提供了可扩展的示范学习新途径。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.19971v1",
+      "source": "arxiv",
+      "title": "Unified Prediction and Planning via Conflict-Aware Disjoint Parameter Training",
+      "abstract": "Accurate motion prediction of surrounding agents and safe motion planning are two closely coupled key tasks for social robot navigation in crowded environments. Deploying these systems on resource-constrained edge devices necessitates compact, unified models that can perform both tasks simultaneously. However, within these compact shared encoders, recent unified models often overlook severe representational conflicts that arise from the distinct objectives of predicting neighbor behaviors versus ego-centric safety planning. To address this issue, we first identify the Skill Conflict$\\unicode{x2014}$a phenomenon where overlapping parameter assignments cause distinct tasks to compete for the same weights, preventing the model from fully specializing in individual skills. To resolve this, we propose a novel model-merging-based framework, Disjoint Parameter Training (DPT). DPT mitigates performance degradation caused by Skill Conflict through distributed parameter learning, which separates the key parameter regions of each task while preserving their core capabilities prior to merging. In addition, we observe that sparse merging, which selectively integrates only the most influential parameters for each task rather than combining all task-specific parameters, yields optimal performance by preventing interference among adjacent features and concentrating representational capacity. DPT can be applied in parallel with a variety of merging methods. Evaluated on standard crowd navigation benchmarks (JRDB and JTA), our framework demonstrates superior performance, validating its versatility and effectiveness for safe, resource-efficient robot navigation.",
+      "authors": [
+        "Taewon Seo",
+        "Seonae Jeon",
+        "Giwon Lee",
+        "Kuk-Jin Yoon",
+        "Daehee Park"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-22T09:54:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.19971v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "unified prediction and planning for social robot navigation, relevant to motion planning for robot locomotion",
+      "llm_evidence_cn": "统一预测和规划用于社交机器人导航，与机器人运动规划相关",
+      "llm_evidence": "统一预测和规划用于社交机器人导航，与机器人运动规划相关",
+      "canonical_evidence": "统一预测和规划用于社交机器人导航，与机器人运动规划相关",
+      "llm_tldr_en": "This paper proposes a unified model for prediction and planning in social robot navigation, addressing representational conflicts via conflict-aware disjoint parameter training.",
+      "llm_tldr_cn": "论文针对社交机器人导航中预测和规划任务间的表征冲突，提出了冲突感知分离参数训练方法，实现统一的紧凑模型。该方法在保证预测精度的同时提升了规划安全性，适用于资源受限的边缘设备。",
+      "llm_tldr": "论文针对社交机器人导航中预测和规划任务间的表征冲突，提出了冲突感知分离参数训练方法，实现统一的紧凑模型。该方法在保证预测精度的同时提升了规划安全性，适用于资源受限的边缘设备。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

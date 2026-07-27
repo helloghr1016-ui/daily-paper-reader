@@ -1,0 +1,362 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-27T21:52:43.673606+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 6,
+    "deep_cap": 8,
+    "deep_selected": 6,
+    "quick_candidates": 2,
+    "quick_skim_target": 13,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.21049v2",
+      "source": "arxiv",
+      "title": "GuidedAttention: Interpretable and Correctable Visual Attention for OOD-Robust Robot Manipulation via Imitation Learning",
+      "abstract": "End-to-end visuomotor policies provide little opportunity for humans to understand or correct the policy's visual attention. We propose GuidedAttention, a visuomotor imitation learning framework that introduces interpretable and correctable visual attention as an explicit intermediate representation. Task-relevant attention keypoints are predicted from camera images and condition a diffusion-based action policy. Users can inspect and optionally correct selected keypoints once at rollout initialization, after which the corrected attention is automatically propagated throughout execution by a tracking module. Experiments in simulation and the real world demonstrate that GuidedAttention consistently improves robot manipulation performance, particularly under positional and appearance out-of-distribution (OOD) conditions. https://mmurooka.github.io/guided-attention-project-page",
+      "authors": [
+        "Masaki Murooka",
+        "Ryoichi Nakajo",
+        "Keisuke Shirai",
+        "Tomohiro Motoda",
+        "Hanbit Oh",
+        "Ryo Hanai",
+        "Yukiyasu Domae"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-23T08:33:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.21049v2",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "imitation learning framework with interpretable attention",
+      "llm_evidence_cn": "带可解释注意力的模仿学习框架",
+      "llm_evidence": "带可解释注意力的模仿学习框架",
+      "canonical_evidence": "带可解释注意力的模仿学习框架",
+      "llm_tldr_en": "Proposes GuidedAttention, a visuomotor imitation learning framework that uses interpretable attention keypoints as intermediate representation to improve OOD robustness and allow user correction.",
+      "llm_tldr_cn": "该论文针对端到端视觉运动策略缺乏可解释性和可校正性的问题，提出了GuidedAttention框架。该框架将可解释且可校正的视觉注意力作为显式中间表示，通过预测任务相关的注意力关键点来条件化扩散动作策略。用户可以在初始化时检查并校正关键点，随后跟踪模块自动传播校正后的注意力。实验表明该方法在仿真和真实世界中一致提升了性能。",
+      "llm_tldr": "该论文针对端到端视觉运动策略缺乏可解释性和可校正性的问题，提出了GuidedAttention框架。该框架将可解释且可校正的视觉注意力作为显式中间表示，通过预测任务相关的注意力关键点来条件化扩散动作策略。用户可以在初始化时检查并校正关键点，随后跟踪模块自动传播校正后的注意力。实验表明该方法在仿真和真实世界中一致提升了性能。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21648v1",
+      "source": "arxiv",
+      "title": "Learning Diverse Humanoid Tasks via Synthetic Video Scenarios without Real World Data",
+      "abstract": "The human-like morphology of humanoid robots grants them exceptional potential for agile and versatile motor capabilities, but it also introduces significant challenges in acquiring complex skills. Traditional Learning-from-Demonstrations methods are often constrained by the high cost of collecting real-world data, the difficulty of capturing motion-specific behaviors, and the limited diversity of demonstrations across individuals. Moreover, even for the same task, humans may execute the motion in multiple distinct ways. In this paper, we propose a new framework that leverages the power of Generative AI to convert textual prompts into realistic and diverse sequences of human body movements, enabling the robot to observe multiple variations of how a single task can be performed. These synthetic demonstrations are then used as a training resource, allowing the robot to learn a broad range of task-execution styles without requiring direct human intervention. We evaluate the proposed method across four simulation scenarios. Experimental results show that the robot not only completes the tasks successfully but also demonstrates strong adaptability to complex variations in motion.",
+      "authors": [
+        "Yun-Hao Tsai",
+        "Cong-Thanh Vu",
+        "Yen-Chen Liu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-22T05:36:55+00:00",
+      "link": "https://arxiv.org/pdf/2607.21648v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "learning humanoid tasks from synthetic video demonstrations without real data",
+      "llm_evidence_cn": "从合成视频演示学习人形任务，无需真实数据",
+      "llm_evidence": "从合成视频演示学习人形任务，无需真实数据",
+      "canonical_evidence": "从合成视频演示学习人形任务，无需真实数据",
+      "llm_tldr_en": "Proposes a framework using generative AI to create synthetic video demonstrations for humanoid robots to learn diverse tasks, overcoming data scarcity.",
+      "llm_tldr_cn": "该论文针对人形机器人技能学习中的数据稀缺和演示多样性不足问题，提出利用生成式AI从文本提示生成逼真多样的人体运动视频序列，作为机器人学习的观察数据。该方法无需真实世界数据，能够产生多种任务变化。实验表明，人形机器人可以从中学习多样化的任务，显著降低了数据收集成本，为机器人模仿学习开辟了新途径。",
+      "llm_tldr": "该论文针对人形机器人技能学习中的数据稀缺和演示多样性不足问题，提出利用生成式AI从文本提示生成逼真多样的人体运动视频序列，作为机器人学习的观察数据。该方法无需真实世界数据，能够产生多种任务变化。实验表明，人形机器人可以从中学习多样化的任务，显著降低了数据收集成本，为机器人模仿学习开辟了新途径。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21661v1",
+      "source": "arxiv",
+      "title": "GRACE: Gradient-Free Robot Action Generation via Combined Diffusion-MPPI Posterior Mean Estimation",
+      "abstract": "Diffusion policies generate multimodal robot action sequences from demonstrations, but steering them toward deployment-time constraints typically relies on differentiable guidance costs. This excludes many practical safety constraints, such as binary collision checks, joint limits, and black-box rollout costs that are nondifferentiable. We propose Gradient-free Robot Action generation via Combined diffusion-MPPI posterior mean Estimation (GRACE), which guides a pretrained diffusion policy with Model Predictive Path Integral (MPPI) control using only forward cost evaluations. Building on the common score-ascent structure of diffusion and MPPI, GRACE constructs a cost-conditioned guidance posterior at each reverse step and estimates its mean with a single MPPI update centered at the diffusion reverse mean. For differentiable costs, GRACE recovers conventional gradient guidance under a first-order, matched-covariance approximation. GRACE attains higher success rates than diffusion-based and sampling-based baselines in simulation. On a real 7-DoF manipulator, GRACE avoids a deployment-time obstacle that the unguided prior collides with in every trial. Code and experiment videos are available at https://anonymous.4open.science/w/grace-70BB/.",
+      "authors": [
+        "Leesai Park",
+        "Jiho HOng",
+        "Sanghyun Kim"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-22T23:20:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.21661v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "diffusion policy from demonstrations combined with MPPI for robot action generation",
+      "llm_evidence_cn": "结合扩散策略和MPPI的机器人动作生成，基于演示",
+      "llm_evidence": "结合扩散策略和MPPI的机器人动作生成，基于演示",
+      "canonical_evidence": "结合扩散策略和MPPI的机器人动作生成，基于演示",
+      "llm_tldr_en": "Proposes GRACE, combining pretrained diffusion policy with MPPI to generate robot actions that satisfy nondifferentiable constraints using only forward cost evaluations.",
+      "llm_tldr_cn": "该论文针对扩散策略在部署时难以处理非可微安全约束的问题，提出GRACE方法，将预训练的扩散策略与模型预测路径积分（MPPI）相结合。利用扩散和MPPI共有的分数上升结构，在逆向步骤中构建成本条件化引导后验，只需正向成本评估即可满足约束。实验表明，该方法能有效处理碰撞检查、关节限制等实际约束，扩展了模仿学习在机器人中的应用范围。",
+      "llm_tldr": "该论文针对扩散策略在部署时难以处理非可微安全约束的问题，提出GRACE方法，将预训练的扩散策略与模型预测路径积分（MPPI）相结合。利用扩散和MPPI共有的分数上升结构，在逆向步骤中构建成本条件化引导后验，只需正向成本评估即可满足约束。实验表明，该方法能有效处理碰撞检查、关节限制等实际约束，扩展了模仿学习在机器人中的应用范围。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21960v1",
+      "source": "arxiv",
+      "title": "Adaptive Undulatory Locomotion of Snake-like Robots in Dynamic Viscous Environments via Deep Reinforcement Learning",
+      "abstract": "This paper demonstrates how deep reinforcement learning (DRL) enables adaptive locomotion of snake-like robots in dynamically changing viscous environments, overcoming the inherent performance limitations of classical predefined control methods. The lack of direct onboard sensors for fluid properties necessitates formulating this task as a partially observable Markov decision process. By employing an asymmetric actor-critic framework, a teacher policy trained using privileged information available only in the physics simulator distills its knowledge into a student policy that relies solely on proprioceptive sensor information. Simulation results across a wide range of dynamic viscosity changes ($10^{-7}$ to $10^{-2} m^2/s$) reveal that the DRL agent autonomously acquires non-sinusoidal adaptive gaits. These gaits improve propulsion velocity and transport efficiency, breaking the inherent limits of conventional sinusoidal and kinematic control. The findings establish that implicit environment inference via privileged information distillation is an effective approach to bypass the constraints of classical models under unpredictable fluid dynamics.",
+      "authors": [
+        "Tsuyoshi Kimoto",
+        "Akio Yamano",
+        "Kohei Honda",
+        "Takashi Iwasa"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-24T04:14:36+00:00",
+      "link": "https://arxiv.org/pdf/2607.21960v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "snake robot locomotion with deep RL",
+      "llm_evidence_cn": "蛇形机器人运动结合深度强化学习",
+      "llm_evidence": "蛇形机器人运动结合深度强化学习",
+      "canonical_evidence": "蛇形机器人运动结合深度强化学习",
+      "llm_tldr_en": "This paper demonstrates deep RL for adaptive locomotion of snake-like robots in dynamic viscous environments using asymmetric actor-critic with teacher-student distillation.",
+      "llm_tldr_cn": "本文利用深度强化学习实现蛇形机器人在动态粘性环境中的自适应运动。针对环境粘度变化不能直接测量的问题，采用非对称actor-critic框架，通过教师-学生蒸馏将仿真中特权信息转化为仅依赖本体感知的策略。实验表明该方法能适应大范围粘度变化，克服了经典控制方法的局限性。",
+      "llm_tldr": "本文利用深度强化学习实现蛇形机器人在动态粘性环境中的自适应运动。针对环境粘度变化不能直接测量的问题，采用非对称actor-critic框架，通过教师-学生蒸馏将仿真中特权信息转化为仅依赖本体感知的策略。实验表明该方法能适应大范围粘度变化，克服了经典控制方法的局限性。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "robot locomotion techniques and algorithms",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17007v1",
+      "source": "arxiv",
+      "title": "ADMM-Based Safety-Critical Distributed NMPC for Cooperative Transportation by Quadrupedal Robots",
+      "abstract": "This paper presents a safety-critical distributed nonlinear model predictive control (DNMPC) framework for cooperative payload transportation by teams of quadrupedal robots. The proposed approach models the robotic team and the shared payload as a dynamically coupled networked system with rigid holonomic coupling constraints arising from cooperative transportation. To enable distributed real-time optimization, the centralized finite-horizon optimal control problem is decomposed into parallel local NMPC subproblems coordinated through the alternating direction method of multipliers (ADMM). The resulting distributed framework enforces consensus over both payload-state and interaction-wrench trajectories while explicitly incorporating acceleration-level holonomic coupling constraints within the distributed predictive control formulation. Safety-critical obstacle avoidance constraints for both the robotic agents and payload are enforced using higher-order control barrier functions (HOCBFs). The framework is validated through numerical simulations with teams of two, three, and four quadrupedal robots transporting shared payloads in cluttered environments. Real-time experiments on two- and three-robot teams demonstrate safe and robust transportation under payload uncertainty and external disturbances. Compared with centralized NMPC, the proposed framework achieves up to 23% reduction in average NLP solve time while maintaining comparable closed-loop performance. Ablation studies further demonstrate robustness to communication delays and show that explicit payload-state consensus and holonomic constraints substantially improve payload tracking and distributed coordination over existing wrench-only consensus formulations.",
+      "authors": [
+        "Ruturaj S. Sambhus",
+        "Kapi Ketan Mehta",
+        "Yicheng Zeng",
+        "Kaveh Akbari Hamed"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "math.OC"
+      ],
+      "published": "2026-07-18T23:44:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.17007v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "distributed NMPC for quadrupedal robot locomotion with safety-critical constraints",
+      "llm_evidence_cn": "用于四足机器人运动的安全关键分布式NMPC",
+      "llm_evidence": "用于四足机器人运动的安全关键分布式NMPC",
+      "canonical_evidence": "用于四足机器人运动的安全关键分布式NMPC",
+      "llm_tldr_en": "Presents a safety-critical distributed NMPC framework for cooperative transportation by quadrupedal robots using ADMM decomposition for real-time optimization.",
+      "llm_tldr_cn": "针对四足机器人团队协同运输的安全关键控制问题，本文提出了一种基于ADMM的分布式非线性模型预测控制（DNMPC）框架。通过将集中式最优控制问题分解为并行的局部NMPC子问题，并引入交替方向乘子法协调，实现了对有效载荷状态和交互力轨迹的共识。该方法明确纳入安全约束，在保持实时性同时保证了分布式优化，为多腿机器人协同运动提供了新的控制范式。",
+      "llm_tldr": "针对四足机器人团队协同运输的安全关键控制问题，本文提出了一种基于ADMM的分布式非线性模型预测控制（DNMPC）框架。通过将集中式最优控制问题分解为并行的局部NMPC子问题，并引入交替方向乘子法协调，实现了对有效载荷状态和交互力轨迹的共识。该方法明确纳入安全约束，在保持实时性同时保证了分布式优化，为多腿机器人协同运动提供了新的控制范式。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Model predictive control for whole body locomotion and walking",
+      "matched_requirement_id": "req-21",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.22166v1",
+      "source": "arxiv",
+      "title": "Learning Spatiotemporal Decision Priors for Efficient Path Planning under Partial Observability",
+      "abstract": "Path planning under partial observability remains challenging because an agent must make long-horizon navigation decisions from only locally bounded observations. Nevertheless, historical trajectories contain reusable experience-guided directional preferences. Classical planners, however, typically solve each instance from scratch and lack an explicit mechanism to exploit such transferable decision knowledge, often leading to redundant node expansions and locally myopic search behaviors. Motivated by this limitation, this paper proposes ImiPath, a prior-guided learning framework that distills reusable spatiotemporal decision priors from demonstration trajectories and uses them as experience-informed directional guidance to bias planners toward reliable and promising search directions under partial observability. Specifically, ImiPath first constructs a local spatiotemporal observation representation, which encodes the spatial information of the local environment and the temporal information of historical trajectories. The SpatioTemporal-Attention Policy Network (STAPNet) then transforms this representation into dicision priors. These priors are further incorporated into heterogeneous planners as directional guidance, biasing the search toward locally promising regions. Extensive experiments demonstrate that ImiPath achieves competitive path quality and improves search efficiency by reducing redundant node expansions under local observability. Additional physical experiments on a magnetic microrobot platform further validate the adaptability and practical deployment potential of the proposed framework.",
+      "authors": [
+        "Yi Liu",
+        "Hongda Zhang",
+        "Leyao Zou",
+        "Chunlei Meng",
+        "Ziqing Zhou",
+        "Yuning Chen",
+        "Zhuo Zou",
+        "Lida Xu",
+        "Zhongxue Gan",
+        "Chun Ouyang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-07-24T10:13:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.22166v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses demonstration trajectories to learn decision priors for path planning",
+      "llm_evidence_cn": "利用演示轨迹学习路径规划决策先验",
+      "llm_evidence": "利用演示轨迹学习路径规划决策先验",
+      "canonical_evidence": "利用演示轨迹学习路径规划决策先验",
+      "llm_tldr_en": "ImiPath distills reusable spatiotemporal decision priors from demonstration trajectories to guide path planning under partial observability, reducing node expansions and myopic search.",
+      "llm_tldr_cn": "针对部分可观测环境下路径规划从零求解、缺乏历史经验利用的问题，本文提出ImiPath框架，从演示轨迹中提取可复用的时空决策先验，作为经验引导的方向偏置，提升规划效率。实验证明该方法能显著减少冗余节点扩展，改善局部短视搜索行为。",
+      "llm_tldr": "针对部分可观测环境下路径规划从零求解、缺乏历史经验利用的问题，本文提出ImiPath框架，从演示轨迹中提取可复用的时空决策先验，作为经验引导的方向偏置，提升规划效率。实验证明该方法能显著减少冗余节点扩展，改善局部短视搜索行为。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.20743v1",
+      "source": "arxiv",
+      "title": "Self-Supervised Bio-Inspired Robotic Trajectory Planning with Obstacle Avoidance",
+      "abstract": "Trajectory planning is a fundamental problem in robotics, requiring the generation of collision-free and efficient trajectories in a potentially complex environment. While sampling-based planners remain the dominant approach, they are often computationally expensive, particularly in high-dimensional spaces and obstacle-rich environments. Methods based on model learning offer a promising alternative, enabling efficient planning through a bounded number of forward passes through a neural trajectory planner, but commonly suffer from low sample efficiency or limited generalisation due to their reliance on exploration or expert demonstrations. This follow-up work tests our neuro-inspired self-supervised learning framework for trajectory planning that leverages forward and inverse models as the internal supervisory mechanism in an environment that contains an obstacle. Experimental results demonstrate the feasibility of the approach while revealing a tendency of our planner to exploit the learning signal provided by the forward and inverse models. To address this issue, additional training regimes and mitigation strategies are proposed and evaluated.",
+      "authors": [
+        "Miroslav Krupa",
+        "Miroslav Cibula",
+        "Kristína Malinovská"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-22T21:47:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.20743v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "self-supervised trajectory planning for robots avoiding obstacles",
+      "llm_evidence_cn": "自监督机器人轨迹规划与避障",
+      "llm_evidence": "自监督机器人轨迹规划与避障",
+      "canonical_evidence": "自监督机器人轨迹规划与避障",
+      "llm_tldr_en": "Tests a self-supervised bio-inspired framework for robotic trajectory planning with obstacle avoidance, aiming for efficient planning without expert demonstrations.",
+      "llm_tldr_cn": "该论文测试了一种基于神经灵感的自监督学习框架，用于机器人轨迹规划与避障。该方法无需专家演示，通过自监督学习生成轨迹，能够在复杂环境中高效计算。避免了采样方法的计算开销，并提高了泛化能力。实验验证了该框架在避障轨迹规划中的有效性，为机器人运动规划提供了一种低样本复杂度的替代方案。",
+      "llm_tldr": "该论文测试了一种基于神经灵感的自监督学习框架，用于机器人轨迹规划与避障。该方法无需专家演示，通过自监督学习生成轨迹，能够在复杂环境中高效计算。避免了采样方法的计算开销，并提高了泛化能力。实验验证了该框架在避障轨迹规划中的有效性，为机器人运动规划提供了一种低样本复杂度的替代方案。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "robot locomotion techniques and algorithms",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.21670v1",
+      "source": "arxiv",
+      "title": "Ordered Action Tokens for Visuomotor Policy Learning",
+      "abstract": "Action tokenization maps continuous robot action chunks to discrete tokens and has become an important interface for modern visuomotor policies. Existing approaches either rely on analytical discretization methods that produce prohibitively long token sequences or learned latent tokenizers that lack structure, limiting their compatibility with downstream policies. In this work, we identify three desiderata for action tokenization - high compression, total decodability, and an ordered token space - and introduce Ordered Action Tokenization (OAT), a learned action tokenizer that satisfies all three. OAT discretizes action chunks into an ordered sequence of tokens using a transformer with registers, finite scalar quantization, and ordering-inducing training mechanisms. By training each token prefix to decode into a valid action chunk, OAT places coarse control information in early tokens and uses later tokens to refine residual detail, yielding an anytime tradeoff between inference cost and action fidelity. We validate OAT in two prevailing uses of action tokens: autoregressive policies that generate tokens for control, and token co-training policies that use token losses to shape the vision-language model context consumed by a flow-based action expert. Across three policy backbones and more than 60 tasks spanning five simulation benchmarks and real-world settings, OAT consistently delivers strong policy performance while offering significantly greater flexibility at inference time.",
+      "authors": [
+        "Chaoqi Liu",
+        "Yue Zhao",
+        "Haonan Chen",
+        "Xiaoshen Han",
+        "Jiawei Gao",
+        "Ehsan Adeli",
+        "Yilun Du"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-23T07:04:51+00:00",
+      "link": "https://arxiv.org/pdf/2607.21670v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "ordered action tokens for visuomotor policy learning relevant to imitation learning",
+      "llm_evidence_cn": "有序动作令牌用于视觉运动策略学习，与模仿学习相关",
+      "llm_evidence": "有序动作令牌用于视觉运动策略学习，与模仿学习相关",
+      "canonical_evidence": "有序动作令牌用于视觉运动策略学习，与模仿学习相关",
+      "llm_tldr_en": "This paper introduces Ordered Action Tokenization (OAT) for visuomotor policies, achieving high compression, total decodability, and ordered token space via transformers and finite scalar quantization.",
+      "llm_tldr_cn": "现有动作离散化方法存在序列过长或缺乏结构的问题，本文提出有序动作令牌化（OAT），利用transformer和有限标量量化，实现高压缩、完全可解码且有序的令牌空间。该方法为视觉运动策略学习提供了更高效的接口，有助于提升模仿学习等方法的性能和效率。",
+      "llm_tldr": "现有动作离散化方法存在序列过长或缺乏结构的问题，本文提出有序动作令牌化（OAT），利用transformer和有限标量量化，实现高压缩、完全可解码且有序的令牌空间。该方法为视觉运动策略学习提供了更高效的接口，有助于提升模仿学习等方法的性能和效率。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

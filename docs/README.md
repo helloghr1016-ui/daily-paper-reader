@@ -6,91 +6,83 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-09
-- 运行时间：2026-08-09 21:07:32 UTC
+- 最新运行日期：2026-08-16
+- 运行时间：2026-08-16 20:17:10 UTC
 - 运行状态：成功
-- 本次总论文数：23
-- 精读区：10
+- 本次总论文数：21
+- 精读区：8
 - 速读区：13
 
 ### 今日简报（AI）
-1) 今日共处理23篇论文，精读10篇、速读13篇，聚焦足式与类人机器人运动控制前沿。  
-2) 最值得看：多技能蒸馏实现全身感知运动的《Light-Loco-Parkour》与结构化混合专家的类人全身追踪《LooperMuscle》，均获满分或高分。  
-3) 下一步可延伸关注单腿平衡基准、零样本追踪及动态操作等速读亮点，助力实际部署。
-- 详情：[/202608/09/README](/202608/09/README)
+今日精读21篇论文，其中IRL高效超梯度方法与长时程人形操控框架得分最高。最值得关注10分《Efficient Hypergradient Descent for IRL》与9分《LUCID》人形双臂操控模型。建议优先精读这两篇，再结合速读中的分层模仿与自适应奖励模型拓展应用。
+- 详情：[/202608/16/README](/202608/16/README)
 
 ### 精读区论文标签
-1. [Light-Loco-Parkour: Versatile Perceptive Whole-Body Locomotion via Multi-Skill Distillation](/202608/09/2608.02653v1-light-loco-parkour-versatile-perceptive-whole-body-locomotion-via-multi-skill-distillation)  
-   标签：评分：10.0/10、query:locowbc
-   evidence：人形机器人全身运动系统
-2. [LooperMuscle: Fast and Stable Learning of Humanoid Whole-Body Tracking via Structured Mixture-of-Experts](/202608/09/2608.00820v1-loopermuscle-fast-and-stable-learning-of-humanoid-whole-body-tracking-via-structured-mixture-of-experts)  
+1. [Efficient Hypergradient Descent for Inverse Reinforcement Learning](/202608/16/2608.11052v1-efficient-hypergradient-descent-for-inverse-reinforcement-learning)  
+   标签：评分：10.0/10、query:inverse-rl
+   evidence：逆强化学习的高效超梯度下降方法
+2. [LUCID: Latent-Skill Unified Control via Imagined Dynamics for Long-Horizon Humanoid Loco-Manipulation](/202608/16/2608.07746v1-lucid-latent-skill-unified-control-via-imagined-dynamics-for-long-horizon-humanoid-loco-manipulation)  
+   标签：评分：9.0/10、query:mpc-wbc
+   evidence：使用对抗模仿学习训练仿人机器人全身技能，用于移动操控
+3. [Whole-Body Planning for Humanoids Navigating Confined Spaces via Self-Collision Avoidance References](/202608/16/2608.10220v1-whole-body-planning-for-humanoids-navigating-confined-spaces-via-self-collision-avoidance-references)  
    标签：评分：9.0/10、query:locowbc
-   evidence：通过结构化混合专家与强化学习实现人形机器人全身跟踪策略学习
-3. [Rapid Embodiment Adaptation for Quadrupedal Locomotion](/202608/09/2608.01506v2-rapid-embodiment-adaptation-for-quadrupedal-locomotion)  
-   标签：评分：9.0/10、query:locowbc
-   evidence：四足机器人运动中的在线本体适应，根据推断的硬件状态调整控制
-4. [AffordTrajDP: Dynamic Affordance-Guided Visuomotor Policy Learning for Robotic Manipulation](/202608/09/2608.01603v1-affordtrajdp-dynamic-affordance-guided-visuomotor-policy-learning-for-robotic-manipulation)  
+   evidence：面向受限空间的仿人机器人全身运动规划
+4. [Joint Identifiability and Conditioning in Finite-Horizon Continuous-Time Inverse LQR with Unknown Dynamics](/202608/16/2608.11932v1-joint-identifiability-and-conditioning-in-finite-horizon-continuous-time-inverse-lqr-with-unknown-dynamics)  
    标签：评分：9.0/10、query:inverse-rl
-   evidence：面向机器人操作的动态可供性引导模仿学习
-5. [A Forward-Inverse Dynamic Game Framework for Enhanced Multi-Agent Trajectory Planning](/202608/09/2608.01636v1-a-forward-inverse-dynamic-game-framework-for-enhanced-multi-agent-trajectory-planning)  
+   evidence：研究有限时域连续时间逆LQR，从专家行为推断成本函数
+5. [A penalty-type method for relaxed inverse optimal control problems](/202608/16/2608.12769v1-a-penalty-type-method-for-relaxed-inverse-optimal-control-problems)  
    标签：评分：9.0/10、query:inverse-rl
-   evidence：从演示行为中推断未知代价参数，是逆强化学习/逆最优控制的直接建模
-6. [Open-DiffLoco: Open-Source Differentiable Learning for Deployable Blind Quadruped Locomotion](/202608/09/2608.02069v1-open-diffloco-open-source-differentiable-learning-for-deployable-blind-quadruped-locomotion)  
-   标签：评分：9.0/10、query:locowbc
-   evidence：利用可微仿真与虚实迁移训练可部署的四足盲运动策略
-7. [Why Does Action Chunking Improve Behavioral Cloning Performance in Robotic Control?](/202608/09/2608.02547v1-why-does-action-chunking-improve-behavioral-cloning-performance-in-robotic-control)  
-   标签：评分：9.0/10、query:inverse-rl
-   evidence：行为克隆是模仿学习的核心方法，本文研究动作分块对行为克隆性能提升的原因
-8. [GORDON: Graph-based Object-centric Rewards for Decomposition of Long-Horizon Manipulation](/202608/09/2608.03753v1-gordon-graph-based-object-centric-rewards-for-decomposition-of-long-horizon-manipulation)  
-   标签：评分：9.0/10、query:inverse-rl
-   evidence：基于图的对象中心奖励学习，从演示中学习稠密奖励
-9. [VIDP: Variable Impedance Diffusion Policy for Compliant Robot Manipulation from Diverse Demonstrations](/202608/09/2608.06210v1-vidp-variable-impedance-diffusion-policy-for-compliant-robot-manipulation-from-diverse-demonstrations)  
-   标签：评分：9.0/10、query:inverse-rl
-   evidence：基于演示的模仿学习可变阻抗控制
-10. [$ω$-0: A Latent Predictive World Action Model for Concurrent Humanoid Loco-Manipulation](/202608/09/2608.06375v1--0-a-latent-predictive-world-action-model-for-concurrent-humanoid-loco-manipulation)  
-   标签：评分：9.0/10、query:locowbc
-   evidence：面向人形机器人并发移动-操作的全身世界动作模型，直接关联人形运动与控制
+   evidence：松弛逆最优控制的惩罚型数值方法
+6. [Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data](/202608/16/2608.02580v1-ego2robot-scalable-robot-data-synthesis-from-egocentric-human-data)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：将人类第一视角视频转化为机器人演示数据，服务于模仿学习
+7. [TrustRoboReward: Preference-Ordered Isotonic Score Editing for Multi-Paradigm Robot Reward Models](/202608/16/2608.08491v1-trustroboreward-preference-ordered-isotonic-score-editing-for-multi-paradigm-robot-reward-models)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：机器人奖励模型，偏好有序等距分数编辑，多范式奖励学习
+8. [Hip Energized Monopedal Hopping](/202608/16/2608.10387v1-hip-energized-monopedal-hopping)  
+   标签：评分：8.0/10、query:locowbc
+   evidence：面向单足弹跳的新型步态策略与能量注入控制
 
 ### 速读区论文标签
-1. [First Deployable Dynamic-CoM: A Unified Policy and Method-Agnostic Benchmark for Humanoid Single-Leg Balance](/202608/09/2608.00500v1-first-deployable-dynamic-com-a-unified-policy-and-method-agnostic-benchmark-for-humanoid-single-leg-balance)  
-   标签：评分：8.0/10、query:locowbc
-   evidence：人形单腿平衡基准与可部署的动态质心观测
-2. [GenTrack: Physical Alignment for Robot-Native Motion Generation and Zero-Shot Humanoid Tracking](/202608/09/2608.01410v1-gentrack-physical-alignment-for-robot-native-motion-generation-and-zero-shot-humanoid-tracking)  
-   标签：评分：8.0/10、query:locowbc
-   evidence：面向人形零样本跟踪的在线生成-跟踪框架，直接涉及人形机器人控制与基于参考的模仿学习
-3. [DynamicManip: Enabling Dynamic Manipulation from a Single Static Demonstration](/202608/09/2608.01452v1-dynamicmanip-enabling-dynamic-manipulation-from-a-single-static-demonstration)  
+1. [A Hierarchical Approach to Imitation Learning for Manipulation Tasks Requiring Time Varying Forces](/202608/16/2608.03103v1-a-hierarchical-approach-to-imitation-learning-for-manipulation-tasks-requiring-time-varying-forces)  
    标签：评分：8.0/10、query:inverse-rl
-   evidence：从单个静态演示学习动态操作，提出低延迟模仿策略和数据增强
-4. [Rapid Embodiment Adaptation for Quadrupedal Locomotion](/202608/09/2608.01506v1-rapid-embodiment-adaptation-for-quadrupedal-locomotion)  
-   标签：评分：8.0/10、query:locowbc
-   evidence：面向四足运动的在线实体形态自适应
-5. [StableMimic: Smooth Human-Like Recovery for Humanoid Motion Tracking - Learning Beyond the Tracking Distribution for Structured Post-Fall Behavior](/202608/09/2608.02385v1-stablemimic-smooth-human-like-recovery-for-humanoid-motion-tracking---learning-beyond-the-tracking-distribution-for-structured-post-fall-behavior)  
-   标签：评分：8.0/10、query:locowbc
-   evidence：人形运动跟踪与恢复，用于运动控制
-6. [SelfWAM: A Self-Grounded Unified World Action Model for Fast Robot Control](/202608/09/2608.00725v1-selfwam-a-self-grounded-unified-world-action-model-for-fast-robot-control)  
+   evidence：面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成
+2. [EvoHIL: Self-Evolving Reward and Flow-Matched Policy Optimization for Robust Human-in-the-Loop Reinforcement Learning](/202608/16/2608.03872v1-evohil-self-evolving-reward-and-flow-matched-policy-optimization-for-robust-human-in-the-loop-reinforcement-learning)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：人在回路强化学习中的自演进奖励模型
+3. [Enhancing VLM Reward Models Through Structure-Aware Fine-Tuning](/202608/16/2608.03875v1-enhancing-vlm-reward-models-through-structure-aware-fine-tuning)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：通过结构感知微调VLM奖励进行奖励函数学习
+4. [SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation](/202608/16/2608.04196v1-simdex-mining-similar-egocentric-videos-for-cross-embodiment-dexterous-manipulation)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴
+5. [SkillMemo: Expert-guided Skill Memory Framework for Compositional Embodied Manipulation](/202608/16/2608.05970v1-skillmemo-expert-guided-skill-memory-framework-for-compositional-embodied-manipulation)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：将演示分解为潜在技能用于模仿学习
+6. [SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning](/202608/16/2608.09138v1-speedtuning-speeding-up-policy-execution-with-lightweight-reinforcement-learning)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：利用强化学习加速模仿学习策略的执行速度
+7. [Skills in Weights, Memory in Code: Hybrid Learning for Memory-Dependent Robot Manipulation](/202608/16/2608.09410v1-skills-in-weights-memory-in-code-hybrid-learning-for-memory-dependent-robot-manipulation)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：利用梯度模仿学习获取机器人低层技能
+8. [RynnValue: Scaling Robotic Value Foundation Models with Temporal Distance](/202608/16/2608.09853v1-rynnvalue-scaling-robotic-value-foundation-models-with-temporal-distance)  
+   标签：评分：8.0/10、query:inverse-rl
+   evidence：通用奖励模型与价值基础模型，用时序距离学习奖励
+9. [SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning](/202608/16/2608.09138v2-speedtuning-speeding-up-policy-execution-with-lightweight-reinforcement-learning)  
    标签：评分：7.0/10、query:inverse-rl
-   evidence：利用演示动作训练世界动作模型进行机器人策略学习，属于模仿学习
-7. [Rake-Compress Riccati Recursions for Parallel Scenario-Tree Model Predictive Control](/202608/09/2608.01332v1-rake-compress-riccati-recursions-for-parallel-scenario-tree-model-predictive-control)  
-   标签：评分：7.0/10、query:mpc-wbc
-   evidence：并行场景树MPC求解器，为全身运动MPC提供关键数值工具
-8. [Learning Panorama-Aware VLA for Mobile Manipulation with Whole-Body Teleoperation](/202608/09/2608.02257v1-learning-panorama-aware-vla-for-mobile-manipulation-with-whole-body-teleoperation)  
-   标签：评分：7.0/10、query:locowbc
-   evidence：全身遥操作与移动基座和机械臂的协调控制
-9. [Foundations of Reinforcement Learning and Control:Connections and New Perspectives](/202608/09/2608.02433v1-foundations-of-reinforcement-learning-and-controlconnections-and-new-perspectives)  
-   标签：评分：7.0/10、query:locowbc
-   evidence：连接强化学习与控制理论，并在经典运动控制问题上给出教程
-10. [DexMani: Human-Derived Manipulability Guidance for Dexterous Rotation](/202608/09/2608.00554v1-dexmani-human-derived-manipulability-guidance-for-dexterous-rotation)  
+   evidence：直接关注模仿学习策略的加速问题，使用强化学习补齐执行速度
+10. [Multi-Agent Reinforcement Learning via Agent-Specific Preference](/202608/16/2608.08604v1-multi-agent-reinforcement-learning-via-agent-specific-preference)  
    标签：评分：6.0/10、query:inverse-rl
-   evidence：利用人类演示引导强化学习进行灵巧操作，属于模仿学习形式
-11. [RIT*: Riemannian Informed Trees for Cost-Adaptive Optimal Motion Planning](/202608/09/2608.00822v1-rit-riemannian-informed-trees-for-cost-adaptive-optimal-motion-planning)  
-   标签：评分：6.0/10、query:locowbc
-   evidence：基于黎曼信息树的成本自适应最优运动规划
-12. [Teleopit: A Full-Embodiment Humanoid Teleoperation System](/202608/09/2608.01834v1-teleopit-a-full-embodiment-humanoid-teleoperation-system)  
-   标签：评分：6.0/10、query:locowbc
-   evidence：面向全身人形控制的全实体遥操作
-13. [Residual-Based Adaptive Kalman Filtering for Legged Robot State Estimation](/202608/09/2608.02316v1-residual-based-adaptive-kalman-filtering-for-legged-robot-state-estimation)  
-   标签：评分：6.0/10、query:locowbc
-   evidence：腿式机器人状态估计的自适应卡尔曼滤波
+   evidence：通过智能体特定偏好学习奖励函数
+11. [High Fidelity Capture, Reconstruction, and Transfer of Human Demonstrations for Robot-Assisted Bathing](/202608/16/2608.09127v1-high-fidelity-capture-reconstruction-and-transfer-of-human-demonstrations-for-robot-assisted-bathing)  
+   标签：评分：6.0/10、query:inverse-rl
+   evidence：面向机器人学习的人类演示高保真采集、重建与迁移
+12. [Real-Time Nonlinear MPC via Sequential Quadratic Programming with Structure-Exploiting ADMM and Interior-Point Methods for Underactuated Double-Pendulum Swing-Up](/202608/16/2608.09272v1-real-time-nonlinear-mpc-via-sequential-quadratic-programming-with-structure-exploiting-admm-and-interior-point-methods-for-underactuated-double-pendulum-swing-up)  
+   标签：评分：6.0/10、query:mpc-wbc
+   evidence：实时非线性模型预测控制方法，可迁移至全身运动控制
+13. [BooST: Bridging Semantics and Motions for Efficient Skill Transfer](/202608/16/2608.10600v1-boost-bridging-semantics-and-motions-for-efficient-skill-transfer)  
+   标签：评分：6.0/10、query:inverse-rl
+   evidence：机器人学习中的技能抽象与迁移，可复用于模仿学习
 
 
 <div class="dpr-home-promo-card">

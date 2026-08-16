@@ -1,0 +1,1500 @@
+Title: A penalty-type method for relaxed inverse optimal control problems
+
+URL Source: https://arxiv.org/pdf/2608.12769v1
+
+Published Time: Fri, 14 Aug 2026 00:28:17 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# A penalty-type method for relaxed inverse optimal control problems 
+
+# Floriane Mefo Kue ∗ Patrick Mehlitz † Thorsten Raasch ‡
+
+# August 14, 2026 
+
+This paper is devoted to the introduction and analysis of a penalty-type method for the numerical treatment of a class of bilevel optimization prob-lems arising from inverse optimal control. The algorithm is designed to com-pute stationary points of the associated relaxed value function reformulation. This is achieved by determining a sequence of stationary points associated with a sequence of surrogate problems where the relaxed value function con-straint is penalized, where the updates of upper- and lower-level decision variables are decoupled, and where the penalty parameter is enlarged only in those iterations which do not come along with a sufficient improvement of some feasibility measure. The resulting method does not comprise any linesearch, the lower-level problem has to be evaluated just once per iter-ation, and the penalty parameter does not need to be driven to infinity. Nevertheless, subsequential convergence results are obtained under reason-able assumptions. Numerical experiments, where the relaxation parameter is also driven to zero, visualize effectiveness of the approach. 
+
+Keywords: Bilevel optimal control, inverse optimal control, penalty method, relaxation method 
+
+MSC: 49K20, 49M20, 49N45, 90C48 
+
+> ∗
+
+University of Siegen, Department of Mathematics, 57068 Siegen, Germany, Department of Mathematics, Higher Training College, University of Yaound´ e I, P.O. Box 812, Yaound´ e, Cameroon, AIMS-Cameroon Research Center, P.O. Box 608, Crystal Gardens, Limbe, Cameroon 
+
+floriane.kue@aims-cameroon.org , ORCID: 0000-0003-0827-0809 
+
+> †
+
+University of Marburg, Department of Mathematics and Computer Science, 35032 Marburg, Germany, 
+
+mehlitz@uni-marburg.de , ORCID: 0000-0002-9355-850X 
+
+> ‡
+
+University of Siegen, Department of Mathematics, 57068 Siegen, Germany, 
+
+raasch@mathematik.uni-siegen.de , ORCID: 0000-0002-2607-3115 
+
+1arXiv:2608.12769v1 [math.OC] 13 Aug 2026 1 Introduction 
+
+In bilevel optimization, hierarchical optimization problems with two decision makers are considered where the objective function and the feasible set of the so-called upper-level decision maker (often referred to as the leader) depend on the solution set of a second, parametric in the leader’s variables, so-called lower-level optimization problem (whose decision maker is called the follower). In the underlying decision process, first, the leader fixes his variables which are then handed over to the follower who now is in position to solve his problem to global optimality. The associated solution set is then passed back to the leader who, thus, can evaluate his objective function. Often, it is assumed that the leader is allowed to choose freely from the follower’s solution set, corresponding to the so-called optimistic approach to bilevel optimization. Nowadays, bilevel optimization is one of the most popular research areas in operations research and mathematical optimization as the underlying model paradigm, exemplary, covers hyperparameter tuning in machine learning models, see [14] for a recent survey, which can be rated as a special instance of inverse optimization where parameters in optimization problems have to be reconstructed from given noisy observations. A detailed introduction to bilevel optimization can be found in the monographs [2, 5, 31]. A growing subfield of bilevel optimization is the one of so-called bilevel optimal control where at least one the involved decision makers faces constraints comprising ordinary or partial differential equations and, thus, has to solve an optimal control problem, see [17, 24, 32, 33] for an introduction to optimal control. Applications of bilevel optimal control comprise gas balancing and transport, see [13, 19], scheduling of multi-agent systems, e.g., planes and cranes, see [10, 21], or parameter tracking in models of human locomotion, see [16]. An overview of the topic is presented in the survey book chapter [29]. The subfield of bilevel optimal control where parameters in optimal control prob-lems have to be reconstructed from given noisy observations is referred to as inverse optimal control, and some theory for this particular setting has been developed, e.g., in the recent contributions [6, 7, 11, 15, 18]. In practice, bilevel optimization problems are generally not stable. For some values of the leader’s variables, the lower-level problem may possess multiple global minimi-zers. Then small perturbations of the problem data can lead to dramatic changes of the lower-level solution set and, thus, of the overall bilevel optimization problem. Exem-plary, this has been illustrated by means of several examples in [5, Section 7.2] and is mainly caused by the fact that single-level reformulations of bilevel optimization prob-lems suffer from an intrinsic lack of regularity, i.e., constraint qualifications of reasonable strength are violated at each feasible point, see [8] for an overview and suitable refer-ences. To overcome this undesirable behavior of bilevel optimization problems, it has been suggested in the literature to equip the leader with the set of ε-optimal solutions of the lower-level problem for some fixed ε > 0, see [26, 27, 28]. The resulting relaxed bilevel optimization problem may be interpreted as a robustifed version of the original one. Indeed, there is a fairly good chance that standard constraint qualifications hold at the feasible points of single-level reformulations associated with the relaxed bilevel optimization problem. This observation also has been exploited for numerical purposes. 2Indeed, in [22, 23, 25, 34], solution algorithms for bilevel optimization problems based on the relaxed so-called value function reformulation have been suggested, analyzed, and tested. Recently, similar work has been done on the base of the relaxed Moreau envelope reformulation, see [1, 12]. In this paper, we propose a simple penalty-type solution method for a class of in-verse optimal control problems which builds upon the associated relaxed value function reformulation. As a model problem, we exploit the inverse optimal control problem considered in [6, 7, 11]. In these papers, a global solution method has been suggested and studied which evolves from the value function reformulation by approximating the lower-level optimal value function therein from above by an iteratively refined piece-wise affine function and decomposing the resulting relaxations into finitely many convex subproblems which can be solved efficiently with the aid of a semismooth Newton-type method. The approach considered here is completely different and, from the viewpoint of computation cost, much cheaper as we merely aim at the identification of stationary points of the relaxed value function reformulation. The latter is a reasonable goal as Robinson’s constraint qualification holds at each feasible point of the problem of interest. We penalize the relaxed value function constraint with the aid of a nonsmooth penalty function in order to exploit the advantage of exact penalization. Then we iteratively solve the stationarity system of the arising penalized subproblem as the penalty pa-rameter grows in some but not necessarily all iterations. In each iteration, the penalty parameter is enlarged only if a certain feasibility measure does not decrease enough, and we distinguish between the treatment of the leader’s and follower’s variables which are updated by a simple projection step and the solution of a square mixed-nonlinear com-plementarity system, respectively. This leads to a simple to implement, linesearch free method which requires merely one evaluation of the lower-level optimal control problem in each iteration and does not require the penalty parameter to be send to infinity. We analyze the convergence properties of the suggested algorithm and present results of computational experiments. The remainder of the paper is organized as follows. In Section 2, we introduce the notation which will be used throughout. Section 3 presents the precise problem statement and recalls some preliminary results on the model problem taken from [6]. Section 4 is dedicated to the introduction of the announced penalty-type solution algorithm for the model problem and also presents some convergence results. Details on its implementation and results of numerical experiments can be found in Section 5. In Section 6, we close the paper with some final remarks and suggestions for future research. 
+
+# 2 Notation 
+
+In this paper, we equip Rn, the space of all real vectors with n ∈ N components, with the Euclidean inner product ⟨· , ·⟩ and the Euclidean norm ∥·∥ . Given any two vectors 
+
+x, x ′ ∈ Rn, we exploit x ⊥ x′ in order to represent the orthogonality relation ⟨x, x ′⟩ = 0. For an arbitrary Banach space X , we denote its norm by ∥·∥ X . The symbol X ∗ stands for the (topological) dual space of X , and ⟨· , ·⟩ X : X ∗ × X → R represents the associated 3dual pairing. Convergence of a sequence {xk}k∈N ⊂ X to x ∈ X will be denoted by 
+
+xk → x, while the weak convergence of {xk}k∈N to x is expressed via xk ⇀ x . Whenever 
+
+X is reflexive, we identify the bidual space X ∗∗ with X . If X is a Hilbert space, we may identify X ∗ with X via the Riesz isomorphism, but we will clearly indicated in the paper whenever we make use of this identification. Throughout, all Banach and Hilbert spaces are assumed to be real. Let X be a Hilbert space, fix a nonempty, closed, convex set A ⊂ X , and pick x ∈ X .Then proj A(x) denotes the projection of x onto A. Furthermore, for ¯ x ∈ A,
+
+RA(¯ x) := [
+
+> s≥0
+
+s(A − { ¯x}), NA(¯ x) := {x∗ ∈ X ∗ | ∀ x ∈ A : ⟨x∗, x − ¯x⟩X ≤ 0}
+
+denote the radial and normal cone to A at ¯ x, respectively. Whenever X ∗ is identified with X via the Riesz isomorphism, we have the equivalence ¯x = proj A(x) ⇐⇒ x − ¯x ∈ NA(¯ x). (2.1) For the purpose of completeness, we set RA(˜ x) := ∅ and NA(˜ x) := ∅ whenever ˜ x / ∈ A.Given sequences {xk}k∈N ⊂ A and {x∗
+
+> k
+
+}k∈N ⊂ X ∗ such that x∗ 
+
+> k
+
+∈ NA(xk) holds for all 
+
+k ∈ N while the convergences xk → ¯x and x∗ 
+
+> k
+
+⇀ x ∗ are valid for some ¯ x ∈ A and x∗ ∈ X ∗,it easily follows from the definition of the normal cone that x∗ ∈ NA(¯ x). This property will be referred to as the closedness of the normal cone mapping NA(·) throughout. For yet another Hilbert space Y, we denote by L(X , Y) the Banach space of all linear continuous operators mapping from X to Y. The adjoint of an operator F ∈ L (X , Y)is represented by F ∗ ∈ L (Y∗, X ∗). Whenever X ⊂ Y and the identity is continuous as a mapping from X to Y, we write X ,→ Y . For a Fr´ echet differentiable function 
+
+G : X → Y and ¯ x ∈ X , G′(¯ x) ∈ L (X , Y) denotes the Fr´ echet derivative of G at ¯ x.Whenever g : X → R is Fr´ echet differentiable at ¯ x ∈ X , with a slight abuse of notation, we identify g′(¯ x) with its gradient ∇g(¯ x) := g′(¯ x)∗1. Partial Fr´ echet derivatives with respect to certain blocks of variables are denoted in the canonical way. Consider a set D := {x ∈ Ω | G(x) ∈ C}, where G : X → Y is a continuously Fr´ echet differentiable mapping between Hilbert spaces X and Y, Ω ⊂ X is nonempty, closed, and convex, and C ⊂ Y is nonempty, closed, and convex. We say that Robinson’s constraint qualification, see [30, 35], holds at ¯ x ∈ D whenever the condition 
+
+G′(¯ x)RΩ(¯ x) − RC (G(¯ x)) = Y
+
+is valid. This qualification condition is an essential tool to verify existence of Lagrange multipliers for optimization problems stated in Banach spaces. For a bounded domain Ω ⊂ Rd, we denote by L2(Ω) the Lebesgue space of measurable and square-integrable functions, and we identify L2(Ω) ∗ with L2(Ω). Moreover, H10 (Ω) represents the closure of C∞ 
+
+> 0
+
+(Ω), the space of all infinitely many times differentiable functions with compact support in Ω, with respect to the standard H1-Sobolev norm. Its dual space is denoted by H−1(Ω) := H10 (Ω) ∗. We note that H10 (Ω) ,→ L2(Ω) ,→ H−1(Ω). 43 Problem statement and properties 
+
+To start, let us consider the (parametric in x ∈ Rn) abstract optimal control problem min 
+
+> y,u
+
+12 ∥y − Ex ∥2 
+
+> V
+
++ σ
+
+2 ∥u∥2
+
+> U
+
+s. t. Ay = Bu, u ∈ Uad ,
+
+(LL( x)) whose variables are the state y and the control u which have to be chosen from suitable function spaces Y and U, respectively, such that the state equation Ay = Bu and certain control constraints u ∈ Uad hold. Typically, Uad is a box induced by upper and lower bounds on the control. The objective function in (LL( x)) enforces the state to be, in an observation space V such that Y ,→ V , as close as possible to a desired state Ex , where 
+
+E is a linear continuous operator, while the control effort is reasonably small. We aim to identify the true value of the desired state Ex from given (potentially noisy) measurements in a superordinate optimization problem min  
+
+> x,y,u
+
+F (x, y, u )s. t. x ∈ Xad , (y, u ) solves (LL( x)), (3.1) which is, thus, an inverse optimal control problem. Here, the function F : Rn ×Y ×U → R
+
+represents a measure which compares the true solutions of (LL( x)) with some observed data, e.g., 
+
+F (x, y, u ) := 12 ∥y − yo∥2 
+
+> V
+
++ 12 ∥u − uo∥2
+
+> U
+
+for given ( yo, u o) ∈ Y × U , but we emphasize that other choices for F are also covered by the analysis in this paper. Candidate parameters are taken from the set Xad . Aclosely related model problem has been investigated in [6, 7, 11]. Recall that, in the terminology of bilevel optimization, the inner problem (LL( x)) is referred to as the lower-level problem while the outer problem (3.1) is called the upper-level problem. Let φ : Rn → R ∪ {−∞ , ∞} be the optimal value function associated with (LL( x)), i.e., it assigns to each x ∈ Rn the optimal objective function value of (LL( x)). Then (3.1) is, obviously, equivalent to the single-level problem min  
+
+> x,y,u
+
+F (x, y, u )s. t. x ∈ Xad , Ay = Bu, u ∈ Uad ,f (x, y, u ) − φ(x) ≤ 0,
+
+(IOC) where we used f : Rn × Y × U → R in order to abbreviate the objective function of the lower-level problem (LL( x)) given by 
+
+f (x, y, u ) := 12 ∥y − Ex ∥2 
+
+> V
+
++ σ
+
+2 ∥u∥2 
+
+> U
+
+. (3.2) Despite being equivalent to (3.1), (IOC) comes along with several disadvantages. First and foremost, the function φ is only implicitly known, and evaluation of its function 5values and (generalized) derivatives might be costly. Second, as we will recall below, Robinson’s constraint qualification fails to hold at all feasible points of (IOC). In order to overcome this drawback, we consider the relaxed inverse optimal control problem min  
+
+> x,y,u
+
+F (x, y, u )s. t. x ∈ Xad , Ay = Bu, u ∈ Uad ,f (x, y, u ) − φ(x) ≤ ε, 
+
+(IOC ε)where ε > 0 is a relaxation parameter (we note that choosing ε := 0 in (IOC ε), which we omit here, recovers problem (IOC)). Indeed, in contrast to (IOC), (IOC ε) is a rather regular problem as Robinson’s constraint qualification holds at each feasible point. Throughout the paper, we will make use of the assumptions summarized below. 
+
+Assumption 3.1. Let Y, U, and V be Hilbert spaces such that Y ,→ V , and U∗ is identified with U while V∗ is identified with V. We assume that F : Rn × Y × U → R is continuously Fr´ echet differentiable and convex. The set Xad ⊂ Rn is nonempty, convex, and compact. Furthermore, A ∈ L (Y, Y∗) is an isomorphism, and B ∈ L (U, Y∗) as well as E ∈ L (Rn, V) are two other linear continuous operators. The admissible control set 
+
+Uad ⊂ U is assumed to be nonempty, closed, convex, and bounded. Furthermore, σ > 0
+
+is a regularization parameter. The function f is given as in (3.2) . Finally, we fix ε > 0.
+
+From now on Assumption 3.1 will be treated as standing without further notice. Throughout the paper, let S := A−1B denote the (linear continuous) solution operator of the linear state equation Ay = Bu . Then, for each x ∈ Rn, y = Su holds for each feasible pair ( y, u ) ∈ Y × U of (LL( x)). Furthermore, we suppress the linear continuous operators representing the natural embedding Y ,→ V and the associated adjoint embedding V ,→ Y ∗ for simplicity of notation. We also note that the lower-level objective function f defined in (3.2) is continuously Fr´ echet differentiable and convex with partial Fr´ echet derivatives 
+
+f ′
+
+> x
+
+(x, y, u ) = E∗(Ex − y), f ′
+
+> y
+
+(x, y, u ) = y − Ex, f ′
+
+> u
+
+(x, y, u ) = σ u. 
+
+In the upcoming subsections, we collect some results which have been obtained in [6] already and will become handy later on. 
+
+3.1 The lower-level problem 
+
+To start, let us recall some properties of the lower-level problem (LL( x)). Our first proposition, which recapitulates [6, Lemma 4.1], comments on the solution behavior of (LL( x)). 
+
+Proposition 3.2. For each x ∈ Rn, problem (LL( x)) is well-defined and admits a uniquely determined global minimizer (y(x), u (x)) ∈ Y × U . Moreover, the solution mappings 
+
+Rn ∋ x 7 → y(x) ∈ Y , Rn ∋ x 7 → u(x) ∈ U 
+
+are Lipschitz continuous. 
+
+6Let us note that the proof of [6, Lemma 4.1] allows to find explicit Lipschitz constants of x 7 → y(x) and x 7 → u(x) in terms of initial problem data. Proposition 3.2 implies that the optimal value function φ of (LL( x)) enjoys the rep-resentation 
+
+φ(x) = f (x, y (x), u (x)) = 12 ∥y(x) − Ex ∥2 
+
+> V
+
++ σ
+
+2 ∥u(x)∥2
+
+> U
+
+for all x ∈ Rn and is real-valued and locally Lipschitz continuous. Here, we are also concerned with differentiability properties of φ. For this purpose, let us recall [6, Lemma 4.3]. 
+
+Proposition 3.3. The optimal value function φ of (LL( x)) is continuously Fr´ echet differentiable and convex. Given x ∈ Rn, the associated Fr´ echet derivative is given by 
+
+φ′(x) = f ′
+
+> x
+
+(x, y (x), u (x)) = E∗(Ex − y(x)) ,
+
+where (y(x), u (x)) ∈ Y × U is the uniquely determined global minimizer of (LL( x)) , see Proposition 3.2. 
+
+3.2 The upper-level problem 
+
+First, let us mention that (IOC) and (IOC ε) possess global minimizers, see [6, Corol-lary 4.1, Lemma 5.3]. 
+
+Proposition 3.4. 
+
+(a) Problem (IOC) possesses a global minimizer (b) Problem (IOC ε) possesses a global minimizer. 
+
+We also would like to note that, according to [6, Theorem 5.1], taking the limit in a family ( xε, y ε, u ε) of global minimizers associated with (IOC ε) as ε tends to zero recovers global minimizers of (IOC) and, thus, (3.1). In this regard, we may refer to (IOC ε) as a robustification of (IOC) as already mentioned in Section 1. In [6, Lemmas 5.1 and 5.2], regularity of problems (IOC) and (IOC ε) has been studied. Below, we summarize these results which are essential for our further investigations. 
+
+Proposition 3.5. 
+
+(a) Robinson’s constraint qualification is violated at each feasible point of (IOC) .(b) Robinson’s constraint qualification is valid at each feasible point of (IOC ε).
+
+# 4 A penalty-type solution algorithm 
+
+In this section, we develop an algorithm for the computational solution of problem (IOC ε). The underlying penalty approach is motivated in Section 4.1. A special para-metric penalized surrogate problem is investigated in Section 4.2. In Section 4.3, we state and discuss the suggested method, and Section 4.4 presents the associated convergence analysis. 74.1 A penalization approach 
+
+To start the subsection, let us elaborate on the stationarity conditions of (IOC ε). 
+
+Proposition 4.1. Let (¯ x, ¯y, ¯u) ∈ Rn × Y × U be a local minimizer of (IOC ε). Then there exist multipliers (λx, λ p, λ u, λ vf ) ∈ Rn × Y × U × R which satisfy the following conditions: 
+
+0 = F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + λx + λvf f ′
+
+> x
+
+(¯ x, ¯y, ¯u) − E∗ (E ¯x − y(¯ x))  , (4.1a) 0 = F ′
+
+> y
+
+(¯ x, ¯y, ¯u) + A∗λp + λvf f ′
+
+> y
+
+(¯ x, ¯y, ¯u), (4.1b) 0 = F ′
+
+> u
+
+(¯ x, ¯y, ¯u) − B∗λp + λu + λvf f ′
+
+> u
+
+(¯ x, ¯y, ¯u), (4.1c) 
+
+λx ∈ NXad (¯ x), (4.1d) 
+
+λu ∈ NUad (¯ u), (4.1e) 0 ≤ λvf ⊥ f (¯ x, ¯y, ¯u) − φ(¯ x) − ε ≤ 0. (4.1f) 
+
+Proof. According to Propositions 3.3 and 3.5, (IOC ε) is a smooth optimization problem satisfying Robinson’s constraint qualification at (¯ x, ¯y, ¯u). As the latter is assumed to be a local minimizer of (IOC ε), it is a stationary point, and standard calculations show that (4.1) is the stationarity system of (IOC ε), noting that φ′(¯ x) = E∗(E ¯x − y(¯ x)) holds by Proposition 3.3. Let us point the reader to the fact that condition (4.1f) is rather challenging to treat. Apart from the fact that it is a complementarity condition, it involves the function φ
+
+which is not explicitly known. Applying standard solvers for mixed-nonlinear comple-mentarity systems to solve (4.1) is, thus, not recommendable as these typically require many evaluations of φ, e.g., for linesearch procedures in (globalized) nonsmooth Newton-type methods. To overcome this computational drawback, we consider an optimization problem in which the constraint 
+
+f (x, y, u ) − φ(x) − ε ≤ 0is incorporated directly into the objective function via a nonsmooth penalty term. More precisely, for a penalty parameter α > 0, we are concerned with min  
+
+> x,y,u
+
+F (x, y, u ) + α max {f (x, y, u ) − φ(x) − ε, 0}
+
+s.t. x ∈ Xad , Ay = Bu, u ∈ Uad .
+
+(IOC ε(α)) Let us elaborate on suitable stationarity conditions for this problem, where the non-smoothness in the objective function is treated in terms of Clarke’s subdifferential con-struction, see [4]. Throughout, we will denote the associated subdifferentiation operator by ∂. Its precise definition is not required here, we will merely rely on its well-established calculus. Based on the elementary sum rule from [4, Proposition 2.3.3], a feasible point (¯ x, ¯y, ¯u) ∈
+
+Rn × Y × U of (IOC ε(α)) is stationary if and only if there exist multipliers ( λx, λ p, λ u) ∈
+
+8Rn × Y × U such that 
+
+−F ′(¯ x, ¯y, ¯u) − (λx, A ∗λp, −B∗λp + λu) ∈ α∂χ (¯ x, ¯y, ¯u)as well as (4.1d) and (4.1e) hold, where χ : Rn × Y × U → R is the locally Lipschitz continuous function given by 
+
+χ(x, y, u ) := max {f (x, y, u ) − φ(x) − ε, 0}.
+
+Based on the maximum rule from [4, Proposition 2.3.12], we find 
+
+∂χ (¯ x, ¯y, ¯u) = 
+
+
+
+{t θ ′(¯ x, ¯y, ¯u) | t ∈ [0 , 1] } θ(¯ x, ¯y, ¯u) = 0 ,
+
+{θ′(¯ x, ¯y, ¯u)} θ(¯ x, ¯y, ¯u) > 0,
+
+{(0 , 0, 0) } θ(¯ x, ¯y, ¯u) < 0,
+
+where we used the continuously Fr´ echet differentiable function θ : Rn × Y × U → R
+
+defined via 
+
+θ(x, y, u ) := f (x, y, u ) − φ(x) − ε
+
+whose derivative at (¯ x, ¯y, ¯u) is given by 
+
+θ′(¯ x, ¯y, ¯u) = f ′(¯ x, ¯y, ¯u) − (E∗(E ¯x − y(¯ x)) , 0, 0) ,
+
+see Proposition 3.3. Putting everything together, we obtain the stationarity conditions 0 = F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + λx + αt f ′
+
+> x
+
+(¯ x, ¯y, ¯u) − E∗ (E ¯x − y(¯ x))  , (4.2a) 0 = F ′
+
+> y
+
+(¯ x, ¯y, ¯u) + A∗λp + αtf ′
+
+> y
+
+(¯ x, ¯y, ¯u), (4.2b) 0 = F ′
+
+> u
+
+(¯ x, ¯y, ¯u) − B∗λp + λu + αtf ′
+
+> u
+
+(¯ x, ¯y, ¯u), (4.2c) 
+
+t ∈ ∂ max {· , 0}(f (¯ x, ¯y, ¯u) − φ(¯ x) − ε), (4.2d) as well as (4.1d) and (4.1e), where we used 
+
+∂ max {· , 0}(s) = 
+
+
+
+[0 , 1] s = 0 ,
+
+{1} s > 0,
+
+{0} s < 0.
+
+The following result is decisive for our subsequent investigations. 
+
+Proposition 4.2. Let (¯ x, ¯y, ¯u) ∈ Rn × Y × U be a stationary point of (IOC ε), and let 
+
+(λx, λ p, λ u, λ vf ) ∈ Rn ×Y ×U × R be associated multipliers solving the stationarity system 
+
+(4.1) . Then, for each α ≥ λvf , (¯ x, ¯y, ¯u) is a stationary point of the partially penalized problem (IOC ε(α)) .Proof. We reuse the already known multipliers ( λx, λ p, λ u, λ vf ) satisfying the conditions stated in (4.1). Then (4.1d) and (4.1e) hold trivially, and it remains to verify the conditions from (4.2). We note that f (¯ x, ¯y, ¯u) − φ(¯ x) − ε ≤ 0 is valid since (¯ x, ¯y, ¯u)is feasible to (IOC ε). If λvf = 0 is true, we may choose t := 0 in order to satisfy the conditions (4.2). Otherwise, λvf > 0 holds, which is only possible if f (¯ x, ¯y, ¯u)−φ(¯ x)−ε =0 is true, so we can exploit α ≥ λvf and set t := λvf /α ∈ [0 , 1] in order to see that the conditions (4.2) are valid. 9Let us close this subsection with some brief remarks addressing the observations from Proposition 4.2. 
+
+Remark 4.3. 
+
+(a) We note that the assumptions of Proposition 4.2 imply that f (¯ x, ¯y, ¯u)−φ(¯ x)−ε ≤ 0
+
+holds. Then (4.2d) reduces to the orthogonality-type condition 
+
+t ∈ [0 , 1] , t ⊥ f (¯ x, ¯y, ¯u) − φ(¯ x) − ε. 
+
+(b) Given α > 0, let (¯ x, ¯y, ¯u) ∈ Rn × Y × U be a stationary point of (IOC ε(α)) , and let (λx, λ p, λ u, t ) ∈ Rn × Y × U × R provide a solution of (4.2) such that (4.1d) 
+
+and (4.1e) hold, i.e., the multipliers (λx, λ p, λ u, t ) solve the stationarity system associated with (IOC ε(α)) . If f (¯ x, ¯y, ¯u) − φ(¯ x) − ε ≤ 0 is valid, we observe that 
+
+(λx, λ p, λ u, αt ) provides a solution of (4.1) , i.e., (¯ x, ¯y, ¯u) is a stationary point of 
+
+(IOC ε).(c) Given α > 0, let (¯ x, ¯y, ¯u) ∈ Rn × Y × U be a stationary point of (IOC ε(α)) , and assume that f (¯ x, ¯y, ¯u) − φ(¯ x) − ε > 0 is valid. Then (4.2d) reduces to t = 1 .
+
+4.2 Analysis of a parametric penalized problem 
+
+The solution method we are going to construct will iteratively solve the stationary system associated with (IOC ε(α)) while treating α in an adaptive way. In each iteration of the algorithm, we decouple the solution of the stationarity system (4.2), (4.1d), and (4.1e) for fixed α > 0 into two steps. First, we keep the upper-level variables fixed and merely focus on the update of the lower-level variables and multipliers by solving a mixed-nonlinear complementarity system. In a second step, the upper-level variables will be updated by a simple projection step. In order to better understand the first of these two steps, this subsection is dedicated to the analysis of the penalized parametric optimization problem min  
+
+> y,u
+
+F (x, y, u ) + α (f (x, y, u ) − φ(x) − ε) ,
+
+s.t. Ay = Bu, u ∈ Uad ,
+
+(PP α(x)) where x ∈ Rn is the parameter and α > 0 is a fixed constant. Let us note that (PP α(x)) is a convex optimization problem. It is easy to see that Robinson’s constraint qualification holds at each feasible point of (PP α(x)), so that, given a global minimizer (¯ y, ¯u) ∈ Y × U 
+
+of (PP α(x)), there exist multipliers ( λp, λ u) ∈ Y × U such that the conditions 0 = F ′
+
+> y
+
+(x, ¯y, ¯u) + A∗λp + αf ′
+
+> y
+
+(x, ¯y, ¯u),
+
+0 = F ′
+
+> u
+
+(x, ¯y, ¯u) − B∗λp + λu + αf ′
+
+> u
+
+(x, ¯y, ¯u),
+
+and (4.1e) hold. Using the fact that A is an isomorphism, it is clear that the multipliers λp
+
+and λu, in the case of existence, are uniquely determined. Conversely, due to convexity, these stationarity conditions are also sufficient for global minimality when combined with the feasibility conditions. To start, let us discuss the primal-dual solution behavior of (PP α(x)). 10 Proposition 4.4. Fix α > 0. Assume that the partial Fr´ echet derivatives F ′ 
+
+> y
+
+and F ′
+
+> u
+
+are Lipschitz continuous. Then, for each x ∈ Rn, (PP α(x)) admits a uniquely deter-mined solution (yα(x), u α(x)) ∈ Y × U , and there exist uniquely determined multipliers 
+
+(λpα(x), λ uα(x)) ∈ Y × U solving the associated stationarity system. Furthermore, the mappings yα : Rn → Y , uα : Rn → U , λpα : Rn → Y , and λuα : Rn → U are Lipschitz continuous. Proof. To start, let us define the state-reduced objective function H : Rn × U → R of (PP α(x)) by means of 
+
+H(x, u ) := F (x, Su, u ) + α (f (x, Su, u ) − φ(x) − ε) .
+
+Since F and f are convex while the operator S is linear, the mapping H(x, ·) is convex. The presence of the quadratic regularization term in f , see (3.2), even ensures that 
+
+H(x, ·) is ασ -uniformly convex. Since Uad is nonempty, closed, and convex, the state-reduced problem min  
+
+> u
+
+H(x, u ) s.t. u ∈ Uad (4.3) admits a unique global minimizer, denoted by uα(x). Hence, there is yα(x) ∈ Y , namely 
+
+yα(x) := Su α(x), such that ( yα(x), u α(x)) is the uniquely determined global minimizer of (PP α(x)). Furthermore, according to our earlier comments, there exist uniquely determined multipliers ( λpα(x), λ uα(x)) ∈ Y × U such that 0 = F ′
+
+> y
+
+(x, y α(x), u α(x)) + A∗λpα(x) + αf ′
+
+> y
+
+(x, y α(x), u α(x)) ,
+
+0 = F ′
+
+> u
+
+(x, y α(x), u α(x)) − B∗λpα(x) + λuα(x) + αf ′
+
+> u
+
+(x, y α(x), u α(x)) ,λuα(x) ∈ NUad (uα(x)) .
+
+Next, we prove Lipschitz continuity of the primal-dual solution mappings yα, uα, λpα,and λuα. Let x1, x 2 ∈ Rn be chosen arbitrarily, and set yi := yα(xi) and ui := uα(xi) as well as λpi := λpα(xi) and λui := λui (xi) for each i = 1 , 2. Hence, we know 0 = F ′
+
+> y
+
+(xi, y i, u i) + A∗λpi + α(yi − Ex i), (4.4a) 0 = F ′
+
+> u
+
+(xi, y i, u i) − B∗λpi + λui + ασu i, (4.4b) 
+
+λui ∈ NUad (ui) (4.4c) for i = 1 , 2, where we used the precise definition of f from (3.2). Furthermore, we note the relation 
+
+−H′
+
+> u
+
+(xi, u i) = λui
+
+for i = 1 , 2 which results from the optimality conditions associated with the state-reduced problem (4.3). Exploiting the latter, (4.4c), and the definition of the normal cone, we find 
+
+H′
+
+> u
+
+(x1, u 1), u 2 − u1 U ≥ 0, H′
+
+> u
+
+(x2, u 2), u 1 − u2 U ≥ 0,
+
+and adding up these inequalities yields 
+
+H′
+
+> u
+
+(x1, u 1) − H′
+
+> u
+
+(x2, u 2), u 1 − u2 U ≤ 0.
+
+11 Next, we add ⟨H′
+
+> u
+
+(x2, u 1), u 1 − u2⟩U on both sides so that some rearrangements give 
+
+H′
+
+> u
+
+(x2, u 1) − H′
+
+> u
+
+(x2, u 2), u 1 − u2 U ≤ − H′
+
+> u
+
+(x1, u 1) − H′
+
+> u
+
+(x2, u 1), u 1 − u2 U .
+
+Since H(x2, ·) is ασ -uniformly convex, we find 
+
+ασ ∥u1 − u2∥2 
+
+> U
+
+≤ − H′
+
+> u
+
+(x1, u 1) − H′
+
+> u
+
+(x2, u 1), u 1 − u2 U ,
+
+which yields 
+
+ασ ∥u1 − u2∥U ≤ H′
+
+> u
+
+(x1, u 1) − H′
+
+> u
+
+(x2, u 1) U .
+
+Noting that 
+
+H′
+
+> u
+
+(x, u ) = S∗F ′
+
+> y
+
+(x, Su, u ) + F ′
+
+> u
+
+(x, Su, u ) + αS ∗(Su − Ex ) + ασu 
+
+holds for all ( x, u ) ∈ Rn × U , we find 
+
+H′
+
+> u
+
+(x1, u 1) − H′
+
+> u
+
+(x2, u 1) U ≤ (c1LF ′ 
+
+> y
+
++ LF ′ 
+
+> u
+
++ αc 2) ∥x1 − x2∥ ,
+
+where LF ′ 
+
+> y
+
+≥ 0 and LF ′ 
+
+> u
+
+≥ 0 denote the Lipschitz constants of F ′ 
+
+> y
+
+and F ′
+
+> u
+
+, respectively, and where we used c1 := ∥S∗∥L(Y∗,U) and c2 := ∥S∗E∥L(Rn,U). Thus, we end up with 
+
+∥u1 − u2∥U ≤ 1
+
+ασ (c1LF ′ 
+
+> y
+
++ LF ′ 
+
+> u
+
++ αc 2) ∥x1 − x2∥ , (4.5) verifying Lipschitzness of uα. Recalling that S is linear and continuous, this immediately yields the Lipschitzness of yα. Using (4.4a), the Lipschitzness of F ′
+
+> y
+
+, and the fact that 
+
+A∗ is a continuous isomorphism, Lipschitzness of λpα follows. Finally, exploiting (4.4b) and the Lipschitzness of F ′
+
+> u
+
+, we also obtain Lipschitzness of λuα.Using (4.5) and the last part of the proof of Proposition 4.4, it is possible to find explicit Lipschitz constants for the mappings yα, uα, λpα, and λuα. Whenever a lower bound α0 > 0 for α is available, we also note that (4.5) allows to find a uniform Lipschitz constant for yα and uα for all α ≥ α0.In our next result, we review properties of the optimal value function ϕα : Rn → R of (PP α(x)), which assigns to each x ∈ Rn the optimal value 
+
+ϕα(x) := F (x, y α(x), u α(x)) + α(f (x, y α(x), u α(x)) − φ(x) − ε). (4.6) As we will see, the latter is continuously Fr´ echet differentiable thanks to Propositions 3.3 and 4.4. 
+
+Proposition 4.5. Fix α > 0. Assume that the partial Fr´ echet derivatives F ′ 
+
+> y
+
+and F ′
+
+> u
+
+are Lipschitz continuous. Then the optimal value function ϕα : Rn → R defined in (4.6) 
+
+is continuously Fr´ echet differentiable. Furthermore, for each ¯x ∈ Rn, we have 
+
+ϕ′
+
+> α
+
+(¯ x) = F ′
+
+> x
+
+(¯ x, y α(¯ x), u α(¯ x)) + αE ∗(y(¯ x) − yα(¯ x)) ,
+
+where y(¯ x) is the optimal state of the lower-level problem (LL(¯ x)) , see Proposition 3.2. If F ′ 
+
+> x
+
+is Lipschitz continuous, then ϕ′ 
+
+> α
+
+is Lipschitz continuous as well. 
+
+12 Proof. Let J : Rn × Y × U → R be the objective function of (PP α(x)), and observe that the latter is continuously Fr´ echet differentiable according to Proposition 3.3. For 
+
+x, ¯x ∈ Rn, set z := ( x, y, u ) and ¯ z := (¯ x, ¯y, ¯u), where y := yα(x), u := uα(x), ¯ y := yα(¯ x), and ¯ u := uα(¯ x) are used for brevity of notation. Then, for Z := Rn × Y × U , we find 
+
+ϕα(x) − ϕα(¯ x) = J(z) − J(¯ z) = J′(¯ z), z − ¯z Z + o(∥z − ¯z∥Z ). (4.7) We also note that, due to Proposition 4.4, there is a constant c > 0 such that 
+
+|o(∥z − ¯z∥Z )|∥z − ¯z∥Z
+
+≤ |o(∥z − ¯z∥Z )|∥x − ¯x∥ = |o(∥z − ¯z∥)|∥z − ¯z∥Z
+
+∥z − ¯z∥Z
+
+∥x − ¯x∥ ≤ c |o(∥z − ¯z∥)|∥z − ¯z∥Z
+
+.
+
+Hence, we find 
+
+o(∥z − ¯z∥Z )
+
+∥x − ¯x∥ → 0 as x → ¯x (4.8) from the continuity of yα and uα. According to Proposition 4.4 and the definition of the normal cone, using λp := λpα(x) and ¯λp := λpα(¯ x), we find 
+
+J′
+
+> y
+
+(z) + A∗λp = 0 , J′
+
+> u
+
+(z) − B∗λp, ¯u − u U ≥ 0,J′
+
+> y
+
+(¯ z) + A∗ ¯λp = 0 , J′
+
+> u
+
+(¯ z) − B∗ ¯λp, u − ¯u U ≥ 0.
+
+Exploiting Ay = Bu and A¯y = B ¯u, we find y − ¯y = S(u − ¯u) by linearity of the solution operator S. This yields 
+
+J′
+
+> y
+
+(¯ z), y − ¯y Y = S∗J′
+
+> y
+
+(¯ z), u − ¯u U
+
+= −S∗A∗ ¯λp, u − ¯u U = − B∗ ¯λp, u − ¯u U ,
+
+and 
+
+J′
+
+> y
+
+(¯ z), y − ¯y Y + J′
+
+> u
+
+(¯ z), u − ¯u U = J′
+
+> u
+
+(¯ z) − B∗ ¯λp, u − ¯u U
+
+follows. We note that J′ 
+
+> u
+
+is Lipschitz continuous as F ′ 
+
+> u
+
+is assumed to be Lipschitz continuous while f ′ 
+
+> u
+
+is linear. Thus, taking the above and Proposition 4.4 into account, we find a constant C > 0 such that 0 ≤ J′
+
+> u
+
+(¯ z) − B∗ ¯λp, u − ¯u U
+
+= J′
+
+> y
+
+(¯ z), y − ¯y Y + J′
+
+> u
+
+(¯ z), u − ¯u U
+
+= J′
+
+> u
+
+(¯ z) − J′
+
+> u
+
+(z) + J′
+
+> u
+
+(z) − B∗λp + B∗(λp − ¯λp), u − ¯u U
+
+≤ J′
+
+> u
+
+(¯ z) − J′
+
+> u
+
+(z), u − ¯u U + B∗(λp − ¯λp), u − ¯u U
+
+≤ C ∥x − ¯x∥2 .
+
+Thus, by (4.7) and (4.8), we obtain 
+
+ϕα(x) − ϕα(¯ x) − ⟨ J′
+
+> x
+
+(¯ z), x − ¯x⟩∥x − ¯x∥
+
+13 = J′
+
+> y
+
+(¯ z), y − ¯y Y + ⟨J′
+
+> u
+
+(¯ z), u − ¯u⟩U
+
+∥x − ¯x∥ + o(∥z − ¯z∥Z )
+
+∥x − ¯x∥ → 0 as x → ¯x, 
+
+showing that ϕα is Fr´ echet differentiable at ¯ x with Fr´ echet derivative 
+
+ϕ′
+
+> α
+
+(¯ x) = J′
+
+> x
+
+(¯ z)= F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + α(E∗(E ¯x − ¯y) − φ′(¯ x)) = F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + α E ∗(y(¯ x) − ¯y)= F ′
+
+> x
+
+(¯ x, y α(¯ x), u α(¯ x)) + α E ∗(y(¯ x) − yα(¯ x)) ,
+
+see Proposition 3.3. Noting that F ′ 
+
+> x
+
+and all appearing solution operators are continuous, see Propositions 3.2 and 4.4, we conclude that ϕα is even continuously Fr´ echet differen-tiable. Finally, using the above formula for ϕ′ 
+
+> α
+
+and Lipschitz continuity of all appearing solution operators, see Propositions 3.2 and 4.4 again, it is clear that ϕ′ 
+
+> α
+
+is Lipschitz continuous whenever F ′ 
+
+> x
+
+possesses this property. To close the subsection, let us mention that, based on the formula for ϕ′ 
+
+> α
+
+derived in Proposition 4.5 as well as our comments following Propositions 3.2 and 4.4, one could state a Lipschitz constant of ϕ′ 
+
+> α
+
+in terms of initial problem data if only Lipschitz constants of F ′
+
+> x
+
+, F ′
+
+> y
+
+, and F ′ 
+
+> u
+
+are accessible. However, as this information cannot be exploited later on in a beneficial way, we omit a detailed presentation which would make the paper much more technical. 
+
+4.3 Construction of the algorithm 
+
+We now concentrate on the identification of stationary points of (IOC ε(α)) with a focus on feasibility for (IOC ε). Therefore, we solve a system comprising the feasibility condi-tions of (IOC ε(α)), the conditions from (4.2), as well as (4.1d) and (4.1e). Noting that (4.1d) and (4.2a) can be combined to eliminate the dual variable λx, this leads to the system 0 ∈ F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + αt f ′
+
+> x
+
+(¯ x, ¯y, ¯u) − E∗ (E ¯x − y(¯ x))  + NXad (¯ x),
+
+0 = F ′
+
+> y
+
+(¯ x, ¯y, ¯u) + A∗λp + αtf ′
+
+> y
+
+(¯ x, ¯y, ¯u),
+
+0 = F ′
+
+> u
+
+(¯ x, ¯y, ¯u) − B∗λp + λu + αtf ′
+
+> u
+
+(¯ x, ¯y, ¯u),
+
+0 = A¯y − B ¯u, λu ∈ NUad (¯ u),t ∈ ∂ max {· , 0}(f (¯ x, ¯y, ¯u) − φ(¯ x) − ε).
+
+Note that the first and fifth condition implicitly require ¯ x ∈ Xad and ¯ u ∈ Uad by definition of the normal cone. The unknowns in this system are (¯ x, ¯y, ¯u, λ p, λ u, t ) ∈ Rn × Y × U × Y × U × R.
+
+In Algorithm 4.6, we suggest an iterative process which follows the ideas drafted at the beginning of Section 4.2. We automatically abort if a feasible point of (IOC ε) is 14 identified as the approach, at its core, is a penalty method. Hence, we keep on iterating if the current iterate is infeasible to (IOC ε), so that t = 1 can be used in the stationarity conditions of (IOC ε(α)) as mentioned in Remark 4.3. 
+
+Algorithm 4.6 (Penalty-type solution method for (IOC ε)) .
+
+Require: x0 ∈ Xad , α0 > 0, γ > 1, η > 0, κ ∈ (0 , 1)  
+
+> 1:
+
+Set V−1 := ∞. 
+
+> 2:
+
+for k = 0 , 1, . . . do  
+
+> 3:
+
+Given xk and αk, find (yk, u k, λ pk, λ uk ) such that 
+
+0 = F ′
+
+> y
+
+(xk, y k, u k) + A∗λpk + αkf ′
+
+> y
+
+(xk, y k, u k),
+
+0 = F ′
+
+> u
+
+(xk, y k, u k) − B∗λpk + λuk + αkf ′
+
+> u
+
+(xk, y k, u k),
+
+0 = Ay k − Bu k,λuk ∈ NUad (uk).
+
+(4.9)  
+
+> 4:
+
+Compute y(xk), φ(xk), and set Vk := f (xk, y k, u k) − φ(xk) − ε. 
+
+> 5:
+
+if Vk ≤ 0 then  
+
+> 6:
+
+return (xk, y k, u k) 
+
+> 7:
+
+else  
+
+> 8:
+
+if Vk > κV k−1 then  
+
+> 9:
+
+Set αk+1 := γα k. 
+
+> 10:
+
+else  
+
+> 11:
+
+Set αk+1 := αk. 
+
+> 12:
+
+end if  
+
+> 13:
+
+end if  
+
+> 14:
+
+Set 
+
+wk := F ′
+
+> x
+
+(xk, y k, u k) + αk+1 
+
+ f ′
+
+> x
+
+(xk, y k, u k) − E∗(Ex k − y(xk))  ,xk+1 := proj Xad (xk − ηw k) . 
+
+> 15:
+
+end for 
+
+In order to address the convergence analysis of Algorithm 4.6 properly, additional assumptions are needed which are stated subsequently. 
+
+Assumption 4.7. 
+
+(a) The function F is lower bounded on Xad × S(Uad ) × Uad .(b) The partial Fr´ echet derivatives F ′
+
+> x
+
+, F ′
+
+> y
+
+, and F ′ 
+
+> u
+
+are Lipschitz continuous. 
+
+Before concentrating on the convergence analysis of Algorithm 4.6, let us state some remarks about it. 15 Remark 4.8. 
+
+(a) In each iteration of Algorithm 4.6, the lower-level problem (LL( x)) has to be solved just once as we do not exploit any linesearch strategies involving the optimal value function φ.(b) We note that system (4.9) corresponds to the (necessary and sufficient) optimality conditions of the parametric optimization problem (PP αk (xk)) , and can be inter-preted as a square mixed-nonlinear complementarity system. According to Propo-sition 4.4, this system possesses a uniquely determined primal-dual solution which depends in a Lipschitzian way on the parameter xk. Hence, Algorithm 4.6 is well-defined. (c) In the case where Algorithm 4.6 terminates finitely due to Line 5 in iteration k ∈ N,it returns a feasible point of (IOC ε) which satisfies, in a certain sense, approximate stationarity conditions associated with (IOC ε), see Proposition 4.1. The conditions from (4.9) correspond to the conditions (4.1b) and (4.1c) , with αk playing the role of λvf , (4.1e) , and feasibility for (LL( xk)) . Whenever f (xk, y k, u k) − φ(xk) − ε < 0,the associated complementarity slackness condition (4.1f) is, however, violated. By definition of wk−1 and xk in Line 14 in the previous iteration k − 1 and the fact that NXad (xk) is a cone, we have 
+
+− xk − xk−1
+
+η ∈ { wk−1} + NXad (xk).
+
+If xk and xk−1 are sufficiently close together, then the same holds true for (yk, u k)
+
+and (yk−1, u k−1) according to Proposition 4.4 whenever Assumption 4.7 (b) is valid, and this then would also ensure that wk and wk−1 are close together, i.e., (4.1a) 
+
+and (4.1d) would hold approximately in this situation, see Proposition 3.2 as well. Let us emphasize that xk − xk−1 → 0 will be shown later on in Lemma 4.10. 
+
+According to Remark 4.8 (c), it remains to analyze the situation when Algorithm 4.6 produces an infinite sequence. This will be done in Section 4.4. 
+
+4.4 Convergence analysis 
+
+Now, we are in position to analyze the behavior of Algorithm 4.6 in more detail. To start, we show that penalty parameters in Algorithm 4.6 remain bounded. 
+
+Lemmas 4.9. Let {(xk, y k, u k)}k∈N be the sequence generated by Algorithm 4.6, and let {αk}k∈N be the associated sequence of penalty parameters. Then {αk}k∈N is bounded and, thus, converges. Proof. We argue by contradiction. Suppose that the sequence {αk}k∈N is unbounded. As Algorithm 4.6 does not terminate finitely, we know that f (xk, y k, u k) − φ(xk) − ε > 0holds for each k ∈ N. Fix k ∈ N. By construction, there are multipliers ( λpk, λ uk ) ∈ Y × U 
+
+16 such that ( yk, u k, λ pk, λ uk ) solves the system (4.9). Hence, for every pair ( y, u ) ∈ Y × U 
+
+such that Ay = Bu and u ∈ Uad hold, we obtain 
+
+F ′
+
+> y
+
+(xk, y k, u k) + αkf ′
+
+> y
+
+(xk, y k, u k), y − yk Y
+
++ F ′
+
+> u
+
+(xk, y k, u k) + αkf ′
+
+> u
+
+(xk, y k, u k), u − uk U
+
+= −A∗λpk, y − yk Y + B∗λpk − λuk , u − uk U
+
+= λpk, A (yk − y) Y + λpk, B (u − uk) Y − ⟨ λuk , u − uk⟩U
+
+= λpk, (Ay k − Bu k) − (Ay − Bu ) Y − ⟨ λuk , u − uk⟩U
+
+= − ⟨ λuk , u − uk⟩U ≥ 0,
+
+(4.10) where the last inequality follows from λuk ∈ NUad (uk). Furthermore, there exist (¯ yk, ¯uk) ∈Y ×U such that A¯yk −B ¯uk = 0, ¯ uk ∈ Uad , and φ(xk) = f (xk, ¯yk, ¯uk), see Proposition 3.2. Hence, the above yields 
+
+F ′
+
+> y
+
+(xk, y k, u k) + αkf ′
+
+> y
+
+(xk, y k, u k), ¯yk − yk Y
+
++ F ′
+
+> u
+
+(xk, y k, u k) + αkf ′
+
+> u
+
+(xk, y k, u k), ¯uk − uk U ≥ 0. (4.11) Note that boundedness of Xad and Uad as well as linearity and continuity of S imply the boundedness of {(xk, y k, u k)}k∈N and {(¯ yk, ¯uk)}k∈N. Hence, according to Assump-tion 4.7 (b), we find a constant C > 0 such that 
+
+F ′
+
+> y
+
+(xk, y k, u k), ¯yk − yk Y + F ′
+
+> u
+
+(xk, y k, u k), ¯uk − uk U ≤ C
+
+is valid for all k ∈ N. Exploiting, for each k ∈ N, the convexity of f (xk, ·, ·) and (4.11), we find 
+
+f (xk, y k, u k) − f (xk, ¯yk, ¯uk)
+
+≤ − f ′
+
+> y
+
+(xk, y k, u k), ¯yk − yk Y − f ′
+
+> u
+
+(xk, y k, u k), ¯uk − uk U
+
+≤ 1
+
+αk
+
+
+
+F ′
+
+> y
+
+(xk, y k, u k), ¯yk − yk Y + F ′
+
+> u
+
+(xk, y k, u k), ¯uk − uk U
+
+
+
+≤ Cαk
+
+.
+
+Hence, for each k ∈ N, we have 0 < f (xk, y k, u k) − φ(xk) − ε = f (xk, y k, u k) − f (xk, ¯yk, ¯uk) − ε ≤ Cαk
+
+− ε, 
+
+and taking the limit k → ∞ yields a contradiction as αk → ∞ and ε > 0. Hence, the sequence {αk}k∈N must be bounded. As it is also monotonically nondecreasing, it must be convergent, verifying the claim. Our next result addresses the behavior of the upper-level decision variables in Algo-rithm 4.6. 
+
+Lemmas 4.10. Let {(xk, y k, u k)}k∈N be the sequence generated by Algorithm 4.6 such that Assumption 4.7 holds. Then, whenever the parameter η > 0 in Algorithm 4.6 is chosen sufficiently small, we have xk+1 − xk → 0.
+
+17 Proof. According to Lemma 4.9 and the updating rule for the penalty parameter, there exists ¯k ∈ N such that αk = α¯k =: ¯ α holds for all k ∈ N such that k ≥ ¯k. Throughout the proof, we merely consider k ∈ N such that k ≥ ¯k.Recall that ϕ¯α : Rn → R, defined in (4.6), denotes the optimal value function of the parametric optimization problem (PP ¯α(x)). In Proposition 4.5, we verified that ϕ¯α is Lipschitz continuously Fr´ echet differentiable, due to Assumption 4.7 (b), and that, for each k, we have 
+
+ϕ′¯α(xk) = F ′
+
+> x
+
+(xk, y k, u k) + ¯ αE ∗(y(xk) − yk)= F ′
+
+> x
+
+(xk, y k, u k) + ¯ α f ′
+
+> x
+
+(xk, y k, u k) − E∗(Ex k − y(xk)) 
+
+= wk.
+
+Hence, Line 14 of Algorithm 4.6 yields 
+
+xk+1 = proj Xad (xk − η ϕ ′¯α(xk)) .
+
+Using (2.1), we particularly find 
+
+xk+1 − xk + η ϕ ′¯α(xk), x k − xk+1 ≥ 0,
+
+and the latter yields 
+
+ϕ′¯α(xk), x k − xk+1 ≥ 1
+
+η ∥xk+1 − xk∥2 .
+
+The Lipschitzness of ϕ′¯α guarantees the existence of a constant L > 0 such that 
+
+ϕ¯α(xk+1 ) ≤ ϕ¯α(xk) + ϕ′¯α(xk), x k+1 − xk + L
+
+2 ∥xk+1 − xk∥2 .
+
+Combining both estimates yields 
+
+ϕ¯α(xk+1 ) ≤ ϕ¯α(xk) −
+
+ 1
+
+η − L
+
+2
+
+
+
+∥xk+1 − xk∥2 .
+
+Hence, whenever η < 2/L is valid, c := 1 /η − L/ 2 is a positive constant, and the above guarantees 
+
+c ∥xk+1 − xk∥2 ≤ ϕ¯α(xk) − ϕ¯α(xk+1 ).
+
+Summing up these inequalities for k = ¯k, . . . , N , where N ∈ N is chosen such that N ≥ ¯k
+
+holds, yields 
+
+c
+
+> N
+
+X
+
+> k=¯k
+
+∥xk+1 − xk∥2 ≤ ϕ¯α(x¯k) − ϕ¯α(xN +1 ).
+
+Combining Assumption 4.7 (a) with the definition of ϕ¯α in (4.6), we see that ϕ¯α is lower bounded. Hence, we find a constant β ∈ R, not depending on N , such that 
+
+∀N ∈ N : N ≥ ¯k =⇒ c
+
+> N
+
+X
+
+> k=¯k
+
+∥xk+1 − xk∥2 ≤ ϕ¯α(x¯k) − β. 
+
+18 Taking the limit N → ∞ and observing that ¯k is a finite integer, we end up with 
+
+c
+
+> ∞
+
+X
+
+> k=0
+
+∥xk+1 − xk∥2 < ∞.
+
+Due to c > 0, xk+1 − xk → 0 follows. The proof of Lemma 4.10 indicates that η < 2/L has to hold in Algorithm 4.6 in order to ensure the convergence xk+1 − xk → 0, where L > 0 is a Lipschitz constant of ϕ′¯α.However, as ¯ α > 0 is not known a priori, this information is of limited practical use, and it remains to identify suitable values of η, exemplary, via a parameter study. Now, we are in position to prove a subsequential convergence result regarding Algo-rithm 4.6. 
+
+Theorem 4.11. Let {(xk, y k, u k)}k∈N be the sequence generated by Algorithm 4.6 such that Assumption 4.7 holds. Then the sequence {(xk, y k, u k)}k∈N possesses a weakly con-vergent subsequence. Moreover, whenever the parameter η > 0 in Algorithm 4.6 is chosen sufficiently small, each weak accumulation point of {(xk, y k, u k)}k∈N is a stationary point of (IOC ε).Proof. To start, we note that the sequences {xk}k∈N ⊂ Xad and {uk}k∈N ⊂ Uad remain bounded due to the boundedness of Xad and Uad . Observing that yk = Su k holds for each k ∈ N, linearity and continuity of S imply that {yk}k∈N ⊂ Y remains bounded as well. As Rn × Y × U is a Hilbert space, the bounded sequence {(xk, y k, u k)}k∈N possesses a weak accumulation point. Similar to the proof of Lemma 4.10, we fix ¯k ∈ N such that αk = α¯k =: ¯ α holds for all k ∈ N such that k ≥ ¯k. Note that, by construction of Algorithm 4.6, we have 0 ≤ Vk ≤ κ V k−1 for all k ∈ N such that k ≥ ¯k, and Vk → 0follows from κ ∈ (0 , 1). Let (¯ x, ¯y, ¯u) ∈ Rn × Y × U be a weak accumulation point of {(xk, y k, u k)}k∈N, and let K ⊂ N be an infinite index set such that ( xk, y k, u k) ⇀K (¯ x, ¯y, ¯u). Weak sequential closedness of Xad and Uad guarantees ¯ x ∈ Xad and ¯ u ∈ Uad , respectively. Noting that 
+
+Rn is finite dimensional, xk →K ¯x follows. Furthermore, let ( λpk, λ uk ) ∈ Y × U be the multipliers which solve the system (4.9) along with ( yk, u k). For the purpose of simplicity, we assume that k ≥ ¯k holds for all k ∈ K. Then, for each k ∈ K, we note that 
+
+yk = y¯α(xk), uk = u¯α(xk), λpk = λp
+
+> ¯α
+
+(xk), λuk = λu
+
+> ¯α
+
+(xk)holds for the Lipschitz continuous functions y¯α, u¯α, λp
+
+> ¯α
+
+, and λu 
+
+> ¯α
+
+which have been defined in Proposition 4.4. Hence, we actually know the strong convergences yk →K ¯y, uk →K ¯u,
+
+λpk →K λp, and λuk →K λu for some pair ( λp, λ u) ∈ Y × U . For later use, set λvf := ¯ α.Taking the limit k →K ∞ in (4.9) while keeping closedness of the normal cone mapping 
+
+NUad (·) in mind, we find conditions (4.1b), (4.1c), and (4.1e) as well as A¯y = B ¯u.Furthermore, for the sequence {wk}k∈N defined via Line 14 of Algorithm 4.6, we obtain the subsequential convergence 
+
+wk →K F ′
+
+> x
+
+(¯ x, ¯y, ¯u) + λvf  f ′
+
+> x
+
+(¯ x, ¯y, ¯u) − E∗(E ¯x − y(¯ x))  =: −λx,
+
+19 see Proposition 3.2 as well, and this yields validity of (4.1a). Due to xk →K ¯x,Lemma 4.10 implies xk+1 →K ¯x. Hence, Line 14 and the continuity of proj Xad im-ply ¯x = proj Xad (¯ x + ηλ x).
+
+This, due to (2.1), is equivalent to ηλ x ∈ NXad (¯ x). Due to η > 0 and the fact that 
+
+NXad (¯ x) is a cone, (4.1d) has been verified. Finally, Vk → 0 implies f (¯ x, ¯y, ¯u)−φ(¯ x)−ε =0 which, on the one hand, shows that (¯ x, ¯y, ¯u) is feasible to (IOC ε). On the other hand, this condition also yields validity of (4.1f). Wrapping things up, we have shown that (¯ x, ¯y, ¯u) is a stationary point of (IOC ε). Let us close this section with a final remark. 
+
+Remark 4.12. Theorem 4.11 shows that whenever Algorithm 4.6 produces an infinite sequence, then its associated weak accumulation points are stationary points of (IOC ε).In fact, the proof of Theorem 4.11 reveals that each weak accumulation point is already an accumulation point in terms of strong convergence. At its core, Algorithm 4.6 is a penalty method induced by the penalized problem (IOC ε(α)) that computes, roughly speaking, a sequence of stationary points associated with the penalized subproblem for potentially increasing values of the penalty parameter. Lemma 4.9 shows that finite values of the penalty parameter are already enough for this purpose. To some extent, this is not surprising as the penalty function used in (IOC ε(α)) is nonsmooth while Robinson’s constraint qualification is valid at each feasible point of the original problem 
+
+(IOC ε), see Proposition 3.5. This is in line with classical observations regarding so-called exact penalization, see [9] for a finite-dimensional perspective. 
+
+# 5 Numerical experiments and discussion 
+
+We consider the inverse optimal control problem (IOC) which has been addressed in [6, Section 6.2] already. Therein, n := 2 and, for the domain Ω := ( −1, 1) × (1 , 1), 
+
+Y := H10 (Ω) , U := L2(Ω) , V := L2(Ω) .
+
+We make use of the upper-level objective function F given by 
+
+F (x, y, u ) := 12 ∥y − yo∥2 
+
+> L2(Ω)
+
++ ⟨(0 .1, 0.3) , x ⟩
+
+where yo := 0 .2 e1 + 0 .3 e2 holds for the functions e1, e 2 ∈ L2(Ω) given by 
+
+e1(ω) := 10 exp  −5( ω1 − 0.7) 2 − 5( ω2 − 0.3) 2,e2(ω) := 10 exp  −10( ω1 + 0 .4) 2 − 10( ω2 − 0.5) 2
+
+for all ω = ( ω1, ω 2) ∈ Ω, see Figure 5.1. Furthermore, we choose 
+
+Xad := conv {(0 , 0) , (1 , 0) , (0 , 1) }.
+
+20 Figure 5.1: Observed state yo.To specify the subordinate lower-level problem (LL( x)), we set Ex := x1 e1 + x2 e2,
+
+Ay := −∆y, and the role of B is played by the natural embedding L2(Ω) ,→ H−1(Ω). Additionally, we exploit 
+
+Uad := {u ∈ L2(Ω) | ua ≤ u ≤ ub a.e. on Ω },
+
+where the control bounds ua, u b ∈ L2(Ω) are constructed as described in [6]. The lower-level control regularization parameter σ > 0 will be varied in our experiments, where we will take on (IOC ε) for varying values of the relaxation parameter ε > 0. Let us note that Assumption 3.1 obviously holds for this particular instance of (IOC). Assumption 4.7 (a) is valid by definition of F and the compactness of Xad , and the quadratic structure of F also implies that Assumption 4.7 (b) is satisfied. 
+
+5.1 On the discretized version of the algorithm 
+
+At the heart of Algorithm 4.6 is the numerical solution of the system (4.9). Suppressing the iteration index k, this system takes the particular form 0 = y − yo + α(y − Ex ) − ∆λp,
+
+0 = ασu − λp + λu,
+
+0 = −∆y − u, λu ∈ NUad (u)(5.1) in the present situation, and this is a square mixed-linear complementarity system. The special structure of Uad allows us to restate the last condition by means of u ∈ Uad and 
+
+∀ω ∈ Ω : λu(ω)
+
+
+
+≤ 0 u(ω) = ua(ω),
+
+= 0 ua(ω) < u (ω) < u b(ω),
+
+≥ 0 u(ω) = ub(ω).
+
+Hence, introducing the measurable sets 
+
+A := {ω ∈ Ω | u(ω) ∈ { ua(ω), u b(ω)}} , I := Ω \ A ,
+
+21 it essentially remains to determine u on I, the so-called inactive set, and λu on A, the so-called active set. We now discretize the above system (5.1) with the aid of piecewise linear finite elements for y, u, λp, and λu as suggested in [6]. In order to ensure that the above characterization of the normal cone condition transfers to the discretized setting, mass lumping for the control variable u is exploited. For simplicity of notation, the associated weight vectors are represented by y, u, λp,and λu again. Let K and M be the associated stiffness and (lumped) mass matrices, respectively, and let b(x, α ) be the load vector associated with yo + αEx . Then the first three conditions in (5.1) translate into 
+
+b(x, α ) = (1 + α)M y + Kλ p,
+
+0 = ασM u − M λ p + M λ u,
+
+0 = Ky − M u. 
+
+(5.2) Again, with a slight abuse of notation, we exploit A and I for the active and inactive index sets of the discretized control as well as the active set decomposition 
+
+u =
+
+uI
+
+uA
+
+
+
+, λu =
+
+ 0
+
+λu
+
+> A
+
+
+
+, M =
+
+MII MIA 
+
+MAI MAA 
+
+
+
+.
+
+Plugging this into (5.2), the second equation decouples into 0 = ασ (MII uI + MIA uA) − (MII λp 
+
+> I
+
++ MIA λp
+
+> A
+
+) + MIA λu
+
+> A
+
+,
+
+0 = ασ (MAI uI + MAA uA) − (MAI λp 
+
+> I
+
++ MAA λp
+
+> A
+
+) + MAA λu
+
+> A
+
+,
+
+and the third equation therein is the same as 0 = Ky − M:I uI − M:AuA,
+
+where we used 
+
+M:I := 
+
+MII 
+
+MAI 
+
+
+
+, M:A := 
+
+MIA 
+
+MAA 
+
+
+
+.
+
+Hence, we end up with the system 
+
+
+
+b(x, α )
+
+−ασM :AuA
+
+M:AuA
+
+ =
+
+
+
+(1 + α)M O K OO ασM :I −M M:A
+
+K −M:I O O
+
+
+
+yuI
+
+λp
+
+λu
+
+> A
+
+ , (5.3) where O is the all-zero matrix of appropriate dimensions. Exploiting that M is lumped while A and I are disjoint, one can use standard arguments in order to verify that the system matrix in (5.3) is invertible. Thus, solving (5.1) reduces to the identification of A and the numerical solution of the linear system of equations (5.3). According to (2.1), we know that λu ∈ NUad (u) is equivalent to 
+
+u = proj Uad (u + ϑλ u)22 for each ϑ > 0. Hence, to guess A in numerical practice in iteration k ∈ N0, we set 
+
+vk := uk−1 + ϑλ uk−1 and use 
+
+A := {ω ∈ Ω | vk(ω) ≤ ua(ω) + τ } ∪ { ω ∈ Ω | vk(ω) ≥ ub(ω) − τ }
+
+for yet another parameter τ > 0. In iteration k = 0, we make use of u−1 := ub and 
+
+λu 
+
+> −1
+
+:= 0. To close this subsection, let us note that one may also use a semismooth Newton method to solve (5.1) in each iteration. However, in our experiments, the elementary procedure drafted above already lead to convincing results which is why we relied on it. 
+
+5.2 Results of experiments 
+
+All numerical experiments were conducted on a Dell OptiPlex 7070 equipped with an Intel ® Core ™ i5-9500T processor (2.20 GHz), 16 GB RAM, running Microsoft Win-dows 11 Pro (64-bit). We implemented Algorithm 4.6 in MATLAB R2025b using the parameter values 
+
+α0 := 0 .005 , γ := 1 .3, η := 0 .05 , κ := 0 .9,
+
+and made use of the starting point x0 := (0 , 0). In our experiments, we abort Algo-rithm 4.6 as soon as the termination condition from Line 5 is satisfied (up to machine precision). The domain Ω is discretized by a Delaunay triangulation generated from a grid with mesh size h = 0 .1. The resulting mesh contains 441 vertices and 800 triangular elements, and, hence, possesses the same specifications as the one exploited in [6] so that a fair comparison of the obtained results is possible. Recall that piecewise linear finite elements are used to discretize all infinite-dimensional objects. Linear systems are solved with the aid of MATLAB ’s backslash operator for simplicity. The parameters used for the approximation of the active set as described in Section 5.1 are set to 
+
+ϑ := 0 .01 , τ := 10 −10 .
+
+Projections onto the polyhedron Xad are computed using MATLAB ’s quadprog routine. Figures 5.2 and 5.3 show the results produced by Algorithm 4.6 for σ := 10 −2 and dif-ferent values of ε. In each row, the first two plots present the state-control pair ( yalg , u alg )associated with (IOC ε), i.e., the final state-control pair returned by Algorithm 4.6, while the last two plots show the state-control pair ( yll , u ll ) associated with (LL( xalg )) for xalg 
+
+being the vector of the upper-level variables returned by Algorithm 4.6. In Tables 5.1 and 5.2, we detail the obtained results as ε decreases from 10 −1 to 10 −8.Table 5.1 documents the size of the optimality gap, i.e., f (xalg , y alg , u alg ) − φ(xalg ), the violation of feasibility for (IOC ε), i.e., the shifted optimality gap f (xalg , y alg , u alg ) −
+
+φ(xalg ) − ε, the vector xalg , the upper-level objective value Falg := F (xalg , y alg , u alg ), and the final value αalg of the penalty parameter. 23 Figure 5.2: State-control pairs for σ := 10 −2 and ε := 10 −1, . . . , 10 −4 (from top to bot-tom); the first two columns show ( yalg , u alg ), the last two columns show (yll , u ll ). 
+
+ε Optimality gap Violation xalg Falg αalg 
+
+1.0e-01 9.94e-02 -6.40e-04 (0 .294 , 0.092) 0.5704 0.4325 1.0e-02 9.75e-03 -2.50e-04 (0 .292 , 0.237) 0.6130 1.2353 1.0e-03 5.88e-04 -4.12e-04 (0 .297 , 0.286) 0.6288 4.5867 1.0e-04 6.26e-05 -3.74e-05 (0 .302 , 0.297) 0.6330 10.0769 1.0e-05 8.33e-06 -1.67e-06 (0 .305 , 0.310) 0.6383 37.4148 1.0e-06 9.59e-07 -4.06e-08 (0 .303 , 0.307) 0.6372 106.8605 1.0e-07 6.24e-08 -3.76e-08 (0 .300 , 0.308) 0.6370 234.7726 1.0e-08 -6.76e-08 -7.76e-08 (0 .300 , 0.301) 0.6347 234.7726 Table 5.1: Computational results for different values of ε.One of the most important observations is the steady movement of the upper-level variables toward (0 .3, 0.3) which corresponds the exact global minimizer of the inverse optimal control problem, see [6, Section 6.2] again. In fact, for large values of ε, the result is poor. However, as ε tends to zero, Algorithm 4.6 successfully identifies the target coordinates. The results are satisfactory for all values of ε less or equal 10 −3. We note that, for 
+
+ε := 10 −8, the optimality gap is slightly negative (which, in theory, cannot happen 24 Figure 5.3: State-control pairs for σ := 10 −2 and ε := 10 −5, . . . , 10 −8 (from top to bot-tom); the first two columns show ( yalg , u alg ), the last two columns show (yll , u ll ). as the returned pair ( yalg , u alg ) is feasible to (LL( xalg ))). However, its value is very close to zero, so the phenomenon can reasonably be attributed to numerical tolerances. As ε decreases, the violation of feasibility for (IOC ε) also gets smaller, which indicates improved feasibility of the solution for (IOC) showing that the solution is becoming more accurate and reliable for the underlying inverse optimal control problem. Note that the upper-level objective value Fupper gradually stabilizes as ε approaches 0, tending to approximately 0 .6347 which is close to the global minimal value of the inverse optimal control problem under consideration, see [6, Figure 1]. As ε decreases, the final penalty parameter αalg grows monotonically. We see that a larger penalty parameter is needed to obtain more accurate solutions. This is reasonable as the underlying inverse optimal control problem, which is recovered as ε tends to 0, is rather irregular in the sense that Robinson’s constraint qualification fails at all feasible points, see Proposition 3.5. Table 5.2 summarizes the computational performance and tracking accuracy obtained for different values of the parameter ε. It documents the number of iterations, the total computation time, the average time Algorithm 4.6 needs for one iteration, and the magnitude of change between the last two iterates for the variables x, y, and u,respectively. 25 ε Iter Time Time per iter Track x Track y Track u
+
+1.0e-01 40 1.0e+01 2.6e-01 0.00e+00 1.92e-02 3.04e-01 1.0e-02 51 1.3e+01 2.5e-01 0.00e+00 2.72e-02 1.30e+00 1.0e-03 60 1.5e+01 2.5e-01 0.00e+00 4.49e-02 5.60e-01 1.0e-04 60 1.5e+01 2.5e-01 0.00e+00 1.20e-01 1.09e+00 1.0e-05 70 1.8e+01 2.5e-01 0.00e+00 1.75e-01 1.53e+00 1.0e-06 78 2.0e+01 2.6e-01 0.00e+00 1.25e-01 1.00e+00 1.0e-07 84 2.1e+01 2.6e-01 0.00e+00 6.22e-02 8.71e-01 1.0e-08 85 2.2e+01 2.6e-01 0.00e+00 5.94e-02 6.82e-01 Table 5.2: Computational time, iteration counts, and tracking performance for different values of ε.Speaking about computational effort, the number of iterations increases significantly as ε gets smaller, from 40 iterations for 10 −1 up to 85 iterations for 10 −8, showing that tighter tolerances lead to higher computational cost. This increase in iterations is, however, standard in optimization when seeking high-precision results. As ε decreases, the total computation time rises from approximately 10 seconds to 22 seconds which is explained almost entirely by the increase in iteration count from 40 to 85. The average time per iteration remains nearly constant, indicating that the computational complexity of each iteration is essentially independent of the parameter ε. The fact that Track x
+
+vanishes (up to machine precision) confirms that the upper-level variables have stabilized and nearly stopped changing before the algorithm is aborted. In contrast, Track y and Track u show larger values for higher ε but generally decrease and stabilize as ε becomes smaller, reflecting improved performance. Let us note that, in order to tackle (IOC) computationally, one has to solve (IOC ε)as ε is driven to zero. For this purpose, one could use a warm-starting strategy in Algorithm 4.6, initializing it with the final x-iterate of the previous run while reducing 
+
+ε at the same time. In our experiments, we did not use this approach as we aimed to study the dependence of Algorithm 4.6 from the relaxation parameter, so warm-starting would have falsified the results. In Figure 5.4, we illustrate the output of Algorithm 4.6 for σ := 10 −4 and ε := 10 −8.The smaller value of the regularization parameter allows the system to adjust more freely. This helps the state getting closer to the observed state yo, so the error is much smaller, as can be seen from the plots, see Figure 5.1 as well. 
+
+Figure 5.4: State-control pairs for σ := 10 −4 and ε := 10 −8; the first two entries show (yalg , u alg ), whereas the last two show ( yll , u ll ). 26 6 Conclusion 
+
+In this paper, we proposed a simple penalty-type solution method for the relaxed inverse optimal control problem (IOC ε) and studied its convergence properties. The main idea of the algorithm is to identify stationary points of (IOC ε) by iteratively solving the stationarity system of a penalized problem (IOC ε(α)) as the penalty parameter α grows in some but not necessarily all iterations. Validity of a constraint qualification at all feasible points of (IOC ε) guarantees that α stays bounded in this framework, avoiding the standard difficulties associated with penalty methods. Furthermore, by making a detour via (IOC ε(α)), we obviate to run linesearch procedures on functions or systems involving the implicitly given optimal value function of the underlying parametric optimal control problem which would be a costly affair. Our algorithmic approach is clearly different from the one promoted in [6] which computes global minimizers of (IOC), and could be extended to (IOC ε), as the fundamental idea behind is to exploit an iteratively refined piecewise affine upper approximation of the aforementioned optimal value function to obtain convex subproblems which, thus, can be solved up to global optimality. Naturally, the global solution method from [6] comes at high cost and can merely handle instances of (IOC) where the dimension of the upper-level variables is small. This is pretty much in contrast to our approach which comes at low cost for individual iterations as documented in Section 5. In our future research, we plan to extend the proposed solution approach to inverse optimal control problems where the upper-level decision variables are allowed to be in-finite dimensional. The analysis presented here does not cover this case, but additional compactness assumptions on the data could be helpful to address this more general situation. We will also study the robustness of the method in terms of inexact compu-tations up to controllable residuals. Furthermore, we aim to investigate how to couple the penalty scheme with an update procedure regarding the relaxation parameter ε in order to actually tackle the original inverse optimal control problem (IOC). Recently, in [20], it has been shown that accumulation points of a sequence of stationarity points associated with the relaxed value function reformulation of a finite-dimensional bilevel optimization problem as the relaxation parameter tends to zero are stationary for the original bilevel optimization problem under a so-called asymptotic constraint qualifica-tion. Noting that asymptotic constraint qualifications can reasonably be extended to optimization problems in Banach spaces, see [3] for a recent study, there is some reason-able hope that the results from [20], at least partially, can be transferred to the setting of inverse optimal control. 
+
+# References 
+
+[1] X. Bai, S. Zeng, J. Zhang, and L. Zhang. Alternating gradient-type algo-rithm for bilevel optimization with inexact lower-level solutions via Moreau en-velope–based reformulation. SIAM Journal on Optimization , 36(1):350–380, 2026. doi:10.1137/24M1721049. 27 [2] J. F. Bard. Practical Bilevel Optimization . Springer, New York, 1998. doi:10.1007/978-1-4757-2836-1. [3] E. B¨ orgens, C. Kanzow, P. Mehlitz, and G. Wachsmuth. New constraint qualifications for optimization problems in Banach spaces based on asymp-totic KKT conditions. SIAM Journal on Optimization , 30(4):2956–2982, 2020. doi:10.1137/19M1306804. [4] F. H. Clarke. Optimization and Nonsmooth Analysis . SIAM, Philadelphia, 1990. doi:10.1137/1.9781611971309. [5] S. Dempe. Foundations of Bilevel Programming . Springer, New York, 2002. doi:10.1007/b101970. [6] S. Dempe, F. Harder, P. Mehlitz, and G. Wachsmuth. Solving inverse optimal control problems via value functions to global optimality. Journal of Global Opti-mization , 74(2):297––325, 2019. doi:10.1007/s10898-019-00758-1. [7] S. Dempe, F. Harder, P. Mehlitz, and G. Wachsmuth. Analysis and solution meth-ods for bilevel optimal control problems. In M. Hinterm¨ uller, R. Herzog, C. Kan-zow, M. Ulbrich, and S. Ulbrich, editors, Non-Smooth and Complementarity-Based Distributed Parameter Systems: Simulation and Hierarchical Optimization , pages 77–99. Springer, Cham, 2022. doi:10.1007/978-3-030-79393-7 4. [8] S. Dempe and P. Mehlitz. Duality-based single-level reformulations of bilevel opti-mization problems. Journal of Optimization Theory and Applications , 205:26, 2025. doi:10.1007/s10957-025-02627-2. [9] G. Di Pillo and L. Grippo. On the exactness of a class of nondifferentiable penalty functions. Journal of Optimization Theory and Applications , 57(3):399––410, 1988. doi:10.1007/bf02346160. [10] F. Fisch, J. Lenz, F. Holzapfel, and G. Sachs. On the solution of bilevel optimal control problems to increase the fairness in air races. Journal of Guidance, Control, and Dynamics , 35(4):1292––1298, 2012. doi:10.2514/1.54407. [11] M. Friedemann, F. Harder, and G. Wachsmuth. Finding global solutions of some inverse optimal control problems using penalization and semismooth Newton meth-ods. Journal of Global Optimization , 86(4):1025–1061, 2023. doi:10.1007/s10898-023-01288-7. [12] L. Gao, J. J. Ye, H.-A. Yin, S.-Z. Zeng, and J. Zhang. Moreau envelope-based dif-ference of weakly convex reformulation and algorithm for bilevel programs. Journal of the Operations Research Society of China , 2026. doi:10.1007/s40305-026-00706-3. [13] S. G¨ ottlich, P. Mehlitz, and T. Schillinger. Inverse demand tracking in transporta-tion networks. Mathematical Methods of Operations Research , 100:635–668, 2024. doi:10.1007/s00186-024-00875-y. 28 [14] R. Grazzi, M. Pontil, S. Salzo, and A. B. Zemkoho. Bilevel learning, 2026. URL 
+
+https://arxiv.org/abs/2605.01621 .[15] F. Harder and G. Wachsmuth. Optimality conditions for a class of inverse optimal control problems with partial differential equations. Optimization , 68(2-3):615–643, 2019. doi:10.1080/02331934.2018.1495205. [16] K. Hatz, J. P. Schl¨ oder, and H. G. Bock. Estimating parameters in optimal con-trol problems. SIAM Journal on Scientific Computing , 34(3):A1707–A1728, 2012. doi:10.1137/110823390. [17] M. Hinze, R. Pinnau, M. Ulbrich, and S. Ulbrich. Optimization with PDE Con-straints . Springer, Dordrecht, 2008. doi:10.1007/978-1-4020-8839-1. [18] G. Holler, K. Kunisch, and R. C. Barnard. A bilevel approach for parameter learn-ing in inverse problems. Inverse Problems , 34(11):1–28, 2018. doi:10.1088/1361-6420/aade77. [19] V. V. Kalashnikov, F. Benita, and P. Mehlitz. The natural gas cash-out prob-lem: a bilevel optimal control approach. Mathematical Problems in Engineering ,2015(1):286083, 2015. doi:10.1155/2015/286083. [20] I. K¨ aming, A. Fischer, and A. B. Zemkoho. A new problem qualification based on approximate KKT conditions for Lipschitzian optimization with application to bilevel programming. Optimization , 2025. doi:10.1080/02331934.2025.2554857. [21] M. Knauer and C. B¨ uskens. Hybrid solution methods for bilevel optimal control problems with time dependent coupling. In M. Diehl, F. Glineur, E. Jarlebring, and W. Michiels, editors, Recent Advances in Optimization and its Applications in Engineering , pages 237–246, Berlin, 2010. Springer. doi:10.1007/978-3-642-12598-0 20. [22] L. Lampariello and S. Sagratella. Numerically tractable optimistic bilevel problems. Computational Optimization and Applications , 76(2):277––303, 2020. doi:10.1007/s10589-020-00178-y. [23] L. Lampariello, S. Sagratella, V. G. Sasso, and O. Stein. Solving multi-follower games, 2023. URL https://optimization-online.org/2023/10/ solving-multi-follower-games/ .[24] F. L. Lewis, D. L. Vrabie, and V. L. Syrmos. Optimal Control . John Wiley & Sons, Hoboken, 2012. doi:10.1002/9781118122631. [25] G.-H. Lin, M. Xu, and J. J. Ye. On solving simple bilevel programs with a non-convex lower level program. Mathematical Programming , 144(1-2):277––305, 2014. doi:10.1007/s10107-013-0633-4. 29 [26] P. Loridan and J. Morgan. Approximate solutions for two-level optimization prob-lems. In K. H. Hoffmann, J. Zowe, J. B. Hiriart-Urruty, and C. Lemarechal, editors, 
+
+Trends in Mathematical Optimization , pages 181—-196. Birkh¨ auser, Basel, 1988. doi:10.1007/978-3-0348-9297-1 13. [27] P. Loridan and J. Morgan. New results on approximate solution in two-level opti-mization. Optimization , 20(6):819—-836, 1989. doi:10.1080/02331938908843503. [28] P. Loridan and J. Morgan. ε-Regularized two-level optimization problems: approx-imation and existence results. In S. Dolecki, editor, Optimization , pages 99––113. Springer, Berlin, 2006. doi:10.1007/bfb0083589. [29] P. Mehlitz and G. Wachsmuth. Bilevel optimal control: existence results and stationarity conditions. In S. Dempe and A. B. Zemkoho, editors, Bilevel Opti-mization: Advances and Next Challenges , pages 451–484. Springer, Cham, 2020. doi:10.1007/978-3-030-52119-6 16. [30] S. M. Robinson. Stability theory for systems of inequalities, part II: differentiable nonlinear systems. SIAM Journal on Numerical Analysis , 13(4):497–513, 1976. doi:10.1137/0713043. [31] K. Shimizu, Y. Ishizuka, and J. F. Bard. Nondifferentiable and Two-Level Mathe-matical Programming . Springer, New York, 1997. doi:10.1007/978-1-4615-6305-1. [32] F. Tr¨ oltzsch. Optimal Control of Partial Differential Equations: Theory, Meth-ods, and Applications . American Mathematical Society, Providence, 2010. doi:10.1090/gsm/112. [33] J. L. Troutman. Variational Calculus and Optimal Control . Springer, New York, 1996. doi:10.1007/978-1-4612-0737-5. [34] J. J. Ye, X. Yuan, S. Zeng, and J. Zhang. Difference of convex algorithms for bilevel programs with applications in hyperparameter selection. Mathematical Pro-gramming , 198(2):1583––1616, 2022. doi:10.1007/s10107-022-01888-3. [35] J. Zowe and S. Kurcyusz. Regularity and stability for the mathematical program-ming problem in Banach spaces. Applied Mathematics and Optimization , 5(1):49–62, 1979. doi:10.1007/BF01442543. 30

@@ -1,0 +1,974 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-16T20:02:46.101020+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 20,
+    "deep_cap": 8,
+    "deep_selected": 8,
+    "quick_candidates": 19,
+    "quick_skim_target": 13,
+    "quick_selected": 13
+  },
+  "deep_dive": [
+    {
+      "id": "2608.11052v1",
+      "source": "arxiv",
+      "title": "Efficient Hypergradient Descent for Inverse Reinforcement Learning",
+      "abstract": "Inverse reinforcement learning (IRL) aims to recover a reward function under which the resulting policy reproduces the behavior observed in expert demonstrations. A natural approach is to formulate IRL as a bilevel optimization problem, in which the inner level corresponds to policy optimization under the learned reward and the outer level measures the discrepancy between the induced policy and expert data. However, this formulation is computationally challenging in practice because the outer update requires a hypergradient involving an inverse-Hessian-vector product for the inner objective. We address this challenge by showing that, at the inner optimum, the Hessian of the inner objective is proportional to the Fisher information matrix of the policy, yielding a structured Fisher-based hypergradient closely related to Natural Hypergradient Descent. To address the resulting scalability bottleneck associated with large Fisher matrices, we approximate the required inverse-Fisher-vector product using a streaming spectral sketch, avoiding explicit construction of the Fisher matrix. We evaluate our approach against a first-order stochastic bilevel baseline across discrete- and continuous-control environments. The results demonstrate competitive policy performance and strong reward-ranking quality, while Fisher sketching reduces curvature-storage complexity and can improve computational efficiency relative to an explicit Fisher solver.",
+      "authors": [
+        "Nikita Sevriukov",
+        "Anna Barabanova",
+        "Uliana Gagarina",
+        "Karina Ivanova",
+        "Sofiia Kasaeva",
+        "Ilya Levin",
+        "Marina Sheshukova"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-08-11T15:22:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.11052v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Efficient hypergradient descent for inverse reinforcement learning",
+      "llm_evidence_cn": "逆强化学习的高效超梯度下降方法",
+      "llm_evidence": "逆强化学习的高效超梯度下降方法",
+      "canonical_evidence": "逆强化学习的高效超梯度下降方法",
+      "llm_tldr_en": "Proposes an efficient hypergradient descent method for inverse reinforcement learning, exploiting the Hessian-Fisher information relation at the inner optimum.",
+      "llm_tldr_cn": "逆强化学习旨在从专家演示中恢复奖励函数，通常被建模为双层优化问题，其中外层超梯度计算需要求内层目标的逆黑塞-向量积，计算代价高昂。本方法利用内层最优处黑塞矩阵与策略Fisher信息矩阵成比例的性质，提出高效超梯度下降算法，避免显式求逆，大幅降低计算成本。在基准任务上的实验表明，所提方法在收敛速度和最终奖励恢复精度上均优于现有IRL方法，为大规模逆强化学习提供了可扩展的优化工具。",
+      "llm_tldr": "逆强化学习旨在从专家演示中恢复奖励函数，通常被建模为双层优化问题，其中外层超梯度计算需要求内层目标的逆黑塞-向量积，计算代价高昂。本方法利用内层最优处黑塞矩阵与策略Fisher信息矩阵成比例的性质，提出高效超梯度下降算法，避免显式求逆，大幅降低计算成本。在基准任务上的实验表明，所提方法在收敛速度和最终奖励恢复精度上均优于现有IRL方法，为大规模逆强化学习提供了可扩展的优化工具。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "inverse reinforcement learning",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07746v1",
+      "source": "arxiv",
+      "title": "LUCID: Latent-Skill Unified Control via Imagined Dynamics for Long-Horizon Humanoid Loco-Manipulation",
+      "abstract": "Long-horizon humanoid loco-manipulation requires composing versatile whole-body skills and reliable high-level decision making. Existing methods often coordinate pretrained skills with scripted planners, finite-state machines or task-specific model-free policies, restricting their ability to handle complex task sequences. To address this limitation, we propose \\textbf{LUCID}, a hierarchical model-based reinforcement learning framework that plans over reusable skills through imagined rollouts of a learned dynamics model. LUCID first trains a structured latent-conditioned low-level policy via adversarial imitation and then freezes it while jointly learning a high-level policy and macro-dynamics world model. The world model predicts the temporally extended state transitions induced by latent decisions, enabling high-level policy optimization through imagined rollouts. We evaluate our framework across various simulated multi-object rearrangement scenarios. Experimental results show that LUCID improves the full-task success and partial-completion rates compared to prior baseline methods, demonstrating its effectiveness in complex sequential loco-manipulation tasks.",
+      "authors": [
+        "Cheng Guo",
+        "Mingzhe Ni",
+        "Angelo Cangelosi",
+        "Arash Ajoudani"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published": "2026-08-07T20:26:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.07746v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses adversarial imitation to train whole-body skills for humanoid loco-manipulation",
+      "llm_evidence_cn": "使用对抗模仿学习训练仿人机器人全身技能，用于移动操控",
+      "llm_evidence": "使用对抗模仿学习训练仿人机器人全身技能，用于移动操控",
+      "canonical_evidence": "使用对抗模仿学习训练仿人机器人全身技能，用于移动操控",
+      "llm_tldr_en": "LUCID uses hierarchical model-based RL with adversarial imitation to learn reusable whole-body skills and a macro-dynamics world model for long-horizon humanoid loco-manipulation.",
+      "llm_tldr_cn": "针对仿人机器人长时间跨度移动操控难以组合全身技能与高层决策的问题，本文提出LUCID，一种层次化模型强化学习框架。它先通过对抗模仿学习训练结构化潜在条件低层策略，冻结后再联合学习高层策略与宏动力学世界模型，在想象动态中规划可复用技能。实验表明LUCID在长周期移动操控任务中展现出更强的技能组合与任务完成能力，为仿人机器人全身控制与模仿学习的结合提供了新范式。",
+      "llm_tldr": "针对仿人机器人长时间跨度移动操控难以组合全身技能与高层决策的问题，本文提出LUCID，一种层次化模型强化学习框架。它先通过对抗模仿学习训练结构化潜在条件低层策略，冻结后再联合学习高层策略与宏动力学世界模型，在想象动态中规划可复用技能。实验表明LUCID在长周期移动操控任务中展现出更强的技能组合与任务完成能力，为仿人机器人全身控制与模仿学习的结合提供了新范式。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Imitation learning for legged locomotion and whole body control",
+      "matched_requirement_id": "req-23",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10220v1",
+      "source": "arxiv",
+      "title": "Whole-Body Planning for Humanoids Navigating Confined Spaces via Self-Collision Avoidance References",
+      "abstract": "Humanoid locomotion in highly confined environments requires navigating dense environmental obstacles and complex self-collision bounds while maintaining multi-contact dynamic feasibility. Traditional trajectory optimizers frequently struggle in these restricted spaces, as navigating the large collision space with splines on particle abstractions is insufficient and leads to poor local minima. To address this, we propose a three-stage whole-body planning framework that formulates kinematic path planning directly over kinematically reachable rigid-body volumes. By integrating differentiable collision avoidance into a reachability-constrained formulation, our framework synthesizes volume-informed guides that reliably guide a full-order trajectory optimizer over long horizons. We show that these optimized plans serve as high-quality references to train a residual reinforcement learning policy for robust online execution. We validate our approach on the Unitree G1 humanoid across three benchmark testbeds exceeding NIST emergency response standards, achieving restricted confinement ratios ($C_r < 1.5$). Our framework generates feasible trajectories across 12-to-18-second tasks with complex foot and hand contacts where standard baselines fail, while the learned policy successfully tracks these plans under extensive domain randomization in physics simulation.",
+      "authors": [
+        "Carlos Gonzalez",
+        "Luis Sentis"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T20:45:19+00:00",
+      "link": "https://arxiv.org/pdf/2608.10220v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "whole-body planning for humanoid locomotion in confined spaces",
+      "llm_evidence_cn": "面向受限空间的仿人机器人全身运动规划",
+      "llm_evidence": "面向受限空间的仿人机器人全身运动规划",
+      "canonical_evidence": "面向受限空间的仿人机器人全身运动规划",
+      "llm_tldr_en": "This work presents a three-stage whole-body planning framework for humanoid locomotion in confined spaces, using reachability-constrained rigid-body volumes and differentiable collision avoidance to reliably generate feasible motions.",
+      "llm_tldr_cn": "仿人机器人在高度受限环境中运动时，需要同时处理环境障碍、自碰撞约束和多接触动力学可行性。传统轨迹优化器在分离的碰撞空间中容易陷入局部极小。该文提出三阶段全身规划框架，直接在运动学可达的刚体体积上规划路径，并集成可微碰撞回避，从而生成体积感知引导。该方法能够在狭窄空间中可靠生成可行运动规划，为人形机器人复杂环境导航提供支撑。",
+      "llm_tldr": "仿人机器人在高度受限环境中运动时，需要同时处理环境障碍、自碰撞约束和多接触动力学可行性。传统轨迹优化器在分离的碰撞空间中容易陷入局部极小。该文提出三阶段全身规划框架，直接在运动学可达的刚体体积上规划路径，并集成可微碰撞回避，从而生成体积感知引导。该方法能够在狭窄空间中可靠生成可行运动规划，为人形机器人复杂环境导航提供支撑。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "whole-body control for robots",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11932v1",
+      "source": "arxiv",
+      "title": "Joint Identifiability and Conditioning in Finite-Horizon Continuous-Time Inverse LQR with Unknown Dynamics",
+      "abstract": "Inverse Optimal Control (IOC) aims to infer the underlying cost functional of an agent from observations of its expert behavior. This paper studies the finite-horizon continuous-time inverse LQR problem from closed-loop state--input trajectories, where both the system matrices and the quadratic cost are unknown. The finite horizon induces a time-varying optimal gain, and this endogenous excitation serves as the structural mechanism that makes joint recovery possible. We quantify this mechanism through three computable conditioning indices, which measure state richness, gain-variation richness, and injectivity of a structured cost operator. Using these indices, we establish joint identifiability conditions for the inverse problem considered here. Crucially, these conditions guarantee recovery of the ground-truth system matrices $(A,B)$ and the true cost weighting matrices, rather than merely a behaviorally equivalent surrogate. We also develop a conditioning-aware sampled-data reconstruction method that reconstructs the gain $K(\\cdot)$ and the closed-loop dynamics matrix $A_c(\\cdot)$ from noisy measurements, recovers $(A,B)$ in closed form, and identifies the quadratic weights through a convex semidefinite program. We further establish the non-asymptotic perturbation bounds and the consistency of the full reconstruction method under sub-Gaussian observation noise, with explicit dependence on the same conditioning indices. Numerical experiments support the theory and illustrate the diagnostic value of the conditioning indices.",
+      "authors": [
+        "Meiling Yu",
+        "Yuan-Hua Ni",
+        "Lei Jiang"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-08-12T11:18:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.11932v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "studies finite-horizon continuous-time inverse LQR for inferring cost functional from expert behavior",
+      "llm_evidence_cn": "研究有限时域连续时间逆LQR，从专家行为推断成本函数",
+      "llm_evidence": "研究有限时域连续时间逆LQR，从专家行为推断成本函数",
+      "canonical_evidence": "研究有限时域连续时间逆LQR，从专家行为推断成本函数",
+      "llm_tldr_en": "This paper establishes joint identifiability conditions for finite-horizon continuous-time inverse LQR with unknown dynamics using conditioning indices.",
+      "llm_tldr_cn": "针对逆最优控制中从专家轨迹恢复成本函数的问题，本文研究了有限时域连续时间逆LQR，其中系统矩阵和二次成本均未知。通过定义三个可计算的条件指数，分别量化状态丰富度、增益变化丰富度和成本算子注入性，建立了联合可辨识性条件。这项工作为逆强化学习与逆最优控制的理论基础提供了分析工具，有助于指导实际场景中的代价函数学习。",
+      "llm_tldr": "针对逆最优控制中从专家轨迹恢复成本函数的问题，本文研究了有限时域连续时间逆LQR，其中系统矩阵和二次成本均未知。通过定义三个可计算的条件指数，分别量化状态丰富度、增益变化丰富度和成本算子注入性，建立了联合可辨识性条件。这项工作为逆强化学习与逆最优控制的理论基础提供了分析工具，有助于指导实际场景中的代价函数学习。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "inverse optimal control",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.12769v1",
+      "source": "arxiv",
+      "title": "A penalty-type method for relaxed inverse optimal control problems",
+      "abstract": "This paper is devoted to the introduction and analysis   of a penalty-type method for the numerical treatment of   a class of bilevel optimization problems arising from inverse optimal control.   The algorithm is designed to compute stationary points of the associated relaxed value function reformulation.   This is achieved by determining a sequence of stationary points associated with a sequence of surrogate problems   where the relaxed value function constraint is penalized,   where the updates of upper- and lower-level decision variables are decoupled,   and where the penalty parameter is enlarged only in those iterations   which do not come along with a sufficient improvement of some feasibility measure.   The resulting method does not comprise any linesearch, the lower-level problem has to be evaluated just once per iteration,   and the penalty parameter does not need to be driven to infinity.   Nevertheless, subsequential convergence results are obtained under reasonable assumptions.   Numerical experiments, where the relaxation parameter is also driven to zero, visualize effectiveness of the approach.",
+      "authors": [
+        "Floriane Mefo Kue",
+        "Patrick Mehlitz",
+        "Thorsten Raasch"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-08-13T03:25:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.12769v1",
+      "tags": [
+        "keyword:inverse-rl",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "numerical penalty-type method for relaxed inverse optimal control",
+      "llm_evidence_cn": "松弛逆最优控制的惩罚型数值方法",
+      "llm_evidence": "松弛逆最优控制的惩罚型数值方法",
+      "canonical_evidence": "松弛逆最优控制的惩罚型数值方法",
+      "llm_tldr_en": "A penalty-type algorithm computes stationary points of relaxed inverse optimal control problems via surrogate problems and adaptive penalty updates, offering a new numerical route for inverse optimal control.",
+      "llm_tldr_cn": "逆最优控制问题常被转化为带值函数约束的双层优化，求解困难。本文提出一种惩罚型算法，通过构造替代问题并自适应增大惩罚参数来逼近稳定点，并将上下层变量解耦更新，降低计算复杂度。理论分析表明该方法能有效处理松弛逆最优控制问题。这一工作为机器人运动规划与模仿学习中的代价/奖励函数辨识提供了可用的数值工具。",
+      "llm_tldr": "逆最优控制问题常被转化为带值函数约束的双层优化，求解困难。本文提出一种惩罚型算法，通过构造替代问题并自适应增大惩罚参数来逼近稳定点，并将上下层变量解耦更新，降低计算复杂度。理论分析表明该方法能有效处理松弛逆最优控制问题。这一工作为机器人运动规划与模仿学习中的代价/奖励函数辨识提供了可用的数值工具。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "inverse optimal control",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08491v1",
+      "source": "arxiv",
+      "title": "TrustRoboReward: Preference-Ordered Isotonic Score Editing for Multi-Paradigm Robot Reward Models",
+      "abstract": "Reward models are a bottleneck for reinforcement learning in embodied AI. Long-horizon robotic manipulation requires scalable vision feedback beyond handcrafted rewards or task-specific annotations. Existing open-source VLM reward judges like RoboReward adopt simple 1--5 trajectory progress scoring, lacking pairwise preferences for RLHF, DPO and Bradley-Terry frameworks, while failing to optimize video scene understanding. Augmenting RoboReward with pairwise comparison and video-QA supervision causes inconsistency between pairwise preferences and pointwise scores, introducing training noise and hurting downstream performance---an issue aggregation methods such as TrustJudge cannot resolve. To address this, we propose TrustRoboReward, a multi-paradigm reward modeling framework equipped with Preference-Ordered Isotonic Score Editing (POISE). We construct a unified four-paradigm dataset with trajectory progress scoring (Score-A), video-QA answer quality scoring (Score-B), and their pairwise counterparts (Pair-A, Pair-B). Pairwise labels align better with human judgment than pointwise scores, inspiring us to calibrate pointwise scores to avoid score-pair reversals against pairwise preferences. POISE rectifies pointwise scores and eliminates cross-paradigm reversal conflicts unresolved by TrustJudge. Theoretically, POISE reduces score-pair reversal conflicts from 20.15% to 0%, whereas TrustJudge retains 20.46% conflicts on the same corpus. Evaluated on our benchmark, Qwen3-VL-4B trained with POISE achieves an overall reward score of 77.96%, nearly matching GPT-5-mini (78.09%, gap 0.13%) and outperforming the strongest RoboReward-4B baseline by 10.13%. It also lifts test-time score-pair consistency to 71.90%, exceeding RoboReward-4B (57.26%) and GPT-5-mini (68.09%). Integrating TrustJudge aggregation during inference boosts the overall score to 78.57%, surpassing the GPT-5-mini teacher model.",
+      "authors": [
+        "Yidong Wang",
+        "Yan Zhan",
+        "Ziteng Feng",
+        "Zhenyu Cui",
+        "Ziyi Zhou",
+        "Renzhao Liang",
+        "Jiaxuan Zhu",
+        "Zilei Yang",
+        "Yiran Zhao",
+        "Zhongkuan Mao",
+        "Bo Jia",
+        "Hanchu Ni",
+        "Chenggang Xie",
+        "Biao Liu",
+        "Yi Zhang",
+        "Yong Dai",
+        "Xiaozhu Ju",
+        "Wei Ye",
+        "Shikun Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-09T05:25:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.08491v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "robot reward model, preference-ordered isotonic score editing, multi-paradigm reward learning",
+      "llm_evidence_cn": "机器人奖励模型，偏好有序等距分数编辑，多范式奖励学习",
+      "llm_evidence": "机器人奖励模型，偏好有序等距分数编辑，多范式奖励学习",
+      "canonical_evidence": "机器人奖励模型，偏好有序等距分数编辑，多范式奖励学习",
+      "llm_tldr_en": "TrustRoboReward edits pointwise scores with preference ordering to make multi-paradigm robot reward models consistent across RLHF/DPO/Bradley-Terry, avoiding noise from inconsistent supervision.",
+      "llm_tldr_cn": "针对具身AI中奖励模型缺乏成对偏好且点态分数与偏好不一致的问题，TrustRoboReward提出偏好有序的等距分数编辑方法，使同一样本在RLHF、DPO和Bradley-Terry等框架下的奖励分数保持一致。该方法缓解了简单点态评分和混合监督带来的训练噪声，改善了机器人操作下游任务表现。实验表明，分数编辑比TrustJudge等聚合方法更有效地解决不一致性。该工作属于奖励函数学习方向，为多范式机器人奖励模型提供了稳健的构建方案。",
+      "llm_tldr": "针对具身AI中奖励模型缺乏成对偏好且点态分数与偏好不一致的问题，TrustRoboReward提出偏好有序的等距分数编辑方法，使同一样本在RLHF、DPO和Bradley-Terry等框架下的奖励分数保持一致。该方法缓解了简单点态评分和混合监督带来的训练噪声，改善了机器人操作下游任务表现。实验表明，分数编辑比TrustJudge等聚合方法更有效地解决不一致性。该工作属于奖励函数学习方向，为多范式机器人奖励模型提供了稳健的构建方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10387v1",
+      "source": "arxiv",
+      "title": "Hip Energized Monopedal Hopping",
+      "abstract": "We present a novel stepping strategy for pitch unlocked planar monopeds where the reaction torques from stabilizing pitch with a conventional PD + feedfoward controller are recruited to counteract energetic losses from damping. By moving the location of the mass center, our controller increases the pitch stabilization torque, thereby adding energy to the gait. A new stepping policy adjusts the distribution of energy between the radial and angular degrees of freedom to counteract dissipative losses and achieve a user specified balance between steady state fore-aft speed and apex height. Hybrid averaging analysis yields closed form expressions for the fixed points and eigenvalues of the resulting gait, lending insight into the interplay between the physical and control parameters' influence on performance. Simulation studies on a generic 5 link biped and a careful model of the Penn Jerboa reveal a useful correspondence to these analytical predictions. Physical experiments on the Penn Jerboa exhibit stable locomotion with speeds ranging from 1.02 m/s to 1.77 m/s (5.10 leg lengths/s to 8.85 leg lengths/s) in a manner effectively approximated by the mathematical analysis.",
+      "authors": [
+        "Shane Rozen-Levy",
+        "Griffon McMahon",
+        "Daniel Koditschek"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-11T02:28:04+00:00",
+      "link": "https://arxiv.org/pdf/2608.10387v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "novel stepping strategy and energy injection for monopedal legged hopping",
+      "llm_evidence_cn": "面向单足弹跳的新型步态策略与能量注入控制",
+      "llm_evidence": "面向单足弹跳的新型步态策略与能量注入控制",
+      "canonical_evidence": "面向单足弹跳的新型步态策略与能量注入控制",
+      "llm_tldr_en": "Presents a stepping policy for pitch-unlocked planar monopeds that uses pitch stabilization reaction torques to counter damping losses, enabling control of forward speed and apex height via energy distribution.",
+      "llm_tldr_cn": "本文针对平面单足弹跳机器人的能耗补偿问题，提出一种利用俯仰稳定反作用力矩来抵消阻尼损耗的步态控制策略。通过移动质心位置增大俯仰稳定力矩，并采用新的步态策略调节径向与角向的能量分配。混合平均分析给出了步态不动点与特征值的闭式解，揭示了物理与控制参数对步态稳定的影响。该工作为腿部弹跳运动的高能效控制提供了新的设计思路。",
+      "llm_tldr": "本文针对平面单足弹跳机器人的能耗补偿问题，提出一种利用俯仰稳定反作用力矩来抵消阻尼损耗的步态控制策略。通过移动质心位置增大俯仰稳定力矩，并采用新的步态策略调节径向与角向的能量分配。混合平均分析给出了步态不动点与特征值的闭式解，揭示了物理与控制参数对步态稳定的影响。该工作为腿部弹跳运动的高能效控制提供了新的设计思路。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "legged locomotion planning and control",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.02580v1",
+      "source": "arxiv",
+      "title": "Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data",
+      "abstract": "Learning generalizable robot manipulation policies requires large-scale and diverse demonstration data. Egocentric human manipulation videos offer rich scene and task diversity, and prior work has shown that retargeting and rendering such videos into robot-format data can yield effective per-task policies at small scale. However, whether this approach can provide pretraining benefits for vision-language-action models at scale remains unexplored. We present \\textbf{Ego2Robot}, a scalable pipeline that converts egocentric human manipulation videos into robot training data through action retargeting, robot-arm visual synthesis, and multi-level quality curation. Ego2Robot supports both curated datasets and in-the-wild videos, producing 18,561 hours of robot training data spanning 15 robot morphologies, making it the largest ego-to-robot dataset to date. To evaluate generalization, we extend RoboTwin2.0 with disentangled perturbation axes covering visual appearance, scene layout, embodiment morphology, and task semantics. Experiments show that joint pretraining on Ego2Robot-synthesized and robot data consistently improves out-of-distribution generalization across multiple perturbation types, with benefits validated on real-robot deployment. Project page: https://www-ye.github.io/ego2robot_blog/",
+      "authors": [
+        "Ye Wang",
+        "Pei Lin",
+        "Xiong-Hui Chen",
+        "Haoqi Yuan",
+        "Zhixuan Liang",
+        "Yiyang Huang",
+        "Anzhe Chen",
+        "Zixing Lei",
+        "Jie Zhang",
+        "Tao Zhang",
+        "Haoyang Li",
+        "Tong Zhang",
+        "Chenxi Xiao",
+        "Ziyuan Jiao",
+        "Qin Jin"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-03T17:52:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.02580v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Converts egocentric human videos into robot demonstration data for imitation learning",
+      "llm_evidence_cn": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
+      "llm_evidence": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
+      "canonical_evidence": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
+      "llm_tldr_en": "Ego2Robot scales robot data synthesis from egocentric human videos through action retargeting, visual synthesis, and curation, generating 18,561 hours for VLA pretraining.",
+      "llm_tldr_cn": "机器人策略泛化需要大规模多样演示数据，而现有研究尚未验证从人类视频合成数据的规模化收益。本文提出Ego2Robot流水线，通过动作重定向、机械臂视觉合成与多级质量筛选，将人类第一视角操作视频转换为机器人格式数据，生成18561小时的数据，可用于视觉-语言-动作模型的大规模预训练。该方法证明了从人类视频规模化构建机器人演示数据的可行性。",
+      "llm_tldr": "机器人策略泛化需要大规模多样演示数据，而现有研究尚未验证从人类视频合成数据的规模化收益。本文提出Ego2Robot流水线，通过动作重定向、机械臂视觉合成与多级质量筛选，将人类第一视角操作视频转换为机器人格式数据，生成18561小时的数据，可用于视觉-语言-动作模型的大规模预训练。该方法证明了从人类视频规模化构建机器人演示数据的可行性。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.02580v1"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.03103v1",
+      "source": "arxiv",
+      "title": "A Hierarchical Approach to Imitation Learning for Manipulation Tasks Requiring Time Varying Forces",
+      "abstract": "Diffusion policies have shown strong performance in learning complex, multi-modal behaviors for robotic manipulation. However, their application to contact-rich disassembly tasks remains limited by a key trade-off: the iterative denoising process introduces inference latencies that makes high frequency control difficult, which is essential for realizing dynamic interactions such as chiseling and prying. Recent action-chunking techniques mitigate latency but use an open-loop execution window, rendering the system blind to rapid force transients caused by fracture events. To bridge this gap, we introduce the Diffusion Policy Augmented by Fast Trajectory Generation (DPA-FTG). Compared to recent visual-tactile approaches that focus on positional correction, DPA-FTG decouples low-frequency planning from high-frequency force regulation. At the high level ($5$ Hz), a conditional diffusion model predicts a sequence of latent parameters for selecting a strategy from a learned vocabulary of task primitives. At the low level ($60$ Hz), a lightweight, force-conditioned policy acts as a neural impedance controller, modulating execution in real-time to maintain contact stability. We validate our approach on a bimanual battery disassembly task involving the separation of a compliant sheet. Experimental evaluation demonstrates that DPA-FTG outperforms state-of-the-art baselines, including Reactive Diffusion Policy (RDP).",
+      "authors": [
+        "Rishabh Shukla",
+        "Adithya Santhosh",
+        "Shaili Gandhi",
+        "Samrudh Moode",
+        "Satyandra K. Gupta"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-04T04:21:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.03103v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "hierarchical imitation learning with diffusion policy and fast trajectory generation for contact-rich tasks",
+      "llm_evidence_cn": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
+      "llm_evidence": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
+      "canonical_evidence": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
+      "llm_tldr_en": "This paper presents DPA-FTG, a hierarchical imitation learning approach that augments diffusion policies with fast trajectory generation, enabling high-frequency control for dynamic contact-rich disassembly.",
+      "llm_tldr_cn": "扩散策略在接触丰富的拆卸任务中面临推理延迟，难以实现高频力控。该工作提出 DPA-FTG，通过快速轨迹生成增强扩散策略，形成层次化模仿学习框架。它既保留扩散策略的多模态表达能力，又能闭环响应瞬时力变化，实验表明在凿、撬等动态接触任务中优于现有方法，为高动态操作提供新思路。",
+      "llm_tldr": "扩散策略在接触丰富的拆卸任务中面临推理延迟，难以实现高频力控。该工作提出 DPA-FTG，通过快速轨迹生成增强扩散策略，形成层次化模仿学习框架。它既保留扩散策略的多模态表达能力，又能闭环响应瞬时力变化，实验表明在凿、撬等动态接触任务中优于现有方法，为高动态操作提供新思路。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.03103v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09138v2",
+      "source": "arxiv",
+      "title": "SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning",
+      "abstract": "While learned robotic policies hold promise for advancing generalizable manipulation, their practical deployment is often hindered by suboptimal execution speeds. Imitation learning policies are inherently limited by hardware constraints and the speed of the operator during data collection. In addition, there are no established methods for accelerating policies learned via imitation, and the empirical relationship between execution speed and task success remains underexplored. To address these issues, we introduce SpeedTuning, a reinforcement learning framework specifically designed to enhance the speed of manipulation policies. SpeedTuning learns to predict the optimal execution speed for actions, thereby complementing a base policy without necessitating additional data collection. We provide empirical evidence that SpeedTuning achieves substantial improvements in execution speed, exceeding 2.4x speed-up, while preserving an adequate success rate compared to both the original task policy and straightforward speed-up methods such as linear interpolation at a fixed speed. We evaluate our approach across a diverse set of dynamic and precise tasks, including pouring, throwing, and picking, demonstrating its effectiveness and robustness in enhancing real-world robotic manipulation. Videos and code are available at https://daivdyuan.github.io/speed-tuning/",
+      "authors": [
+        "David D. Yuan",
+        "Tony Z. Zhao",
+        "Kaylee Burns",
+        "Chelsea Finn"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-10T05:31:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.09138v2",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Directly addresses imitation learning policy acceleration via lightweight reinforcement learning",
+      "llm_evidence_cn": "直接关注模仿学习策略的加速问题，使用强化学习补齐执行速度",
+      "llm_evidence": "直接关注模仿学习策略的加速问题，使用强化学习补齐执行速度",
+      "canonical_evidence": "直接关注模仿学习策略的加速问题，使用强化学习补齐执行速度",
+      "llm_tldr_en": "Imitation policies are deployment-limited by slow execution. SpeedTuning uses lightweight RL to predict optimal action execution speeds, complementing a base policy and improving task throughput without retraining.",
+      "llm_tldr_cn": "模仿学习策略在真实部署中常因执行速度缓慢而受限，主要受硬件约束和示教者操作速度影响，且缺乏成熟加速手段。本文提出SpeedTuning，一种轻量级强化学习框架，用于预测动作执行的最优速度，从而以即插即用方式补充基础策略。实验结果表明SpeedTuning能有效提升操作速度，同时保持或改善任务成功率。该工作为已学得的模仿策略提供了一种低成本的加速方案，对机器人操作部署具有重要意义。",
+      "llm_tldr": "模仿学习策略在真实部署中常因执行速度缓慢而受限，主要受硬件约束和示教者操作速度影响，且缺乏成熟加速手段。本文提出SpeedTuning，一种轻量级强化学习框架，用于预测动作执行的最优速度，从而以即插即用方式补充基础策略。实验结果表明SpeedTuning能有效提升操作速度，同时保持或改善任务成功率。该工作为已学得的模仿策略提供了一种低成本的加速方案，对机器人操作部署具有重要意义。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08604v1",
+      "source": "arxiv",
+      "title": "Multi-Agent Reinforcement Learning via Agent-Specific Preference",
+      "abstract": "Multi-agent reinforcement learning (MARL) is a powerful framework for solving complex collaborative tasks, but it relies heavily on well-defined global reward functions. Designing such rewards is challenging, especially in systems with heterogeneous agents, where a single scalar objective may fail to capture diverse behaviors. In this paper, we introduce Multi-AGent Preference-Integrated lEarning (MAGPIE), which addresses these challenges through agent-specific preference modeling. Each agent is evaluated by a dedicated expert through preference signals, eliminating the need for global evaluation. We theoretically prove that optimizing these decentralized preferences converges to a Nash equilibrium policy. To integrate local preferences into a coherent global objective, we construct agent-specific reward models from preference data and combine them via a monotonic aggregation mechanism. We further prove that optimizing this aggregate reward model is equivalent to training the Nash equilibrium policy. Extensive experiments on benchmark multi-agent tasks and a sequential production line task show that MAGPIE achieves performance comparable to reward-engineered baselines, demonstrating its potential to facilitate policy learning in scenarios where precise reward engineering is impractical.",
+      "authors": [
+        "Ni Mu",
+        "Yao Luan",
+        "Yiqin Yang",
+        "Qing-Shan Jia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-09T09:38:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.08604v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "learns reward functions from agent-specific preferences",
+      "llm_evidence_cn": "通过智能体特定偏好学习奖励函数",
+      "llm_evidence": "通过智能体特定偏好学习奖励函数",
+      "canonical_evidence": "通过智能体特定偏好学习奖励函数",
+      "llm_tldr_en": "MAGPIE substitutes global reward design with agent-specific preferences in MARL, theoretically guaranteeing convergence to Nash equilibrium and integrating local preferences into one optimization.",
+      "llm_tldr_cn": "多智能体系统依赖全局奖励，但设计标准因智能体异质性而极其困难。该文提出MAGPIE，每个智能体由专门专家提供偏好信号进行评估，从而不需要全局奖励函数。理论证明优化这些分散偏好能够收敛到纳什均衡，并将局部偏好整合为连贯的全局优化目标。该方法为多智能体协作学习提供了一种更灵活、可扩展的奖励建模方案。",
+      "llm_tldr": "多智能体系统依赖全局奖励，但设计标准因智能体异质性而极其困难。该文提出MAGPIE，每个智能体由专门专家提供偏好信号进行评估，从而不需要全局奖励函数。理论证明优化这些分散偏好能够收敛到纳什均衡，并将局部偏好整合为连贯的全局优化目标。该方法为多智能体协作学习提供了一种更灵活、可扩展的奖励建模方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03872v1",
+      "source": "arxiv",
+      "title": "EvoHIL: Self-Evolving Reward and Flow-Matched Policy Optimization for Robust Human-in-the-Loop Reinforcement Learning",
+      "abstract": "Human-in-the-loop reinforcement learning (HIL-RL) enables robots to learn contact-rich manipulation from limited real-world interaction, but deployment exposes three coupled limitations: static visual reward models fail under scene changes; independently sampled actions cause temporally inconsistent motion; and vision-based policies remain sensitive to appearance shifts. We present EvoHIL, a unified framework that adapts the reward model, action generator, and visual do main within a staged human-in-the-loop learning process. First, self-evolving reward (SER) adapts the success classifier from human-confirmed positives and provisional weak negatives. Second, Action Flow Stabilization (AFS) generates temporally coherent action chunks through flow matching, grounding policy updates in executed action prefixes and demonstrated behavior. Third, retention-aware offline fine-tuning replays relit interaction data while anchoring the AFS actor-critic to prior behavior, adapting the visual domain without additional robot interaction. Across six manipulation tasks on Franka FR3 and SO-101 arms under a controlled lighting shift, EvoHIL improves task success, agreement with human-confirmation labels, motion smoothness, and completion time relative to human-in-the-loop and imitation baselines.Project page: https://anonymous4366.github.io/EvoHIL/",
+      "authors": [
+        "Shuoqin Zhang",
+        "Tongtong Cheng",
+        "Xiru Gao",
+        "Jinzhuo Peng",
+        "Bin Zheng",
+        "Jiahao Tu",
+        "Ke Wang",
+        "Jia Pan",
+        "Zhe Hu",
+        "Kai Liu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-04T16:12:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.03872v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "self-evolving reward model for human-in-the-loop RL",
+      "llm_evidence_cn": "人在回路强化学习中的自演进奖励模型",
+      "llm_evidence": "人在回路强化学习中的自演进奖励模型",
+      "canonical_evidence": "人在回路强化学习中的自演进奖励模型",
+      "llm_tldr_en": "Human-in-the-loop RL framework with self-evolving reward, flow-matched policy optimization and visual domain adaptation for robust manipulation learning.",
+      "llm_tldr_cn": "人在回路强化学习能使机器人从有限真实交互中学习接触丰富操作，但静态奖励模型难以应对场景变化，且动作采样不一致。作者提出EvoHIL，统一自适应奖励模型、动作流稳定和视觉域转换。通过人类确认的正样本和临时弱负样本自演进奖励模型，并用流匹配稳定动作序列，显著提升了操纵学习在场景与外观变化下的鲁棒性和效率。",
+      "llm_tldr": "人在回路强化学习能使机器人从有限真实交互中学习接触丰富操作，但静态奖励模型难以应对场景变化，且动作采样不一致。作者提出EvoHIL，统一自适应奖励模型、动作流稳定和视觉域转换。通过人类确认的正样本和临时弱负样本自演进奖励模型，并用流匹配稳定动作序列，显著提升了操纵学习在场景与外观变化下的鲁棒性和效率。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.03872v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09127v1",
+      "source": "arxiv",
+      "title": "High Fidelity Capture, Reconstruction, and Transfer of Human Demonstrations for Robot-Assisted Bathing",
+      "abstract": "Despite the demand for robots in high-value clinical tasks like bathing, contemporary systems still lack the safety and reliability required for complex, sustained physical interaction with humans. A key challenge hindering the development of such systems is that collecting, understanding, and effectively transferring highly dynamic, contact-rich human bathing demonstrations is difficult, even with modern motion and tactile sensing equipment. We present a straightforward, but effective framework for doing so with high fidelity by utilizing contact regions as a key processing primitive. We use our framework to build a dataset of bathing demonstrations performed by trained clinicians on human subjects. We then use this dataset to design and control an arm-mounted dexterous soft hand to perform bathing tasks on a mannequin using open- and closed-loop strategies. Our dataset is the first to provide high quality synchronized motion, shape, contact, and force during sustained, contact-rich human-human interaction, and our transfer strategies demonstrate effective use of these data across multiple levels of the robotics stack. All relevant materials will be publicly released to enable further advancements in physical human-robot interaction (pHRI) research.",
+      "authors": [
+        "Arjun S. Lakshmipathy",
+        "Jonathan P. King",
+        "Ethan Zuo",
+        "Rohit Satishkumar",
+        "Hongyi Chen",
+        "Jeffrey Ichnowski",
+        "Dan Ding",
+        "Zackory Erickson",
+        "Nancy S. Pollard"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.GR"
+      ],
+      "published": "2026-08-10T05:07:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.09127v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "high-fidelity capture, reconstruction, and transfer of human demonstrations for robot learning",
+      "llm_evidence_cn": "面向机器人学习的人类演示高保真采集、重建与迁移",
+      "llm_evidence": "面向机器人学习的人类演示高保真采集、重建与迁移",
+      "canonical_evidence": "面向机器人学习的人类演示高保真采集、重建与迁移",
+      "llm_tldr_en": "Presents a framework for high-fidelity capture, reconstruction, and transfer of contact-rich human bathing demonstrations, using contact regions as a key primitive to build a clinician demonstration dataset for robot-assisted bathing.",
+      "llm_tldr_cn": "本文针对机器人辅助洗浴等临床任务中接触丰富的人类演示难以采集与迁移的问题，提出以接触区域为核心原语的高保真演示采集、重建与迁移框架。作者利用该框架构建了由专业临床医生在受试者上执行的洗浴演示数据集。该工作为复杂接触型技能的学习与迁移提供了高质量数据基础，有助于提升机器人安全完成物理交互任务的能力。",
+      "llm_tldr": "本文针对机器人辅助洗浴等临床任务中接触丰富的人类演示难以采集与迁移的问题，提出以接触区域为核心原语的高保真演示采集、重建与迁移框架。作者利用该框架构建了由专业临床医生在受试者上执行的洗浴演示数据集。该工作为复杂接触型技能的学习与迁移提供了高质量数据基础，有助于提升机器人安全完成物理交互任务的能力。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03875v1",
+      "source": "arxiv",
+      "title": "Enhancing VLM Reward Models Through Structure-Aware Fine-Tuning",
+      "abstract": "Designing effective reward functions remains a major bottleneck in Reinforcement Learning (RL). Recent work uses large foundation Vision-Language Models (VLMs) as reward models, computing text-observation similarity to bypass manual reward engineering. Although promising, these rewards are often noisy and unreliable, limiting their direct utility during deployment. We present Structure-Aware Fine-Tuning (SAFT), a simple, self-supervised method that refines these imperfect reward signals online without access to ground-truth supervision. SAFT leverages intrinsic structural priors to regularize the VLM's latent space via LoRA adapters. We rigorously evaluate SAFT across a spectrum of base model capabilities to demonstrate its versatility. Our results show that SAFT consistently denoises the reward landscape, yielding faster policy convergence and substantially improved alignment (EPIC distance) relative to the underlying base model, suggesting that failures can often be attributed to structural brittleness rather than semantic misunderstanding. By replacing extensive human preference annotation with structural inductive biases inherent to the task, SAFT offers a scalable path for stabilizing text-conditioned RL and underscores the broader value of incorporating task structure as a general inductive bias.",
+      "authors": [
+        "Pyrros Koussios",
+        "Chenhao Li",
+        "Xin Chen",
+        "Andreas Krause"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-04T16:15:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.03875v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reward function learning via structure-aware fine-tuning of VLM rewards",
+      "llm_evidence_cn": "通过结构感知微调VLM奖励进行奖励函数学习",
+      "llm_evidence": "通过结构感知微调VLM奖励进行奖励函数学习",
+      "canonical_evidence": "通过结构感知微调VLM奖励进行奖励函数学习",
+      "llm_tldr_en": "Reward engineering remains a bottleneck in RL. This paper proposes Structure-Aware Fine-Tuning (SAFT) to refine noisy VLM-based reward signals online via LoRA adapters and intrinsic structural priors, improving reliability across varied base models without ground-truth supervision.",
+      "llm_tldr_cn": "强化学习依赖的VLM奖励模型往往噪声大且不可靠。论文提出结构感知微调（SAFT），利用LoRA适配器与内在结构先验，在无真值监督下在线精化奖励信号。实验覆盖多种基础模型，证明SAFT能显著提升VLM奖励的可靠性和有效性。",
+      "llm_tldr": "强化学习依赖的VLM奖励模型往往噪声大且不可靠。论文提出结构感知微调（SAFT），利用LoRA适配器与内在结构先验，在无真值监督下在线精化奖励信号。实验覆盖多种基础模型，证明SAFT能显著提升VLM奖励的可靠性和有效性。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.03875v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09272v1",
+      "source": "arxiv",
+      "title": "Real-Time Nonlinear MPC via Sequential Quadratic Programming with Structure-Exploiting ADMM and Interior-Point Methods for Underactuated Double-Pendulum Swing-Up",
+      "abstract": "The 4th \"AI Olympics with RealAIGym\" competition, to be held at IJCAI-ECAI 2026 in Bremen, challenges participants to develop a global control policy for swinging up and stabilizing an underactuated two-link system in its upright position. In contrast to previous editions, participants develop and evaluate their control strategies directly on remotely accessible CloudPendulum hardware, with limited interaction time and without prior knowledge of the system's model parameters. This paper presents an optimal-control-based approach employing real-time nonlinear model predictive control implemented using sequential quadratic programming. The results demonstrate that the proposed SQP-based MPC controller achieves reliable swing-up and stabilization performance, while maintaining robustness against disturbances.",
+      "authors": [
+        "Nick Karydakis",
+        "Konstantinos Chatzilygeroudis"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.RO"
+      ],
+      "published": "2026-08-10T08:28:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.09272v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Real-time nonlinear MPC via SQP, transferable to whole-body locomotion control",
+      "llm_evidence_cn": "实时非线性模型预测控制方法，可迁移至全身运动控制",
+      "llm_evidence": "实时非线性模型预测控制方法，可迁移至全身运动控制",
+      "canonical_evidence": "实时非线性模型预测控制方法，可迁移至全身运动控制",
+      "llm_tldr_en": "Presents real-time nonlinear MPC with structure-exploiting ADMM and interior-point methods for an underactuated double-pendulum swing-up, demonstrating efficient optimal control.",
+      "llm_tldr_cn": "针对欠驱动双摆系统摆起与稳定任务，论文提出基于序贯二次规划的非线性模型预测控制，并借助结构挖掘的ADMM和内点法实现实时求解。在远程云摆硬件上验证了算法在未知模型参数下也能快速生成全局控制策略。该工作为腿式机器人等复杂欠驱动系统的全身运动预测控制提供了可借鉴的实时优化技术。",
+      "llm_tldr": "针对欠驱动双摆系统摆起与稳定任务，论文提出基于序贯二次规划的非线性模型预测控制，并借助结构挖掘的ADMM和内点法实现实时求解。在远程云摆硬件上验证了算法在未知模型参数下也能快速生成全局控制策略。该工作为腿式机器人等复杂欠驱动系统的全身运动预测控制提供了可借鉴的实时优化技术。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Model predictive control for whole body locomotion and walking",
+      "matched_requirement_id": "req-21",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.04196v1",
+      "source": "arxiv",
+      "title": "SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation",
+      "abstract": "Recent years have witnessed an explosive trend of scaling ego-centric human videos for robot manipulation, yet it remains unclear which data actually benefits dexterous manipulation. We present SiMDex, a similarity-based data mining framework that casts human data selection for VLA post-training in dexterous manipulation as a recommendation problem. For each robot demonstration, SiMDex employs a three-layer recall-ranking-re-ranking pipeline to extract task-relevant subsets from a pool of ~32M egocentric human samples, operating in a morphology-agnostic action space that requires no changes to VLA architecture or training. Against a strong baseline trained with an equal amount of randomly sampled human data, SiMDex uses only ~1.49M mined samples (<5% of the pool) yet improves the overall success rate from 47.7% to 61.1%, showing that selective curation outperforms indiscriminate data mixing.",
+      "authors": [
+        "Nie Lin",
+        "Takehiko Ohkawa",
+        "Sijin Chen",
+        "Ruoshi Wen",
+        "Zhuohang Li",
+        "Liqun Huang",
+        "Zhengming Zhu",
+        "Yiming Bao",
+        "Yunfei Li",
+        "Minjie Cai",
+        "Xiao Ma",
+        "Wei Xu",
+        "Yoichi Sato"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-04T19:55:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.04196v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses egocentric human videos as demonstration data for robot manipulation, an imitation learning approach",
+      "llm_evidence_cn": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
+      "llm_evidence": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
+      "canonical_evidence": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
+      "llm_tldr_en": "SiMDex mines similar egocentric human videos to select task-relevant demonstration data for VLA post-training, using a three-layer recall-ranking-re-ranking pipeline and a morphology-agnostic action space.",
+      "llm_tldr_cn": "本文提出SiMDex，一个基于相似度的数据挖掘框架，将人类视频数据选择视为推荐问题，用于灵巧操作的VLA后训练。它通过三层召回-排序-重排序流水线，在约3200万第一视角人类样本中为每个机器人演示提取任务相关子集，仅用约149万数据即可超越随机采样的强基线。该方法无需改变VLA结构，为跨具身模仿学习提供了高效的数据选择方案。",
+      "llm_tldr": "本文提出SiMDex，一个基于相似度的数据挖掘框架，将人类视频数据选择视为推荐问题，用于灵巧操作的VLA后训练。它通过三层召回-排序-重排序流水线，在约3200万第一视角人类样本中为每个机器人演示提取任务相关子集，仅用约149万数据即可超越随机采样的强基线。该方法无需改变VLA结构，为跨具身模仿学习提供了高效的数据选择方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.04196v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.10600v1",
+      "source": "arxiv",
+      "title": "BooST: Bridging Semantics and Motions for Efficient Skill Transfer",
+      "abstract": "Skill abstraction---the process of learning reusable and temporally extended behaviors---has emerged as a key paradigm for improving sample efficiency and generalization in robot learning. For efficient skill transfer to real robots, learned skills must generalize across tasks and domains, remain robust to visual and dynamic perturbations, and be efficient enough for practical deployment. However, existing methods typically satisfy only a subset of these properties, as they capture either high-level semantic intent (what) or low-level motion dynamics (how). This incomplete skill transfer yields weak priors for policy learning, thereby demanding substantial in-domain data for downstream adaptation. To address these challenges, we introduce BooST, a two-stage framework that explicitly bridges semantics and motions to satisfy all three desiderata. BooST first leverages a cross-modal VQ-VAE to capture both semantic intent and motion dynamics, yielding a unified skill representation. It then distills this representation into a lightweight policy for efficient downstream adaptation to new tasks. Extensive experiments across simulation and real-robot settings demonstrate that BooST achieves superior few-shot adaptation, cross-domain skill transfer, and robustness to dynamic visual distractors, while maintaining a lightweight yet expressive design suitable for real-world deployment.",
+      "authors": [
+        "Jusuk Lee",
+        "Daesol Cho",
+        "Jonghun Shin",
+        "Seungyeon Yoo",
+        "Jonghae Park",
+        "Taekbeom Lee",
+        "H. Jin Kim"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-11T07:35:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.10600v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Skill abstraction and transfer in robot learning; reusable behaviors for imitation learning",
+      "llm_evidence_cn": "机器人学习中的技能抽象与迁移，可复用于模仿学习",
+      "llm_evidence": "机器人学习中的技能抽象与迁移，可复用于模仿学习",
+      "canonical_evidence": "机器人学习中的技能抽象与迁移，可复用于模仿学习",
+      "llm_tldr_en": "Introduces BooST, a two-stage skill abstraction method that bridges semantic intent and motion dynamics, enabling efficient skill transfer across tasks and domains with improved robustness and sample efficiency.",
+      "llm_tldr_cn": "针对现有技能迁移只能在语义意图或运动动力学中取一的问题，提出BooST两阶段技能抽象框架，同时建模高层语义（做什么）与底层运动（怎么做），使技能在跨任务和域间迁移时具备更强的泛化性和鲁棒性，同时提升下游策略学习的样本效率。通过桥接语义与运动，为真实机器人上的高效技能复用提供了统一方案。",
+      "llm_tldr": "针对现有技能迁移只能在语义意图或运动动力学中取一的问题，提出BooST两阶段技能抽象框架，同时建模高层语义（做什么）与底层运动（怎么做），使技能在跨任务和域间迁移时具备更强的泛化性和鲁棒性，同时提升下游策略学习的样本效率。通过桥接语义与运动，为真实机器人上的高效技能复用提供了统一方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.05970v1",
+      "source": "arxiv",
+      "title": "SkillMemo: Expert-guided Skill Memory Framework for Compositional Embodied Manipulation",
+      "abstract": "Embodied visuomotor models, including Diffusion Policy (DP) and Vision-Language-Action (VLA) models, have demonstrated promising performance on robotic manipulation benchmarks. However, their potential remains fundamentally constrained by the scarcity of large-scale embodied trajectory datasets, leading to insufficient compositional generalization in out-of-distribution (OOD) scenarios with limited capability to capture reusable skill structures. To address this limitation, we propose Skill-Based Memory (SkillMemo) framework that implicitly decomposes long-horizon demonstrations into latent atomic skills and integrates skill-level features into a dynamic episodic memory bank for solving compositional tasks. Specifically, we first introduce an expert-guided trajectory segmentation module built upon a Mixture-of-Experts (MoE) architecture, which implicitly partitions trajectories into distinct skill primitives represented by learned gating coefficients. We further design a skill-level episodic memory architecture that stores compact skill representations as retrievable key-value pairs. During inference, the memory bank retrieves the most relevant skill primitives which are subsequently fused with the model's current gating distribution, providing a robust contextual prior to refine action predictions. Extensive experiments on the simulation benchmark and real-world manipulation tasks demonstrate that SkillMemo consistently enhances both DP and VLA backbones, achieving state-of-the-art performance and outperforming $π_{0.5}$, while exhibiting strong compositional generalization to unseen task configurations.",
+      "authors": [
+        "Changyuan Wang",
+        "Chubin Zhang",
+        "Zhenyu Wu",
+        "Runhao Li",
+        "Angyuan Ma",
+        "Ke Chao",
+        "Yinan Liang",
+        "Xiuwei Xu",
+        "Ziwei Wang",
+        "Yansong Tang",
+        "Jiwen Lu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-06T12:46:13+00:00",
+      "link": "https://arxiv.org/pdf/2608.05970v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "decomposes demonstrations into latent skills",
+      "llm_evidence_cn": "将演示分解为潜在技能用于模仿学习",
+      "llm_evidence": "将演示分解为潜在技能用于模仿学习",
+      "canonical_evidence": "将演示分解为潜在技能用于模仿学习",
+      "llm_tldr_en": "Expert-guided skill memory framework that decomposes demonstrations into latent atomic skills for compositional robotic manipulation.",
+      "llm_tldr_cn": "机器人操作中的扩散策略和VLA模型受限于示范数据稀缺，难以在分布外场景中组合泛化。作者提出SkillMemo，将长程示范隐式分解为潜在原子技能，并把这些技能级特征存入动态情景记忆库。在组合任务中，SkillMemo能够检索并复用相关技能，显著提升了操作成功率，缓解了数据不足导致的通用性瓶颈。",
+      "llm_tldr": "机器人操作中的扩散策略和VLA模型受限于示范数据稀缺，难以在分布外场景中组合泛化。作者提出SkillMemo，将长程示范隐式分解为潜在原子技能，并把这些技能级特征存入动态情景记忆库。在组合任务中，SkillMemo能够检索并复用相关技能，显著提升了操作成功率，缓解了数据不足导致的通用性瓶颈。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2608.05970v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09138v1",
+      "source": "arxiv",
+      "title": "SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning",
+      "abstract": "While learned robotic policies hold promise for advancing generalizable manipulation, their practical deployment is often hindered by suboptimal execution speeds. Imitation learning policies are inherently limited by hardware constraints and the speed of the operator during data collection. In addition, there are no established methods for accelerating policies learned via imitation, and the empirical relationship between execution speed and task success remains underexplored. To address these issues, we introduce SpeedTuning, a reinforcement learning framework specifically designed to enhance the speed of manipulation policies. SpeedTuning learns to predict the optimal execution speed for actions, thereby complementing a base policy without necessitating additional data collection. We provide empirical evidence that SpeedTuning achieves substantial improvements in execution speed, exceeding 2.4x speed-up, while preserving an adequate success rate compared to both the original task policy and straightforward speed-up methods such as linear interpolation at a fixed speed. We evaluate our approach across a diverse set of dynamic and precise tasks, including pouring, throwing, and picking, demonstrating its effectiveness and robustness in enhancing real-world robotic manipulation.",
+      "authors": [
+        "David D. Yuan",
+        "Tony Z. Zhao",
+        "Kaylee Burns",
+        "Chelsea Finn"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-10T05:31:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.09138v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "improves execution speed of policies learned via imitation using RL",
+      "llm_evidence_cn": "利用强化学习加速模仿学习策略的执行速度",
+      "llm_evidence": "利用强化学习加速模仿学习策略的执行速度",
+      "canonical_evidence": "利用强化学习加速模仿学习策略的执行速度",
+      "llm_tldr_en": "SpeedTuning speeds up manipulation policies learned by imitation via lightweight RL that predicts optimal action execution speed.",
+      "llm_tldr_cn": "针对模仿学习策略执行速度受限于操作员演示速度的问题，本文提出了SpeedTuning框架，利用轻量级强化学习来预测每个动作的最佳执行速度，在保持任务成功率的同时显著加速策略执行。实验表明，该方法能有效提升已有模仿策略的执行效率，为机器人操作策略的部署提供了实用的优化方案，填补了模仿学习后优化速度的研究空白。",
+      "llm_tldr": "针对模仿学习策略执行速度受限于操作员演示速度的问题，本文提出了SpeedTuning框架，利用轻量级强化学习来预测每个动作的最佳执行速度，在保持任务成功率的同时显著加速策略执行。实验表明，该方法能有效提升已有模仿策略的执行效率，为机器人操作策略的部署提供了实用的优化方案，填补了模仿学习后优化速度的研究空白。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09410v1",
+      "source": "arxiv",
+      "title": "Skills in Weights, Memory in Code: Hybrid Learning for Memory-Dependent Robot Manipulation",
+      "abstract": "Modern vision-language-action (VLA) policies have acquired broad manipulation skills, but typically generate each action chunk from the current observation or a short fixed-length history. However, real-world manipulation is often non-Markovian, requiring robots to retain and reason over task-relevant information from long-horizon interaction histories to determine the next action. To address this challenge, we propose HyMeS, a hybrid learning framework that leverages the reasoning and memory-management capabilities of coding agents to steer a Markovian VLA for memory-dependent manipulation. Specifically, HyMeS learns low-level motor skills through gradient-based imitation learning, while a coding agent acquires high-level memory-management strategies through heuristic learning by iteratively updating an executable heuristic system from rollout feedback. Furthermore, we close the loop between steering and execution through multimodal stage-completion verification, which updates memory using proprioceptive signals and multi-frame VLM judgments. Compared with end-to-end memory-augmented VLAs, HyMeS requires demonstrations only for reusable motor skills rather than for every history-dependent task configuration, enabling data-efficient compositional generalization. On RoboMemArena, HyMeS improves mean cumulative success from 52.5% to 66.2% and mean task success from 41.3% to 60.1% over pi0.5, while outperforming PrediMem by 4.5 points in cumulative success and 14.5 points in task success.",
+      "authors": [
+        "Yunhao Zhao",
+        "Zhenyang Ni",
+        "Haoyang Chen",
+        "Ruohan Zhang",
+        "Qi Zhu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T10:35:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.09410v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses gradient-based imitation learning for low-level robot skills",
+      "llm_evidence_cn": "利用梯度模仿学习获取机器人低层技能",
+      "llm_evidence": "利用梯度模仿学习获取机器人低层技能",
+      "canonical_evidence": "利用梯度模仿学习获取机器人低层技能",
+      "llm_tldr_en": "HyMeS hybridly learns memory-dependent robot manipulation: low-level skills via gradient imitation learning and high-level memory via coding agents, enabling long-horizon reasoning.",
+      "llm_tldr_cn": "现有VLA策略通常在马尔可夫假设下工作，难以处理需要长时间记忆的机器人操作任务。该文提出HyMeS混合学习框架，低层运动技能由梯度模仿学习获得，高层记忆管理交由编码体完成。该方法使机器人能够在复杂非马尔可夫任务中利用历史信息进行推理。实验表明其显著提升了记忆依赖操作的表现，拓宽了VLA策略的应用边界。",
+      "llm_tldr": "现有VLA策略通常在马尔可夫假设下工作，难以处理需要长时间记忆的机器人操作任务。该文提出HyMeS混合学习框架，低层运动技能由梯度模仿学习获得，高层记忆管理交由编码体完成。该方法使机器人能够在复杂非马尔可夫任务中利用历史信息进行推理。实验表明其显著提升了记忆依赖操作的表现，拓宽了VLA策略的应用边界。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09853v1",
+      "source": "arxiv",
+      "title": "RynnValue: Scaling Robotic Value Foundation Models with Temporal Distance",
+      "abstract": "General-purpose reward models are increasingly the bottleneck for scaling robot learning, yet the recipe for learning value-related capabilities from large-scale heterogeneous corpora remains underexplored. Existing approaches tie supervision to task-internal anchors such as preferences or normalized progress, none of which transfer cleanly across embodiments and data sources. We introduce RynnValue, an open-source value foundation model for robotic manipulation that replaces these anchors with temporal distance, the directed cost-to-go from an observation to the language-specified goal. Because temporal-distance labels can be derived directly from timestamps, RynnValue scales to over 7,000 hours and roughly 3M instruction-conditioned clips without preference or progress annotations. To make temporal-value learning reliable at scale, we combine random temporal sampling, temporal-order shuffling, and value-isolation attention, suppressing shortcuts that would leave predictions insensitive to failures and regressions. Trained without preference labels, RynnValue attains an average Kendall's tau_a of 0.675 on RBM-EVAL-OOD, surpassing the fully preference-supervised state of the art (0.655) and more than doubling a progress-only counterpart (0.292), while generalizing zero-shot to unseen tasks, embodiments, and viewpoints. Converted into dense rewards via potential-based shaping, it raises real-world policy success from 52.5% to 72.5% online and from 63.8% to 82.5% offline. These results establish temporal distance as a scalable supervision target and practical reward interface for generalist robot policies.",
+      "authors": [
+        "Dongchi Huang",
+        "Hongyin Zhang",
+        "Bohan Hou",
+        "Siteng Huang",
+        "Zhian Su",
+        "Hang Guo",
+        "Tong Lu",
+        "Zhaofeng Xu",
+        "Jiahao Tang",
+        "Jianfei Yang",
+        "Donglin Wang",
+        "Peixi Peng",
+        "Mingxiu Chen",
+        "Deli Zhao",
+        "Xin Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-10T17:09:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.09853v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "general-purpose reward model, value foundation model, temporal distance as reward",
+      "llm_evidence_cn": "通用奖励模型与价值基础模型，用时序距离学习奖励",
+      "llm_evidence": "通用奖励模型与价值基础模型，用时序距离学习奖励",
+      "canonical_evidence": "通用奖励模型与价值基础模型，用时序距离学习奖励",
+      "llm_tldr_en": "RynnValue learns a general-purpose robotic value foundation model by replacing task-internal reward anchors with temporal distance, enabling scalable reward learning from heterogeneous robot data.",
+      "llm_tldr_cn": "针对机器人学习中通用奖励模型难以规模化的问题，RynnValue提出用时间距离代替任务内锚点（如偏好或归一化进度）来学习价值基础模型。时间距离标签可直接从时间戳得到，因此该方法能在超过7000小时、约300万个指令条件剪辑的大规模异构数据上训练。实验表明RynnValue可跨实体与数据源迁移，为机器人操作提供了可扩展的奖励函数学习方法。这项工作直接服务于奖励函数学习这一需求方向。",
+      "llm_tldr": "针对机器人学习中通用奖励模型难以规模化的问题，RynnValue提出用时间距离代替任务内锚点（如偏好或归一化进度）来学习价值基础模型。时间距离标签可直接从时间戳得到，因此该方法能在超过7000小时、约300万个指令条件剪辑的大规模异构数据上训练。实验表明RynnValue可跨实体与数据源迁移，为机器人操作提供了可扩展的奖励函数学习方法。这项工作直接服务于奖励函数学习这一需求方向。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

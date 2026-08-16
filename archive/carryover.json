@@ -1,129 +1,34 @@
 {
-  "generated_at": "2026-08-09T20:53:41.537808+00:00",
-  "updated_date": "20260809",
+  "generated_at": "2026-08-16T20:02:46.103722+00:00",
+  "updated_date": "20260816",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
-      "updated_date": "20260809",
+      "updated_date": "20260816",
       "carryover_days": 9,
       "items": []
     },
     "inverse-rl": {
-      "updated_date": "20260809",
+      "updated_date": "20260816",
       "carryover_days": 9,
       "items": [
         {
-          "id": "2608.03875v1",
+          "id": "2608.10847v1",
           "source": "arxiv",
-          "title": "Enhancing VLM Reward Models Through Structure-Aware Fine-Tuning",
-          "abstract": "Designing effective reward functions remains a major bottleneck in Reinforcement Learning (RL). Recent work uses large foundation Vision-Language Models (VLMs) as reward models, computing text-observation similarity to bypass manual reward engineering. Although promising, these rewards are often noisy and unreliable, limiting their direct utility during deployment. We present Structure-Aware Fine-Tuning (SAFT), a simple, self-supervised method that refines these imperfect reward signals online without access to ground-truth supervision. SAFT leverages intrinsic structural priors to regularize the VLM's latent space via LoRA adapters. We rigorously evaluate SAFT across a spectrum of base model capabilities to demonstrate its versatility. Our results show that SAFT consistently denoises the reward landscape, yielding faster policy convergence and substantially improved alignment (EPIC distance) relative to the underlying base model, suggesting that failures can often be attributed to structural brittleness rather than semantic misunderstanding. By replacing extensive human preference annotation with structural inductive biases inherent to the task, SAFT offers a scalable path for stabilizing text-conditioned RL and underscores the broader value of incorporating task structure as a general inductive bias.",
+          "title": "Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support",
+          "abstract": "Kinesthetic teaching through robot hand-guiding provides a natural interface for collecting demonstrations in imitation learning and programming-by-demonstration. However, extended sessions cause operator fatigue, reducing demonstration quality and limiting scalability. Current industrial hand-guiding approaches typically provide no active assistance, and alternatives require costly wrist-mounted force-torque sensors or rely on learned motion priors unavailable for new tasks. We propose RHOAS, a hand-guiding scheme that actively supports operator-intended motions using model-based force estimation without additional hardware. Our approach considers robot hand-guiding as an actively controlled interaction by the human operator, rather than an interaction with a passive environment. Standard methods used for hand-guiding typically rely on general passivity-based compliant control architectures that unnecessarily increase operator effort and limit the range of demonstrable motions without providing the intended stability guarantees in active interaction. Instead, our design utilizes model-based external torque estimation, internal joint torque sensing, and redundant robot kinematics to actively support human physical input within the human interaction frequency bandwidth. We address practical challenges of relying on observer-based force estimation, including suppression of unmodeled joint elastic dynamic effects and measurement noise in the feedback path, reduced estimate accuracy close to kinematic singularities, and static gravity compensation errors. In a user study with 16 participants on a KUKA LWR iiwa we demonstrate statistically significant reductions in physical effort, improved maneuverability for both precise and agile tasks, and clear user preference.",
           "authors": [
-            "Pyrros Koussios",
-            "Chenhao Li",
-            "Xin Chen",
-            "Andreas Krause"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG",
-            "cs.AI"
-          ],
-          "published": "2026-08-04T16:15:12+00:00",
-          "link": "https://arxiv.org/pdf/2608.03875v1",
-          "tags": [
-            "keyword:MPC-WBC",
-            "keyword:inverse-rl",
-            "keyword:locoWBC",
-            "query:MPC-WBC",
-            "query:inverse-rl",
-            "query:locoWBC"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "reward function learning via structure-aware fine-tuning of VLM rewards",
-          "llm_evidence_cn": "通过结构感知微调VLM奖励进行奖励函数学习",
-          "llm_evidence": "通过结构感知微调VLM奖励进行奖励函数学习",
-          "canonical_evidence": "通过结构感知微调VLM奖励进行奖励函数学习",
-          "llm_tldr_en": "Reward engineering remains a bottleneck in RL. This paper proposes Structure-Aware Fine-Tuning (SAFT) to refine noisy VLM-based reward signals online via LoRA adapters and intrinsic structural priors, improving reliability across varied base models without ground-truth supervision.",
-          "llm_tldr_cn": "强化学习依赖的VLM奖励模型往往噪声大且不可靠。论文提出结构感知微调（SAFT），利用LoRA适配器与内在结构先验，在无真值监督下在线精化奖励信号。实验覆盖多种基础模型，证明SAFT能显著提升VLM奖励的可靠性和有效性。",
-          "llm_tldr": "强化学习依赖的VLM奖励模型往往噪声大且不可靠。论文提出结构感知微调（SAFT），利用LoRA适配器与内在结构先验，在无真值监督下在线精化奖励信号。实验覆盖多种基础模型，证明SAFT能显著提升VLM奖励的可靠性和有效性。",
-          "llm_tags": [
-            "query:inverse-rl"
-          ],
-          "matched_query_tag": "query:inverse-rl",
-          "matched_query_text": "reward function learning",
-          "matched_requirement_id": "req-6",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.03875v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.03103v1",
-          "source": "arxiv",
-          "title": "A Hierarchical Approach to Imitation Learning for Manipulation Tasks Requiring Time Varying Forces",
-          "abstract": "Diffusion policies have shown strong performance in learning complex, multi-modal behaviors for robotic manipulation. However, their application to contact-rich disassembly tasks remains limited by a key trade-off: the iterative denoising process introduces inference latencies that makes high frequency control difficult, which is essential for realizing dynamic interactions such as chiseling and prying. Recent action-chunking techniques mitigate latency but use an open-loop execution window, rendering the system blind to rapid force transients caused by fracture events. To bridge this gap, we introduce the Diffusion Policy Augmented by Fast Trajectory Generation (DPA-FTG). Compared to recent visual-tactile approaches that focus on positional correction, DPA-FTG decouples low-frequency planning from high-frequency force regulation. At the high level ($5$ Hz), a conditional diffusion model predicts a sequence of latent parameters for selecting a strategy from a learned vocabulary of task primitives. At the low level ($60$ Hz), a lightweight, force-conditioned policy acts as a neural impedance controller, modulating execution in real-time to maintain contact stability. We validate our approach on a bimanual battery disassembly task involving the separation of a compliant sheet. Experimental evaluation demonstrates that DPA-FTG outperforms state-of-the-art baselines, including Reactive Diffusion Policy (RDP).",
-          "authors": [
-            "Rishabh Shukla",
-            "Adithya Santhosh",
-            "Shaili Gandhi",
-            "Samrudh Moode",
-            "Satyandra K. Gupta"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI"
-          ],
-          "published": "2026-08-04T04:21:00+00:00",
-          "link": "https://arxiv.org/pdf/2608.03103v1",
-          "tags": [
-            "keyword:MPC-WBC",
-            "keyword:inverse-rl",
-            "keyword:locoWBC",
-            "query:MPC-WBC",
-            "query:inverse-rl",
-            "query:locoWBC"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "hierarchical imitation learning with diffusion policy and fast trajectory generation for contact-rich tasks",
-          "llm_evidence_cn": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
-          "llm_evidence": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
-          "canonical_evidence": "面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成",
-          "llm_tldr_en": "This paper presents DPA-FTG, a hierarchical imitation learning approach that augments diffusion policies with fast trajectory generation, enabling high-frequency control for dynamic contact-rich disassembly.",
-          "llm_tldr_cn": "扩散策略在接触丰富的拆卸任务中面临推理延迟，难以实现高频力控。该工作提出 DPA-FTG，通过快速轨迹生成增强扩散策略，形成层次化模仿学习框架。它既保留扩散策略的多模态表达能力，又能闭环响应瞬时力变化，实验表明在凿、撬等动态接触任务中优于现有方法，为高动态操作提供新思路。",
-          "llm_tldr": "扩散策略在接触丰富的拆卸任务中面临推理延迟，难以实现高频力控。该工作提出 DPA-FTG，通过快速轨迹生成增强扩散策略，形成层次化模仿学习框架。它既保留扩散策略的多模态表达能力，又能闭环响应瞬时力变化，实验表明在凿、撬等动态接触任务中优于现有方法，为高动态操作提供新思路。",
-          "llm_tags": [
-            "query:inverse-rl"
-          ],
-          "matched_query_tag": "query:inverse-rl",
-          "matched_query_text": "imitation learning",
-          "matched_requirement_id": "req-1",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.03103v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.03872v1",
-          "source": "arxiv",
-          "title": "EvoHIL: Self-Evolving Reward and Flow-Matched Policy Optimization for Robust Human-in-the-Loop Reinforcement Learning",
-          "abstract": "Human-in-the-loop reinforcement learning (HIL-RL) enables robots to learn contact-rich manipulation from limited real-world interaction, but deployment exposes three coupled limitations: static visual reward models fail under scene changes; independently sampled actions cause temporally inconsistent motion; and vision-based policies remain sensitive to appearance shifts. We present EvoHIL, a unified framework that adapts the reward model, action generator, and visual do main within a staged human-in-the-loop learning process. First, self-evolving reward (SER) adapts the success classifier from human-confirmed positives and provisional weak negatives. Second, Action Flow Stabilization (AFS) generates temporally coherent action chunks through flow matching, grounding policy updates in executed action prefixes and demonstrated behavior. Third, retention-aware offline fine-tuning replays relit interaction data while anchoring the AFS actor-critic to prior behavior, adapting the visual domain without additional robot interaction. Across six manipulation tasks on Franka FR3 and SO-101 arms under a controlled lighting shift, EvoHIL improves task success, agreement with human-confirmation labels, motion smoothness, and completion time relative to human-in-the-loop and imitation baselines.Project page: https://anonymous4366.github.io/EvoHIL/",
-          "authors": [
-            "Shuoqin Zhang",
-            "Tongtong Cheng",
-            "Xiru Gao",
-            "Jinzhuo Peng",
-            "Bin Zheng",
-            "Jiahao Tu",
-            "Ke Wang",
-            "Jia Pan",
-            "Zhe Hu",
-            "Kai Liu"
+            "Anna Tuma",
+            "Giuseppe Monetti",
+            "Jochen J. Steil",
+            "Niels Dehio"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-08-04T16:12:05+00:00",
-          "link": "https://arxiv.org/pdf/2608.03872v1",
+          "published": "2026-08-11T12:19:17+00:00",
+          "link": "https://arxiv.org/pdf/2608.10847v1",
           "tags": [
             "keyword:MPC-WBC",
             "keyword:inverse-rl",
@@ -133,64 +38,13 @@
             "query:locoWBC"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "self-evolving reward model for human-in-the-loop RL",
-          "llm_evidence_cn": "人在回路强化学习中的自演进奖励模型",
-          "llm_evidence": "人在回路强化学习中的自演进奖励模型",
-          "canonical_evidence": "人在回路强化学习中的自演进奖励模型",
-          "llm_tldr_en": "Human-in-the-loop RL framework with self-evolving reward, flow-matched policy optimization and visual domain adaptation for robust manipulation learning.",
-          "llm_tldr_cn": "人在回路强化学习能使机器人从有限真实交互中学习接触丰富操作，但静态奖励模型难以应对场景变化，且动作采样不一致。作者提出EvoHIL，统一自适应奖励模型、动作流稳定和视觉域转换。通过人类确认的正样本和临时弱负样本自演进奖励模型，并用流匹配稳定动作序列，显著提升了操纵学习在场景与外观变化下的鲁棒性和效率。",
-          "llm_tldr": "人在回路强化学习能使机器人从有限真实交互中学习接触丰富操作，但静态奖励模型难以应对场景变化，且动作采样不一致。作者提出EvoHIL，统一自适应奖励模型、动作流稳定和视觉域转换。通过人类确认的正样本和临时弱负样本自演进奖励模型，并用流匹配稳定动作序列，显著提升了操纵学习在场景与外观变化下的鲁棒性和效率。",
-          "llm_tags": [
-            "query:inverse-rl"
-          ],
-          "matched_query_tag": "query:inverse-rl",
-          "matched_query_text": "reward function learning",
-          "matched_requirement_id": "req-6",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.03872v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.05970v1",
-          "source": "arxiv",
-          "title": "SkillMemo: Expert-guided Skill Memory Framework for Compositional Embodied Manipulation",
-          "abstract": "Embodied visuomotor models, including Diffusion Policy (DP) and Vision-Language-Action (VLA) models, have demonstrated promising performance on robotic manipulation benchmarks. However, their potential remains fundamentally constrained by the scarcity of large-scale embodied trajectory datasets, leading to insufficient compositional generalization in out-of-distribution (OOD) scenarios with limited capability to capture reusable skill structures. To address this limitation, we propose Skill-Based Memory (SkillMemo) framework that implicitly decomposes long-horizon demonstrations into latent atomic skills and integrates skill-level features into a dynamic episodic memory bank for solving compositional tasks. Specifically, we first introduce an expert-guided trajectory segmentation module built upon a Mixture-of-Experts (MoE) architecture, which implicitly partitions trajectories into distinct skill primitives represented by learned gating coefficients. We further design a skill-level episodic memory architecture that stores compact skill representations as retrievable key-value pairs. During inference, the memory bank retrieves the most relevant skill primitives which are subsequently fused with the model's current gating distribution, providing a robust contextual prior to refine action predictions. Extensive experiments on the simulation benchmark and real-world manipulation tasks demonstrate that SkillMemo consistently enhances both DP and VLA backbones, achieving state-of-the-art performance and outperforming $π_{0.5}$, while exhibiting strong compositional generalization to unseen task configurations.",
-          "authors": [
-            "Changyuan Wang",
-            "Chubin Zhang",
-            "Zhenyu Wu",
-            "Runhao Li",
-            "Angyuan Ma",
-            "Ke Chao",
-            "Yinan Liang",
-            "Xiuwei Xu",
-            "Ziwei Wang",
-            "Yansong Tang",
-            "Jiwen Lu"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI"
-          ],
-          "published": "2026-08-06T12:46:13+00:00",
-          "link": "https://arxiv.org/pdf/2608.05970v1",
-          "tags": [
-            "keyword:MPC-WBC",
-            "keyword:inverse-rl",
-            "keyword:locoWBC",
-            "query:MPC-WBC",
-            "query:inverse-rl",
-            "query:locoWBC"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "decomposes demonstrations into latent skills",
-          "llm_evidence_cn": "将演示分解为潜在技能用于模仿学习",
-          "llm_evidence": "将演示分解为潜在技能用于模仿学习",
-          "canonical_evidence": "将演示分解为潜在技能用于模仿学习",
-          "llm_tldr_en": "Expert-guided skill memory framework that decomposes demonstrations into latent atomic skills for compositional robotic manipulation.",
-          "llm_tldr_cn": "机器人操作中的扩散策略和VLA模型受限于示范数据稀缺，难以在分布外场景中组合泛化。作者提出SkillMemo，将长程示范隐式分解为潜在原子技能，并把这些技能级特征存入动态情景记忆库。在组合任务中，SkillMemo能够检索并复用相关技能，显著提升了操作成功率，缓解了数据不足导致的通用性瓶颈。",
-          "llm_tldr": "机器人操作中的扩散策略和VLA模型受限于示范数据稀缺，难以在分布外场景中组合泛化。作者提出SkillMemo，将长程示范隐式分解为潜在原子技能，并把这些技能级特征存入动态情景记忆库。在组合任务中，SkillMemo能够检索并复用相关技能，显著提升了操作成功率，缓解了数据不足导致的通用性瓶颈。",
+          "llm_evidence_en": "improves kinesthetic teaching for collecting demonstrations in imitation learning",
+          "llm_evidence_cn": "改进动觉示教以采集模仿学习演示数据",
+          "llm_evidence": "改进动觉示教以采集模仿学习演示数据",
+          "canonical_evidence": "改进动觉示教以采集模仿学习演示数据",
+          "llm_tldr_en": "RHOAS provides active support for robot hand-guiding using model-based force estimation to reduce operator fatigue and scale demonstration collection for imitation learning.",
+          "llm_tldr_cn": "针对动觉示教中操作者长时间引导导致疲劳、演示质量下降的问题，本文提出RHOAS，利用基于模型的力估计主动支撑操作者的预期运动，无需额外硬件即可减轻负担。该方法将手引导视为人机主动控制交互，在采集演示时保持高质量数据，显著提升了模仿学习与编程演示的可扩展性，为大规模示范数据收集提供了实用方案。",
+          "llm_tldr": "针对动觉示教中操作者长时间引导导致疲劳、演示质量下降的问题，本文提出RHOAS，利用基于模型的力估计主动支撑操作者的预期运动，无需额外硬件即可减轻负担。该方法将手引导视为人机主动控制交互，在采集演示时保持高质量数据，显著提升了模仿学习与编程演示的可扩展性，为大规模示范数据收集提供了实用方案。",
           "llm_tags": [
             "query:inverse-rl"
           ],
@@ -198,37 +52,27 @@
           "matched_query_text": "imitation learning",
           "matched_requirement_id": "req-1",
           "selection_source": "carryover_cache",
-          "paper_id": "2608.05970v1",
+          "paper_id": "2608.10847v1",
           "carry_days": 1
         },
         {
-          "id": "2608.02580v1",
+          "id": "2608.10453v1",
           "source": "arxiv",
-          "title": "Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data",
-          "abstract": "Learning generalizable robot manipulation policies requires large-scale and diverse demonstration data. Egocentric human manipulation videos offer rich scene and task diversity, and prior work has shown that retargeting and rendering such videos into robot-format data can yield effective per-task policies at small scale. However, whether this approach can provide pretraining benefits for vision-language-action models at scale remains unexplored. We present \\textbf{Ego2Robot}, a scalable pipeline that converts egocentric human manipulation videos into robot training data through action retargeting, robot-arm visual synthesis, and multi-level quality curation. Ego2Robot supports both curated datasets and in-the-wild videos, producing 18,561 hours of robot training data spanning 15 robot morphologies, making it the largest ego-to-robot dataset to date. To evaluate generalization, we extend RoboTwin2.0 with disentangled perturbation axes covering visual appearance, scene layout, embodiment morphology, and task semantics. Experiments show that joint pretraining on Ego2Robot-synthesized and robot data consistently improves out-of-distribution generalization across multiple perturbation types, with benefits validated on real-robot deployment. Project page: https://www-ye.github.io/ego2robot_blog/",
+          "title": "From Privileged Control to Deployable Adaptation:Fusing Mechanism-Guided Task Reduction with Learned Behavior",
+          "abstract": "Simultaneous input-gain variation and large additive disturbance create a control problem in which a fixed observer or nominal controller may be unable to reproduce the performance of a regime-aware design. We study a training--deployment asymmetry: during simulation or commissioning, an expert controller is allowed to use the known gain and disturbance, whereas the deployed controller can use only the reference and measured states. Directly imitating expert actions is generally unsafe because the same instantaneous student observation may correspond to different privileged regimes and hence different expert actions. We propose a mechanism-guided transfer route rather than a new neural architecture. An exact sampled-data identity removes the additive disturbance from the expert law and reduces learning to a task-relevant inverse input gain inferred from causal state history. The latent target is reconstructed from expert actions and deployment-visible trajectories, so the true plant parameter is not required as a student label. A common-quadratic certificate is derived for the actual augmented sampled recursion, followed by explicit residual, coverage, switching, noise, and saturation qualifications. A parameter-regime scan shows that the nominal observer's error grows sharply as $a$ decreases and that the next gain above the best non-failing tuning diverges for every tested $a<1$. Direct action networks also fail in closed loop despite moderate offline error, whereas the structured student remains close to the privileged expert and reduces tracking RMSE by about 69\\% relative to the tuned observer in unseen 60-s trials. The contribution is an interpretable design perspective for turning privileged multi-regime control knowledge into a deployable adaptive controller, together with conditions under which the transfer is meaningful.",
           "authors": [
-            "Ye Wang",
-            "Pei Lin",
-            "Xiong-Hui Chen",
-            "Haoqi Yuan",
-            "Zhixuan Liang",
-            "Yiyang Huang",
-            "Anzhe Chen",
-            "Zixing Lei",
-            "Jie Zhang",
-            "Tao Zhang",
-            "Haoyang Li",
-            "Tong Zhang",
-            "Chenxi Xiao",
-            "Ziyuan Jiao",
-            "Qin Jin"
+            "Xitong Niu",
+            "Peifeng Hui",
+            "Zheyong Jiang",
+            "Yuan Gao",
+            "Chuanlin Zhang"
           ],
-          "primary_category": "cs.RO",
+          "primary_category": "eess.SY",
           "categories": [
-            "cs.RO"
+            "eess.SY"
           ],
-          "published": "2026-08-03T17:52:26+00:00",
-          "link": "https://arxiv.org/pdf/2608.02580v1",
+          "published": "2026-08-11T04:06:47+00:00",
+          "link": "https://arxiv.org/pdf/2608.10453v1",
           "tags": [
             "keyword:MPC-WBC",
             "keyword:inverse-rl",
@@ -238,13 +82,13 @@
             "query:locoWBC"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "Converts egocentric human videos into robot demonstration data for imitation learning",
-          "llm_evidence_cn": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
-          "llm_evidence": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
-          "canonical_evidence": "将人类第一视角视频转化为机器人演示数据，服务于模仿学习",
-          "llm_tldr_en": "Ego2Robot scales robot data synthesis from egocentric human videos through action retargeting, visual synthesis, and curation, generating 18,561 hours for VLA pretraining.",
-          "llm_tldr_cn": "机器人策略泛化需要大规模多样演示数据，而现有研究尚未验证从人类视频合成数据的规模化收益。本文提出Ego2Robot流水线，通过动作重定向、机械臂视觉合成与多级质量筛选，将人类第一视角操作视频转换为机器人格式数据，生成18561小时的数据，可用于视觉-语言-动作模型的大规模预训练。该方法证明了从人类视频规模化构建机器人演示数据的可行性。",
-          "llm_tldr": "机器人策略泛化需要大规模多样演示数据，而现有研究尚未验证从人类视频合成数据的规模化收益。本文提出Ego2Robot流水线，通过动作重定向、机械臂视觉合成与多级质量筛选，将人类第一视角操作视频转换为机器人格式数据，生成18561小时的数据，可用于视觉-语言-动作模型的大规模预训练。该方法证明了从人类视频规模化构建机器人演示数据的可行性。",
+          "llm_evidence_en": "addresses safe imitation of expert actions under privileged information",
+          "llm_evidence_cn": "处理特权信息下安全模仿专家动作的问题",
+          "llm_evidence": "处理特权信息下安全模仿专家动作的问题",
+          "canonical_evidence": "处理特权信息下安全模仿专家动作的问题",
+          "llm_tldr_en": "The paper proposes a mechanism-guided transfer route for control under privileged expert information, avoiding unsafe direct imitation and enabling deployable adaptation.",
+          "llm_tldr_cn": "在训练与部署不对称的条件下，专家控制器可利用特权和扰动信息，而部署端只能使用参考和量测状态，直接模仿专家动作可能不安全。该文提出机制引导的迁移线路而非新网络结构，通过任务约简融合学习行为，实现可部署的自适应控制。实验表明该方法能处理输入增益变化和大幅扰动，为安全模仿学习提供了新思路。",
+          "llm_tldr": "在训练与部署不对称的条件下，专家控制器可利用特权和扰动信息，而部署端只能使用参考和量测状态，直接模仿专家动作可能不安全。该文提出机制引导的迁移线路而非新网络结构，通过任务约简融合学习行为，实现可部署的自适应控制。实验表明该方法能处理输入增益变化和大幅扰动，为安全模仿学习提供了新思路。",
           "llm_tags": [
             "query:inverse-rl"
           ],
@@ -252,67 +96,13 @@
           "matched_query_text": "imitation learning",
           "matched_requirement_id": "req-1",
           "selection_source": "carryover_cache",
-          "paper_id": "2608.02580v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.04196v1",
-          "source": "arxiv",
-          "title": "SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation",
-          "abstract": "Recent years have witnessed an explosive trend of scaling ego-centric human videos for robot manipulation, yet it remains unclear which data actually benefits dexterous manipulation. We present SiMDex, a similarity-based data mining framework that casts human data selection for VLA post-training in dexterous manipulation as a recommendation problem. For each robot demonstration, SiMDex employs a three-layer recall-ranking-re-ranking pipeline to extract task-relevant subsets from a pool of ~32M egocentric human samples, operating in a morphology-agnostic action space that requires no changes to VLA architecture or training. Against a strong baseline trained with an equal amount of randomly sampled human data, SiMDex uses only ~1.49M mined samples (<5% of the pool) yet improves the overall success rate from 47.7% to 61.1%, showing that selective curation outperforms indiscriminate data mixing.",
-          "authors": [
-            "Nie Lin",
-            "Takehiko Ohkawa",
-            "Sijin Chen",
-            "Ruoshi Wen",
-            "Zhuohang Li",
-            "Liqun Huang",
-            "Zhengming Zhu",
-            "Yiming Bao",
-            "Yunfei Li",
-            "Minjie Cai",
-            "Xiao Ma",
-            "Wei Xu",
-            "Yoichi Sato"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.CV",
-            "cs.LG"
-          ],
-          "published": "2026-08-04T19:55:12+00:00",
-          "link": "https://arxiv.org/pdf/2608.04196v1",
-          "tags": [
-            "keyword:MPC-WBC",
-            "keyword:inverse-rl",
-            "keyword:locoWBC",
-            "query:MPC-WBC",
-            "query:inverse-rl",
-            "query:locoWBC"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "uses egocentric human videos as demonstration data for robot manipulation, an imitation learning approach",
-          "llm_evidence_cn": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
-          "llm_evidence": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
-          "canonical_evidence": "利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴",
-          "llm_tldr_en": "SiMDex mines similar egocentric human videos to select task-relevant demonstration data for VLA post-training, using a three-layer recall-ranking-re-ranking pipeline and a morphology-agnostic action space.",
-          "llm_tldr_cn": "本文提出SiMDex，一个基于相似度的数据挖掘框架，将人类视频数据选择视为推荐问题，用于灵巧操作的VLA后训练。它通过三层召回-排序-重排序流水线，在约3200万第一视角人类样本中为每个机器人演示提取任务相关子集，仅用约149万数据即可超越随机采样的强基线。该方法无需改变VLA结构，为跨具身模仿学习提供了高效的数据选择方案。",
-          "llm_tldr": "本文提出SiMDex，一个基于相似度的数据挖掘框架，将人类视频数据选择视为推荐问题，用于灵巧操作的VLA后训练。它通过三层召回-排序-重排序流水线，在约3200万第一视角人类样本中为每个机器人演示提取任务相关子集，仅用约149万数据即可超越随机采样的强基线。该方法无需改变VLA结构，为跨具身模仿学习提供了高效的数据选择方案。",
-          "llm_tags": [
-            "query:inverse-rl"
-          ],
-          "matched_query_tag": "query:inverse-rl",
-          "matched_query_text": "imitation learning",
-          "matched_requirement_id": "req-1",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.04196v1",
+          "paper_id": "2608.10453v1",
           "carry_days": 1
         }
       ]
     },
     "MPC-WBC": {
-      "updated_date": "20260809",
+      "updated_date": "20260816",
       "carryover_days": 9,
       "items": []
     }

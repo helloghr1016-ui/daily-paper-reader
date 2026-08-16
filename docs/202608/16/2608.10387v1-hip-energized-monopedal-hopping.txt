@@ -1,0 +1,3258 @@
+Title: Hip Energized Monopedal Hopping
+
+URL Source: https://arxiv.org/pdf/2608.10387v1
+
+Published Time: Wed, 12 Aug 2026 00:34:32 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Hip Energized Monopedal Hopping Journal Title XX(X):1–35 ©The Author(s) 2023 Reprints and permission: sagepub.co.uk/journalsPermissions.nav DOI: 10.1177/ToBeAssigned www.sagepub.com/ 
+
+SAGE 
+
+Shane Rozen-Levy 1, Griffon McMahon 1, and Daniel Koditschek 2
+
+Abstract 
+
+We present a novel stepping strategy for pitch unlocked planar monopeds where the reaction torques from stabilizing pitch with a conventional PD + feedfoward controller are recruited to counteract energetic losses from damping. By moving the location of the mass center, our controller increases the pitch stabilization torque, thereby adding energy to the gait. A new stepping policy adjusts the distribution of energy between the radial and angular degrees of freedom to counteract dissipative losses and achieve a user specified balance between steady state fore-aft speed and apex height. Hybrid averaging analysis yields closed form expressions for the fixed points and eigenvalues of the resulting gait, lending insight into the interplay between the physical and control parameters’ influence on performance. Simulation studies on a generic 5 link biped and a careful model of the Penn Jerboa reveal a useful correspondence to these analytical predictions. Physical experiments on the Penn Jerboa exhibit stable locomotion with speeds ranging from 
+
+1.02 m /s to 1.77 m /s (5.10 leg lengths /s to 8.85 leg lengths /s) in a manner effectively approximated by the mathematical analysis. 
+
+Keywords 
+
+Legged Robots, Dynamics, Humanoid and Bipedal Locomotion 
+
+1 Introduction 
+
+Recent progress in the design and control of legged robots has led to impressive demonstrations of agility and robustness (Bledt and Kim 2019, 2020; Kumar et al. 2021; Hwangbo et al. 2019; Lee et al. 2020; Siekmann et al. 2021; Yim et al. 2023; Nahrendra et al. 2023; Chen et al. 2023; Margolis et al. 2022). At the same time, the design of quadrupeds has converged to robots with 3 motors per leg in a serial configuration (Katz et al. 2019; Hutter et al. 2016; Bledt et al. 2018), allowing robots to command arbitrary ground reaction forces with each leg subject to friction cone constraints. This paradigm enables control strategies that plan in centroidal dynamics ignoring kinematic concerns (Bledt and Kim 2019; Bledt et al. 2018; Dai and Tedrake 2016). The benefits here are clear, yet questions arise regarding the need for such highly actuated legs, or in view of inevitable mass-specific power limitations, whether it might be better to either redistribute a subset of actuators elsewhere or design controllers which better utilize the available power with the goal of all available actuators contributing useful work during locomotion. The Penn Jerboa (De and Koditschek 2015b) in Figure 1A attempts to address some of these questions by using a high-powered 2 DoF tail at the expense of affording only one actuator at each hip of its passive spring-loaded legs. Moreover, unlike many bipeds, it features small point toes rather than flat feet (Apgar et al. 2018), limiting its angular momentum affordance in stance in exchange for fewer actuators in its legs. Jerboa’s more proximal and lower number of actuators forces it to operate in a comparatively more energetic regime where all of the motors are doing useful work, suggesting that it should be able to turn much of its high power density ( 43 .2 W /kg (Kenneally et al. 2016)) into speed and height. Previous work on Jerboa has focused on using the tail to drive energy into the shank spring (Shamsah et al. 2018; De and Koditschek 2015b), acting as a spring-loaded inverted pendulum (SLIP) (Saranli et al. 1998). Shank-actuated SLIP has its own benefits, but this work pursues the previous questions concerning actuator distribution by relegating the tail actuators’ role to (at most) that of low-power “shape shifters,” thereby exploring the possibility that a hip-actuated monoped can achieve full dynamic sagittal plane mobility using only one motor (Saranli et al. 2001). The empirical success and analytical insight resulting from this study in extreme underactuated mobility advances the project of developing SLIP template control schemes for more generic anchoring bodies (Full and Koditschek 1999) whose abundant high-power actuators can more effectively energize the system to achieve more agile behaviors. In this paper we present a hip energized control strategy for dynamical monoped locomotion taking the form of a new stepping controller (22) that recruits the pitch stabilizing reaction torques to energize the mass center. We leverage hybrid averaging with a novel set of coordinates (14) to analyze the new control strategy, achieving formal stability guarantees in Theorem 1 and closed form expressions for fixed points as a function of physical and control parameters          
+
+> 1GRASP Lab, Department of Mechanical Engineering and Applied Mechanics, University of Pennsylvania, Philadelphia, PA, USA
+> 2GRASP Lab, Department of Electrical and Systems Engineering, University of Pennsylvania, Philadelphia, PA, USA
+> Corresponding author:
+> Shane Rozen-Levy, 3401 Grays Ferry Ave, Philadelphia, PA, 19146 Email: srozen01@seas.upenn.edu
+> Prepared using sagej.cls [Version: 2017/01/17 v1.20] arXiv:2608.10387v1 [cs.RO] 11 Aug 2026 2Journal Title XX(X)
+> Figure 1. The two robots on which we test our control strategy,
+> (A) is the Penn Jerboa (Shamsah et al. 2018), a tailed biped with springy legs and only four actuators: one driving the leg angle at each hip and two controlling the 2 DoF tail. (B) is a generic planar 5-link biped on which we tested our controller. Most of the mass is in the torso, and the legs act like virtual springs.
+
+in (30). 1 The analysis suggests that in cases where a biped/monoped’s center of mass is not stacked directly over the hip, the orientation control should also be recruited to to energize the translational subsystem. In these cases, an asymmetric stepping strategy is beneficial — and under reasonable assumptions, as shown in Theorem 2, will actually be a necessary feature of steady state hopping — to realize the energetic gains. We have implemented this strategy in simulation on two different robot morphologies and on the hardware Jerboa where it achieved stable speeds ranging from 1.02 m /s to 1.77 m /s (i.e., 5.1 leg lengths /sto 8.85 leg lengths /s). Comparisons to the tail-energized hopping results of Shamsah et al. (2018) who reported speeds ranging from 0.2 – 1.0 m /s on this same machine suggest that a hip energized hopping strategy might offer some advantages for directing a biped’s available power budget toward its running behavior 2. More broadly, the analysis and empirical results presented here offer a better understanding of how hip torques can be used to energize dynamical locomotion in legged machines. 
+
+1.1 Background Literature 
+
+Prior work on hip energized SLIP has focused either on approximating the SLIP return map while achieving a constant angular momentum (Ankarali and Saranli 2010) or on using the hip torque of a SLIP-like robot to direct the ground reaction force through a body frame virtual pivot point (VPP, also virtual point) (Maus et al. 2010). After relating these numerical simulation studies to our results, we will conclude this review of salient prior work with a brief introduction to our central analytical tool, hybrid averaging (De et al. 2018). Contrasting with our appeal to those foregoing numerical and analytical advances, to the best of our knowledge, no empirical demonstration of hip energized monopedal hopping has previously appeared in the legged locomotion literature. Our hip torque controller takes substantial inspiration from the simple, open loop strategy introduced by Ankarali and Saranli (2010) in that it is nearly constant and open loop once the pitch subsystem achieves its fixed point. However, their approach does not stabilize pitch as does ours. Moreover, their SLIP numerical stance map approximation — resulting from linearizing the leg angle about vertical and iterative approximation of the mean angular momentum — cannot afford the insights (explicit functional expressions for the fixed points and stability conditions) provided by our mathematical analysis. Finally, they do not implement their controller on a physical robot. Our controller has also been partly inspired by the VPP phenomenon wherein animals’ gaits produce ground reaction forces that appear to intersect at a fixed point in the body frame. Its decade prior identification and study (Maus et al. 2010; M¨ uller et al. 2017; Blickhan et al. 2018; Drama et al. 2020; Drama and Badri-Spr¨ owitz 2020) offers the first (and, to the best of our knowledge, heretofore, the only) account in the legged locomotion literature addressing the problem of stabilizing pitch while also stably energizing hopping through application of hip torques. Specifically, numerical simulation suggests that hip energized SLIP with attitude can be stabilized by a control strategy that targets a VPP (Sharbafi et al. 2012), whose refined placement and variation can further improve the resulting gait (Firouzi et al. 2019; Lee et al. 2017; Vu et al. 2017; Sharbafi et al. 2013). Much of this numerical work combines the VPP-targeting hip torque with a stepping strategy that fixes the velocity vector’s touchdown angle relative to vertical (Peuker et al. 2012; Sharbafi et al. 2013), with subsequent improvements achieved by an adjusted convex combination of the angle between the touchdown velocity and gravitational force vectors (Firouzi et al. 2019; Sharbafi et al. 2013). In contrast, our provably correct controller does not target a VPP but, nevertheless, appears to achieve it (see Figure 9 and the associated discussion in Section 4.4). Again to the best of our knowledge, there has been only one attempted physical implementation of a VPP-targeting controller on a biped (reported in the MS thesis work of Peekema (2015)) which suggests that further analytical work beyond the scope of this paper might well elucidate the stability properties of that intriguing control approach and reveal further missing key features to facilitate its apparently challenging jump from simulation to hardware. Hybrid averaging (De et al. 2018) is an extension of classical averaging (Guckenheimer and Holmes 2013) to hybrid dynamical systems with only one hybrid mode and whose initial development was used to analyze monopedal hopping (De et al. 2018) and quadrupedal running (De and Koditschek 2018b). We are able to extend the analysis of these previous 1.5 DoF models to the full 2 DoF SLIP by slightly relaxing the algorithmic check list of sufficient conditions developed in De (2017) while still retaining the formal guarantees of De and Koditschek (2018a) that achieve ϵ-close fixed points and stability of the Poincar´ ereturn map, even absent integrable dynamics. A more recent prior contribution to the hybrid averaging literature merely conjectures averageability (Shamsah et al. 2018). In addition, an interesting new contribution to this literature (Sun et al. 2023a,b) uses hybrid averaging to design an empirically useful VPP based feedback controller for a quadruped, but replaces assumptions governing relative parameter magnitudes and constant approximations to (some narrow range of values attained by nonlinear-in-state) expressions in the dynamics (e.g. Tables 3, 4, and 5) with assumptions that impose a priori small bounds on states — tantamount to assuming stability in the first place. In the space of dynamic tailed robots there have been several studies including prior work on the Jerboa in (Shamsah et al. 2018) where the authors explore a tail energized gait on Jerboa capable of up to 20 hops in a pitch unlocked regime (compared to the unlimited hopping achieved in this). In (An et al. 2020), the authors explore a different tail-energized  
+
+> Prepared using sagej.cls 3
+
+gait on a Jerboa-like robot. While the theoretical controller promises additional affordances over rate-of-convergence in comparison to the (Shamsah et al. 2018) controller, the empirical results are limited to a whose accompanying videos suggest that it is barely able hop. In simulation work of (Liu and Ben-Tzvi 2021, 2023), the authors explore an articulated-tail using feedback linearization and numerical optimal control to demonstrate some of the advantages of tails for quadrupedal and bipedal locomotion. In an interesting but somewhat further removed work by (Heim et al. 2016), the authors use an open loop CPG controller with a tail to stabilize body pitch in the Cheetah-Cub robot suggesting that tails can help stabilize pitch. The Cheetah-Cub achieved speeds of up to 0.56 m /s and 63 strides with a bounding gait. The work reported here advances beyond these prior contributions by enabling higher speed and more reliable hoping whose empirical performance we undergird with a complete stability proof for this sagittal plane setting. 
+
+1.2 Contributions 
+
+This paper introduces an analytically tractable hip-only actuated controller for 3 DoF (pitch-unlocked) SLIP with attitude capable of producing stable steady state hopping in simulation and hardware. A variety of physical insights motivate a series of assumptions (listed in Tables 3, 4, and 5, in the order they are applied) to decompose the stance dynamics as the cascade composition of the 1 DoF attitude perturbing the 2 DoF translational subsystem, thereby inspiring the control strategy and simplifying the analysis. The results, summarized in Table 1 include: 
+
+A Novel Control Strategy: As summarized in Table 7, the stance control is used to stabilize pitch and, in so doing, energizes the translational subsystem. The stepping controller adjusts the leg touchdown angle so as to redistribute energy between the attitude and translational subsystems, counteracting energetic losses due to damping and ensuring a balanced distribution of energy between the fore-aft and vertical degrees of freedom. 
+
+3 DoF Fixed Point and Stability Analysis: Theorem 1 ex-ploits the assumptions and the linear time invariant structure of the pitch subsystem (affording straightfor-ward identification of its fixed points and their stability in Proposition 1) to justify focusing analytical effort on the unperturbed translational (SLIP) subsystem. The fixed points and stability of this highly nonlinear 2 DoF system are rendered tractable by an application of hybrid averaging (the first time that a physically realistic model of the full SLIP dynamics has yielded analytical results to the best of our knowledge) in Proposition 2, made possible by recourse to a novel change of coordinates (14). 
+
+The Necessity of Stepping Asymmetry: Our choice of coordinates reveals that there is a fundamental connection between an asymmetric stepping strategy and a hip energized regime as shown in Theorem 2. The asymmetric stepping strategy is necessary to introduce a strong hybrid coupling between the weakly coupled radial and angular subsystems of SLIP in stance and prevent the energy of the angular subsystem from increasing in an unbounded fashion while energy in the radial subsystem decreases to zero. 
+
+Numerical and Hardware Implementation: Simulation of the controller on a planar biped and tailed biped where the range of hopping steady states in Figure 6 is predicted with roughly 6–14% accuracy by the analytical model as summarized in Table 9. Simulation analysis of the control strategy reveals a fourfold affordance over energy in both the planar biped and tailed biped Figure 6. Moreover, hardware experiments on a tailed biped with a range of hopping steady states plotted in Figure 10 are predicted with roughly 12–16% accuracy by the analytical model as summarized in Table 10. These hardware results document the high speed sagittal plane (boom constrained) hopping (5.1 leg lengths /s to 8.85 leg lengths /s) mentioned above. 
+
+1.3 Paper Overview 
+
+The paper begins with a mathematical analysis of hip energized pitch unlocked SLIP in Section 2. Section 3 details the small adjustments to our controller that we made to improve the basin of attraction in simulation and hardware. Section 4 then presents the results of implementing the controller in simulation for Jerboa and the 5-link biped, and Section 5 presents the hardware results for Jerboa. The paper concludes with a brief summary of results and immediate next steps in Section 6. 
+
+2 Model and Formal Analysis 
+
+In this section, we analyze the dynamics of pitch unlocked SLIP subject to our novel controller (Table 7A). In order to facilitate analysis of the salient interactions between the various degrees of freedom, the assumptions in Table 3 decompose pitch unlocked SLIP (Section 2.1) into an independent attitude subsystem (Section 2.2) whose output cascades to perturb the translational 2 DoF SLIP subsystem (Section 2.3). Theorem 1 summarizes the overarching consequences of these subordinate results (as described more intuitively in Section 2.4), formalizing the manner in which the analysis of the constituent subsystems (Propositions 1 and 2) yields explicit fixed points (30) and stability guarantees for the complete 3 DoF system 3.We model the robot’s stance mode dynamics as SLIP (Saranli et al. 1998) with attitude (Figure 2C). In addition to the shank spring, we include radial damping to account for friction and other dissipative forces as well as a hip motor that adds energy to the system to counteract the energetic losses due to damping. The inputs to the system are the center of mass offset d, the target pitch ϕd, and a target energy ratio ψde
+
+(14). Since not every robot has an internal degree of freedom to control d, we define a new input dx combining ϕd and d in 
+
+dx := d cos ϕd
+
+as the steady state x projection of the center of mass offset. By varying the disturbance on pitch from the COM offset through adjusting dx (30), the pitch controller (2) and (4) affects how much energy the hip torque is injecting into  
+
+> Prepared using sagej.cls
+
+4 Journal Title XX(X) 
+
+Table 1. List of the various models, results, and assumptions 
+
+Case Model Fixed Points Stability Assumptions 
+
+3 DoF SLIP Figure 2C and (1) (30) Theorem 1 Table 3 to decompose the system and Tables 4 and 5 for SLIP hybrid averaging 1 DoF Pitch Figure 2A and (11) (13) Proposition 1 Table 3 2 DoF SLIP Figure 2B and (19) and (55) (18) Proposition 2 Tables 4 and 5 Planar Biped Figure 1B Figure 6 Simulation N/A Planar Jerboa Figure 1A Figures 8 and 10 Simulation and hardware N/A 
+
+Table 2. Symbol definitions 
+
+Symbol Brief Description First Appearance 
+
+p = [ px, p z ] Fore-aft and vertical location of the COM in the world frame Figure 2 
+
+ϕ Body pitch (1) 
+
+r, θ Leg length, leg angle (1) 
+
+m, I Body mass, body inertia (1) 
+
+k, r 0 Leg spring constant, rest length (1) 
+
+τ Hip torque applied between leg and body (1) 
+
+b Leg extension damping coefficient (1) 
+
+d Distance between center of mass and hip (1) 
+
+g Acceleration due to gravity (1) 
+
+ωr Natural frequency of the leg spring and body mass system (1) 
+
+dx x projection of distance between center of mass and hip (1c) 
+
+Fs = −k(r − r0) − b ˙r Radial force from the (unactuated) damped springy Assumption 5 
+
+kp, k d Proportional, derivative gain for continuous time pitch controller (2) 
+
+¯τ Feedforward hip torque term (2) 
+
+□d Desired value for □ (2) 
+
+kτ Integral gain for discrete time pitch controller (4) 
+
+qs = [ r, θ, ˙r, ˙θ]T ∈ S := T (R+ × S1) Translational 2 DoF SLIP coordinates (5a) 
+
+qa = [ ϕ, ˙ϕ, ¯τ ]T ∈ A := T S1 × R Orientation (1 DoF pitch attitude including hybrid discrete hip torque) coordinates (5b) 
+
+P : S × A → S × A Exact 3 DoF SLIP with attitude liftoff return map (6) 
+
+A : A → A Isolated pitch attitude return map (7) 
+
+S : S × A → S Perturbed translational SLIP return map (8) 
+
+□∗ Fixed point for □ (9) 
+
+Sϕ∗ := S(·, q∗ 
+
+> a
+
+) : S → S Unperturbed translational SLIP return map (9) 
+
+bSϕ∗ : S → S Averaged translational SLIP return map (10) 
+
+ˆ□ Averaged quantity for □ Proposition 2 
+
+ψr Ratio of signed radial kinetic to spring-potential energy (14) 
+
+ψe Ratio of signed angular to radial kinetic and potential energy (14) 
+
+ae Twice the mass-specific square root of energy for 2 DoF SLIP energy (units of m/s)(14) 
+
+z = [ ψr , ψ e, θ, a e] State vector in physical (non-averageable) coordinates (14) 
+
+hs : qs 7 → z Map from standard SLIP coordinates to physical coordinates (14) 
+
+y = [σ, ˜ψe, ψ θ , a e]T State vector in offset coordinates (15) 
+
+hΞ : z 7 → y Map from physical coordinates to offset coordinates (15) 
+
+x = [δT aT ]T = [ δe, δ θ , a e]T State vector in phase difference coordinates (16) 
+
+hω : y 7 → x Map from offset coordinates to phase difference coordinates (16) 
+
+Rz : zlo 7 → ztd SLIP flight map for z (19) 
+
+Πi Projection onto the ith component of a vector (21) 
+
+α Low pass filter gain for stepping controller (22) 
+
+ke Proportional energy ratio gain for stepping controller (22b) 
+
+ωe(a) The first element of ω(a) (22b) 
+
+ωθ (a) The second element of ω(a) (24) 
+
+the system. This can be understood most clearly through (1c) and (4): if the pitch deviates from its desired value due to dx, then the energizing hip torque ¯τ will change to account for that disturbance. As a result, the hip torque both energizes the translational SLIP subsystem and stabilizes the pitching subsystem system. It is convenient to treat  
+
+> Prepared using sagej.cls
+
+53 DoF SLIP System         
+
+> ABC
+> Pitching Subsystem 2 DoF SLIP Subsystem Stance Mode Control Law (2)
+> Stance mode discrete inputs
+> Figure 2. The stance mode dynamics of the pitch unlocked 3 DoF SLIP model (C) viewed as the cascade composition of an isolated closed loop pitch subsystem (A) studied in Section 2.2 disturbing the translational dynamics of a 2 DoF SLIP subsystem (B) studied in Section 2.3. The blue symbols denote model parameters, the red symbol denotes the sole available continuous time stance control input ( τ), , and the black symbols denote state variables or functions of state variables. Figure 5 contains a block diagram for the hybrid control strategy.
+
+dx as a user-selected input to the system since it affords direct control authority over steady state energy. Independent control of steady state pitch ϕ∗ is impossible without the further affordance of an additional internally adjusted DoF which is present in Jerboa (Figure 1A) but not the planar biped (Figure 1B). The stepping controller (22), stabilizes the energy ratio ψe (14), which measures the distribution of the energy between the θ and r subsystems of the 2 DoF SLIP subsystem. At touchdown, the stepping controller (22) moves energy from the hip torque energized angular subsystem to the decaying r subsystem in order to prevent ˙θ from increasing in an unbounded fashion. 
+
+2.1 Decomposition of Pitch Unlocked SLIP 
+
+In this section we decompose the 3 DoF (pitch unlocked) SLIP with attitude into an independent 1 DoF pitching subsystem whose dynamics perturbs the 2 DoF translational SLIP subsystem via the actuated hip torque that couples them. The hip torque stabilizes the pitching subsystem while energizing the SLIP subsystem. 
+
+2.1.1 Decomposition Assumptions of Table 3 Starting with the Lagrangian model of the 3 DoF SLIP (Figure 2C), we make the assumptions listed in Table 3 to decompose the system. Assumptions 1 to 3 serve to limit the effect of the pitching dynamics on the SLIP subsystem to influences only arising from the hip torque. Assumption 4 prevents the SLIP subsystem from coupling into the pitch subsystem via the state dependent guards of the translational SLIP subsystem. Assumption 5 prevents the SLIP state from coupling into the open loop pitching dynamics in a manner detailed in Section A.1. Intuitively, the parameter χ stands in for influence on angular momentum about the toe contributed by the hip-displaced mass center. Specifically, compensating for the elimination of certain coupling torques near steady state conditions, χ abstracts the physical observation that on a steady state trajectory, this contribution is typically decreasing. Finally Assumptions 6 and 7 prevent the SLIP state from affecting the pitching dynamics via the torque control law. Specifically, Assumption 7 is a small angle approximation (Geyer et al. 2005) about θ = Ξ θ which allows us to incorporate some of gravity’s effect due to the slight asymmetry about θ = 0 in our system near its fixed point. 4 We use Ξθ,g as defined in (31) to avoid a transcendental implicit function in the fixed point computation of (17) when ¯τ is a function of a∗ (13) and to preserve a cascade composition. 
+
+2.1.2 Simplified Stance Dynamics Applying the assump-tions from Table 3 to the full dynamics in (39), we have a 2 DoF translation SLIP subsystem (1a) and (1b) and a 1 DoF pitching subsystem (1c) coupled via the control input τ . The stance dynamics are 
+
+¨r = ω2 
+
+> r
+
+(r0 − r) − b ˙rm + r ˙θ2 − g cos θ (1a) 
+
+¨θ = τmr 2 + g sin θr − 2 ˙ r ˙θr (1b) 
+
+¨ϕ = dxχmg I − τI (1c) where ωr := pk/m is the natural frequency of the spring mass system. The simplified pitching dynamics (1c) expose the hip torque’s large control authority over the orientation, revealing that it must counteract a disturbance from the center of mass offset. 
+
+2.1.3 A Pitch Stabilizing and CoM Energizing Hip Torque Law The goal of the torque is to stabilize the pitching system while also energizing the 2 DoF SLIP subsystem. To this end,  
+
+> Prepared using sagej.cls
+
+6 Journal Title XX(X)         
+
+> Table 3. Decomposition assumptions applied to continuous time stance dynamics. A †denotes an assumption that is only applied to the pitching dynamics (39c)
+> Assumption # Formula First use Justification Consequence
+> 1
+
+d2 ≈ 0 (39) d ≈ 0.06 m ≪ r ≈ 0.2 m (1) 2 τ d ≈ 0 (39) Small torque (2) 5 and small d (1) 3 ˙ϕ2 ≈ 0 (39) ˙ϕ starts small, has minimal perturbations, and vanishes along the steady state trajectory (1) 4 Time of flight, Tf , and time of stance, Ts, are fixed (11) Longstanding empirical observation from Raibert (1986); De and Koditschek (2018b) (11) 5† d cos( θ − ϕ)Fs ≈ dxχmg for 
+
+dx := d cos ϕd and constant χ   
+
+> (39c) See Section A.1 (1c) 6†
+
+¯τ r ≈ ¯τ r 0 (2) Small deflection ( ≈ 0.1 leg lengths) due to spring stiffness and limited range of motion 6 
+
+> (3) 7†
+
+g sin θ ≈ g sin Ξ θ,g , where Ξθ,g is the value of Ξθ (a∗) assuming gravity acts radially (2) Approximation of gravity’s influence arising from asymmetric steady state stance (e.g., Figure 7H) (3) 
+
+the stance phase continuous time hip torque control policy takes the form 
+
+τ := ¯ τ r − mgr sin θ − ϵk p(ϕd − ϕ) + √ϵk d ˙ϕ . (2) This strategy incorporates a feedforward bias term ¯τ whose value is held constant in stance but updated each succeeding aerial mode as a function of the pitch error at the liftoff event. This hybrid discrete event feedback control is intended to eventually cancel dxχmg , the disturbance on the pitching system from the radial dynamics of (1a) (whose continuous variation during stance we choose to neglect in favor of the constant moment dxχmg for reasons introduced in the commentary on Assumption 5 in Section 2.1.1 and detailed in Section A.1). The second term is a continuously varying within-stance feedforward expression intended to cancel the effect of gravity on the translational angular dynamics (1b). The final two terms are a conventional continuously varying within-stance proportional derivative controller intended to regulate pitch ϕ to a target ϕd and the angular velocity ˙ϕ
+
+to 0. By including a gravity compensation term in (2), we transform the effect of gravity on (1b) into a disturbance on (1c). Leveraging Assumptions 6 and 7 the continuous time hip torque control policy for the pitching subsystem is 
+
+τ = ¯ τ r 0 − mgr 0 sin Ξ θ,g − ϵk p(ϕd − ϕ) + √ϵk d ˙ϕ , (3) thereby decoupling the pitch subsystem from the influence of the translational dynamics in the continuous time stance mode (for the purposes of analysis of the pitch subsystem, albeit not in implementation). For the implementation we use (2). The discrete stride event torque bias update law is 
+
+¯τk+1 = ¯ τk + ϵ2kτ (ϕlo ,k − ϕd) , (4) which is calculated at liftoff, and the new value of ¯τ (adjusted by the discrepancy between the attitude at the current liftoff 
+
+ϕlo ,k and the desired attitude ϕd) is applied during the next stance. In stance, the proportional derivative (PD) terms in (2) quickly bring the pitching subsystem to its equilibrium point, which is offset from ϕd due to the constant disturbance from dxχmg and ¯τ in (1c). The discrete time integrator (4) is measuring the steady state error of the continuous time PD loop in (2). As a result, the integrator drives the stance dynamics to a trajectory where, on average, ¯τ cancels the pitch disturbance due to the force in the leg resulting in zero steady state error. In turn ¯τ will energize the 2 DoF translational SLIP subsystem. 
+
+2.1.4 Cascade Structure Under the control law in (2) and (4), the hybrid dynamics of the pitching subsystem do not depend on the 2 DoF SLIP subsystem while the 2 DoF SLIP subsystem is perturbed by the pitching subsystem leading to a cascade composition (Sontag 2008). We denote the translational and orientation components of the system, respectively, as 
+
+qs := [ r, θ, ˙r, ˙θ]T ∈ S := T (R+ × S1) (5a) 
+
+qa := [ ϕ, ˙ϕ, ¯τ ]T ∈ A := T S1 × R (5b) where qs is the state of the 2 DoF SLIP subsystem in stance, 7
+
+and qa is the state of the attitude (pitching) subsystem, augmented by the hybrid discrete event torque offset value 
+
+¯τ , which will be varied from stride to stride according to (4). In this manner, by a slight abuse of notation, we conflate the continuous time states of the Lagrangian stance mode dynamics qs and qa with their discrete time values sampled at the liftoff event — introducing a subscripted time stamp, 
+
+k ∈ N when the distinction is not immediately clear from the context. We denote by 
+
+P : S × A → S × A , (6) the exact closed loop return map expressed in liftoff coordinates of the complete 3 DoF SLIP with attitude depicted in Figure 2C. The formal specification of this hybrid  
+
+> Prepared using sagej.cls
+
+7
+
+dynamical system is given by stance dynamics (1), subject to the closed loop feedback (2) in stance, guarded by the liftoff condition ( r = r0 and ˙r > 0), followed by a reset map determined in part by hybrid hip torque adjustment (4) and in part by ballistic flight interrupted by the stepping strategy (22). The cascade structure of this map arising from the assumptions of Table 3 takes the form P (qs, qa) = [S(qs, qa), A (qa)] T , where 
+
+A : A → A (7) denotes the isolated pitch return map governing the body attitude (49) (depicted in Figure 2A) to be derived in Section 2.2, and 
+
+S : S × A → S (8) denotes the translational component of the exact return map as perturbed by the pitching states. For purposes of analysis, we will be concerned with the unperturbed form of this map 
+
+Sϕ∗ : S → S : qs 7 → S(qs, q∗
+
+> a
+
+) , (9) resulting from the convergence of the (isolated, asymptotically stable) pitching subsystem to its steady state q∗ 
+
+> a
+
+=[ϕ∗, 0, ¯τ ∗]T ∈ A (13). Finally, after applying a further set of assumptions governing the translational dynamics listed in Table 4, we will derive and study carefully in Section 2.3 the map 
+
+bSϕ∗ : S → S , (10) an approximant of the actual unperturbed translational return map Sϕ∗ resulting from the hybrid averaging analysis of Section C, whose local stability properties determine those of 
+
+Sϕ∗ .Initially when the pitching subsystem is away from its fixed point, it perturbs the 2 DoF SLIP subsystem via the discrete time changes of ¯τ (4) and through some small continuous time influences from the PD terms in the hip torque control law (2). Once the pitching subsystem converges to its fixed point (13), the perturbations die out leaving just a constant ¯τ
+
+which energizes the 2 DoF SLIP subsystem (Section 2.3.4). 
+
+2.1.5 Fixed Points and Stability Theorem 1 presents the overall logic of our formal result, summarizing our analysis of the full 3 DoF SLIP system by first finding fixed points and stability for the pitching subsystem before studying the unperturbed 2 DoF SLIP subsystem and, finally, reasoning about the cascade interconnection dynamics of the former considered as a transient perturbation into the latter. 
+
+Theorem 1. Stability of 3 DoF Pitch-Unlocked SLIP. Under assumptions in Table 3 imposed upon the 3-DoF SLIP with attitude system depicted in Figure 2C and the assumptions in Tables 4 and 5 imposed upon the translational subsystem depicted in Figure 2B, the closed loop liftoff return map of the 3 DoF SLIP with attitude P , (6) has fixed points 
+
+q∗ = [ q∗
+
+> a
+
+, q∗ 
+
+> s
+
+] (30). Moreover, further assuming Conjecture 1 and the algebraic bounds on controller parameters posited in Proposition 1 and Lemma 2, there is some ϵ0 > 0 such that for all 0 < ϵ < ϵ 0, these fixed points are asymptotically stable. 
+
+Proof. The assumptions in Table 3 imply that the pitching subsystem is isolated from the translational subsystem, hence according to Proposition 1, A has an exponentially stable fixed point at q∗ 
+
+> a
+
+(13). Additionally according to Proposition 2, under the assumptions from Tables 4 and 5, the unperturbed translational subsystem Sϕ∗ has a fixed point ϵ close the averaged fixed point ˆx∗ (18), and is exponentially stable for all 0 < ϵ < ϵ 0 for some ϵ0 > 0 and ϵk e, ϵα ∈ (0 , 1) .Leveraging the changes of coordinates defined in (14) to (16), 
+
+ˆx∗ can be lifted to ˆqs∗ (30c) which is ϵ-close to q∗ 
+
+> s
+
+(30b). According to Conjecture 1, it also follows from the exponential stability of bSϕ∗ that the unperturbed limit cycle generating the return map Sϕ∗ is locally exponentially stable in continuous time, hence has bounded-input-bounded-output (BIBO) stability with respect to continuous time disturbances which are small enough to keep the state of the translational subsystem within the basin of attraction of its linearized dynamics. Thus for sufficiently small initial conditions, the exponentially decaying disturbing inputs from the pitching subsystem excite exponentially decaying continuous time responses in the translational subsystem (due to its BIBO stability), and both subsystems’ hybrid discrete event states exponentially approach the fixed point. 
+
+2.2 Pitching Subsystem 
+
+Due to the assumptions in Table 3, the pitching subsystem (consisting of pitch and hip torque integrator) incurs no influence from the translational (SLIP) subsystem and takes the form of a simple time switched hybrid dynamical system with two modes characterized, respectively, by ballistic flight and PD-controlled stance dynamics. 
+
+2.2.1 Dynamics In order to account for the integrator introduced by the discrete time hybrid stride event torque control law (4), it is convenient to write the closed loop pitch subsystem dynamics affected by the hip torque command (2) in the state qa = [ ϕ, ˙ϕ, ¯τ ]T (5b) as 
+
+I ¨ϕ =
+
+
+
+dxFs
+
+I − ¯τ r 0 − mgr 0 sin Ξ θ,g 
+
++ ϵk p(ϕd − ϕ) − √ϵk d ˙ϕ,   
+
+> Tf≤t≤Tf+Ts
+
+0, 0≤t≤Tf
+
+(11a) 
+
+˙¯τ = 0 (11b) where Tf and Ts, the time of flight and stance constants, respectively, introduced in Assumption 4 determine the stride period T = Ts + Tf (which we identify with t = 0 for purposes of the continuous time stance mode dynamics), triggering the reset 
+
+
+
+ϕ
+
+˙ϕ
+
+¯τ
+
+ 7 →
+
+
+
+ϕ
+
+˙ϕ
+
+¯τ + ϵ2kτ (ϕlo − ϕd)
+
+ (12) arising from (4) and the continuity of the pitch states ϕ and 
+
+˙ϕ across the liftoff event. Since the pitch dynamics (11) are linear time invariant and the pitch reset map (12) is linear, the discrete time pitch return map (7) is a linear time invariant dynamical system.  
+
+> Prepared using sagej.cls
+
+8 Journal Title XX(X) 2.2.2 Fixed Points Fixed points of the time switched pitching return map A can be directly calculated by finding a fixed point of the continuous time flight dynamics and stance dynamics (11) which is invariant under the reset map (12). A necessary condition for the invariance of a state q∗ 
+
+> a
+
+under reset (12) is that ϕ∗ = ϕd. On the other hand, a sufficient condition for q∗ 
+
+> a
+
+to be an equilibrium state of both continuous dynamics modes is that both ˙ϕ∗ = 0 and ¨ϕ |q∗ 
+
+> a
+
+= 0 . Applying the necessary reset condition to the sufficient equilibrium condition now yields a sufficient hybrid dynamics fixed point condition taking the form of an implicit function in ¯τ arising from the requirement ¨ϕ = 0 in stance mode of (11). Solving this implicit function for ¯τ yields the fixed point 
+
+q∗ 
+
+> a
+
+=
+
+
+
+ϕ∗
+
+˙ϕ∗
+
+¯τ ∗
+
+ =
+
+
+
+ϕd
+
+0 
+
+> mg r0
+
+(χd x − r0 sin (Ξ θ,g )) 
+
+ (13) of the complete hybrid (time switched) pitch subsystem A.
+
+2.2.3 Pitching Subsystem Stability Since the discrete time return map A takes the form of an LTI system, determining sufficient conditions for asymptotic stability is straightforward. 
+
+Proposition 1. Pitch Subsystem Stability. The hybrid dynamical pitching subsystem (11) detailed in Section 2.2.1 is stable for 0 < ϵk pTsTf 
+
+> I
+
+< 4, √ϵk d = 2 pϵk pI, and 0 <ϵ2kτ < 2ϵIk ϕ
+
+> r0Ts
+
+(√ϵk pI−Tf κ) where κ := 
+
+q ϵk ϕTs 
+
+> Tf
+
+and ϵk ϕ :=  
+
+> ϵk pTsTf
+> I
+
+.
+
+Proof. See Section B. The constraints on kp, k d, and kτ in Proposition 1 are conservatively chosen to facilitate the analytical tractability of the stability analysis. As discussed in Section 3, practical implementation of the pitching controller entails ensuring that the system is sufficiently damped to achieve a small angular velocity at liftoff. This, in turn, prevents a large error in pitch from accumulating in flight wherein there is no direct affordance over pitch. 
+
+2.3 SLIP with Damping and Hip Actuation: Unperturbed Analysis 
+
+In this section we analyze the dynamics and stability of the unperturbed 2-DoF SLIP subsystem (Figure 2B) and its hybrid return map Sϕ∗ . Recall that this subsystem arises from an evaluation of the full 3-DoF SLIP with attitude (Figure 2C) at the fixed point of the pitching subsystem (Figure 2A). The SLIP control policy replenishes the total translational energy of the 2 DoF CoM lost in stance from damping with the hip torque (2) while regulating the ratio of its energies with a new stepping feedback law (22). While the pitching subsystems dynamics (11) are linear time invariant, the 2-Dof SLIP subsystem includes nonlinear hybrid dynamics which include non-integrable stance dynamics (Ghigliazza et al. 2003), precluding an exact expression for even the return map (much less its fixed points and conditions for their stability). Instead, in Proposition 2 we use hybrid averaging (Section C) to obtain closed form expressions that approximate its fixed points and to derive (similarly computationally effective) sufficient conditions for their stability. The stability proof in Proposition 2 takes advantage of a novel set of coordinates presented in Section 2.3.2 which treats SLIP not as a parallel composition (Raibert 1986; De and Koditschek 2018a) but instead as a unitary 2 DoF system. The assumptions in Table 4, reviewed in Section 2.3.3, enable computation of the averaged stance dynamics and fixed points in Section 2.3.4. Analysis of the hybrid structure in Section 2.3.5 implies not only that a hip energized gait requires an asymmetric stepping strategy as demonstrated in Theorem 2, but also facilitates the construction of our stepping strategy (22) which regulates the ratio of the SLIP subsystems energies. Finally, Proposition 3 relates the equilibrium state of the averaged stance dynamics to the fixed point of the averaged SLIP return map bSϕ∗ leading the way to the stability conditions of Lemma 2. 
+
+2.3.1 Hybrid Averaging Hybrid averaging (De et al. 2018) is a method of studying nonlinear hybrid dynamics systems and yields ϵ-close fixed points of the Poincar´ e return map and stability guarantees without requiring integrable dynamics (De et al. 2018). Hybrid averaging divides a system into fast phase states with O(1) dynamics, and slow “energy” states with O(ϵ) dynamics. The hybrid averaging theorem (De et al. 2018) applies to systems with one state playing the role of a phase variable and whose remaining “energy” states are invariant under the flight map. Such rigid requirements preclude the na¨ ıve application of hybrid averaging to many systems of interest including SLIP. De (2017) presents an algorithm taking the form of a checklist of conditions that are, cumulatively, sufficient for applying hybrid averaging to systems with more than one phase that obey Definition 1 8. De’s insight is that on the closed orbit, all phases are locked with different relative frequencies and a constant set of phase offsets. De uses this to calculate a change of coordinates (16) from many phases to one master phase whose resulting ancillary phase offsets can be conceptually reconceived as components of the “energy” state. In Section C we extend De’s work to a similarly sufficient computational checklist (Section C.2), that can be applied to systems which satisfy his Definition 1 (i) and (ii), but not Definition 1 (iii). However, rather than substituting a relaxed alternative sufficient condition in our revision to the checklist of Definition 1, we instead arrive at a system that directly satisfies the hypotheses of De et al. (2018) Theorem 2. 
+
+Proposition 2. Stability of Unperturbed Translational SLIP Subsystem. Under the assumptions in Tables 4 and 5 and the controllers presented in Table 7A, there is some ϵ0 > 0
+
+such that the unperturbed translational SLIP subsystem’s return map Sϕ∗ (9) (depicted in Figure 2B) is stable for all 
+
+0 < ϵ < ϵ 0 and ϵk e, ϵα ∈ (0 , 1) at a fixed point ϵ-close to the averaged fixed point ˆx∗ (18). 
+
+Proof. The result will follow by showing that the stated hypotheses suffice to satisfy the conditions of De et al. (2018) Theorem 2. To do so, first note that according to De (2017) lemma 6, under the projection hω ◦ hΞ defined in Section C.2 and (15), the system (56) is of the form of De et al. (2018) equation 12, whose averaged vector  
+
+> Prepared using sagej.cls
+
+9
+
+field, ˆf (17) has an equilibrium state, ˆx∗, displayed in (18). Next, Proposition 3 and the values of Ξθ (25b), Ξe (25a) ensure that R( ˆ x∗) = ˆ x∗ (23), establishing that the averaged hybrid system satisfies conditions (ii.a) and (ii.b) of De et al. (2018) Theorem 2. Moreover, Lemma 1 demonstrates that DxRx(x) = S0 + ϵS 1(x, ϵ ), where S0 is constant and invertible, and its unity eigenvalues have diagonal Jordan blocks, satisfying condition (i) of De et al. (2018) Theorem 2. Finally the averaged return map is hyperbolic at ˆx∗
+
+according to Lemma 2 satisfying condition (ii.c) of De et al. (2018) Theorem 2. Thus, according to De et al. (2018) Theorem 2, the unperturbed 2-DoF SLIP subsystem’s return map Sϕ∗ has the same stability type as the averaged unperturbed 2-Dof SLIP subsystem bSϕ∗ . But Lemma 2 also proves under the conditions stated in the hypothesis of this proposition that bSϕ∗ is asymptotically stable and the desired conclusion now follows. 
+
+2.3.2 Choice of Coordinates for Asymmetric SLIP Stance Mode Dynamics The unperturbed SLIP subsystem Sϕ∗ (9) arises from an evaluation of S (8) at the fixed point of the pitching subsystem (13), whereby in stance the control (2) reduces to the expression 
+
+τ (t) = ¯ τ ∗r − mgr sin θ
+
+for the pitching subsystem’s steady state torque ¯τ ∗ specified by (13). This control law imparts a constant force perpendicular to r to add energy to the system while also cancelling the effect of gravity in (1b). In shank energized SLIP, it is commonly assumed that the leg’s angular velocity ˙θ and the “energy” in the radial direction ar are roughly constant along the steady state hybrid dynamics trajectory corresponding to the fixed point of the return map (De and Koditschek 2015b; Raibert 1986). In hip energized SLIP, these assumptions are no longer valid since the hip torque accelerates θ, and there is no shank actuator to counteract the energetic losses from damping on ar. This inherent variation of values along the steady state stance mode trajectories precludes a direct application of the hybrid averaging ideas developed in De et al. (2018) since that theory requires that the “energy” have a fixed point in the averaged stance dynamics. This steady state asymmetry in both ar and ˙θ, revealed to be formally necessary in Theorem 2, motivates us to track the total energy in the system ae and to promote the angle of velocity introduced in Peuker et al. (2012) and Sharbafi and Seyfarth (2016) as an output variable (fedback to determine the touchdown angle) to the status of a system state. This new state ψe that we call the “energy ratio” tracks the velocity perpendicular to the leg shank relative to twice the mass-specific total energy (yielding units of m/s), resulting in the following set of state variables under the (intuitively “spherical”) change of coordinates 
+
+z =
+
+
+
+ψr
+
+ψe
+
+θae
+
+ = hs(qs) := 
+
+
+
+arctan ˙r
+
+> (r0−r)ωr
+
+arctan ˙θr ar
+
+θq
+
+a2 
+
+> r
+
++ ˙θ2r2
+
+ , (14) where 
+
+ar := p ˙r2 + ( r0 − r)2ω2 
+
+> r
+
+.
+
+The map hs is invertible with inverse (54).         
+
+> Figure 3. The variables from (14) used in hybrid averaging displayed on a SLIP model at liftoff. The relevant variables are depicted in green. The comparison to the direction of the liftoff velocity vlo is only valid when r=r0.
+
+A visual depiction of these variables (except ψr) at liftoff is presented in Figure 3. The definition of ψr , chosen shortly below to serve as the hybrid averageable phase variable following De et al. (2018), accompanies the radial energy 
+
+ar (in units of m/s) as the mechanical phase angle of the stance phase leg extension dynamics that has held a traditional place in the locomotion literature since Raibert’s original insight into its key role as the “heartbeat” of a running limit cycle (Raibert 1986; Koditschek and B¨ uhler 1991). In contrast, the energy ratio ψe expresses the contribution to the total mechanical energy ae (in units of m/s) of the velocity perpendicular to the leg shank relative to the radial energy and can be usefully interpreted as a new, secondary phase variable. At liftoff, ae is the magnitude of the velocity of the robot, and ψe + θ is the angle of the velocity relative to vertical. By working in these coordinates, we view SLIP as a unitary 2 DoF system rather than the parallel composition of two 1 DoF systems (De and Koditschek 2015a). A key step in applying our extension of De’s hybrid averaging methods (De et al. 2018; De 2017) to the 2 DoF model is to shift the ancillary phase components of the “spherical” physical coordinates (14) via the translation 
+
+y := [ σ, ψ, a]T = [ ψr , ˜ψe, ψ θ , a e]T
+
+= hΞ(z) := z − [0 , Ξe, Ξθ , 0] T , (15) where σ = ψr is the master phase, ψ is the vector of ancillary phases, a is the vector of energy components, and 
+
+Ξe (25a) and Ξθ (25b) are constants parameterized by the energy component of the fixed point and whose purposes are discussed in Section 2.3.7. Adopting the foregoing terminology and notation for the various components of the new state representation (15) aligns the present discussion with the nomenclature and analysis of De (2017). This alignment enables the use of a final set of projected coordinates introduced in De (2017) that are transverse to  
+
+> Prepared using sagej.cls
+
+10 Journal Title XX(X) 
+
+the eventual hybrid limit cycle and whose dynamics will take the form of De et al. (2018) equation 12, 
+
+x := [ δ, a]T = hω (y) = 
+
+σ1 − ∆( ω)ψa
+
+
+
+(16) where δ is a vector of phase offsets and ω, defined in (51), is the vector of relative frequencies between the master phases and the ancillary phases. 
+
+2.3.3 Assumptions Underlying Hybrid Averageability of SLIP Stance Dynamics Table 4 introduces a set of assumptions sufficient for restricting the dynamics to a form fit for hybrid averaging. Assumption 8 is imposed to achieve a closed form expression for the averaging integral from De et al. (2018) Theorem 2. Meanwhile Assumption 9 avoids the introduction of a transcendental equation in the definition via implicit function of a∗ 
+
+> e
+
+.12 Assumptions 10 to 14 introduce the averaging parameter ϵ and assign certain parameters to be 
+
+O(ϵ). Assumption 15 is empirically observed under the conditions of a small ae and small sin γψ de as plotted in Figure 11. While this term is not 0, it is odd, and if small would disappear post averaging. 13 Many of these assumptions rely on the energy of the system not being too high and thus break down for higher ¯τ ∗, foreshadowing the empirically observed loss of stability at high energy fixed points. 
+
+2.3.4 Averaged Stance Dynamics and Fixed Points 
+
+Starting from the dynamics in terms of qs from (1a) and (1b), we first apply the change of coordinates hΞ ◦ hs from (14) and (15). Next we apply the assumptions from Table 4 yielding dynamics in the form of Definition 1 for σ = ψr,
+
+ψ = [ ˜ψe, ψ θ ]T , and a = [ ae]. For a detailed derivation and the full equations, see (56). The dynamics resulting from the change of coordinates and the simplifications of Table 4 satisfy Definition 1 (i) and (ii) but do not satisfy (iii). Instead, we will use the computational recipe from Section C.2 and the projection 
+
+hω from (16) to re-express the system in coordinates that satisfy the averageability requirements of De et al. (2018). After applying the projection hω (16), the system (52) is of the form of De et al. (2018) equation 12 according to De (2017) Lemma 6. Next we compute the averaged dynamics of 
+
+x from De et al. (2018) and step III (53): 
+
+˙ˆx =
+
+
+
+˙δe
+
+˙δθ
+
+˙ae
+
+ = ˆf ( ˆ x)= 2¯ τ ∗ sin ( γψ de ) − aeb cos 2(γψ de )2mω r
+
+
+
+δe/a e
+
+−δθ /a e
+
+1
+
+ .
+
+(17) As proven by De (2017) Lemma 8, our choice of ω1 (51b) ensures that δ = 0 is a fixed point for ˙δ. Notice, as well, the averaged energy dynamics formalize the manner in which the hip torque is adding energy at a constant rate proportional to ¯τ ∗ (2) and losing a proportional amount of energy from damping b. The averaged vector field ˆf vanishes on an entire line including the (consequently degenerate) equilibrium state 
+
+ˆx∗ =
+
+
+
+00    
+
+> 2¯ τ∗sec( γψ de) tan( γψ de)
+> b
+
+ . (18) This satisfies step IV and the fixed point requirement of De et al. (2018) theorem 2, and it also demonstrates that Definition 1 (iii) is sufficient but not necessary for a system to have a fixed point in its averaged dynamics. While the averaged stance dynamics are non hyperbolic, 14 
+
+suggesting that that the ancillary phases are marginally stable, the full averaged return map is hyperbolic as shown in Lemma 2, corroborating the physical insight that the stability for the ancillary phases is driven by the hybrid reset (19) and the stepping strategy (22). 
+
+2.3.5 Hybrid Structure: Guards, Reset and Associated Assumptions Next we make the assumptions in Table 5 in order to satisfy the reset map requirements of De et al. (2018) Theorem 2. According to Assumption 16, liftoff occurs when r = r0 and ˙r > 0. By (14), ψr td = −π/2 and 
+
+ψr lo = π/2, where “td” and “lo” indicate touchdown and liftoff, respectively. Using Assumption 17 to neglect the change in gravitational potential energy during flight, simplifying the second and fourth entry of the reset map, the reset map Rz : zlo 7 → ztd 
+
+becomes 
+
+Rz (z) = 
+
+
+
+−π/2
+
+θtd (z) + θlo + ψelo 
+
+θtd (z)
+
+aelo 
+
+ =
+
+
+
+ψr
+
+ψe
+
+θae
+
+
+
+> td
+
+, (19) where θtd (z) is the stepping controller to be defined next. See Appendix E for a detailed derivation of the reset map. The reset map reveals the direct control over ψetd afforded by the choice of θtd (z).Motivated by (19), we now define a symmetric stepping strategy to be one where θtd = −θlo (and we will say that stepping is asymmetric when that condition fails). The following result demonstrates the fundamental connection between an asymmetric leg angle trajectory and a change in energy ratio ψe during stance imposed by the second component of the reset map (19). This connection suggests that in order to have period-one gait, the robot cannot use a symmetric stepping controller like the neutral angle in Raibert (1986) in hip-energized gaits. Instead, such a monoped must use an asymmetric stepping controller. Additionally since the following theorem is applicable to wide range of control strategies we now define a SLIP control strategy to be hip energized if the integral of the hip torque is non-negligible. 
+
+Theorem 2. Stepping Asymmetry in Hip Energized Hopping. Consider the 2 DoF, pitch locked SLIP system with stance dynamics (1a) and (1b), while neglecting the change in gravitational potential energy in flight (Assumption 17) yielding the stepping agnostic reset map (19), assuming gravity acts radially in stance (Assumption 19), 16 and assuming liftoff happens at leg reset length (Assumption 16). A hip-torque energized period 1 hybrid closed orbit of such a system can only be achieved by recourse to asymmetric stepping. 
+
+Proof. Starting with the Lagrangian, pinned toe SLIP stance dynamics in (1a) and (1b) and neglecting the Coriolis term in (1a) and neglecting the effect of gravity on ˙θ we apply the  
+
+> Prepared using sagej.cls
+
+11 
+
+Table 4. Assumptions underlying hybrid averaging of stance dynamics 
+
+Assumption # Formula First use Justification Consequence 
+
+8 cos ψe ≈ cos γψ de ,
+
+sin ψe ≈ sin γψ de for fixed 
+
+0 < γ < 1 9
+
+(55) Small angle for ψe about γψ de see Figure 7B. (56) 9 cos θ ≈ cos Ξ θ for Ξθ defined in (25b) (55) Small angle approximation θ
+
+applied at θ = Ξ θ (Geyer et al. 2005) (56) 10 b = O(ϵ) (55) Taken from De et al. (2018) 10 (56) 11 g = O(ϵ) (55) Taken from De (2017) (56) 12 k = O(ϵ−2) (55) Taken from De (2017) (56) 13 ¯τ ∗ sin γψ de = O(ϵ) (55) Enforced choice of ¯τ ∗ (56) 14 tan γψ de sin γψ de = O(ϵ) (55) Enforced choice of ψde (56) 15 ae sin γψ de sin ψr 
+
+> r0
+
+≈ 0 (55) ae is small steady state and 
+
+sin γψ de is small 11 
+
+(56) 
+
+Table 5. Assumptions applied to guards and resets of 2 DoF SLIP 
+
+Assumption # Formula First use Justification Consequence 
+
+16 Liftoff occurs at r = r0 and ˙r > 0 Section 2.3.5 Taken from De (2017) (26) 17 Change in gravitational potential energy from touchdown to liftoff is negligible (19) Change in gravitational potential is small compared to kinetic energy 
+
+> 15
+
+(19) 18 θtd, prev ≈ θlo − π/ω θ (a) (22a) Accurate near steady state trajectories (26) 
+
+change of coordinates 
+
+qe =
+
+
+
+ψr
+
+θar
+
+aθ
+
+ = hθ (qs) = 
+
+
+
+arctan ˙r
+
+> (r0−r)ωr
+
+θp ˙r2 + ( r0 − r)2ω2
+
+> r
+
+r2 ˙θ/r 0
+
+ .
+
+Yielding 
+
+˙aθ = τmr 0
+
+. (20) We now make the following observations (wherein each itemized claim is justified in the ensuing text for that item): 
+
+Observation 1. aθ td ̸ = aθ lo .
+
+Proof. From (20), the change in aθ over the course of stance is proportional to R 
+
+> T
+
+τ dt where R 
+
+> T
+
+is the integral over the course of stance. Since the hip torque is energizing, R 
+
+> T
+
+τ dt ̸ = 0 , thus aθ td ̸ = aθ lo .
+
+Observation 2. On a period 1 closed orbit, a∗  
+
+> elo
+
+= a∗ 
+
+> etd
+
+.
+
+Proof. From (19), aelo is always invariant under the flight map, thus a∗  
+
+> elo
+
+= a∗ 
+
+> etd
+
+.
+
+Observation 3. On a period 1 closed orbit with a symmetric stepping strategy, ψ∗  
+
+> elo
+
+= ψ∗ 
+
+> etd
+
+.
+
+Proof. ψ∗  
+
+> elo
+
+= ψ∗  
+
+> etd
+
+From (19), if the stepping strategy is symmetric, ψelo is invariant under the flight map. Thus 
+
+ψ∗  
+
+> elo
+
+= ψ∗ 
+
+> etd
+
+.
+
+Observation 4. At touchdown and liftoff aθ = ae sin ψe
+
+Proof. At touchdown and liftoff r = r0, thus aθ = r ˙θ. Thus from (54), at touchdown and liftoff aθ = ae sin ψe.Now suppose, contrarily that there is a period 1 closed orbit with a symmetric stepping strategy and an energizing hip torque where a∗  
+
+> etd
+
+and ψ∗  
+
+> etd
+
+are projections of the touchdown coordinate fixed point. Invoking Observation 3, under this contrary assumption, in conjunction with Observation 2 applied to Observation 4 implies a∗  
+
+> θtd
+
+= a∗ 
+
+> θlo
+
+, contradicting Observation 1. Avoiding this contradiction — i.e., negating the contrary assumption — now yields the stated conclusion of the Theorem. While Theorem 2 is controller agnostic and thus does not prescribe computationally the required amount of asymmetry, we can use our averaged fixed points from (18) and averaged flows from (59) to calculate the necessary asymmetry for our system. 
+
+Corollary 1. Consider the 2 DoF unperturbed SLIP subsystem under the assumptions in Tables 4 and 5. On a period 1 closed orbit, θ∗ 
+
+> td
+
+= −θ∗ 
+
+> lo
+
+− π 
+
+> ωe(ˆ a∗)
+
+.
+
+Proof. Since we are on a period 1 closed orbit the change in ψe over the course of flight is equal to the opposite of the change in ψe over the course of stance. From (59), 
+
+ψ∗  
+
+> elo
+
+− ψ∗  
+
+> etd
+
+=Π 2
+
+ h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, π/ 2) 
+
+− h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, −π/ 2)  = π
+
+ωe(ˆ a∗) , 
+
+> Prepared using sagej.cls
+
+12 Journal Title XX(X) 
+
+where ωe(a) := Π 1ω(a). Thus rearranging the second equation from (19) 
+
+θ∗ 
+
+> td
+
+= −θ∗ 
+
+> lo
+
+− (ψ∗  
+
+> elo
+
+− ψ∗ 
+
+> etd
+
+)
+
+θ∗ 
+
+> td
+
+= −θ∗ 
+
+> lo
+
+− π
+
+ωe(ˆ a∗) (21) 
+
+2.3.6 Hybrid Dynamics Stepping Controller The foregoing hybrid (guard and reset) structure now invites the presentation of a central contribution of this paper: the discrete event triggered stepping control strategy. This controller takes the form of the following α-parametrized family of Raibert-style (Raibert 1986) stepping strategies, 
+
+θtd (z) := (1 − ϵα )˜θtd (z) + ϵαθ td ,prev , (22a) 
+
+˜θtd (z) := −θlo + ϵk e(ψde − ψe) − π
+
+ωe(a) , (22b) where α is a low pass filter gain, θtd ,prev is the previous touchdown angle, ke is the proportional gain on the energy ratio ψe, and ψde is the target energy ratio. The stepping controller is the low pass filter 17 of an asymmetric stepping controller (22b) that uses the change in energy ratio on the closed orbit calculated in (21) to create a steady state for ψe when ψe = ψde and a = a∗.18 As with many scissor stepping controllers (De and Koditschek 2018a), our unfiltered stepping controller (22b) has period 2 oscillations. Fortunately the low pass filter acts as a damper, punishing large changes in touchdown angles and collapsing the period 2 oscillations to a fixed point. The first term of (22b) helps to stabilize the symmetric portion of the leg angle. Combined with the filtering, it either acts like Raibert scissor stepping for ϵα = 0 , Raibert neutral point approximation (Raibert 1986) for ϵα = 0 .5, or a fixed touchdown angle (Geyer et al. 2005; Ghigliazza et al. 2003) for ϵα = 1 .0. The second term is a proportional controller about the energy ratio ψe at liftoff, which drives ψe to the target energy ratio ψde . The third term is then imposed as a consequence of Theorem 2 and is the expected change of ψe
+
+over the course of the next stance. In order to understand what the stepping controller is doing to the energy ratio, ψe we neglect the low pass filter (thus 
+
+θtd (z) = ˜θtd (z) and evaluate (19) at (22b) yielding 
+
+ψetd = ψelo + ϵk e(ψde − ψelo ) − π
+
+ωe(a) ,ψetd + π
+
+ωe(a) = ψelo + ϵk e(ψde − ψelo ) ,ψelo, next ≈ ψelo + ϵk e(ψde − ψelo ) ,
+
+which demonstrates the stepping controller is creating a discrete stride-event proportional controller about the energy ratio at liftoff. Finally, in order to reduce the dimension of the system for analytical tractability, it is helpful to approximate 
+
+θtd ,prev from the state at liftoff by assuming that the system is already at steady state and flowing backwards in time/master phase along the averaged, phase-locked, secondary phase trajectory using the flow from (59). Thus from Assumption 18, θtd, prev ≈ θlo − π/ω θ (a) for ωθ (a) := Π2ω(a). This becomes exact on the averaged trajectory when 
+
+x = ˆ x∗. On the physical system we take advantage of the low cost of recording previous states and measure and remember the previous touchdown angle rather than estimating it from the state at liftoff. 
+
+2.3.7 Secondary Phase Offsets Now we consider the assignment of values to Ξe and Ξθ whose purpose in (15) is to force the (projected) fixed point condition in the (projected) translated coordinates, s.t. R( ˆ x∗) = ˆ x∗ for 
+
+R(x) := hω ◦ hΞ ◦ Rz ◦ h−1Ξ ◦ h−1 
+
+> ω
+
+(x, π/ 2) . (23) Given a putative set of ancillary phases at steady state ψ∗,Lemma 4 provides a sufficient condition on the reset in the full, untranslated coordinates in (60) as Rz ([ σT , ψ∗, a∗]) = [σT , ψ∗, a∗] − [σT − σ0, ∆( ω∗)−11(σT − σ0), 0] in order for R( ˆ x∗) = ˆ x∗ for some Ξe, Ξθ. Then Lemma 5 provides a method for calculating the specific values for Ξe, Ξθ. The following result shows that these calculations indeed achieve the reset fixed point condition listed as step V in Section C.2 and De et al. (2018) reset map fixed point requirement. 
+
+Proposition 3. Given a desired energy ratio ψde the choice of 
+
+θ∗ 
+
+> lo
+
+in (24) and Ξ = [Ξ e, Ξθ ] in (25), achieves the reset fixed point R( ˆ x∗) = ˆ x∗ in (23). 
+
+Proof. Evaluating the ψe component of Rz (19) at this putative steady state value, and applying the stepping controller 
+
+ψetd = ψde + θ∗ 
+
+> lo
+
++ θ∗
+
+> td
+> (22 b)
+
+= ψde − π
+
+ωe(a∗) ,
+
+thereby satisfying the reset map requirement of Lemma 4 for 
+
+ψe. Next the θ component of Rz (19) is 
+
+θtd = −θ∗ 
+
+> lo
+
+− π
+
+ωe(a∗)
+
+by evaluation the stepping controller (22b) at ψ∗ = [ ψde , θ ∗
+
+> lo
+
+].The steady state value of the leg at liftoff θ∗ 
+
+> lo
+
+now follows by setting the required form of the reset map (60) from Lemma 4 equal to the right hand side of the above equation, i.e., 
+
+−θ∗ 
+
+> lo
+
+− π
+
+ωe(a∗) = θ∗ 
+
+> lo
+
+− σt − σ0
+
+ωθ (a∗)= θ∗ 
+
+> lo
+
+− π
+
+ωθ (a∗)
+
+⇓
+
+θ∗ 
+
+> lo
+
+= π
+
+2ωθ (a∗) − π
+
+2ωe(a∗) , (24) where ωθ (a) := Π 2ω(a).Finally applying Lemma 5 to calculate Ξe and Ξθ yields 
+
+Ξe = ψde − π
+
+2ωe(a∗) (25a) 
+
+Ξθ = π
+
+2ωθ (a∗) − π
+
+2ωe(a∗) − π
+
+2ωθ (a∗)= − π
+
+2ωe(a∗) . (25b) The system now satisfies the statement for Lemma 4, which proves that R( ˆ x∗) = ˆ x∗. 
+
+> Prepared using sagej.cls
+
+13 
+
+2.3.8 Reset Map Check Given that our system satisfies step V and De et al. (2018) Theorem 2 requirement (ii.b), 
+
+R( ˆ x∗) = ˆ x∗, we now move checking that DR = S0 +
+
+ϵS1(x) + O(ϵ2) for De et al. (2018) Theorem 2 requirement (i) and step VI. 
+
+Lemma 1. DR = S0 + ϵS1(x) + O(ϵ2) and S0 is invertible and its unity eigenvalues have diagonal Jordan blocks for 
+
+R(x) in (23), 
+
+Proof. Starting from Rz in (19) we apply the change of coordinates resulting in 
+
+R(x) = 
+
+
+
+δe
+
+−δθ
+
+ae
+
+ + ϵ
+
+
+
+R1
+
+R2
+
+0
+
+ + O(ϵ2)
+
+where 
+
+R1 := tan 3(γψ de ) sec 2(γψ de )(8αδ θ m¯τ −b2δeker 0 cos 2(γψ de ) cot 3(γψ de ))
+
+> b2r0
+
+R2 := −4a2                       
+
+> e b3 ¯τcos 4(γψ de) cot 2(γψ de)+ πa 2
+> e b4r0ωr cos 4(γψ de) cot 3(γψ de)16 m¯τ3ωr
+> −4b2δeker 0 ¯τ2ωr cos 2(γψ de) cot 3(γψ de)16 m¯τ3ωr
+> −4πb 2r0 ¯τ2ωr cos 2(γψ de) cot( γψ de)+16 b¯τ3 cos 2(γψ de)+32 αδ θ m¯τ3ωr
+> 16 m¯τ3ωr .
+
+Thus 
+
+S0 =
+
+
+
+1 0 00 −1 00 0 1
+
+ ,
+
+which is constant and invertible, and its unity eigenvalues have diagonal Jordan blocks. 
+
+2.3.9 Stability of the Averaged Hybrid Dynamics The utility of De et al. (2018) Theorem 2 is that stability of the unaveraged system depends on the stability of the averaged return map. Accordingly, Lemma 2 provides the last check in order to apply De et al. (2018) Theorem 2 in Proposition 2 – an examination of the eigenvalues of the linearized averaged Poincar´ e map bSϕ∗ ( ˆ x∗),
+
+Lemma 2. Stability of Unperturbed Averaged 2 DoF SLIP Return Map. Under the assumptions in Tables 4 and 5 and for small ϵ, and ϵk e, ϵα ∈ (0 , 1) , the liftoff coordinate return map of the unperturbed, averaged translational system bSϕ∗
+
+(10) is asymptotically stable at the fixed point, ˆx∗ (18). 
+
+Proof. It suffices to prove that Jacobian, of the liftoff coordinate return map at the fixed point D bSϕ∗ ( ˆ x∗) has eigenvalues inside the unit circle of the complex plane. From the proof of De et al. (2018) Theorem 2, 
+
+D bSϕ∗ ( ˆ x∗) = ( S0 + ϵ(S1 + V )) + O(ϵ2)=
+
+
+
+1 − ϵk e ϵA 1 0
+
+ϵA 2 −1 + ϵ2α ϵA 3
+
+0 0 1 − ϵb π cos 2(γψ de )2mω r
+
+ + O(ϵ2),
+
+(26) where V = T D ˆf , and 
+
+A1 := 8mα ¯τ ∗ sec 2 γψ de tan 3 γψ de
+
+b2r0
+
+A2 := −bk er0 cos 2 γψ de cot 3 γψ de
+
+4m¯τ ∗
+
+A3 := b2 cos 3 γψ de cot γψ de
+
+ −4¯ τ ∗ + bπr 0ωr cot γψ de
+
+
+
+4m(¯ τ ∗)2ωr
+
+.
+
+For small ϵ the diagonal terms of (26) dominate the eigenvalues of the averaged unperturbed return map bSϕ∗ , thus the eigenvalues for small ϵ are 
+
+λψe ≈ 1 − ϵk e (27) 
+
+λθ ≈ − 1 + 2 ϵα (28) 
+
+λae = 1 − ϵb π cos 2(γψ de )2mω r
+
+(29) which are inside the unit circle for physical parameters and 
+
+ϵk e, ϵα ∈ (0 , 1) .The averaged eigenvalues in (27) reveal that ke, the stepping gain on ψe controls the stability of ψe; while α,the low pass filter stepping gain, controls the stability of θ. As predicted in Section 2.3.6 for ϵα = 0 the system is oscillatory and marginally stable which matches the empirical experience of scissor stepping. 
+
+2.3.10 Stability of the Limit Cycle Proposition 2 demon-strates how under the assumption in Tables 4 and 5, the unperturbed translational liftoff coordinate return map Sϕ∗ is locally exponentially stable using De et al. (2018) Theorem 2. In contrast, whereas conditions for the exponential stability of limit cycles with hyperbolic return maps are available in the classical dynamical systems literature, the corresponding relationships are still being worked out for hybrid systems. As discussed in De et al. (2018), averageable hybrid dynamical systems are locally topologically conjugate to classical limit cycles, but conditions under which their local exponential stability can be deduced from that of their return maps typically require more intricate analysis (e.g. see Burden et al. (2015)). We therefore find it expedient to simply conjecture that this relationship holds in the present case as follows. 
+
+Conjecture 1. The limit cycle associated with the averaged unperturbed SLIP dynamics is locally exponentially stable and hence bounded continuous time inputs incur only bounded excursions away from the steady state cycle. For sufficiently small ϵ > 0, the same property holds for the unaveraged unperturbed dynamics. 
+
+2.4 Pitch Unlocked SLIP 
+
+The analysis of the isolated pitching subsystem in Section 2.2 and the unperturbed 2 DoF SLIP subsystem in Section 2.3 now affords a return to their cascade composition in the complete 3 DoF (pitch unlocked) SLIP system depicted in Figure 2C. 
+
+2.4.1 Fixed points As established in Theorem 1, under the assumptions in Table 3, the cascade compositional structure of the exact liftoff coordinate 3 DoF pitch unlocked SLIP return map P depends on the fixed point of the isolated pitch return map A and the unperturbed 2 DoF translational SLIP return map Sϕ∗ . Thus, 
+
+q∗ =
+
+q∗
+
+> a
+
+q∗
+
+> s
+
+
+
+(30a) is the fixed point of 3 DoF pitch unlocked SLIP return map, 
+
+P , where from (13), 
+
+q∗ 
+
+> a
+
+=
+
+
+
+ϕ∗
+
+˙ϕ∗
+
+¯τ ∗
+
+ =
+
+
+
+ϕd
+
+0 
+
+> mg r0
+
+(χd x − r0 sin (Ξ θ,g )) 
+
+ , 
+
+> Prepared using sagej.cls
+
+14 Journal Title XX(X) 
+
+is the fixed point of the pitch return map A,
+
+q∗ 
+
+> s
+
+= ˆ qs∗ + O(ϵ) = h−1 
+
+> s
+
+( ˆ z∗
+
+> lo
+
+) + O(ϵ) ,
+
+=
+
+
+
+r∗
+
+θ∗
+
+˙r∗
+
+˙θ∗
+
+
+
+> lo
+
+=
+
+
+
+r0  
+
+> π
+> 2ωθ(a∗)
+
+− π          
+
+> 2ωe(a∗)2¯ τ∗sec( γψ de) tan( γψ de) cos ψde
+> b
+> 2¯ τ∗sec( γψ de) tan( γψ de) sin ψde
+> br 0
+
+ + O(ϵ)
+
+(30b) is the fixed point of the unperturbed translation 2 DoF SLIP return map Sϕ∗ , and from (18), 
+
+ˆz∗ 
+
+> lo
+
+= h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, π/ 2) =
+
+
+
+ψr
+
+ψ∗
+
+> e
+
+θ∗
+
+a∗
+
+> e
+
+
+
+> lo
+
+=
+
+
+
+π/ 2
+
+ψde  
+
+> π
+> 2ωθ(a∗)
+
+− π    
+
+> 2ωe(a∗)2¯ τ∗sec( γψ de) tan( γψ de)
+> b
+
+
+
+(30c) is the fixed point of the averaged SLIP return map bSϕ∗
+
+projected into z (14). Given the fixed point q∗ we can now calculate the value of Ξθ,g from Assumption 7 which is the average leg angle when we assume gravity acts radially as found in Section I and 
+
+Ξθ,g := −bπ cos 2(γψ de ) cot γψ de
+
+2χmω r
+
+. (31) 
+
+2.4.2 Behavioral Specification: A Map from Target Apex State to Control Input Set Points One of the key advantages of an analytical expression for the fixed points as a function of the model and control parameters is the ease at which it enables a user to choose a set of control parameters which accomplishes a desired behavior. In this section we show that a specified apex height and speed [ ˙ psxapex , p szapex ] can be achieved using the desired control set points 
+
+ψde
+
+dx
+
+
+
+= Ψ( ˙ ps
+
+> lo
+
+) := 
+
+ Ψζ (| ˙ps
+
+> lo
+
+|, atan ( ˙ ps
+
+> lo
+
+)) Ψd (| ˙ps
+
+> lo
+
+|, Ψζ (| ˙ps
+
+> lo
+
+|, atan ( ˙ ps
+
+> lo
+
+))) 
+
+
+
+,
+
+where ˙ps is the Cartesian coordinate expression for the desired velocity at liftoff, atan is the four-quadrant arctangent function and Ψd, Ψζ are defined, respectively, in (35a) and (35b), and □s denotes a specified value of □. In order to simplify various expressions for the sake of getting a (nearly) closed form expression for Ψ, we find it convenient to make the following assumptions in Table 6. In particular, these assumptions are sufficient for the convenient monotonicity result of Lemma 3. Computational experience suggests that the numerical inversion required to evaluate Ψζ in (35a) works across a far wider range of parameter values on which the assumptions fail to hold. Using the equations from (61) and Assumption 21, 
+
+˙ps 
+
+> lo
+
+=
+
+ ˙psxlo 
+
+˙pszlo 
+
+
+
+=
+
+" ˙psxapex q
+
+2g(pszapex − r0)
+
+#
+
+. (32) This equation expresses symbolically the intuitively clear bijective functional mapping between a specified apex behavior and the Cartesian liftoff velocity vector that achieves it for zs 
+
+> apex
+
+> r 0. In turn, expressing Cartesian liftoff velocity representation of the specified behavior ˙ps in polar 
+
+Table 6. Assumptions for inverting the fixed points. These assumptions are stronger versions of those listed in Tables 3 to 5 and are only imposed to achieve simple closed form expressions relating the apex set points to fixed points. Computational experience suggests that the numerical inversion can still be achieved across a broader range of parameter values that violate these assumptions.    
+
+> Assumption # Formula Justification Conseq.
+
+19 Gravity acts radially. thus 
+
+Ξθ,g ≈ 0
+
+Stronger version of Assumption 7 (34) 20 ϵω 1 ≈ 0 Valid for small ϵ
+
+(34) 21 pzlo ≈ r0 Valid when 
+
+θlo ≈ 0
+
+(32) 
+
+coordinates 
+
+˜qss := 
+
+ | ˙ps
+
+> lo
+
+|
+
+atan ( ˙ ps
+
+> lo
+
+)
+
+
+
+=
+
+ase
+
+ζs
+
+
+
+> lo
+
+, (33) where as described in Section 2.3.2, ζlo := ψelo + θlo , is the angle of the velocity vector and facilitates determining the relationship of ˙ps 
+
+> lo
+
+to the q-coordinate representation of fixed points in (30). Leveraging Assumptions 19 and 20, the values of this polar coordinate representation of the liftoff velocity vector at a fixed point (30) are given by 
+
+˜q∗ 
+
+> s
+
+=
+
+   
+
+> 2χd xgm sec( γψ de) tan( γψ de)
+> br 0
+
+ψde − bπ cos( γψ de )2 cot( γψ de )4mω r + χd xgmπ tan( γψ de )2 
+
+> br 20ωr
+
+ .
+
+(34) Setting ˜q∗ 
+
+> s
+
+= ˜ qss from (33) and (34) and solving yields 
+
+Ψ† 
+
+> ζ
+
+(ase, ψ de ) := ζs 
+
+> lo
+
+= − bπ cos( γψ de )2 cot( γψ de )4mω r
+
++ ψde + aseπ sin( γψ de )2r0ωr
+
+,
+
+(35a) 
+
+Ψd(ase, ψ de ) := dx = asebr 0 cos( γψ de ) cot( γψ de )2χgm , (35b) where, according to Lemma 3, for each ase, Ψ† 
+
+> ζ
+
+is a monotone function of ψde , over the domain ψde ∈ [0 , π/γ ] and, hence, is the (left) inverse of a well defined function of ζs (over the corresponding codomain) that we denote as Ψζ (ase, ζ s). In practice, we compute Ψζ by numerical inversion of (35a). Numerical experience suggests that Ψζ is uniquely well defined over a substantially larger codomain and domain than the conservative assumptions of Table 6 allow. 
+
+Lemma 3. Ψ† 
+
+> ζ
+
+(35a) is monotonic w.r.t ψde and, hence, invertible for γψ de ∈ [0 , π ].
+
+Proof. The derivative of (35a) is 
+
+∂Ψ−1 
+
+> ζ
+
+(ase, ψ de )
+
+∂ψ de
+
+=1 + aseπγ cos( γψ de )2r0ωr
+
++ bπγ cos( γψ de )2
+
+2mω r
+
++ bπγ cot( γψ de )2
+
+4mω r
+
+which is always positive for ψde for γψ de ∈ [0 , π ]. 
+
+> Prepared using sagej.cls
+
+15 
+
+2.4.3 Analytical Fixed Points Plots In order to lay bare the relationship between dx, ψde , and the apex coordinate fixed points, we plot the analytical fixed points in fore-aft speed and apex height from (30) (converted to fore-aft speed and apex height using (61)) in Figure 4. Figure 4A demonstrates that increasing dx also increases the fore-aft speed in a simple, monotone fashion which matches the intuition from (30). Similarly, increasing ψde
+
+increases the fore-aft velocity as it leads to more of the energy being in the fore-aft direction while also having a positive effect on energy a∗ 
+
+> e
+
+.On the other hand the effect of ae and ψde on height is much more complicated due to the eventual saturation caused by 
+
+θlo + ψ∗ 
+
+> e
+
+> π/2. The violation of this constraint, denoted by a dashed line in Figure 4, corresponds to the robot failing to liftoff or not having enough height to recirculate the leg. While increasing dx will increase the speed at which the robot lifts off, it also increases θlo without decreasing ψ∗ 
+
+> e
+
+which in turn decreases the vertical liftoff velocity. In contrast to the effect of ψde on ae, decreasing the value of the desired energy ratio yields higher apex heights as Figure 3 would imply by directing more energy upward in trigonometric fashion. 
+
+3 Implementation Details 
+
+As with any real-world system, there are differences between the theoretical models covered in the previous sections and reality. The controllers presented and analyzed in Section 2 and Table 7A do not completely specify the software implementations in simulation and hardware. This section details practicalities associated with anchoring the idealized 3 DoF Lagrangian dynamics in physical motors, joints, and links along with more substantive modifications made to the controllers to improve their reliability on a real system. 
+
+3.1 Anchoring the Center of Mass Controller 
+
+As depicted in Figure 2, controlling the pitch-unlocked robot to a target steady state hopping height and fore-aft speed (characterized by fixed point energy a∗ 
+
+> e
+
+and energy ratio ψ∗ 
+
+> e
+
+) is achieved by adjusting the center of mass offset dx = d cos ϕd
+
+(i.e., the x projection of the vector from hip to COM at target pitch). The strategy for changing this value, while usually simple, will likely differ between robot morphologies, as illustrated by the contrast between the 5-link and the tailed biped examples comprising the application focus of this paper. 
+
+3.1.1 5-Link Biped Many robots (e.g., the biped in Figure 1B) do not have the ability to internally relocate their center of mass relative to their hip. Instead, they can change their target pitch. Leaning the robot’s torso forward or backward changes dx , thus, its steady state translational energy according to the fixed point formulae (30). This reveals one of the several limitations arising from an underactuated machine whereby the present allocation of control affordance locks in a dependence between the desired CoM energy and the requisite steady state pitch. Additionally, while Jerboa’s legs are spring dampers, the 5-link biped has rigid legs and actuated knees. For simulations with the 5-link biped, the legs are controlled to act like virtual spring dampers. Furthermore, the 5-link biped uses a bipedal gait, alternating which leg touches the ground from step to step. 
+
+3.1.2 Tailed Biped In the case where the robot has a “shape” degree of freedom (e.g., a spine, tail, or arm), it can move its COM relative to the hip. While this paper focuses on the Penn Jerboa, a tailed biped, this idea is relevant to any robot with a “shape” degree of freedom. For Jerboa, increasing the tail angle (i.e., moving the tail forward and up) increases the steady state energy by increasing d and in turn dx.
+
+3.2 Increasing the Basin 
+
+One chief obstacle in testing (and, of course, to any useful implementation) is that experiments with Jerboa begin with a manual, inconsistent toss. Notwithstanding our moderate success (where given a careful throw the robot achieves steady state hopping) in applying the theoretical controller (Table 7A), the variability in the toss made it challenging to explore the full range of setpoints. Therefore, it is desirable to increase the basin of attraction for empirical testing through two modifications to the theoretical controller (Table 7), presented in Sections 3.2.1 and 3.2.2 19 . These modifications are minor enough that trends predicted by the fixed points are not broken, as revealed in Sections 4 and 5. Although the simulated trials have consistent initial conditions, the modifications presented here are used in both simulation and hardware to permit direct comparison. Figure 5 shows how the added controllers change the block diagrams for the hybrid system. 
+
+3.2.1 Hybrid Discrete Event Energy Controller For the controller described in Section 2 by Table 7A, dx is constant at all times. During the hardware implementation the variability of initial conditions arising from the starting throw would often lead to the robot running out of energy with a fixed dx. Leveraging the monotonic relationship between dx
+
+and a∗ 
+
+> e
+
+(30), the implementation in simulation and hardware changes dx between steps, controlling to a target energy ade
+
+using a discrete PD and feedforward controller based on the state at liftoff: 
+
+dx,k +1 = dx, ff + kp,a e
+
+ ade − ae,k 
+
+ − kd,a e (aek − ae,k −1) ,
+
+(36) where energies ae are values at the current and previous liftoffs ae,k and ae,k −1, respectively, and ade is the target energy. The constant feedforward term dx, ff is simply the initial value of dx. We include a derivative term to limit overshoot which would occasionally push the system outside the basin of attraction. This controller allows direct and intuitive control of the system’s energy and helps to stabilize the system in cases where the energy is decaying due to an inadequately energetic initial throw. It is important to note that since we are wrapping our initial controller with a simple PD loop, the fixed point properties of the lower dimensional system are unchanged for a given dx
+
+(30), and instead only the eigenvalues and region of attraction are changed. Therefore, the simulation and hardware results are presented in terms of the final dx, ∞ ≈ lim k→∞ dx,k and 
+
+ψde as if they were control inputs, intentionally similar to the presentation in Figure 4. Notwithstanding its empirical convenience, and the invariance of the resulting steady state hopping behavior,  
+
+> Prepared using sagej.cls
+
+16 Journal Title XX(X) 0.020 0.030 0.040 0.050 1230.020 0.030 0.040 0.050 123
+
+## COM Offset dx (m)Fore-Aft Speed  ˙px (m/s)
+
+# Fore-Aft Speed vs. COM Offset for Jerboa’s Analytical Fixed Points 
+
+## 0.020 0.030 0.040 0.050 0.200 0.202 0.204 0.206 0.208 0.020 0.030 0.040 0.050 0.200 0.202 0.204 0.206 0.208 
+
+## COM Offset dx (m)Height  pz (m)
+
+# Apex Height vs. COM Offset for Jerboa’s Analytical Fixed Points 
+
+## A B
+
+## ψde = 1 .100 rad ψde = 1 .175 rad ψde = 1 .250 rad 
+
+Figure 4. Analytically derived steady state conditions for Jerboa from (30) as a function of the input parameters COM Offset dx and desired energy ratio ψde . The dashed lines represent fixed points where the apex height is less than the leg length indicating that the robot will be unable to recirculate its leg in flight. See Table 8 for model parameters. (A) plots the analytical fore-aft speed. The COM offset dx has a simple, monotone relationship with fore-aft speed, and increasing ψde increases the speed. (B) plots the analytical apex height. Decreasing ψde increases the possible apex heights since it puts more energy in the radial direction. This effect is not quite as simple as in the fore-aft speed plot. Similarly dx affects the apex height in a trigonometric fashion based on increasing the liftoff leg angle. Eventually θlo + ψe will be large enough that the apex height will be less than the leg length corresponding to the robot stubbing its toe in flight. 
+
+Table 7. Controller overview listing: (a) stance mode hip torque, stride event hip torque offset, and stepping policies studied formally in Section 2; and (b) formally unnecessary, but empirically implemented stride event terms added to increase basin of attraction as detailed in Section 3.2. A block diagram of the control strategy can be found in Figures 2 and 5. 
+
+Nomenclature Equation Ref. 
+
+(a) Formal Stance and Stride Controllers (See Section 2 for stability analysis) Continuous time stance mode hip torque τ := ¯ τ r − mgr sin θ − ϵk p(ϕd − ϕ) + √ϵk d ˙ϕ (2) Discrete stride event hip torque bias ¯τk+1 = ¯ τk + ϵ2kτ (ϕlo ,k − ϕd) (4) Discrete stride event stepping controller θtd (z) := (1 − ϵα )˜θtd (z) + ϵαθ td ,prev (22a) 
+
+˜θtd (z) := −θlo + ϵk e(ψde − ψe) − π 
+
+> ωe(a)
+
+(22b) (b) Supplemental Stride Controllers (See Section 3 for details) Discrete stride event energy loop dx,k +1 = dx, ff + kp,a e
+
+ ade − ae,k 
+
+ − kd,a e (aek − ae,k −1) (36) Discrete stride event hip torque w/ dx varying term 
+
+¯τk = τff,k + f (dx) (37a) 
+
+τff ,k +1 = τff ,k + ϵ2kτ (ϕlo ,k − ϕd) (37) 
+
+finding conditions on control gains sufficient to insure the stability of this hardware implementation may not be straightforward and lies well beyond the scope of the present paper. This is because the discrete energy loop (36) violates the cascade composition structure assumed by the hybrid discrete return map analyzed in Section 2.1 (though not the continuous time stance dynamics) as now the input to the pitching subsystem dx depends on an output of the 2 DoF SLIP subsystem ae.
+
+3.2.2 Feeding Forward COM Offset into Hip Torque (13) describes a monotonic relationship between dx and ¯τ ∗. When 
+
+dx was fixed, the initialization of the ¯τ integrator was a guess of what ¯τ ∗ would be. Once dx was changing due to the energy control loop (36), it became beneficial to add a dx varying feedforward term to the ¯τ update function in an attempt to invert (13). This new discrete hip torque—updated in flight at the same time as dx in (36)—takes the form of 
+
+¯τk = τff,k + f (dx) , (37a) 
+
+τff ,k +1 = τff ,k + ϵ2kτ (ϕlo ,k − ϕd) (37b) where τff is a rebranded variable describing just the integrator on pitch as described in (4), and f (dx) is a tuned linear function of dx which attempts to invert (13) without relying on the model parameters. We did not need to exactly invert (13) as the system still had a pitch integrator driving ¯τ to 
+
+¯τ ∗ according to the LTI stability of the pitching subsystem Section 2.2.3. As before, the discrete hip torque ¯τk from (37a) is substituted normally into (2) to yield the continuous time hip torque control policy. Due to the integration from (37), the fixed point torque ¯τ ∗ produced by (37) is equivalent to that analyzed in Section 2 for a fixed dx. This change resulted in more trials successfully stabilizing in simulation and  
+
+> Prepared using sagej.cls
+
+17 
+
+hardware. In contrast to discrete energy controller discussed in Section 3.2.1, this controller is analytically tractable under our present analysis. The logic for omitting it is that in our model 
+
+dx is constant and for a constant dx (37) simply describes the initial condition of the torque integrator. 3 Dof SLIP Stance  
+
+> Map (Figure 2)
+> Flight Map
+> Energy Loop (36)
+> Torque integrator (4,37b)
+> Figure 5. A block diagram describing the implemented discrete hybrid control system. The blocks in red are formally unnecessary, but introduced as an empirical measure to adjust the commanded setpoints so as to bring the imperfectly selectable and highly variable experimental initial conditions into the basin of attraction. They have no influence on the resulting location of the fixed points and hence are not considered in the formal analysis. Figure 2 contains the control block diagram for the continuous time stance controllers.
+
+3.3 Energy Ratio Estimation 
+
+Although knowing the energy ratio ψe at liftoff is important for the stepping controller in (22)—specifically in the term from (22b)—it is difficult to measure. Velocity is notoriously challenging to accurately measure, and the issue is only compounded since ψe depends on the ratio of two different velocity measures. Even worse, both terms in ψe undergo drastic changes directly after liftoff. Thus, any error in liftoff detection causes a large error in ψe.For implementation we estimate the energy ratio by replacing the exact value of the leg’s velocities ˙θ and ˙r in (14) with their mean values ˆ˙θ and ˆ˙r. Where 
+
+ˆ˙θ = θlo − θtd 
+
+tlo − ttd 
+
+,
+
+ˆ˙r = rlo − rb
+
+tlo − tb
+
+,
+
+and □b denotes a value measured at bottom. This results in an estimated energy ratio ˆψe calculated as 
+
+ˆψe := arctan ˆ˙θr 
+
+ˆav
+
+, (38) where ˆav =
+
+q
+
+ˆ˙r2 + ( r0 − r)2ω2 
+
+> r
+
+. This estimate is updated only at liftoff when it is required by the stepping controller. Due to the imprecise detection of liftoff and the sensor noise in hardware, the simulation and hardware stepping controller in (22) uses the energy ratio estimate ˆψe in place of a measured value for ψe to calculate the touchdown angle. 
+
+3.4 Finding Free Model Parameters 
+
+The fixed point formulae presented in (30) include expressions that depend upon two free parameters associated with the simplifying assumptions of Tables 3 and 4 whose values must be determined empirically: γ from Assumption 8 describes how close to ψde the mean value of ψe is over the course of stance, and χ from Assumption 5 describes the mean force from the leg. We found the values of γ and χ by numerically fitting the fixed points from (30) to the simulation (Figure 8) and hardware (Figure 10) fixed points. The values for γ and 
+
+χ are in Table 8. While γ was the same in simulation and hardware, we found the hardware required a higher value of χ due to the kinematics of the hardware Jerboa’s leg as discussed in Section 6.1. 
+
+3.5 Value of ϵ
+
+Throughout the theory section we discussed the parameter ϵ
+
+used formally in Theorem 1. For the sake of implementation, we set ϵ = 1 , though in the controllers (Table 7) the value of 
+
+ϵ does not matter since it is always multiplied by a gain. 
+
+4 Simulation Results 
+
+This section presents both representative trajectories and fixed point data resulting from numerical simulation of the planar 5-link biped and Jerboa in Gazebo. The fixed point data was obtained from recording steady state values achieved following convergence of initial transients given a fixed desired energy ade and energy ratio ψde . See Table 8 for model parameters. The simulation models match the analytical models from Figure 2 with the exception of having a light 
+
+∼ 100 g toe instead of a massless toe. The control loop is then executed at 1 kHz.  
+
+> Table 8. Model parameters for Jerboa and the 5-link biped.
+
+Parameter Jerboa Values 5-link Biped Values 
+
+mb (kg ) 3.242 3.5 
+
+mt (kg ) 0.247 —
+
+lt (kg ) 0.4 —
+
+I (kg · m2) 0.04 0.08 
+
+d (m) 0.05 0.05 
+
+r0 (m) 0.2 0.27 
+
+k (N/m) 4000 3500 
+
+b (N · s/m) 40 32 
+
+γ 0.9 –
+
+χ (sim) 1.7 –
+
+χ (hardware) 2.4 –
+
+4.1 Energy Comparison 
+
+One of the key predictions of our controller (Table 7) is that moving the COM forward relative to the hip increases the steady state energy ae (30). Figure 6 validates this relationship by plotting plotting ae vs. Jerboa’s tail angle and the 5-link biped’s target pitch. By increasing dx the controller is able to to vary over a fourfold range the steady state energy (in joules, twofold range for twice the mass-specific square root of energy) for both morphologies. Therefore, the following results present the fixed points as a function of the input,  
+
+> Prepared using sagej.cls
+
+18 Journal Title XX(X) 
+
+dx, rather than in terms of tail angle or target pitch to be independent of the anchoring controller. −0.7 −0.6 −0.5 −0.41234563.8 4.0 4.2 4.4 4.6
+
+Planar Biped dx (cm )
+
+0.7 0.8 0.9 1.0 1.1
+
+Jerboa Tail Angle ( rad )
+
+2.6 2.8 3.0 3.2
+
+Jerboa dx (cm )Planar Biped Pitch ( rad )Energy  ae (m/s)
+
+## Energy vs. COM Offset Control Variable for Planar Biped and Jerboa in Simulation           
+
+> Figure 6. Energy at liftoff versus Jerboa’s tail angle and the 5-link biped’s pitch for ψde=1.2 rad in simulation. Recalling that the state coordinate, ae(14), expresses COM energy in units of square-root Joules per kg, this plot illustrates that the controller’s affordance through dxis sufficient to achieve a fourfold increase in energy in joules for both morphologies. Note that values of dx
+> are not comparable between architectures due to differing parameter values as listed in Table 8.
+
+4.2 Representative Steady State Trajectories 
+
+With the controller effecting the expected trends in ae,Figure 7 presents a set of time domain data from a simulated Jerboa. Figure 7A displays that the energy ae from (14) converges to a roughly fixed value at liftoff, while also decreasing and increasing during stance (plotted with a gray background in the figure). Note that the target energy ade
+
+is not achieved because the energy controller in (36) lacks an integrator and the effect of gravity in (13) acts as a disturbance on the linear relationship between ae and dx
+
+that the energy controller (36) is operating on. Even so, the controller properly controls energy to a fixed value at liftoff, validating previous mathematical analysis. Figure 7B renders both the actual energy ratio ψe as well as its estimate ˆψe alongside the target ψde . Before analyzing the time domain trace itself, it is important to highlight the rationale for using an estimate (rather than the simulation “ground truth” value), paying special attention to the values of each line during stance (in gray) and in flight (in white). As Figure 7B reveals, while the energy ratio ψe does increase over the course of stance (while oscillating), it rapidly spikes right before liftoff. This spike is largely due to imprecise liftoff detection as mentioned in Section 3.3: Jerboa detects liftoff after it really happens. Therefore, during the supposed end of “stance,” Jerboa’s legs are free to move, allowing the legs’ angular velocity ˙θ to increase rapidly while ar
+
+quickly goes to 0 due to the robot being in the air. These two phenomena cause ψe to spike at liftoff (14). Thus, the energy ratio at liftoff is measured in the range of 1.4–1.6 rad 
+
+despite consistently staying closer to 1 rad midway through stance. The value of ψe right before liftoff (partway through the spike) is likely its true value at liftoff. Unfortunately, the stepping controller (22) depends heavily on the value of ψe
+
+precisely at liftoff. It is for this reason that the controller uses the discretely estimated energy ratio ˆψe from (38) instead of 
+
+ψe itself. The estimated energy ratio ˆψe lines up with a value of ψe
+
+during its spike at liftoff. Furthermore, it experiences a much smaller level of variation than the measured ψe at liftoff, making ˆψe more in line with the level of variation in the measured ψe midway through stance. Thus, we study the estimate and not the measurement. Figure 7B demonstrates that the controller keeps the estimated energy ratio ˆψe near the desired energy ratio ψde . This is in contrast to the theory (30) which predicts that ˆψ∗ 
+
+> e
+
+= ψde .The plot of the height over time in Figure 7C follows a very steady trajectory which suggests that ψe is controlled to a roughly fixed value. As shown in Figure 3, changes in ψe
+
+would result in different apex heights for a given energy ae.Because the variance in height is small, the variance in the energy ratio ψe is also acceptable. Figures 7D and 7E depict the hip torque from (2) and discrete time hip torque from (4), respectively. As expected, the hip torque decreases over the course of stance because the gravity compensation term −mgr sin θ decreases as the leg angle θ approaches zero. The other two terms focused on controlling the pitch are rather small since the pitch is close to its target of 0 rad , as shown in Figure 7F. Meanwhile, the discrete time hip torque ¯τ in Figure 7E varies around only 
+
+1 % per step, evidence that the controller is achieving a fixed 
+
+¯τ .The plot of leg angle θ in Figure 7H, illustrates the expected level of asymmetry between touchdown and liftoff angles, validating Assumption 7. Similarly the change in gravitational potential energy in flight from the steady state stepping asymmetry is small compared to the steady state speed (Figure 7G) validating Assumption 17 Overall, the controller is very successful at managing the transient as well as steady state behavior of Jerboa in simulation in a manner that matches the analytical predictions. Energy ae is properly regulated with the hip torque control law, and the energy ratio, ψe, is properly controlled with the stepping strategy (22) specified in Table 7. 
+
+4.3 Fixed Points and Model Accuracy 
+
+Taking an input output perspective to verifying the model presented in Section 2, we compare the simulated apex coordinate fixed points to the analytical apex coordinate fixed points from (30). We collect the data by “throwing” the robot in simulation before waiting for its convergence to a near steady state behavior. Once the robot reaches steady state we collect data for a few seconds to reject any small step to step variations in the behavior. We choose the range of fixed points to be similar to the operating regime explored by the  
+
+> Prepared using sagej.cls
+
+19 12 13 14 1.52.02.53.012 13 14 1.52.02.53.0
+
+> Energy  ae (m/s)
+
+## ae ade
+
+12 13 14 1.01.512 13 14 1.01.5
+
+> Energy Ratio
+> ψe (rad )
+
+## ψe ψde ˆψe
+
+12 13 14 0.15 0.20 12 13 14 0.15 0.20 
+
+> Height  pz (m)
+
+12 13 14 0246812 13 14 02468
+
+> Hip Motor Torque
+> τ (N · m)
+
+12 13 14 20 21 22 12 13 14 20 21 22 
+
+> Discrete Time Hip Torque  ¯τ (N)
+
+12 13 14 
+
+−0.100.112 13 14 
+
+−0.100.1
+
+> Pitch  φ (rad )
+
+12 13 14 11.5212 13 14 11.52
+
+Time (s) 
+
+> Fore-Aft Speed  ˙px (m/s)
+
+12 13 14 
+
+−0.500.512 13 14 
+
+−0.500.5
+
+Time (s) 
+
+> Leg Angle  θ (rad )
+
+12 13 14 0.17 0.18 0.19 0.20 12 13 14 0.17 0.18 0.19 0.20 
+
+Time (s) 
+
+> Leg Length  r (m)
+
+## A B CD E FG H I
+
+# Simulated Jerboa Time Domain Traces for ade = 2 .3 rad /s and ψde = 1 .2 rad   
+
+> Figure 7. Example trajectories of various state values for Jerboa in simulation during steady state locomotion. Periods of stance are highlighted with a gray background. Note that Figure 7B presents both the energy ratio
+
+ψe calculated using (14) as well as the estimated energy ratio ˆψe from (38). Only the estimate is used in application of the stepping controller. For model parameters, see Table 8.   
+
+> Table 9. Accuracy of the analytical apex coordinate fixed points from (30) compared to the simulation’s apex coordinate fixed points for Jerboa.
+
+± denotes the standard deviation. The data is from the large operating regime explored in Figure 8 where the number of different desired and numerically recorded return map steady state values (following hundreds of stance map integrations from various initial conditions) is N = 12 .
+
+State Mean Magnitude of Error Mean Percent Error Max Error Max Percent Error 
+
+˙px 0.179 ± 0.188 m /s 13 .8 ± 14 .6 % 0.463 m /s 46 .8 % 
+
+pz 0.014 ± 0.002 m 6.5 ± 1.05 % 0.018 m 8.6 % 
+
+hardware fixed points in Section 5.3. Through comparison of simulated data to analytical fixed points, the results reveal that the simulation behaves as the model would expect. Figure 8A demonstrates that as the model predicts, increasing dx or increasing ψde increases ae. On the other hand Figure 8B demonstrates that while the simulated robot is controlling the steady state energy ratio ψ∗ 
+
+> e
+
+independent of dx, there is some steady state error in energy ratio not predicted by the model (30). Figure 8C displays the fore-aft speed vs. the input parameters. Not only are the trends predicted by the model present, but the model also does a excellent job predicting the value of the fixed point. Next the apex height vs. input parameters is plotted in Figure 8D. The model effectively predicts that an increasing energy ratio leads to greater height, yet it consistently underestimates the actual apex height. This discrepancy arises from the model’s predicted liftoff angle, which tends to be closer to vertical compared to the liftoff angle observed in simulation. As a consequence, the simulated liftoff velocity angles are shallower when compared to the model’s liftoff velocity angles. Despite these differences, the model does usefully predict the simulation results. As summarized in Table 9, the model predicts the the simulated robot’s fore-aft speed and height with a mean percent error in speed of 13 .8 % and a mean percent error in height of 6.5 % . While the mean percent error is small, the coefficient of variation in apex speed is quite high  
+
+> Prepared using sagej.cls
+
+20 Journal Title XX(X) 0.024 0 .027 0 .030 0 .033 0 .036 1.01.52.02.50.024 0 .027 0 .030 0 .033 0 .036 1.01.52.02.5
+
+> Energy  ae (m/s)
+
+# Energy vs. COM Offset for Simulated Jerboa at Liftoff 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 1.00 1.10 1.20 1.30 0.024 0 .027 0 .030 0 .033 0 .036 1.00 1.10 1.20 1.30 
+
+> Energy Ratio Estimate
+> ˆψe (rad )
+
+# Energy Ratio Estimate vs. COM Offset for Simulated Jerboa at Liftoff 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 0.51.01.52.00.024 0 .027 0 .030 0 .033 0 .036 0.51.01.52.0
+
+## COM Offset dx (m)Fore-Aft Speed  ˙px (m/s)
+
+# Fore-Aft Speed vs. COM Offset for Analytical and Simulated Jerboa 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 0.20 0.22 0.24 0.024 0 .027 0 .030 0 .033 0 .036 0.20 0.22 0.24 
+
+## COM Offset dx (m)Height  ˙pz (m)
+
+# Apex Height vs. COM Offset for Analytical and Simulated Jerboa 
+
+## A BC D
+
+## ψde = 1 .100 rad ψde = 1 .175 rad ψde = 1 .250 rad 
+
+## Simulated Analytical    
+
+> Figure 8. Fixed points of Jerboa in simulation compared to those predicted by the analytical model in (30) and plotted in Figure 4. (A)
+> plots the energy and demonstrates that increasing
+
+dx tends to increase energy. (B) shows the energy ratio estimate ˆψe. Increasing the target energy ratio increases the achieved values, though the estimate is always higher than the target. Furthermore, the energy ratio is roughly constant for a given target independent of the COM offset. (C) displays the fore-aft speed. As predicted by the model, increasing the COM offset dx increases the speed, and increasing the target energy ratio ψde also increase the speed. (D) shows the apex height. In line with the model, increasing the target energy ratio ψde also increases the height. The model consistently underestimates the apex height. For mean and maximum error see Table 9, and for model parameters see Table 8. 
+
+at almost 1. This high coefficient of variation is a consequence of the choice of γ and χ as outlined in Section 3.4. Selecting different values for γ, χ that do not try to minimize the mean error; for example using γ = 0 .85 , χ = 1 .9, results in the mean percent error for speed being 19 .5 ± 8.77 % which has a coefficient of variation around 0.5.
+
+4.4 Ground Reaction Forces 
+
+The ground reaction forces of animal (including human) runners appear to converge upon a single point on the body above the COM, termed the Virtual Pivot Point (VPP) (Maus et al. 2010). Some extant controllers explicitly control the hip torque with the aim of creating a VPP in the belief that these forces cause a system to mimic a physical pendulum, enforcing stability (Firouzi et al. 2019; Vu et al. 2017; Sharbafi et al. 2013). The summary of our control policy displayed in Table 7 reveals many similarities to VPP-based controllers, especially in regards to its use of hip torque to stabilize pitch, but it does not explicitly attempt to create a VPP with its ground reaction forces. Even so, the controller appears to create a VPP across a wide range of operating conditions for both the simulated Jerboa and 5-link biped. Figure 9 shows the ground reaction forces of one stance from the 5-link biped in simulation, where a VPP is clearly visible, although it is placed below the COM, as opposed to above it as in Maus et al. (2010). One potential explanation for this pattern is that the 5-link biped’s torso is not as upright as would be expected in humans, which could cause deviations in the location of the VPP (M¨ uller et al. 2017). Accounting for the intriguing appearance of a VPP (as well as the discrepancy in its locus relative to animal data) lies beyond the scope of this paper, but strikes us as an important question for future study. The most parsimonious hypothesis arising from our present analysis would hold that the VPP is a consequence rather than a goal of animals’ locomotion controllers (Maus et al. 2010). However, there is no reason to reject without further analysis the intriguing possibility that some appropriate strengthening of such a strategy might well yield asymptotically stable hip energized running in a hardware biped.  
+
+> Prepared using sagej.cls
+
+21 −0.1 0 0.1 0.2 0.3
+
+## −0.3
+
+## −0.2
+
+## −0.100.10.2
+
+## −0.1 0 0.1 0.2 0.3
+
+## −0.3
+
+## −0.2
+
+## −0.100.10.2
+
+## Horizontal Distance to COM ( m)Vertical Distance to COM ( m)
+
+# Virtual Pivot Point for Simulated 5-link Biped 
+
+## COM Location VPP Location  
+
+> Figure 9. A VPP plot similar to the one presented in Maus et al. (2010), where the COM is always at the center of the coordinates and the forces close to the beginning and ending of stance are omitted. Each line represents a time-stripped ground reaction force beginning at the point of contact relative to the COM and pointing in the direction of the applied force. These ground reaction forces were generated from a single stance of the 5-link biped in Figure 1B. Note that the forces clearly converge and create a VPP below the COM.
+
+5 Hardware Results 
+
+This section details the results of applying the controller from Table 7 to the physical Jerboa robot Figure 1A (Shamsah et al. 2018). The hardware version of Jerboa Figure 1A was the basis for the model parameters in Table 8 so the same parameters also apply here, though there are some additional details in the hardware implementation. First, a 
+
+2 m -long boom 20 constrains Jerboa to movement in the fore-aft plane while allowing for pitching motions. This replicates the situation in simulation. The boom has two rotational encoders which measure the x and z positions of the robot. Additionally, Jerboa’s legs are not pogo sticks as in the simulation. Instead they consist of four bar linkages with an extension spring (Shamsah et al. 2018). This not only causes the spring to act nonlinearly, but also creates non-axial forces while compressed, largely in the forward direction. Additionally, because the hopping controller does not allow the robot to start from rest, hardware experiments begin with a gentle toss, creating some variability in the initial state, necessitating a wide basin of attraction. Despite these implementation differences, this section reveals that the controller achieves similar (though not necessarily equal levels of) success on hardware as in software, following the same trends with regards to COM offset and achieving steady state. Unsurprisingly, hardware Jerboa’s fixed points in Figure 10 do not follow the analytical model’s fixed point from (30) as well as the simulation’s fixed points in Figure 8 due to these hardware-specific modeling inaccuracies (in particular, the four-bar legs and boom disturbances). In addition to the plots and analysis in this section, https://youtu .be/HhdYK-vSufY is a video of Jerboa hopping using the controller where the robot demonstrates steady state hopping and hopping over minor obstacles. 
+
+5.1 Energy and Energy Ratio Control Validation 
+
+Before analyzing the overall performance of the controller in the coming sections, this section corroborates the key prediction from Section 2: increasing the horizontal COM offset dx increases the steady state “energy” ae measured in m/s (more specifically ae is twice the mass-specific square root of energy) as defined in (14). While this is not the classical definition of energy measured in joules, there is a bijective relationship where E = 1 /2ma 2 
+
+> e
+
+and E
+
+is the energy in joules. Figure 10A verifies that the control roughly maintains this trend even on hardware. Furthermore, Figure 10B displays data that helps to validate the efficacy of feedback control of the estimated energy ratio ˆψe as calculated by (38) from the stepping controller in (22). The estimated energy ratio increases when its target increases and is relatively independent of COM offset with no obvious dependence on dx. As Section 3.3 notes, the estimate of energy ratio will have error compared to actual energy ratio at liftoff due to noise and imprecise mode detection. Furthermore, the roll from the boom causes Jerboa’s two legs to touch down and lift off from the ground at slightly different times, making mode transitions harder to detect, further injecting noise into the ψe estimate. Fortunately, the expected trend is present: increasing the target energy ratio 
+
+ψde increases the estimated value of ˆψe.
+
+5.2 Representative Steady State Trajectories 
+
+This section discusses features of a set of steady state trajectory traces recorded from a typical physical experiment that reprise corresponding traces from simulation data presented in Section 4.2. To facilitate comparison, the hardware controller used the same target energy ade and energy ratio ψde as the simulation controller in Figure 7 albeit the corresponding gains were different in consequence of the inevitable discrepancy between physics and models (the ”sim-to-real” gap). Figures 11A, 11C, 11D and 11H exhibit a persistent steady state pattern even as sensor noise and the inevitable unmodeled physical disturbances incur substantial variations in step-to-step peaks and troughs relative to the corresponding traces of Figure 7. These multi-step variations are particularly apparent in Figures 11B and 11E whose peaks and troughs roughly coincide. Although the oscillations in fore-aft speed plotted in Figure 11G also follow the same pattern of peaks and troughs, its substantial variations between steps (again, stemming from encoder noise in Jerboa’s boom), motivate our use of average steady state speed when discussing fixed points in the next section. Notwithstanding these step-to-step fluctuations, control is still successful. Despite some variation in energy ratio, discrete time hip torque, and maximum leg length compression (Figures 11B, 11E and 11I), they all stay fairly close to a nominal steady state value. Furthermore, the energy ae in Figure 11A exhibits the same trend as it  
+
+> Prepared using sagej.cls
+
+22 Journal Title XX(X) 0.024 0 .027 0 .030 0 .033 0 .036 1.01.52.02.50.024 0 .027 0 .030 0 .033 0 .036 1.01.52.02.5
+
+> Energy  ae (m/s)
+
+# Energy vs. COM Offset for Hardware Jerboa at Liftoff 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 1.00 1.10 1.20 1.30 0.024 0 .027 0 .030 0 .033 0 .036 1.00 1.10 1.20 1.30 
+
+> Energy Ratio Estimate
+> ˆψe (rad )
+
+# Energy Ratio Estimate vs. COM Offset for Hardware Jerboa at Liftoff 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 0.51.01.52.00.024 0 .027 0 .030 0 .033 0 .036 0.51.01.52.0
+
+## COM Offset dx (m)Fore-Aft Speed  ˙px (m/s)
+
+# Fore-Aft Speed vs. COM Offset for Analytical and Hardware Jerboa 
+
+## 0.024 0 .027 0 .030 0 .033 0 .036 0.20 0.22 0.24 0.024 0 .027 0 .030 0 .033 0 .036 0.20 0.22 0.24 
+
+## COM Offset dx (m)Height  ˙pz (m)
+
+# Apex Height vs. COM Offset for Analytical and Hardware Jerboa 
+
+## A BC D
+
+## ψde = 1 .0 rad ψde = 1 .1 rad ψde = 1 .2 rad 
+
+## Hardware Analytical     
+
+> Figure 10. Hardware fixed point validation in energy and energy ratio control vs. COM offset on hardware Jerboa for a selection of three different target energy ratios. Each of these four panels contrasts analytical predictions with empirical results in correspondence with an equivalently lettered analogue contrasting the analytical predictions and simulation results in Figure 8. (A) compares empirically measured with analytically computed liftoff energy, corroborating its predicted monotonic dependence on
+
+dx for the two lower energy ratios. For a target energy ratio of ψde = 1.2 rad and at higher energies, the motors and touchdown angle begin to saturate due to joint and torque limits, respectively, leading to a plateau and decrease in performance. (B) conveys the independence of estimated liftoff energy ratio values, ˆψe, to variations in CoM offsets, dx, at relatively constant magnitudes that roughly increase (while beginning to saturate) with increases in the fixed values of their commanded target, ψde . (C) & (D) compares empirically measured with model predictions of fore-aft speed and apex height respectively. In C, increases to dx are correlated to increases in fore-aft speed, while in D increases to the desired energy ratio, ψde is correlated with a decreased hopping height. 
+
+did in simulation (Figure 7A), decreasing and increasing repeatedly during each stance. The energy ae also appears to be closer to its target energy than ae in simulation; this is likely coincidental due to the lack of an integrator in the energy controller (36). Similar to the energy ae, the height (Figure 11C) and leg angle θ (Figure 11H) both appear to converge to a neighborhood of a fixed point. Interestingly, the leg angle is even more symmetric between touchdown and liftoff than it is in simulation (cf. Figure 7H). At the same time, the hip motor voltage 21 in Figure 11D follows the same trend it did in simulation (Figure 7D). These all demonstrate successful control of Jerboa in hardware. 
+
+5.3 Fixed Points and Model Accuracy 
+
+In this section we apply the same input output perspective from Section 4.3 to the hardware data, comparing hardware apex coordinate fixed points for fore-aft speed and apex height in Figures 10C and 10D, respectively, to those from the analytical model in (30) converted to apex coordinates using (61). As in Section 4.3 the data is collected by first throwing the robot before waiting for convergence (typically after ∼20 steps) to a near steady state behavior. Once the robot reaches steady state we collect data for ∼ 30 seconds 
+
+to reject the step to step variations in behavior. The range of set points is chosen to demonstrate the full stable operating regime of the robot. The data in these two figures are less clean than they were for simulation, but nevertheless the same trends are present. For the lower target energy ratio 
+
+ψde there is a clear monotonic relationship between center of mass offset dx and fore-aft speed shown in Figure 10C. At 
+
+ψde = 1 .2rad this relationship begins to fail suggesting that the assumptions are breaking down in the face of operation at a higher energy level as discussed in Section 2.3.3 and that the robot’s ability to recirculate the leg is saturating due to the  
+
+> Prepared using sagej.cls
+
+23 26 27 28 1.52.02.53.026 27 28 1.52.02.53.0
+
+> Energy  ae (m/s)
+
+## ae ade
+
+26 27 28 1.01.526 27 28 1.01.5
+
+> Energy Ratio Estimate  ˆψe (rad )
+
+## ˆψe ψde
+
+26 27 28 0.15 0.20 26 27 28 0.15 0.20 
+
+> Height  pz (m)
+
+26 27 28 0510 15 26 27 28 0510 15 
+
+> Hip Motor Voltage ( V)
+
+26 27 28 67826 27 28 678
+
+> Discrete Time Hip Torque  ¯τ (N)
+
+26 27 28 
+
+−0.100.126 27 28 
+
+−0.100.1
+
+> Pitch  φ (rad )
+
+26 27 28 1.01.52.026 27 28 1.01.52.0
+
+Time (s) 
+
+> Fore-Aft Speed  ˙px (m/s)
+
+26 27 28 
+
+−0.500.526 27 28 
+
+−0.500.5
+
+Time (s) 
+
+> Leg Angle  θ (rad )
+
+26 27 28 0.17 0.18 0.19 0.20 26 27 28 0.17 0.18 0.19 0.20 
+
+Time (s) 
+
+> Leg Length  r (m)
+
+## A B CD E FG H I
+
+# Hardware Jerboa Time Domain Traces for ade = 2 .3 rad /s and ψde = 1 .2 rad  
+
+> Figure 11. Example trajectories of various state values on hardware during steady state locomotion. Periods of stance are highlighted with a gray background. These plots can generally be compared directly to those in Figure 7 with the exception of the motor torque in Figure 11D, which is now measured in volts as opposed to the newton meters in Figure 7D. All values are measured or calculated using sensors on-board Jerboa with the exception of the height (Figure 11C) and fore-aft speed (Figure 11G), which are measured by encoders on the boom. The controller uses the same target values for energy and energy ratio as in Figure 7.
+
+increasingly short apex height. Next, for the apex height in Figure 10D, the equally-messy hardware data again follows the analytical model’s trends: changing the COM offset has little discernible effect on the apex height, while decreasing the phase results in an increased height. The hardware result also appears to follow the analytical prediction that the apex height should not substantially increase from a target energy ratio of ψde = 1 .1 rad to one of ψde = 1 .0 rad .As a result, the accuracy of the model relative to the hardware data in Table 10 has a mean percent error in speed of 16 .4% and in apex height of 12 .1% which is worse than the parallel table for the simulation accuracy Table 9. As with Table 9 the data present in Table 10 for fore-aft speed has a high coefficient of variation, ≈ 0.82 , from the assignment of γ and χ as described in Section 3.4. Selecting different values for γ, χ that don’t try to minimize the mean error, for example using γ = 0 .88 , χ = 2 .2, results in the mean percent error for speed being 18 .4 ± 10 .1 % which has a coefficient of variation around 0.55 .
+
+6 Discussion 
+
+6.1 Model, Simulation, and Hardware Differences 
+
+As with any system, the hardware, simulation, and analytical model differ. Fortunately the key parametric trends predicted by the model are present in both experimental data sets with moderate accuracy. The main difference between the model and experimental results is that the model underestimates the apex height in both simulation and hardware in Figures 8D and 10D. This is likely caused both by the steady state error in the energy ratio from Figures 8B and 10B as well as the model underestimating the stepping asymmetry resulting in the model predicting a shallower liftoff velocity angle in comparison to the experimental liftoff velocity angle. One explanation for this is that our model is not accurately estimating ωe, the relative frequency of ψe relative to the master phase, which is used in both controlling the energy ratio in (22) and in estimating the stepping asymmetry in (25b) due to assuming b = O(ϵ) in Assumption 10. Assumption 10 is a mathematically convenient substitute for the empirically  
+
+> Prepared using sagej.cls
+
+24 Journal Title XX(X)    
+
+> Table 10. Accuracy of the apex coordinate fixed points for Jerboa as predicted by the analytical form in (30) compared to the hardware results. The data is from the large operating regime plotted in Figure 10 where the number of different desired and measured robot liftoff steady state values (each following dozens of hops from various initial conditions) is N= 13 .
+
+State Mean Error Mean Percent Error Max Error Max Percent Error 
+
+˙px 0.215 ± 0.177 m /s 16 .4 ± 13 .4 % 0.599 m /s 41 .8 % 
+
+pz 0.028 ± 0.006 m 12 .1 ± 2.43 % 0.037 m 15 .7 % 
+
+more realistic observation during stable operation that b ˙r =
+
+O(ϵ) compared to the force from the spring. As a side effect of this assumption the role of damping in ˙ψe (56) is considered 
+
+O(ϵ) even though b does not appear with ˙r impacting the computation of ωe.On the other hand the main difference between the simulation and experimental results is that the physical Jerboa’s legs are not pogo sticks; they are four bar linkages with extension springs as stated in the beginning of Section 5. The four bar linkage design results in large non-axial forces especially during a small compression (i.e., 0–2 cm , which is the general range of compression in Figures 7I and 11I) (Shamsah et al. 2018). Therefore, instead of applying force entirely in the radial direction, forces are also directed forward. Neither the model nor the simulation account for these forward forces and therefore do not account for the legs’ obvious effect: they will accelerate the robot forward. As such, we expect that Jerboa would hop faster in hardware than the model or simulation predict. This expectation is verified with the data and in the resulting values for χ in Table 8 which compensates for the increased energization from Jerboa’s legs. Despite these large perturbations, the controller still functions in hardware albeit with some periodic oscillations and increased energy. 
+
+6.2 Failure Modes 
+
+While in Section 5 we presented cases where the robot performed well, the control strategy can fail either due to the robot starting outside of the basin of attraction or due to the onset of instability at the boundaries of the operating regime as delimited by our formal assumptions. Below we categorize the main failure modes observed in the hardware experiments. 
+
+6.2.1 Insufficient COM Offset The stability of the pitching subsystem relies on the COM offset dx being sufficiently large to counteract the hip torque. While in Assumption 5 we assume that the lever arm does not depend on ϕ, in reality it does. Specifically, excessively vertical pitching transients during stance create a vanishingly small effective CoM offset, resulting in correspondingly small hip torques insufficient to replenish the robot’s dissipating energy. The energy controller in Section 3.2.1 helps offset this error, though it does not completely mitigate it. In particular, for Jerboa, increasing 
+
+dx entails pitching the tail up in flight, where due to the conservation of angular momentum causing the body to also pitch, the robot may fail to increase d cos ϕ at the next touchdown. The persistence of these conditions at the next liftoff event will decrease ¯τ , in a manner that can exacerbate rather than reverse the collapse of offset dx and twice the mass-specific square root of energy ae.
+
+6.2.2 Missed Touchdown Angle Occasionally the robot is unable to hit the target touchdown angle due to kinematic limits or limited motor speeds. This results in ψe and ˙θ
+
+increasing until eventually the robot may stub its toe and topple as the apex height decreases. 
+
+6.3 Connection Between Posture and Energy 
+
+While the idea that increasing the average hip torque increases the energy should come at no surprise because of (30), there is also a connection between posture and the amount of hip torque needed to stabilize pitch in (13). This suggests that in cases where the center of mass is not directly above the hip at steady state, the hip torque that stabilizes pitch will also energize the system. While in some bipedal systems this net hip torque might pose a problem by violating the assumption that speed is roughly constant in stance (e.g., Raibert stepping in Raibert (1986); De and Koditschek (2015b)), a stepping controller can enable the system to realize the energy benefits without ruining stability by compensating for the hip torque with an asymmetry term which balances energy between the radial and angular subsystems as explained in Theorem 2. 
+
+6.4 Energy Ratio and Its Connection to Asymmetric Gaits 
+
+The second equation in (19) along with Theorem 2 reveals a fundamental connection between the symmetry of a gait (or lack thereof) and the change in energy ratio over the course of stance. Thus for gaits where ψe changes on the fixed orbit, such as one resulting from a controller with a net hip torque, the stepping policy will be asymmetric about vertical on the fixed orbit as in Figure 7H. This insight suggests that in these cases, arising from the lack of substantial energetic losses in the angular subsystem, it is key to treat SLIP as a unitary 2 DoF system rather than as a parallel composition of 1 DoF systems. 
+
+6.5 Stepping Controller Comparison 
+
+Our stepping controller (22) is very similar to a conventional Raibert scheme (Raibert 1986), comprising of a neutral point approximator consisting of the first and last term combined with the filter, and a proportional term. The main difference comes from the last term, which accounts for the expected asymmetry at the fixed point. Additionally, departing from Raibert’s formulation of the symmetric neutral point, we view its erstwhile symmetric component as a convex combination of scissor stepping and a fixed touchdown angle (achieving his neutral point only at that combination’s midpoint). Not only does this allow us to analyze Raibert stepping with hybrid averaging by treating the contribution of the previous touchdown angle as O(ϵ), but we are also able to design  
+
+> Prepared using sagej.cls 25
+
+controllers which have the large basin of scissor stepping while avoiding its period doubling effect. Comparatively, stepping controllers like VBLA and Peuker’s controller (Sharbafi and Seyfarth 2016; Peekema 2015) can be viewed as choosing the energy ratio ψe at touchdown by setting the touchdown angle relative to one where ψe would equal 0 rad . In contrast, our stepping controller (22) attempts to control ψe at touchdown to some fixed value using a proportional controller and properties of the reset map. 
+
+6.6 Uses of Core Actuation (Spines and Tails) 
+
+In this paper we compare the application of a hip-energized gait to a planar biped, and a tailed planar biped. While for the planar biped the controller stabilizes the pitch to some fixed point, it can not select the pitch independent of energy. In contrast, when the robot has a tail, the controller stabilizes to a desired pitch and desired energy. This example illustrates how an extra DoF such as a spine or tail enables a secondary objective that can be imposed independently from that of the primary controller. 
+
+6.7 Comparison to Tail-Energized Hopping 
+
+Previous work on Jerboa in (Shamsah et al. 2018) featured a tail-energized controller where the tail pumped energy into the shank, leg springs to energize hopping. The tail-energized controller enabled hopping at speeds of 0.2 – 1.0 m /s with a maximum of 20 hops due to the control strategy’s reliance on accurate pitch estimation. Our control strategy represents a strict upgrade in these metrics. It enables Jerboa to hop faster and hop endlessly without falling over at the cost of not being able to hop in place. The success of the hip energized controller likely stems from the improved formal analysis. The math in (Shamsah et al. 2018) was limited to the vertical hopping analysis leaving the hybrid averageability of the overall planar dynamics to the realm of conjecture. In contrast Theorem 1 is applied to the full pitch-unlocked Jerboa and instead uses physically motivated assumptions to apply hybrid averaging. The resulting insights led to a more robust controller. Future work on Jerboa should seek to combine tail-energized hopping and hip-energized hopping to result in still more agile and higher performance behavior. 
+
+6.8 Application of Assumptions to Other Legged Machines 
+
+The core theory of this paper presented in Theorem 1, relies on a set of carefully motivated assumptions presented in Tables 3 to 5. In Section 2 we discuss these assumptions in the context of Jerboa. There remains the apt question of how these assumptions hold up when applied to more general bipedal platforms such as Atlas (Dynamics 2023) or Cassie (Lundeberg 2022)? For example, at first glance, Assumption 1 is immediately violated by Atlas, whose physical hip is considerably offset from its mass center. However, it is important to keep in mind that the the anchored SLIP is a virtual machine, whose effective morphology can be abstractly selected by the anchoring strategy on such a highly actuated physical machine — its virtual ”hip” need not be co-located with the robot’s physical hip. Assumptions 5 and 8 more likely to prove problematic over the wide range of operating conditions that users would expect their robot to be operable. In such contexts, the applicability of these results might well require the recourse to gain scheduling over an empirically developed family of χ and γ values. The rest of the assumptions are, similarly, likely to be applicable within carefully managed SLIP model parameters and subject to the choice of anchoring formulation. 
+
+6.9 Applications 
+
+Beyond the immediate utility of our novel controller for a unitary 2 DoF SLIP template (Table 7) as distinct from the past literature’s focus on parallel composition of independent 1 DoF angular and radial subsystems (Raibert 1986; De and Koditschek 2015a) to both planar and spatial legged machines 22 , our formal development of the connections between posture and energy (Section 6.3) and between hip energization and gait asymmetry (Section 6.4) has two more general applications. First, as the field moves towards bipedal robots that can manipulate objects of significant mass, these legged systems may be forced to operate in regimes of high net hip torque that require appropriately asymmetric gaits capable of redirecting their energy in an appropriate and timely enough manner to avoid pitching over. For example, in today’s context of MPC generated strategies, insights from Theorem 2 could easily be applied by reworking the cost function to regularize around an asymmetric stepping pattern rather than a symmetric one. Second, still more broadly, starting from the days of the field’s first untethered running machines that omitted shank actuators (Buehler et al. 1998) and conceived their hip motors, foremost, as indirect sources of energy to drive passive shank springs Saranli et al. (2001), the effective recruitment of high powered hip torques has remained something of an art. We hope that the combined insight (summarized in Table 7) to “lean in” during stance with stepping punctuated to redistribute the resulting momentum may help roboticists reap higher energy legged behaviors by more aggressive use of hip actuation. 
+
+7 Conclusion 
+
+In this paper we presented a new hip-energized hopping controller for planar bipeds that allowed the Penn Jerboa to hop at speeds approaching 9 leg lengths/s. The controller uses the hip torque to both stabilize pitch and to energize the translational SLIP subsystem. Meanwhile, the stepping controller moves energy from the angular subsystem to the radial subsystem to counteract energetic losses due to radial damping. We use a novel set of coordinates combined with hybrid averaging to get analytical fixed points and eigenvalues for the resulting closed loop dynamics, providing insight into how the physical and control parameters affect the robot’s behavior within an appropriately delimited regime of operation specified by physically motivated assumptions that facilitate the analysis. In the future we hope to combine this hopping controller with Jerboa’s roll controller (Wenger et al. 2016) to allow Jerboa to hop off the boom. Additionally we would like to apply our advances in hybrid averaging to other systems such as a tail energized Jerboa (Shamsah et al. 2018) or a spine quadruped bounding (Duperret et al. 2014).  
+
+> Prepared using sagej.cls
+
+26 Journal Title XX(X) 
+
+Acknowledgements 
+
+We thank J. Diego Caporale for his support with the experimental setup and Charity Payne, Diedra Krieger, and the rest of the GRASP Lab staff for keeping our lab safe and open during these tumultuous times. 
+
+Funding 
+
+This work was supported by ONR grant # N00014-16-1-2817, a Vannevar Bush Fellowship held by the last author, sponsored by the Basic Research Office of the Assistant Secretary of Defense for Research and Engineering and partly by the Army Research Office under the SLICE Multidisciplinary University Research Initiatives Program award under Grant #W911NF-18-1-0327 
+
+Notes 
+
+1. This is the first time in the literature that hybrid averaging has been applied to 2 DoF SLIP (De 2017; De and Koditschek 2018a). Though outside the scope of the paper, work presently in progress aims to demonstrate that the new methods presented this paper can be used to analyze a classical shank-actuated 2 DoF SLIP unlike a previous application of hybrid averaging to SLIP which was restricted to 1.5 DoF SLIP by neglecting leg angle (De 2017). 2. This comparison extends to more general purpose spatial-bipeds such as Cassie’s 100 m dash world record-breaking average of 
+
+4 m /s (i.e., ∼ 4 leg lengths/s) (Lundeberg 2022) and Atlas’s maximum reported speed of 2.5 m /s (i.e., ∼ 2.5 leg lengths/s) (Dynamics 2023). These comparisons remain purely suggestive because a careful comparison of speed is complicated by the fact that Atlas and Cassie are spatial robots while Jerboa is a boom-restricted sagittal plane robot, the different length scales of the robots, and in the case of Atlas, the substantial differences between hydraulic and direct electromechanical actuation. 3. We remind the reader that this theory guarantees, for hyperbolic attractors of the kind achieved in Theorem 1, that the local behavior of the actual nonlinear system will be smoothly conjugate to (i.e. enjoy the same transient properties) as the linearized dynamics (in a sufficiently small neighborhood). 4. See Figure 7H for an example plot of the leg angle in simulation where θ goes from ∼ − 0.2 to ∼ 0.4 rad in stance and Figure 11H for the equivalent hardware plot where θ goes from ∼ 0.45 to ∼ 0.5 rad in stance. Because it is generated by the exact Lagrangian dynamics (39), the simulation data is more relevant than the empirical data for assessing the efficacy of our analytical model (here, specifically, the validity of Assumption 7) in capturing the behavior of the first principles physical phenomena (here, specifically, gravity’s influence consequent upon the asymmetric steady state). For a more complete discussion of the relationships between the analytical model, the numerical simulation, and the physical behavior of the hardware, please see Section 6.1. Historically small angle approximations in various forms have proven quite useful and general in the study and deployment of SLIP models in various robots (Geyer et al. 2005; Ankarali and Saranli 2010; De and Koditschek 2018b). 5. The torque is small due to the PD terms being small, the effect of gravity being small, and ¯τ r being somewhat small on the trajectories of interest Figure 7 6. This assumption, the one of two (the other being Assumption 15) in the paper imposing a direct restriction on the magnitude of a state component, reflects the physical design of the Jerboa platform (Shamsah et al. 2018) whose range of motion is mechanically limited to roughly 20% of the robot’s leg length. 7. We work in polar coordinates for the translational system, whereby r ∈ R+, the set of positive real numbers, θ ∈ S1, the angles on the unit circle, and T (·) denotes the tangent space. 8. Definition 1 can be found in Section C and in De (2017). 9. Table 8 contains the empirically determined value for gamma, which was obtained using the method described in Section 3.4. 10. In the application setting of relevance to this paper, the Jerboa’s damping (Table 8) b is not O(ϵ) since its value is 40 Ns/m. This is a mathematically convenient substitute for the empirically more realistic observation that during stable operation b ˙r =
+
+O(ϵ) compared to the force from the spring. As a side effect of this assumption there are a few places in the dynamics where 
+
+b shows up without ˙r that are now considered O(ϵ). The most noteworthy example is in ˙ψe (56b) which in turn contributes to the error in steady state height by under estimating the amount of asymmetry in the stepping trajectories. In the future, developing an alternate form of this assumption would likely improve the model accuracy. 11. While in the theory energy can grow unbounded, in the physical system torque limits and energetic losses due to friction and damping prevent the energy from being large. 12. Note that for ease of exposition we apply Assumption 9 to all equations in (55), although our purposes require its application only to (55d). 13. Only odd terms that are O(ϵ) disappear with averaging De (2017) 14. De et al. (2018) only require hyperbolicity of the return map. 15. While our controller does generate trajectories where the touchdown angle, θtd is not symmetric relative to the prior liftoff angle, θlo about vertical (thus gravitational potential energy is changing), the change is negligible compared to the kinetic energy in the system Figure 7H 16. An alternative version of this assumption would be to either assume that the hip torque is directly countering the effect of gravity on the angular subsystem or that the moment from gravity is negligible compared to the hip torque. 17. Our value of α is 1 − ˜α of the ˜α in the standard formulation of an exponentially weighted moving average filter (Everett 2011). 18. We remind the reader that this low pass filer has no effect on the location of fixed points, but only on their stability. 19. Formal analysis of the basin of attraction of the original and the modified system is inhibited by the lack of tools in the literature for characterizing the basin of a nonlinear hybrid dynamical system of the sort we are working with. 20. Unlike many booms, the boom used in this paper does not have a counterweight, so its weight must be supported by the robot throughout each stance. Similarly the boom does not have a parallelogram linkage meaning the robot will roll slightly during stance. 21. The figure contains the voltage for hardware as opposed to presenting torque directly because Jerboa’s hardware does not allow for control of current. 22. While our analysis and experimental results are limited to the sagittal plane, the field has a long history of successfully applying sagittal plane control strategies on spatial robots (De and Koditschek 2018b; Greco and Koditschek 2023; Raibert 1986; Peuker et al. 2012).  
+
+> Prepared using sagej.cls
+
+27 
+
+References 
+
+An J, Chung TY, Lo CHD, Ma C, Chu X and Samuel Au KW (2020) Development of a Bipedal Hopping Robot With Morphable Inertial Tail for Agile Locomotion. In: 2020 8th IEEE RAS/EMBS International Conference for Biomedical Robotics and Biomechatronics (BioRob). pp. 132– 139. DOI:10 .1109/BioRob49111 .2020 .9224428. URL https: //ieeexplore .ieee .org/document/9224428 . ISSN: 2155-1782. 2 Ankarali MM and Saranli U (2010) Stride-to-stride energy regulation for robust self-stability of a torque-actuated dissipative spring-mass hopper. Chaos: An Interdisciplinary Journal of Nonlinear Science 20(3): 033121. DOI:10 .1063/ 1.3486803. URL https://aip .scitation .org/doi/ full/10 .1063/1 .3486803 . 2, 26 Apgar T, Clary P, Green K, Fern A and Hurst JW (2018) Fast Online Trajectory Optimization for the Bipedal Robot Cassie. In: Robotics: Science and Systems. 1 Bledt G and Kim S (2019) Implementing Regularized Predictive Control for Simultaneous Real-Time Footstep and Ground Reaction Force Optimization. In: 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). DOI: 10 .1109/IROS40897 .2019 .8968031. 1 Bledt G and Kim S (2020) Extracting Legged Locomotion Heuristics with Regularized Predictive Control. In: 2020 IEEE International Conference on Robotics and Automation (ICRA). pp. 406–412. DOI:10 .1109/ICRA40945 .2020 .9197488. ISSN: 2577-087X. 1 Bledt G, Powell MJ, Katz B, Di Carlo J, Wensing PM and Kim S (2018) MIT Cheetah 3: Design and Control of a Robust, Dynamic Quadruped Robot. In: 2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). pp. 2245–2252. DOI:10 .1109/IROS .2018 .8593885. ISSN: 2153-0858. 1 Blickhan R, Andrada E, Hirasaki E and Ogihara N (2018) Global dynamics of bipedal macaques during grounded and aerial running. Journal of Experimental Biology 221(24). DOI: 10 .1242/jeb .178897. 2 Buehler M, Battaglia R, Cocosco A, Hawker G, Sarkis J and Yamazaki K (1998) Scout: A simple quadruped that walks, climbs, and runs. Citeseer, p. 1707–1712. 25 Burden SA, Sastry SS, Koditschek DE and Revzen S (2015) Event-Selected Vector Field Discontinuities Yield Piecewise-Differentiable Flows. DOI:10 .48550/arXiv .1407 .1775. URL 
+
+http://arxiv .org/abs/1407 .1775 . ArXiv:1407.1775 [math]. 13 Chen YM, Nelson G, Griffin R, Posa M and Pratt J (2023) Integrable Whole-body Orientation Coordinates for Legged Robots. DOI: 10 .48550/arXiv .2210 .08111. URL http://arxiv .org/ abs/2210 .08111 . ArXiv:2210.08111 [cs]. 1 Dai H and Tedrake R (2016) Planning robust walking motion on un-even terrain via convex optimization. In: 2016 IEEE-RAS 16th International Conference on Humanoid Robots (Humanoids). pp. 579–586. DOI:10 .1109/HUMANOIDS .2016 .7803333. ISSN: 2164-0580. 1 De A (2017) Modular Hopping and Running via Parallel Composition. Departmental Papers (ESE) URL https:// repository .upenn .edu/ese papers/794 . 2, 8, 9, 10, 11, 26, 31, 32 De A, Burden S and Koditschek D (2018) A hybrid dynamical ex-tension of averaging and its application to the analysis of legged gait stability. The International Journal of Robotics Research : 266–286DOI:10 .1177/0278364918756498. URL https: //repository .upenn .edu/ese papers/822 . 2, 8, 9, 10, 11, 12, 13, 26, 31, 32 De A and Koditschek D (2015a) Parallel Composition of Templates for Tail-Energized Planar Hopping. 2015 IEEE Intl. Conference on Robotics and Automation DOI:10 .1109/ICRA .2015 .7139831. URL https: //repository .upenn .edu/ese papers/717 . 9, 25 De A and Koditschek D (2015b) The Penn Jerboa: A Platform for Exploring Parallel Composition of Templates. Technical Reports (ESE) URL https://repository .upenn .edu/ ese reports/16 . 1, 9, 24 De A and Koditschek D (2018a) Averaged Anchoring of Decoupled Templates in a Tail-Energized Monoped. In: Robotics Research. Springer. ISBN 978-3-319-60915-7, pp. 269–285. DOI: 10 .1007/978-3-319-60916-4 16. 2, 8, 12, 26 De A and Koditschek DE (2018b) Vertical hopper compositions for preflexive and feedback-stabilized quadrupedal bounding, pacing, pronking, and trotting. The International Journal of Robotics Research 37(7): 743–778. DOI:10 .1177/ 0278364918779874. URL https://doi .org/10 .1177/ 0278364918779874 . 2, 6, 26, 31 Drama O and Badri-Spr¨ owitz A (2020) Virtual Point Control for Step-Down Perturbations and Downhill Slopes in Bipedal Running. Frontiers in Bioengineering and Biotechnology 8. DOI:10 .3389/fbioe .2020 .586534. URL 
+
+https://www .ncbi .nlm .nih .gov/pmc/articles/ PMC7775500/ . 2 Drama O, Vielemeyer J, Badri-Spr¨ owitz A and M¨ uller R(2020) Postural stability in human running with step-down perturbations: an experimental and numerical study. Royal Society open science 7(11): 200570. Publisher: The Royal Society. 2 Duperret J, Kenneally G, Pusey J and Koditschek D (2014) Towards a Comparative Measure for Legged Agility. Departmental Papers (ESE) URL https://repository .upenn .edu/ ese papers/753 . 25 Dynamics B (2023) Atlas. URL https:// bostondynamics .com/atlas/ . 25, 26 Everett J (2011) The exponentially weighted moving average applied to the control and monitoring of varying sample sizes. In: WIT Transactions on Modelling and Simulation, volume 51. ISBN 978-1-84564-540-3, pp. 3–13. DOI:10 .2495/CMEM110011. 26 Firouzi V, Seyfarth A and Sharbafi MA (2019) TIP Model: A Combination of Unstable Subsystems for Lateral Balance in Walking. In: 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). pp. 476–482. DOI: 10 .1109/IROS40897 .2019 .8967792. ISSN: 2153-0866. 2, 20 Full R and Koditschek D (1999) Templates and anchors: neuromechanical hypotheses of legged locomotion on land. Journal of Experimental Biology 202(23): 3325. URL 
+
+http://jeb .biologists .org/content/202/23/ 3325 .abstract . 1 Geyer H, Seyfarth A and Blickhan R (2005) Spring-mass running: simple approximate solution and application to gait stability. Journal of Theoretical Biology 232(3): 315–328. DOI:10 .1016/  
+
+> Prepared using sagej.cls
+
+28 Journal Title XX(X) 
+
+j.jtbi .2004 .08 .015. 5, 11, 12, 26 Ghigliazza RM, Altendorfer R, Holmes P and Koditschek D (2003) A simply stabilized running model. SIAM Journal on Applied Dynamical Systems 2(2): 187–218. URL http: //www .bkfc .net/altendor/SIAMPaper .pd . 8, 12 Greco T and Koditschek DE (2023) Anchoring sagittal plane templates in a spatial quadruped. In: 2023 IEEE International Conference on Robotics and Automation (ICRA). IEEE, pp. 12113–12119. URL https://ieeexplore .ieee .org/ abstract/document/10161488/ . 26 Guckenheimer J and Holmes P (2013) Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields. Springer Science & Business Media. ISBN 978-1-4612-1140-2. 2, 31 Heim SW, Ajallooeian M, Eckert P, Vespignani M and Ijspeert AJ (2016) On designing an active tail for legged robots: simplifying control via decoupling of control objectives. Industrial Robot: An International Journal 43(3): 338–346. DOI:10 .1108/IR-10-2015-0190. URL https://doi .org/10 .1108/IR-10-2015-0190 . Publisher: Emerald Group Publishing Limited. 3Hutter M, Gehring C, Jud D, Lauber A, Bellicoso CD, Tsounis V, Hwangbo J, Bodie K, Fankhauser P, Bloesch M, Diethelm R, Bachmann S, Melzer A and Hoepflinger M (2016) ANYmal - a highly mobile and dynamic quadrupedal robot. In: 2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). pp. 38–44. DOI:10 .1109/IROS .2016 .7758092. ISSN: 2153-0866. 1 Hwangbo J, Lee J, Dosovitskiy A, Bellicoso D, Tsounis V, Koltun V and Hutter M (2019) Learning agile and dynamic motor skills for legged robots. Science Robotics 4(26): eaau5872. Publisher: American Association for the Advancement of Science. 1 Katz B, Carlo JD and Kim S (2019) Mini Cheetah: A Platform for Pushing the Limits of Dynamic Quadruped Control. In: 2019 International Conference on Robotics and Automation (ICRA). pp. 6295–6301. DOI:10 .1109/ICRA .2019 .8793865. ISSN: 1050-4729. 1 Kenneally G, De A and Koditschek D (2016) Design Principles for a Family of Direct-Drive Legged Robots. IEEE Robotics and Automation Letters 1(2): 900–907. DOI:10 .1109/LRA .2016 .2528294. URL 
+
+https://repository .upenn .edu/ese papers/705 .1Koditschek DE and B¨ uhler M (1991) Analysis of a simplified hopping robot. The International Journal of Robotics Research 10(6): 587–605. URL http://ijr .sagepub .com/ content/10/6/587 .short . 9 Kumar A, Fu Z, Pathak D and Malik J (2021) RMA: Rapid motor adaptation for legged robots. arXiv preprint arXiv:2107.04034 . 1 Lee J, Hwangbo J, Wellhausen L, Koltun V and Hutter M (2020) Learning quadrupedal locomotion over challenging terrain. Science robotics 5(47): eabc5986. Publisher: American Association for the Advancement of Science. 1 Lee J, Vu MN and Oh Y (2017) A force direction control method for robotic bipedal walking based on a reduced order model. In: 2017 IEEE International Conference on Advanced Intelligent Mechatronics (AIM). pp. 1483–1488. DOI:10 .1109/ AIM .2017 .8014228. ISSN: 2159-6255. 2 Liu Y and Ben-Tzvi P (2021) Feedback Control of the Locomotion of a Tailed Quadruped Robot. American Society of Mechanical Engineers Digital Collection. DOI: 10 .1115/DETC2021-71611. URL https://dx .doi .org/ 10 .1115/DETC2021-71611 . 3 Liu Y and Ben-Tzvi P (2023) How a serpentine tail assists agile motions of kangaroo rats: a dynamics and control approach. Nonlinear Dynamics 111(16): 14783–14803. DOI:10 .1007/ s11071-023-08646-w. URL https://doi .org/10 .1007/ s11071-023-08646-w . 3 Lundeberg S (2022) Bipedal robot developed at oregon state achieves guinness world record in 100 meters. Life at OSU URL https://today .oregonstate .edu/news/ bipedal-robot-developed-oregon-state-achieves-guinness-world-record-100-meters .25, 26 Margolis GB, Yang G, Paigwar K, Chen T and Agrawal P (2022) Rapid Locomotion via Reinforcement Learning. DOI: 10 .48550/arXiv .2205 .02824. URL http://arxiv .org/ abs/2205 .02824 . ArXiv:2205.02824 [cs]. 1 Maus HM, Lipfert SW, Gross M, Rummel J and Seyfarth A (2010) Upright human gait did not provide a major mechanical challenge for our ancestors. Nature Communications 1(1): 70. DOI:10 .1038/ncomms1073. URL https:// www .nature .com/articles/ncomms1073 . Number: 1 Publisher: Nature Publishing Group. 2, 20, 21 M¨ uller R, Rode C, Aminiaghdam S, Vielemeyer J and Blickhan R (2017) Force direction patterns promote whole body stability even in hip-flexed walking, but not upper body stability in human upright walking. Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences 473(2207). DOI:10 .1098/rspa .2017 .0404. 2, 20 Nahrendra IMA, Yu B and Myung H (2023) DreamWaQ: Learning Robust Quadrupedal Locomotion With Implicit Terrain Imagination via Deep Reinforcement Learning. DOI: 10 .48550/arXiv .2301 .10602. URL http://arxiv .org/ abs/2301 .10602 . ArXiv:2301.10602 [cs, eess]. 1 Peekema AT (2015) Template-based control of the bipedal robot ATRIAS. Master’s Thesis, Oregon State University. 2, 25 Peuker F, Maufroy C and Seyfarth A (2012) Leg-adjustment strategies for stable running in three dimensions. Bioinspiration & biomimetics 7: 036002. DOI:10 .1088/1748-3182/7/3/ 036002. 2, 9, 26 Raibert MH (1986) Legged robots that balance. MIT press. 6, 8, 9, 10, 12, 24, 25, 26 Saranli U, Buehler M and Koditschek DE (2001) RHex: A Simple and Highly Mobile Hexapod Robot. The International Journal of Robotics Research 20(7): 616–631. DOI:10 .1177/ 02783640122067570. URL https://doi .org/10 .1177/ 02783640122067570 . Publisher: SAGE Publications Ltd STM. 1, 25 Saranli U, Schwind WJ and Koditschek DE (1998) Toward the control of a multi-jointed, monoped runner. In: Robotics and Automation, 1998. Proceedings. 1998 IEEE International Conference on, volume 3. IEEE, p. 2676–2682. URL https://repository .upenn .edu/ cgi/viewcontent .cgi?article=1407&context= ese papers . 1, 3 Shamsah A, De A and Koditschek D (2018) Analytically-Guided Design of a Tailed Bipedal Hopping Robot. 2018 IEEE/RSJ  
+
+> Prepared using sagej.cls
+
+29 
+
+International Conference on Intelligent Robots and Systems (IROS) : 2237–2244DOI:10 .1109/IROS .2018 .8593677. URL 
+
+https://repository .upenn .edu/ese papers/850 .1, 2, 3, 21, 24, 25, 26 Sharbafi MA, Maufroy C, Ahmadabadi MN, Yazdanpanah MJ and Seyfarth A (2013) Robust hopping based on virtual pendulum posture control. Bioinspiration &Biomimetics 8(3): 036002. DOI:10 .1088/1748-3182/ 8/3/036002. URL https://iopscience .iop .org/ article/10 .1088/1748-3182/8/3/036002 . 2, 20 Sharbafi MA, Maufroy C, Maus HM, Seyfarth A, Ahmadabadi MN and Yazdanpanah MJ (2012) Controllers for robust hopping with upright trunk based on the Virtual Pendulum concept. In: 2012 IEEE/RSJ International Conference on Intelligent Robots and Systems. pp. 2222–2227. DOI:10 .1109/IROS .2012 .6385892. ISSN: 2153-0866. 2 Sharbafi MA and Seyfarth A (2016) VBLA, a swing leg control approach for humans and robots. In: 2016 IEEE-RAS 16th International Conference on Humanoid Robots (Humanoids). pp. 952–957. DOI:10 .1109/HUMANOIDS .2016 .7803387. ISSN: 2164-0580. 9, 25 Siekmann J, Green K, Warila J, Fern A and Hurst J (2021) Blind bipedal stair traversal via sim-to-real reinforcement learning. arXiv preprint arXiv:2105.08328 . 1 Sontag E (2008) Input to state stability: Basic concepts and results. Nonlinear and Optimal Control Theory : 163–220. 6 Sun H, Yang J, Jia Y, Li Q and Wang C (2023a) Spring-Loaded Inverted Pendulum Hopping via Hybrid Averaging and Control Lyapunov Function. Journal of Bionic Engineering 20(1): 291–307. DOI:10 .1007/s42235-022-00269-y. URL https: //doi .org/10 .1007/s42235-022-00269-y . 2 Sun H, Yang J, Jia Y and Wang C (2023b) Posture Control of Legged Locomotion Based on Virtual Pivot Point Concept. Journal of Bionic Engineering DOI:10 .1007/s42235-023-00410-5. URL https://doi .org/10 .1007/s42235-023-00410-5 . 2 Vu MN, Lee J and Oh Y (2017) Control strategy for stabilization of the biped trunk-SLIP walking model. In: 2017 14th International Conference on Ubiquitous Robots and Ambient Intelligence (URAI). pp. 1–6. DOI:10 .1109/ URAI .2017 .7992875. 2, 20 Wenger G, De A and Koditschek D (2016) Frontal plane stabilization and hopping with a 2dof tail. 2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) URL 
+
+https://repository .upenn .edu/ese papers/851 .25 Yim JK, Ren J, Ologan D, Gonzalez SG and Johnson AM (2023) Proprioception and reaction for walking among entanglements. DOI:10 .48550/arXiv .2304 .02129. URL http: //arxiv .org/abs/2304 .02129 . ArXiv:2304.02129 [cs]. 1
+
+A SLIP w/ Attitude Dynamics Derivation 
+
+Given SLIP w/ Attitude (Figure 2C) consisting of a spring leg with damping, a hip torque, and an offset center of mass, the Lagrangian equations of motion are 
+
+¨r = − b ˙r  d2m cos(2( θ − ϕ)) + d2m + 2 I
+
+2Im 
+
+− −kr 0
+
+ d2m cos(2( θ − ϕ)) + d2m + 2 I
+
+2Im 
+
+− −2dIm ˙ϕ2 sin( θ − ϕ) + 2 dmτ cos( θ − ϕ)2Im 
+
+− 2gIm cos( θ) − 2rIm ˙θ2
+
+2Im 
+
+− rk  d2m cos(2( θ − ϕ)) + d2m + 2 I
+
+2Im 
+
+− d2mτ sin(2( θ − ϕ)) 2Imr (39a) 
+
+¨θ = ˙r  bd 2 sin(2( θ − ϕ)) − 4Iθ ′(t)
+
+2Ir 
+
++ d2kr sin(2( θ − ϕ)) + 2 dI ˙ϕ2 cos( θ − ϕ)2Ir 
+
++ d sin( θ − ϕ)( τ − dkr 0 cos( θ − ϕ)) + gI sin( θ)
+
+Ir 
+
++ τ  −d2m cos(2( θ − ϕ)) + d2m + 2 I
+
+2Imr 2
+
+(39b) 
+
+¨ϕ = − cos( θ − ϕ) ( r (bd ˙r − dkr 0 + τ sec( θ − ϕ))) 
+
+Ir 
+
+− cos( θ − ϕ)  dkr 2 + dτ tan( θ − ϕ)
+
+Ir 
+
+(39c) In order to obtain (1) from (39) we apply Assumptions 1 to 3. 
+
+¨r = ω2 
+
+> r
+
+(r0 − r) − b ˙rm + r ˙θ2 − g cos θ (40a) 
+
+¨θ = τmr 2 + g sin θr − 2 ˙ r ˙θr (40b) 
+
+¨ϕ = (d cos( θ − ϕ)) Fs
+
+I − τI (40c) Where 
+
+Fs := −k(r − r0) − b ˙r
+
+Finally we apply Assumption 5 to transform (40c) into (1c). 
+
+A.1 Justification for spring force replacement 
+
+Assumption 5 implies that the moment about the center of mass from the radial force in the leg is constant. This modeling choice, a key step underlying the isolation of the pitch subsystem from the translational dynamics as depicted in Figure 2, does not arise from direct physical observation, but is instead inspired by the role of gravity in the rate of change of the angular momentum about the toe, Ltoe . First note that independent of any control law, 
+
+˙Ltoe = ( d cos ϕ + r sin θ)mg . (41) In order to relate the angular momentum about the toe to the pitching subsystem we first explore what happens on the pitch steady trajectories (i.e. ϕ = ϕd, ˙ϕ = ¨ϕ = 0 ). The angular momentum about the toe is 
+
+Ltoe = mr 2 ˙θ + Υ , 
+
+> Prepared using sagej.cls
+
+30 Journal Title XX(X) 
+
+where Υ is the angular momentum about the toe arising from the mass center’s displacement from the hip and is equal to 
+
+Υ := −dm ˙r cos( ϕd − θ) − dmr ˙θ sin( ϕd − θ) .
+
+From (1b), 
+
+ddt (mr 2 ˙θ) = τ + mgr sin θ . 
+
+Thus 
+
+˙Ltoe = τ + mgr sin θ + ˙Υ , (42) and from (40c) on a pitch steady trajectory, 
+
+τ = d cos( θ − ϕ)Fs . (43) Setting (41) and (42) equal and using (43) for τ yields 
+
+(d cos ϕd + r sin θ)mg = d cos( θ − ϕ)Fs + mgr sin θ + ˙Υ
+
+d cos ϕdmg = d cos( θ − ϕ)Fs + ˙Υ
+
+dxmg = d cos( θ − ϕ)Fs + ˙Υ (44) Since Υ is small (both terms are multiplied by d ≪ r), and is empirically monotone decreasing along steady state motion, we approximate the main effect of ˙Υ in (44) by recourse to its abstraction via the fixed parameter, χ ≥ 1, that replaces the sum on the right hand side with the product. Thus, 
+
+dxχmg ≈ d cos( θ − ϕ)Fs . (45) 
+
+χ is chosen numerically according to the methods in Section 3.4. Intuitively, χ compensates for the fact that on a steady state trajectory the first term of Υ is usually decreasing moving some momentum into the other terms of 
+
+Ltoe . The approximation is crucial in maintaining the cascade composition that characterizes the post assumption dynamics. Initial analysis with Jerboa in Section 5.3 suggests that for the range of set points a single value of χ is sufficient to accurately model this phenomenon. A potentially larger set of operating conditions may require multiple values of χ depending on energy level to accurately model this phenomenon. 
+
+B Proof of Pitching Stability 
+
+The following is a proof for Proposition 1. 
+
+Proof. We write our stance pitching dynamics in the form of 
+
+¨ϕ + 2 ζω ϕ ˙ϕ + ω2
+
+> ϕ
+
+ϕ + F = D
+
+where 
+
+ωϕ =
+
+q
+
+ϵk p/I ζ =
+
+√ϵk d
+
+2pϵk pIF = ¯ τ r 0/I D = dxχmg + mgr 0 sin(Ξ θ,g ) + ϵk pϕd
+
+I .
+
+From the constraint on kd in the statement of the lemma, 
+
+ζ = 1 , making the system critically damped. Solving for the stance flow and evaluating it at Ts, the stance map is 
+
+ϕlo = e−Tsωϕ
+
+ D  −Tsωϕ + eTsωϕ − 1 
+
+ω2
+
+> ϕ
+
++ e−Tsωϕ
+
+
+
+D( ˙ϕtd Ts + Tsϕtd ωϕ + ϕtd + F T s)
+
+
+
++ e−Tsωϕ
+
+ F  −eTsωϕ
+
+ + F 
+
+ω2
+
+> ϕ
+
+˙ϕlo =e−Tsωϕ
+
+
+
+Ts
+
+ D − F − ϕtd ω2
+
+> ϕ
+
+ − ˙ϕtd Tsωϕ + ˙ϕtd 
+
+
+
+.
+
+The flight dynamics are ¨ϕ = 0 , and the flight map is 
+
+ϕtd = ϕlo + ˙ϕlo Tf
+
+˙ϕtd = ˙ϕlo 
+
+Fk+1 = Fk + ϵ2kτ r0
+
+I (ϕlo − ϕd) ,
+
+which is also fixed time and includes the discrete time integrator. Evaluating the flight map into the stance map yields the liftoff coordinate return map A (7) which takes the form 
+
+A(zϕ) = S−1 
+
+> A
+
+AASAzϕ + S−1 
+
+> A
+
+DA , (49) where SA : zϕ 7 → [ϕ, ˙ϕ, F ]T := ∆([1 , 1, r 0/I ]) is a linear change of coordinates, AA is the state matrix for the pitching subsystem, and DA is the constant disturbance. 
+
+AA =
+
+    
+
+> e−κ(κ+1) e−κΩϕTsT f e−κ(κ−eκ+1 )
+> ϵk ϕ
+> −ϵk ϕe−κTf−e−κ(κ+ϵk ϕ−1) Ts
+
+(−e−κ) 
+
+> ϵ2kτ r 0e−κ(κ+1)
+> Iϵ2kτ r 0e−κΩϕI
+
+λτ
+
+
+
+DA =
+
+ 
+
+> De −Tsω ϕ
+
+(eTsω ϕ−1−Tsω ϕ )
+
+> ω2
+> ϕ
+
+De −Tsωϕ Tsϵ2kτ r0(D−ϕdω2 
+
+> ϕ−De −Tsω ϕ(1+ Tsωϕ)
+
+)
+
+> Iω 2
+> ϕ
+
+
+
+where Ωϕ := pϵk ϕTsTf + Ts + Tf , λτ := 1 +  
+
+> e−κkτr0Tsϵ
+
+(Tf −eκTf +√TsTf ϵk ϕ) 
+
+> kϕI
+
+κ := 
+
+q ϵk ϕTs 
+
+> Tf
+
+and 
+
+ϵk ϕ := ϵk pTsTf 
+
+> I
+
+= ω2
+
+> ϕ
+
+Tf Ts, and—dropping terms that are O(ϵ2)—the last row of AA becomes 
+
+e3AA =
+
+h
+
+0 0 1 − ϵk τ r0TsTf κIk ϕ + ϵk τ r0Ts
+
+√ϵk pIIk ϕ
+
+i
+
+.
+
+The magnitudes of the eigenvalues of AA are 
+
+|λ1| = 12 |
+
+q
+
+(ϵk ϕ − 4) ϵk ϕ + ( ϵk ϕ − 2) |e−κ ,
+
+|λ2| = 12 |
+
+q
+
+(ϵk ϕ − 4) kϕ − (ϵk ϕ − 2) |e−κ ,
+
+|λ3| = 1 − ϵk τ r0TsTf κIk ϕ
+
++ ϵk τ r0Ts
+
+pϵk pIIk ϕ
+
+.
+
+From the inequality constraint on kp in the statement of the lemma, 0 < ϵk ϕ < 4. Thus, |p(ϵk ϕ − 4) ϵk ϕ ±
+
+(ϵk ϕ − 2) | = 2 , and the magnitudes of the eigenvalues are e−κ, e −κ, 1 − ϵk τ r0TsTf κIk ϕ + ϵk τ r0Ts
+
+√ϵk pIIk ϕ , which are all inside the unit circle since κ > 0 and because −1 < 1 −   
+
+> ϵk τr0TsTfκIk ϕ
+
++ ϵk τ r0Ts
+
+√ϵk pIIk ϕ < 1 by inequality constraint on 
+
+kτ in the statement of the lemma.  
+
+> Prepared using sagej.cls
+
+31 
+
+C Hybrid Averaging 
+
+Hybrid averaging (De et al. 2018) is an extension of classical averaging (Guckenheimer and Holmes 2013) to hybrid dynamical systems with only one hybrid mode and has previously been used to analyze monopedal hopping (De et al. 2018) and quadrupedal pronking and bounding (De and Koditschek 2018b). Hybrid averaging gives ϵ-close fixed points of the Poincar´ e return map and stability guarantees without requiring integrable dynamics (De et al. 2018). Hybrid averaging as formulated in De et al. (2018); De (2017) has two key conditions: 1. The continuous time dynamics must be written in the form ˙x = ϵf (x, σ, ϵ ), ˙σ = 1 , where σ ∈ S1 is the master phase, and x ∈ Rn describes the energy coordinates. 2. The averaged dynamics ˙y = ϵ ¯f (y), ˙σ = 1 have fixed points y∗, and the reset map R : y− 7 → y+ has the property that R(y∗) = y∗.Many systems of interest such as SLIP have a discontinuity in multiple states at the reset event. Requirement 2 means there must be projection from the full state space — i.e., the y-coordinates governed by the original dynamics — onto some transverse section — i.e. the x-state component governed by the autonomous (master-phase-decoupled) vector field, 
+
+fx — along the constant velocity master phase orbit of the averaged dynamics wherein the (master-phase-coupled) reset map projects to the identity map. . 
+
+C.1 Averageable Symmetric Hybrid Systems 
+
+In De (2017) Theorem 4, De takes a very large step in resolving this issue by proving that hybrid averaging can be applied if a system satisfies Definition 1 and the reset map has certain properties. 
+
+Definition 1. Weakly-coupled almost-reversible continuous dynamics, taken directly from De (2017), Definition 2. Given a dynamical system on space Y := Tm+1 × Rn partitioned in “phase” and “energy” compartments as 
+
+y = [ σ, ψ, a]T ,
+
+where σ ∈ S1 is the master phase, ψ ∈ Tm is the coordinate representation of the secondary phases, and a ∈ Rn
+
+represents the energy of various subsystems, the system has weakly-coupled almost-reversible continuous dynamics if i) the vector field is of the form 
+
+˙y =
+
+F0(a)0
+
+
+
++ ϵF 1(y, ϵ ) ; (50) ii) the σ component of F0 > 0 and F0 is odd in the sense of De (2017) where odd or even in this case depends on how the ancillary phases relate to the master phase; and iii) there is an a∗ such that for R := {y ∈ Y : a = a∗},
+
+F e 
+
+> 1
+
+(R) = 0 , where F e 
+
+> 1
+
+is the even component of 
+
+F1.De’s insight is that, for a system at steady state with multiple phases, the phases will be locked with related frequencies and a constant set of phase offsets. In De (2017) Lemma 6 and Lemma 8, the author explicitly shows how to calculate the relative frequencies and how to compute a projection from multiple phases to a coordinate system for a section based on a master phase and the relative phase differences. In the following subsection we extend De’s result by relaxing Definition 1 (iii), instead checking for the fixed point in the energy subset of the averaged dynamics. This extension will allow the application of De et al. (2018) Theorem 2 to systems that do not satisfy all conditions of Definition 1 (iii). 
+
+C.2 Hybrid Averaging Stability Analysis Computational Recipe for Time Switched Systems 
+
+The following computational procedure is a modified version of De (2017), Figure 40. We relax the requirement of satisfying Definition 1 (iii) and instead add a check to ensure the averaged system has the necessary fixed point in step IV. I Given a system that satisfies Definition 1 (i) and (ii), write it in the form of (50). II Compute the projection from multiple phases to a single master phase and phase differences. Let 
+
+y := [ σ, ψ, a]T ∈ Tm+1 × Rn
+
+x := [ δ, a]T ∈ Rm+n,
+
+x = hω (y) =
+
+σ1 − ∆( ω(a)) ψa
+
+
+
+y = h−1 
+
+> ω
+
+(x, σ ) =
+
+
+
+σ
+
+∆( ω(a)) −1(σ1 − δ)
+
+a
+
+ ,
+
+where ∆( v) is a diagonal matrix with diagonal entries v and ω is defined as the ratio of frequencies between the master phase and the secondary phase. This ratio ω will either be ω = ω0(a) or ω =
+
+ω(a) := ω0(a) + ϵω 1(a), depending on if the term 
+
+ω appears in is O(ϵ) or O(1) due to dropping O(ϵ2)
+
+terms. 
+
+ω0(a) := Π σ F0∆(Π ψ F0)−11 (51a) 
+
+ω1(a) := 1    
+
+> T∆(Π ψF0)−1Πδ
+> R
+> TH1F1◦h−1
+> ω0([0 ,a ],σ ) d σ.
+
+(51b) The state dynamics in phase difference coordinates are 
+
+dx
+
+dσ = ϵf (x, σ, ϵ )= ϵ H0F0 + H1F1
+
+Πσ F0
+
+◦ h−1 
+
+> ω0
+
+(x, σ ) + O(ϵ2) ,
+
+(52) where 
+
+H0(a) := 
+
+0 −∆( ω1(a)) 00 0 0
+
+
+
+H1(a, ψ) := 
+
+ 0 −∆( ω0(a)) −∆( ψ)Dω 0(a)0 0 In
+
+ 
+
+> Prepared using sagej.cls
+
+32 Journal Title XX(X) 
+
+according to De (2017) Lemma 6. III Compute the averaged dynamics with 
+
+ˆf (x) := 1
+
+T
+
+Z
+
+> T
+
+f (x, σ, 0) d σ. (53) Our choice of ω1 ensures that Πδ ˆf ([0 , a]) = 0 .IV Check to see if there exists an a∗ s.t. for ˆx∗ := [0 , a∗], the averaged dynamics ¯f ( ˆ x∗) = 0 . If the system satisfies all of Definition 1, including (iii), then De (2017) Lemma 8 guarantees the existence of an a∗, though Definition 1 (iii) is sufficient but not necessary. V Compute R(x, σ T ) = hω ◦ Ry ◦ h−1 
+
+> ω
+
+(x, σ T ) for 
+
+ω = ω0(a) + ϵω 1(a) and check that R( ˆ x∗) = ˆ x∗.VI Compute DR = S0 + ϵS1( ˆ x∗) + O(ϵ2) and check that S0 is constant and invertible and that its unit eigenvalues have a diagonal Jordan block. VII Check that the averaged return map, D ˆP = S0 +
+
+ϵ(S1 + V ) is hyperbolic for V = T D ˆf (x) .
+
+Corollary 2. Following the computation recipe in Section C.2 yields a system which under De et al. (2018) Theorem 2 there exists an ϵ0 > 0 s.t. for all 0 < ϵ < ϵ 0, the unaveraged system has a fixed point ϵ close to ˆx∗ with the same stability type as D ˆP .
+
+Proof. According to De (2017) Lemma 6, the change of coordinates from step II results in a system of the form of De et al. (2018) equation 12. Next the check in step VI satisfies condition (i) of De et al. (2018) Theorem 2. The check in step IV satisfies condition (ii.a) of De et al. (2018) theorem 2, while the check in step V satisfies the condition (ii.b) of De et al. (2018) Theorem 2. Finally the check in step VII satisfies condition (ii.c). Thus by De et al. (2018) Theorem 2, there exists an ϵ0 > 0 s.t. for all 0 < ϵ < ϵ 0, the unaveraged system has a fixed point ϵ close to ˆx∗ with the same stability type as 
+
+DP .The advantage of our computational procedure over De (2017) Fig. 40 is that it allows us to relax Definition 1 and apply De et al. (2018) Theorem 2 to systems that do not satisfy Definition 1 (iii). This comes from checking for the fixed point in the energy subset of the averaged dynamics post change of coordinates (i.e., (17)), rather than in the even part of the O(ϵ) unaveraged dynamics for all values of the phase variables (i.e., the even part of (56)). 
+
+D 2 DoF Translational SLIP Dynamics Derivation 
+
+The SLIP dynamics in polar coordinates are (1a) and (1b). From here we convert the SLIP dynamics to our desired coordinates using the change of coordinates defined in (14) where 
+
+
+
+rθ
+
+˙r
+
+˙θ
+
+ = h−1 
+
+> s
+
+(z) = 
+
+
+
+r0 − ae cos ψe cos ψr
+
+> ωr
+
+θae cos ψe sin ψrae sin ψe
+
+> r
+
+ (54) yielding 
+
+˙ψv = ωr + ae cos ψr sin ψe tan ψe
+
+r − b cos ψr sin ψr
+
+m
+
+− g cos θ cos ψr sec ψe
+
+ae
+
+(55a) 
+
+˙ψe = ¯τ cos ψe
+
+ma e
+
++ b cos ψe sin ψe sin 2 ψr
+
+m
+
+− ae sin ψe sin ψr
+
+r + g sin ψe sin ψr cos θae
+
+(55b) 
+
+˙θ = ae sin ψe
+
+r (55c) 
+
+˙ae = ¯τ sin ψe
+
+m − ba e cos 2 ψe sin 2 ψr
+
+m
+
+− g cos θ cos ψe sin ψr .
+
+(55d) Next we apply our assumptions (Table 4). First since r0 −
+
+r := ae sin ψe cos ψr /ω r, r0 − r = O(ϵ) (Assumption 12). Next we take a first order Taylor series of r about r0. Then we replace ψe with γψ de and sin θ with sin Ξ θ. Then we group the terms by O(ϵ) and drop the O(ϵ2) terms. This results in the following dynamics 
+
+˙ψr = ωr + ϵ
+
+ −g cos( ψr ) sec( γψ de ) cos(Ξ θ )
+
+ae
+
++ ae cos( ψr ) sin( γψ de ) tan( γψ de )
+
+r0
+
+− b sin( ψr ) cos( ψr )
+
+m
+
+
+
+(56a) 
+
+˙ψe = ˙˜ψe = ¯τ cos( γψ de )
+
+ma e
+
++ ϵ
+
+ g sin( ψr ) sin( γψ de ) cos(Ξ θ )
+
+ae
+
++ b sin 2(ψr ) sin( γψ de ) cos( γψ de )
+
+m
+
+
+
+(56b) 
+
+˙θ = ae sin( γψ de )
+
+r0
+
++ ϵ
+
+ a2 
+
+> e
+
+cos( ψr ) sin( γψ de ) cos( γψ de )
+
+r20 ˜ωr
+
+ (56c) 
+
+˙ae = ϵ
+
+ ¯τ sin( γψ de )
+
+m − aeb sin 2(ψr ) cos 2(γψ de )
+
+m
+
+− g cos(Ξ θ ) sin( ψr ) cos( γψ de )
+
+ (56d) To compute the averaged vector field we first use the projection hω ◦ hΞ as specified in (16) and (15) where (51a) yields 
+
+ω0(a) = 
+
+" aemω r sec( γψ de )¯τr0ωr csc( γψ de )
+
+> ae
+
+#
+
+, (57) and ω1 from (51b) is  
+
+> Prepared using sagej.cls
+
+33     
+
+> Π1ω1(a)= mtan( γψ de)2πr 0 ¯τ2
+
+         
+
+> −πa 2
+> ebr 0ωr
+> +4¯ τtan( γψ de)
+> 
+> a2
+> e−gr 0cos
+> πb cos 2(γψ de) cot( γψ de)4mωr
+> 
+
+
+
+(58a)   
+
+> Π2ω1(a)= 2r0 cot( γψ de)
+> πa 2
+> e
+
+ a2 
+
+> e
+
+(˜ωr tan 2(γψ de )−ωr )
+
+> r0 ˜ωr
+> −g
+
+(sec 2(γψ de )+1 ) cos     
+
+> πb cos 2(γψ de) cot( γψ de)4mωr
+> 
+
+ (58b) 
+
+E SLIP Reset Map Derivation 
+
+Under assumption Assumption 17 we neglect the change in gravitational potential energy in flight, thus the flight map inverts the vertical velocity, ˙pz . Projecting this into the polar coordinates, [ ˙θr, ˙r]T the flight map first converts the polar liftoff velocity into the Cartesian liftoff velocity using the liftoff leg angle, then reflects the vertical component, before finally rotating the touchdown Cartesian velocity into the polar touchdown velocity using the touchdown leg angle. Thus, 
+
+ ˙θr 
+
+˙r
+
+
+
+> td
+
+= Rv (θtd , θ lo )
+
+ ˙θr 
+
+˙r
+
+
+
+> lo
+
+,
+
+where Rv (θtd , θ lo ) := R(θtd )∆(1 , −1) R(−θlo ) is the matrix which maps liftoff polar velocity to the touchdown polar velocity, R(θ) is a rotation matrix which rotates a vector by 
+
+θ, and ∆( v) is a diagonal matrix whose diagonal elements are v. Since at touchdown av = − ˙r, and at liftoff [ ˙θr, ˙r]T =[ae sin ψe, a e cos ψe]T ,
+
+ ˙θr av
+
+
+
+> td
+
+= ∆(1 , −1) Rv (θtd , θ lo )
+
+ae sin ψe
+
+ae cos ψe
+
+
+
+> lo
+
+,
+
+=
+
+ae sin ( θtd + θlo + ψe)
+
+ae cos ( θtd + θlo + ψe)
+
+
+
+.
+
+Thus from (14), 
+
+ψe
+
+ae
+
+
+
+> td
+
+=
+
+θtd (z) + θlo + ψelo 
+
+aelo 
+
+
+
+.
+
+F Ancillary Phase Lemma 
+
+The following appendix provides a general method for calculating the ancillary phase offsets s.t. R(x∗) = x∗
+
+F.1 Computation of trajectories 
+
+We start by defining notation for the steady state averaged trajectories in z, y, and x. Let fz , f y , f x be the stance dynamics in z, y, x, respectively s.t. 
+
+fy = Dh Ξfz ◦ h−1Ξ
+
+fz = Dh ω Dh Ξfz ◦ h−1Ξ ◦ h−1
+
+> ω
+
+Let ˆx∗ ∈ X s.t. ˆfx( ˆ x∗) = 0 where ˆfx denotes the averaged dynamics. Let the σ varying trajectory of ˆx starting at ˆx, σ 0
+
+evaluated at σ be 
+
+ˆf σ 
+
+> x
+
+(ˆ x, σ 0)
+
+If ˆx = ˆ x∗, then 
+
+ˆf σ 
+
+> x
+
+(x∗, σ 0) = ˆ x∗
+
+We can then transform the trajectory from X to our other coordinates Let 
+
+T (i0, σ ) := inf  
+
+> t> 0
+
+Πσ ˆf ti (i0) = σ
+
+be a the amount of time it takes a trajectory from i0 to reach 
+
+σ for i ∈ { y, z}. We can now write the trajectory in Y as 
+
+ˆf T ( ˆ y0,σ ) 
+
+> y
+
+( ˆ y0)
+
+if ˆy0 = ˆ y∗ 
+
+> 0
+
+:= h−1 
+
+> ω
+
+( ˆ x∗, σ 0), then 
+
+ˆf T ( ˆ y∗  
+
+> 0,σ )
+> y
+
+( ˆ y∗ 
+
+> 0
+
+) = h−1 
+
+> ω
+
+( ˆ x∗, σ ) .
+
+Since ˆx is ϵ close to x, and hω is continuous for ω(a)̸ = 0 ,then ˆy will still be close to y for some ϵ.Similarly the trajectory in Z is 
+
+ˆf T ( ˆ z0,σ ) 
+
+> z
+
+( ˆ z0)
+
+and if ˆz0 = ˆ z∗ 
+
+> 0
+
+:= h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ 0) then 
+
+ˆf T ( ˆ z∗  
+
+> 0,σ )
+> z
+
+( ˆ z∗ 
+
+> 0
+
+) = h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ ) (59) which is offset in the ancillary phases from the trajectory in Y. Additionally since hΞ is continuous, then ˆz and z are ϵ
+
+close for some ϵ.
+
+G Sufficient Conditions on Reset Map and Ancillary Phase Offset 
+
+Lemma 4. Reset Map Sufficient Condition. Let [δ∗, a∗] := ˆx∗ s.t. ˆfx( ˆ x∗) = 0 be the fixed point in the averaged stance dynamics. If 
+
+Rz ([ σT , ψ∗, a∗]) = 
+
+
+
+σT
+
+ψ∗
+
+a∗
+
+ −
+
+
+
+σT − σ0
+
+∆( ω∗)−11(σT − σ0)0
+
+
+
+(60) for ˆz∗ = [ σT , ψ∗, a∗] := h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ T ), then R( ˆ x∗) = ˆx∗
+
+Proof. To prove this lemma, we take our reset map Rz ([ σT , ψ∗, a∗]) = [ σT , ψ∗, a∗] − [σT −
+
+σ0, ∆( ω∗)−11(σT − σ0), 0] and show that in x coordinates it is R( ˆ x∗) = ˆ x∗ where R = h ◦ hΞ ◦ Rz ◦ h−1Ξ ◦ h−1 
+
+> ω
+
+.First at the point of interest hΞ ◦ Rz ◦ h−1Ξ ◦
+
+h−1( ˆ x∗, σ T ) = Rz ◦ h−1(x, σ T ) since Πψ Rz is atranslation at the point of interest, ˆz∗, and hence commutes with hΞ at that point. Next looking at the simplified equation  
+
+> Prepared using sagej.cls
+
+34 Journal Title XX(X) 
+
+for at the point of interest R( ˆ x∗) = hω ◦ Rz ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ T )
+
+δa
+
+
+
+> td
+
+= hω ◦ Rz ◦ h−1 
+
+> ω
+
+([ δ∗, a∗], σ T )= hω ◦ Rz
+
+
+
+σT
+
+∆( ω∗)−1(1σT − δ∗)
+
+a∗
+
+
+
+= hω
+
+
+
+σ0
+
+∆( ω∗)−1(1σT − δ∗)
+
+a∗
+
+
+
+−
+
+
+
+0∆( ω∗)−11(σT − σ0)0
+
+!
+
+= hω
+
+
+
+σ0
+
+∆( ω∗)−1(1σ0 − δ∗)
+
+a∗
+
+
+
+=
+
+σ01 − ∆( ω∗)∆( ω∗)−1(1σ0 − δ∗)
+
+a∗
+
+δa
+
+
+
+> td
+
+=
+
+δ∗
+
+a∗
+
+
+
+Lemma 5. Reset map phase offset. Let ˆx∗ := [0 , a∗] ∈ X 
+
+s.t. ˆfx( ˆ x∗) = 0 be the fixed point in the averaged stance dynamics. If Ξ = ψ∗ − ∆( ω∗)−11σT then the averaged z
+
+state at liftoff, ˆf T ( ˆ z∗   
+
+> 0,σ T)
+> z
+
+( ˆ z∗ 
+
+> 0
+
+) = [ σT , ψ ∗, a ∗] for ˆz∗ 
+
+> 0
+
+:= h−1Ξ ◦
+
+h−1 
+
+> ω
+
+( ˆ x∗, σ 0).
+
+Proof. Leveraging (59) 
+
+ˆf T ( ˆ z∗   
+
+> 0,σ T)
+> z
+
+( ˆ z∗ 
+
+> 0
+
+) = h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ T )
+
+thus 
+
+
+
+σ
+
+ψa
+
+
+
+> T
+
+= h−1Ξ ◦ h−1 
+
+> ω
+
+( ˆ x∗, σ T )= h−1Ξ
+
+
+
+σT
+
+∆( ω∗)−1(σT 1)
+
+a∗
+
+
+
+=
+
+
+
+σT
+
+∆( ω∗)−1(σT 1)
+
+a∗
+
+ +
+
+
+
+0
+
+Ξ
+
+0
+
+
+
+=
+
+
+
+σT
+
+∆( ω∗)−1(σT 1)
+
+a∗
+
+ +
+
+
+
+0
+
+ψ∗ − ∆( ω∗)−11σT
+
+0
+
+
+
+σ
+
+ψa
+
+
+
+> T
+
+=
+
+
+
+σT
+
+ψ∗
+
+a∗
+
+
+
+Remark Lemma 5 demonstrates our ability to move the liftoff coordinate fixed point of the averaged ancillary phases using the change of coordinate hΞ so that we can more easily apply Lemma 4. Since ω is a function of a, and Ξ is a function of ω, we need a∗ to not depend on Ξ otherwise we will likely end up with a transcendental set of equations for a∗ and Ξ
+
+Remark Lemma 5 shows how we can move the liftoff state of the ancillary phases in order to apply Lemma 4. 
+
+H Liftoff to Apex Conversion 
+
+Our fixed points are calculated in liftoff coordinates (30), but the natural outputs of the system are the apex height and fore-aft speed. For that reason when comparing the accuracy of our model to the experimental results we use apex coordinates and convert our analytical fixed points from liftoff coordinates to apex coordinates using: 
+
+pzlo = r0 sin θlo (61a) 
+
+˙pzlo = ae cos( θlo + ψe) (61b) 
+
+˙pxapex = ae sin( θlo + ψe) (61c) 
+
+pzapex = ˙p2
+
+> zlo
+
+2g + pzlo (61d) 
+
+I Computation of Average Leg Angle 
+
+In Assumption 7 we do a small angle approximation of θ
+
+about Ξθ,g which is the average leg angle when we assume gravity acts radially. In this section we are computing the  
+
+> Prepared using sagej.cls
+
+35 
+
+value of Ξθ,g . First note that assuming gravity acts radially is equivalent to replacing Ξθ,g with 0. Then using the values from (30), the fixed point for ae and ¯τ when we assume gravity acts radially are 
+
+a∗ 
+
+> e,g
+
+= 2¯ τ ∗ 
+
+> g
+
+sec( γψ de ) tan( γψ de )
+
+b
+
+¯τ ∗ 
+
+> g
+
+= mg r0
+
+(χd x) .
+
+Combining these fixed points with the equation for Ξθ (25b) yields the equation for Ξθ,g (31).

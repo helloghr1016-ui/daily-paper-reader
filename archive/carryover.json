@@ -1,34 +1,36 @@
 {
-  "generated_at": "2026-08-16T20:02:46.103722+00:00",
-  "updated_date": "20260816",
+  "generated_at": "2026-08-23T20:36:06.356373+00:00",
+  "updated_date": "20260823",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
-      "updated_date": "20260816",
+      "updated_date": "20260823",
       "carryover_days": 9,
       "items": []
     },
     "inverse-rl": {
-      "updated_date": "20260816",
+      "updated_date": "20260823",
       "carryover_days": 9,
       "items": [
         {
-          "id": "2608.10847v1",
+          "id": "2608.18787v1",
           "source": "arxiv",
-          "title": "Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support",
-          "abstract": "Kinesthetic teaching through robot hand-guiding provides a natural interface for collecting demonstrations in imitation learning and programming-by-demonstration. However, extended sessions cause operator fatigue, reducing demonstration quality and limiting scalability. Current industrial hand-guiding approaches typically provide no active assistance, and alternatives require costly wrist-mounted force-torque sensors or rely on learned motion priors unavailable for new tasks. We propose RHOAS, a hand-guiding scheme that actively supports operator-intended motions using model-based force estimation without additional hardware. Our approach considers robot hand-guiding as an actively controlled interaction by the human operator, rather than an interaction with a passive environment. Standard methods used for hand-guiding typically rely on general passivity-based compliant control architectures that unnecessarily increase operator effort and limit the range of demonstrable motions without providing the intended stability guarantees in active interaction. Instead, our design utilizes model-based external torque estimation, internal joint torque sensing, and redundant robot kinematics to actively support human physical input within the human interaction frequency bandwidth. We address practical challenges of relying on observer-based force estimation, including suppression of unmodeled joint elastic dynamic effects and measurement noise in the feedback path, reduced estimate accuracy close to kinematic singularities, and static gravity compensation errors. In a user study with 16 participants on a KUKA LWR iiwa we demonstrate statistically significant reductions in physical effort, improved maneuverability for both precise and agile tasks, and clear user preference.",
+          "title": "Dream2Reward: Transition-Alignment Reward Models from Positive Demonstrations for Robotic Manipulation",
+          "abstract": "Learning robotic policies requires dense rewards that remain informative when behavior departs from successful demonstrations. Progress-based rewards estimate how far an observation has advanced along a nominal successful trajectory, but may remain high after an incorrect transition. We introduce Dream2Reward, which learns a language-conditioned successful latent transition field from positive demonstrations. Given the visual history up to a transition start, the model predicts the latent displacement associated with successful execution and scores the observed displacement through signed directional and symmetric magnitude agreement. This transition-level comparison penalizes wrong-direction, overshooting, and stagnant motion even when the resulting observation appears to show progress. Dream2Reward requires no failure annotations, progress labels, or synthetic negatives, and produces a dense causal reward. Across mechanism diagnostics and shared-trajectory evaluations, it provides stronger success-failure separation and more informative feedback on low-quality behavior than progress-based alternatives. Across online and offline policy learning, the same frozen reward model reduces reward hacking and supports stronger downstream performance, including in real-robot manipulation. These results show that comparing realized motion with predicted successful change provides an effective way to convert positive demonstrations into dense rewards for robot learning.",
           "authors": [
-            "Anna Tuma",
-            "Giuseppe Monetti",
-            "Jochen J. Steil",
-            "Niels Dehio"
+            "Haoyu Zhang",
+            "Zecui Zeng",
+            "Bin Wang",
+            "Lusong Li",
+            "Liang Lin",
+            "Long Cheng"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-08-11T12:19:17+00:00",
-          "link": "https://arxiv.org/pdf/2608.10847v1",
+          "published": "2026-08-19T10:44:20+00:00",
+          "link": "https://arxiv.org/pdf/2608.18787v1",
           "tags": [
             "keyword:MPC-WBC",
             "keyword:inverse-rl",
@@ -38,41 +40,40 @@
             "query:locoWBC"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "improves kinesthetic teaching for collecting demonstrations in imitation learning",
-          "llm_evidence_cn": "改进动觉示教以采集模仿学习演示数据",
-          "llm_evidence": "改进动觉示教以采集模仿学习演示数据",
-          "canonical_evidence": "改进动觉示教以采集模仿学习演示数据",
-          "llm_tldr_en": "RHOAS provides active support for robot hand-guiding using model-based force estimation to reduce operator fatigue and scale demonstration collection for imitation learning.",
-          "llm_tldr_cn": "针对动觉示教中操作者长时间引导导致疲劳、演示质量下降的问题，本文提出RHOAS，利用基于模型的力估计主动支撑操作者的预期运动，无需额外硬件即可减轻负担。该方法将手引导视为人机主动控制交互，在采集演示时保持高质量数据，显著提升了模仿学习与编程演示的可扩展性，为大规模示范数据收集提供了实用方案。",
-          "llm_tldr": "针对动觉示教中操作者长时间引导导致疲劳、演示质量下降的问题，本文提出RHOAS，利用基于模型的力估计主动支撑操作者的预期运动，无需额外硬件即可减轻负担。该方法将手引导视为人机主动控制交互，在采集演示时保持高质量数据，显著提升了模仿学习与编程演示的可扩展性，为大规模示范数据收集提供了实用方案。",
+          "llm_evidence_en": "Learns reward models from positive demonstrations for robotic manipulation",
+          "llm_evidence_cn": "从正向演示中学习奖励模型以用于机器人操作",
+          "llm_evidence": "从正向演示中学习奖励模型以用于机器人操作",
+          "canonical_evidence": "从正向演示中学习奖励模型以用于机器人操作",
+          "llm_tldr_en": "Dream2Reward learns language-conditioned successful latent transition fields from positive demonstrations, scoring observed transitions to provide dense rewards that penalize wrong-direction and overshooting behavior in robotic manipulation.",
+          "llm_tldr_cn": "机器人策略学习需要密集且能区分偏离成功轨迹的奖励，而基于进度的奖励可能在错误转移后依然偏高。本文提出Dream2Reward，从正样本演示中学习语言条件下的成功潜在迁移场，通过方向与幅度一致性对观测迁移打分，从而惩罚方向错误、超调与停滞。该方法为操作策略提供了更准确的迁移级奖励信号，有助于提升学习效率。",
+          "llm_tldr": "机器人策略学习需要密集且能区分偏离成功轨迹的奖励，而基于进度的奖励可能在错误转移后依然偏高。本文提出Dream2Reward，从正样本演示中学习语言条件下的成功潜在迁移场，通过方向与幅度一致性对观测迁移打分，从而惩罚方向错误、超调与停滞。该方法为操作策略提供了更准确的迁移级奖励信号，有助于提升学习效率。",
           "llm_tags": [
             "query:inverse-rl"
           ],
           "matched_query_tag": "query:inverse-rl",
-          "matched_query_text": "imitation learning",
-          "matched_requirement_id": "req-1",
+          "matched_query_text": "reward function learning",
+          "matched_requirement_id": "req-6",
           "selection_source": "carryover_cache",
-          "paper_id": "2608.10847v1",
+          "paper_id": "2608.18787v1",
           "carry_days": 1
         },
         {
-          "id": "2608.10453v1",
+          "id": "2608.16715v1",
           "source": "arxiv",
-          "title": "From Privileged Control to Deployable Adaptation:Fusing Mechanism-Guided Task Reduction with Learned Behavior",
-          "abstract": "Simultaneous input-gain variation and large additive disturbance create a control problem in which a fixed observer or nominal controller may be unable to reproduce the performance of a regime-aware design. We study a training--deployment asymmetry: during simulation or commissioning, an expert controller is allowed to use the known gain and disturbance, whereas the deployed controller can use only the reference and measured states. Directly imitating expert actions is generally unsafe because the same instantaneous student observation may correspond to different privileged regimes and hence different expert actions. We propose a mechanism-guided transfer route rather than a new neural architecture. An exact sampled-data identity removes the additive disturbance from the expert law and reduces learning to a task-relevant inverse input gain inferred from causal state history. The latent target is reconstructed from expert actions and deployment-visible trajectories, so the true plant parameter is not required as a student label. A common-quadratic certificate is derived for the actual augmented sampled recursion, followed by explicit residual, coverage, switching, noise, and saturation qualifications. A parameter-regime scan shows that the nominal observer's error grows sharply as $a$ decreases and that the next gain above the best non-failing tuning diverges for every tested $a<1$. Direct action networks also fail in closed loop despite moderate offline error, whereas the structured student remains close to the privileged expert and reduces tracking RMSE by about 69\\% relative to the tuned observer in unseen 60-s trials. The contribution is an interpretable design perspective for turning privileged multi-regime control knowledge into a deployable adaptive controller, together with conditions under which the transfer is meaningful.",
+          "title": "MatchingPolicy: Correspondence-Aware Policy Enables Cross-Object In-Context Learning",
+          "abstract": "In-context imitation learning enables few-shot policy generalization but struggles to maintain performance on unseen objects and novel scenarios. To address this, we introduce MatchingPolicy, a correspondence-driven framework that explicitly decouples demonstration-to-scene matching from policy learning. Central to our method is a correspondence-aware diffusion policy that conditions robotic actions directly on dense semantic correspondences. This architectural separation resolves the inherent conflict between correspondence identification and action adaptation, enabling robust out-of-distribution transfer. Our framework integrates vision foundation models with a novel two-stage matching algorithm to dynamically establish reliable correspondences. Extensive evaluations on RLBench and real-world manipulation tasks confirm that MatchingPolicy achieves superior few-shot performance, generalizing reliably across unseen object instances and semantic categories.",
           "authors": [
-            "Xitong Niu",
-            "Peifeng Hui",
-            "Zheyong Jiang",
-            "Yuan Gao",
-            "Chuanlin Zhang"
+            "Qijin She",
+            "Hanyang Yu",
+            "Zeming Li",
+            "Ping Tan"
           ],
-          "primary_category": "eess.SY",
+          "primary_category": "cs.RO",
           "categories": [
-            "eess.SY"
+            "cs.RO"
           ],
-          "published": "2026-08-11T04:06:47+00:00",
-          "link": "https://arxiv.org/pdf/2608.10453v1",
+          "published": "2026-08-17T15:29:58+00:00",
+          "link": "https://arxiv.org/pdf/2608.16715v1",
           "tags": [
             "keyword:MPC-WBC",
             "keyword:inverse-rl",
@@ -82,13 +83,13 @@
             "query:locoWBC"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "addresses safe imitation of expert actions under privileged information",
-          "llm_evidence_cn": "处理特权信息下安全模仿专家动作的问题",
-          "llm_evidence": "处理特权信息下安全模仿专家动作的问题",
-          "canonical_evidence": "处理特权信息下安全模仿专家动作的问题",
-          "llm_tldr_en": "The paper proposes a mechanism-guided transfer route for control under privileged expert information, avoiding unsafe direct imitation and enabling deployable adaptation.",
-          "llm_tldr_cn": "在训练与部署不对称的条件下，专家控制器可利用特权和扰动信息，而部署端只能使用参考和量测状态，直接模仿专家动作可能不安全。该文提出机制引导的迁移线路而非新网络结构，通过任务约简融合学习行为，实现可部署的自适应控制。实验表明该方法能处理输入增益变化和大幅扰动，为安全模仿学习提供了新思路。",
-          "llm_tldr": "在训练与部署不对称的条件下，专家控制器可利用特权和扰动信息，而部署端只能使用参考和量测状态，直接模仿专家动作可能不安全。该文提出机制引导的迁移线路而非新网络结构，通过任务约简融合学习行为，实现可部署的自适应控制。实验表明该方法能处理输入增益变化和大幅扰动，为安全模仿学习提供了新思路。",
+          "llm_evidence_en": "in-context imitation learning with correspondence-aware diffusion policy",
+          "llm_evidence_cn": "基于对应关系感知扩散策略的上下文模仿学习",
+          "llm_evidence": "基于对应关系感知扩散策略的上下文模仿学习",
+          "canonical_evidence": "基于对应关系感知扩散策略的上下文模仿学习",
+          "llm_tldr_en": "Proposes MatchingPolicy, a correspondence-driven framework that decouples demonstration-to-scene matching from policy learning and uses a correspondence-aware diffusion policy for robust OOD transfer.",
+          "llm_tldr_cn": "针对上下文模仿学习在未见物体和新场景上泛化不足的问题，提出MatchingPolicy框架，将演示到场景的对应匹配与策略学习解耦。策略使用对应关系感知的扩散模型，直接将密集语义对应关系条件化到机器人动作上，解决了对应识别与动作适配之间的冲突。结合视觉基础模型与两阶段匹配算法，实现了稳健的分布外迁移，显著提升跨物体少样本泛化能力。",
+          "llm_tldr": "针对上下文模仿学习在未见物体和新场景上泛化不足的问题，提出MatchingPolicy框架，将演示到场景的对应匹配与策略学习解耦。策略使用对应关系感知的扩散模型，直接将密集语义对应关系条件化到机器人动作上，解决了对应识别与动作适配之间的冲突。结合视觉基础模型与两阶段匹配算法，实现了稳健的分布外迁移，显著提升跨物体少样本泛化能力。",
           "llm_tags": [
             "query:inverse-rl"
           ],
@@ -96,13 +97,56 @@
           "matched_query_text": "imitation learning",
           "matched_requirement_id": "req-1",
           "selection_source": "carryover_cache",
-          "paper_id": "2608.10453v1",
+          "paper_id": "2608.16715v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2608.17432v1",
+          "source": "arxiv",
+          "title": "UniReflex: Plug-and-Play Force Control for Pretrained Generative Policies via Fast-Slow Reflex",
+          "abstract": "Generative imitation learning policies excel at trajectory planning but lack closed-loop force regulation, while directly incorporating force modalities often requires redesigning or retraining the network. We present UniReflex, a universal plug-and-play framework that equips frozen generative policies with variable impedance control (VIC) for contact regulation, guided by force-direction intent collected during demonstration, without further slow-backbone fine-tuning. By non-invasively intercepting deep latent representations from the action head, UniReflex drives a fast reflex network that decouples active force exertion from external interaction response. This scheme predicts normalized anisotropic stiffness directions for directional compliance allocation. Furthermore, UniReflex integrates an adaptive gating mechanism that enables seamless transitions between position-dominant planning and force-dominant execution. Real-world bimanual experiments demonstrate that UniReflex significantly improves contact stability and success rates while preserving original position accuracy. Our approach achieves 25-66x lower per-step backward latency relative to joint training strategies on the evaluated backbones.",
+          "authors": [
+            "Yan Huang",
+            "Shoujie Li",
+            "Ziwu Song",
+            "Wenbo Ding"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-08-18T06:54:22+00:00",
+          "link": "https://arxiv.org/pdf/2608.17432v1",
+          "tags": [
+            "keyword:MPC-WBC",
+            "keyword:inverse-rl",
+            "keyword:locoWBC",
+            "query:MPC-WBC",
+            "query:inverse-rl",
+            "query:locoWBC"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Plug-and-play force control for pretrained generative imitation policies",
+          "llm_evidence_cn": "为预训练生成式模仿策略提供即插即用的力控制",
+          "llm_evidence": "为预训练生成式模仿策略提供即插即用的力控制",
+          "canonical_evidence": "为预训练生成式模仿策略提供即插即用的力控制",
+          "llm_tldr_en": "UniReflex adds plug-and-play variable impedance control to frozen generative imitation policies, enabling closed-loop force regulation without fine-tuning the backbone.",
+          "llm_tldr_cn": "生成式模仿学习策略擅长轨迹规划但缺少闭环力调节，而直接加入力模态往往需要重新设计网络。UniReflex通过从动作头的深层潜变量中截取表示并驱动一个快速反射网络，预测各向异性刚度方向，在不微调慢速骨干网络的情况下实现可变阻抗控制。这种方法能为已训练好的生成策略即插即用地补充力控能力，并在接触操作中取得良好效果。",
+          "llm_tldr": "生成式模仿学习策略擅长轨迹规划但缺少闭环力调节，而直接加入力模态往往需要重新设计网络。UniReflex通过从动作头的深层潜变量中截取表示并驱动一个快速反射网络，预测各向异性刚度方向，在不微调慢速骨干网络的情况下实现可变阻抗控制。这种方法能为已训练好的生成策略即插即用地补充力控能力，并在接触操作中取得良好效果。",
+          "llm_tags": [
+            "query:inverse-rl"
+          ],
+          "matched_query_tag": "query:inverse-rl",
+          "matched_query_text": "imitation learning",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2608.17432v1",
           "carry_days": 1
         }
       ]
     },
     "MPC-WBC": {
-      "updated_date": "20260816",
+      "updated_date": "20260823",
       "carryover_days": 9,
       "items": []
     }

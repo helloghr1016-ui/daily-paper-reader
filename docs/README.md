@@ -6,83 +6,94 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-16
-- 运行时间：2026-08-16 20:17:10 UTC
+- 最新运行日期：2026-08-23
+- 运行时间：2026-08-23 20:50:18 UTC
 - 运行状态：成功
-- 本次总论文数：21
-- 精读区：8
+- 本次总论文数：24
+- 精读区：11
 - 速读区：13
 
 ### 今日简报（AI）
-今日精读21篇论文，其中IRL高效超梯度方法与长时程人形操控框架得分最高。最值得关注10分《Efficient Hypergradient Descent for IRL》与9分《LUCID》人形双臂操控模型。建议优先精读这两篇，再结合速读中的分层模仿与自适应奖励模型拓展应用。
-- 详情：[/202608/16/README](/202608/16/README)
+今日精读11篇、速读13篇，聚焦逆强化学习与机器人模仿学习的前沿进展。  
+最值得关注的是Q-based变分逆强化学习（10分）与Max-Q选择性模仿在线学习（9分），两者在奖励建模与人机协作效率上提出了新思路。  
+建议优先精读这两篇高分论文，结合速读中的引导式教学与股票交易逆强化应用，可拓展跨场景理解。
+- 详情：[/202608/23/README](/202608/23/README)
 
 ### 精读区论文标签
-1. [Efficient Hypergradient Descent for Inverse Reinforcement Learning](/202608/16/2608.11052v1-efficient-hypergradient-descent-for-inverse-reinforcement-learning)  
+1. [Q-based Variational Inverse Reinforcement Learning](/202608/23/2608.16888v1-q-based-variational-inverse-reinforcement-learning)  
    标签：评分：10.0/10、query:inverse-rl
-   evidence：逆强化学习的高效超梯度下降方法
-2. [LUCID: Latent-Skill Unified Control via Imagined Dynamics for Long-Horizon Humanoid Loco-Manipulation](/202608/16/2608.07746v1-lucid-latent-skill-unified-control-via-imagined-dynamics-for-long-horizon-humanoid-loco-manipulation)  
-   标签：评分：9.0/10、query:mpc-wbc
-   evidence：使用对抗模仿学习训练仿人机器人全身技能，用于移动操控
-3. [Whole-Body Planning for Humanoids Navigating Confined Spaces via Self-Collision Avoidance References](/202608/16/2608.10220v1-whole-body-planning-for-humanoids-navigating-confined-spaces-via-self-collision-avoidance-references)  
+   evidence：从专家示范中恢复奖励后验的贝叶斯逆强化学习方法
+2. [Max-Q Selective Imitation for Human-in-the-Loop Online Robot Learning](/202608/23/2608.15088v1-max-q-selective-imitation-for-human-in-the-loop-online-robot-learning)  
+   标签：评分：9.0/10、query:inverse-rl
+   evidence：在线RL中基于Q值的人类干预选择性模仿
+3. [Learning Sequential Mobility Choice: A Review of Route and Activity Choice through Inverse Reinforcement and Imitation Learning](/202608/23/2608.15339v1-learning-sequential-mobility-choice-a-review-of-route-and-activity-choice-through-inverse-reinforcement-and-imitation-learning)  
+   标签：评分：9.0/10、query:inverse-rl
+   evidence：一篇将逆强化学习与模仿学习联系应用于出行选择的综述
+4. [Tac4Loco: Learning Spatiotemporal Plantar Pressure Representations for Humanoid Locomotion](/202608/23/2608.15766v1-tac4loco-learning-spatiotemporal-plantar-pressure-representations-for-humanoid-locomotion)  
    标签：评分：9.0/10、query:locowbc
-   evidence：面向受限空间的仿人机器人全身运动规划
-4. [Joint Identifiability and Conditioning in Finite-Horizon Continuous-Time Inverse LQR with Unknown Dynamics](/202608/16/2608.11932v1-joint-identifiability-and-conditioning-in-finite-horizon-continuous-time-inverse-lqr-with-unknown-dynamics)  
+   evidence：人形机器人运动；学习时空足底压力表示以提升复杂地形适应性
+5. [Unified Pedestrian Path Prediction Using Inverse Reinforcement Learning](/202608/23/2608.15929v1-unified-pedestrian-path-prediction-using-inverse-reinforcement-learning)  
    标签：评分：9.0/10、query:inverse-rl
-   evidence：研究有限时域连续时间逆LQR，从专家行为推断成本函数
-5. [A penalty-type method for relaxed inverse optimal control problems](/202608/16/2608.12769v1-a-penalty-type-method-for-relaxed-inverse-optimal-control-problems)  
+   evidence：逆强化学习用于行人路径预测
+6. [Revisiting Open-Loop Execution in Robotics: Toward Reactive, Higher-Performing Policies](/202608/23/2608.15938v2-revisiting-open-loop-execution-in-robotics-toward-reactive-higher-performing-policies)  
    标签：评分：9.0/10、query:inverse-rl
-   evidence：松弛逆最优控制的惩罚型数值方法
-6. [Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data](/202608/16/2608.02580v1-ego2robot-scalable-robot-data-synthesis-from-egocentric-human-data)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：将人类第一视角视频转化为机器人演示数据，服务于模仿学习
-7. [TrustRoboReward: Preference-Ordered Isotonic Score Editing for Multi-Paradigm Robot Reward Models](/202608/16/2608.08491v1-trustroboreward-preference-ordered-isotonic-score-editing-for-multi-paradigm-robot-reward-models)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：机器人奖励模型，偏好有序等距分数编辑，多范式奖励学习
-8. [Hip Energized Monopedal Hopping](/202608/16/2608.10387v1-hip-energized-monopedal-hopping)  
-   标签：评分：8.0/10、query:locowbc
-   evidence：面向单足弹跳的新型步态策略与能量注入控制
+   evidence：面向机器人操作的模仿学习与动作分块
+7. [SurgVIL: Scaling Surgical Robot Imitation Learning with Open-source Surgical Videos](/202608/23/2608.16058v1-surgvil-scaling-surgical-robot-imitation-learning-with-open-source-surgical-videos)  
+   标签：评分：9.0/10、query:inverse-rl
+   evidence：利用开源视频和仿真数据扩展手术机器人模仿学习
+8. [HAF: Adapting Generalist VLAs to Humanoid Whole-Body Loco-manipulation via Hierarchical Action Flow and Spectral Latent RL](/202608/23/2608.16837v1-haf-adapting-generalist-vlas-to-humanoid-whole-body-loco-manipulation-via-hierarchical-action-flow-and-spectral-latent-rl)  
+   标签：评分：9.0/10、query:locowbc
+   evidence：人形全身移动操作与强化学习
+9. [GigaBrain-WBC-0.5: A Behavior World Model for Robust Whole-Body Control with Environment Interaction](/202608/23/2608.18234v1-gigabrain-wbc-05-a-behavior-world-model-for-robust-whole-body-control-with-environment-interaction)  
+   标签：评分：9.0/10、query:locowbc
+   evidence：人形机器人全身控制与环境交互
+10. [Real-Time Control-Constrained DDP for Underactuated Balancing of Legged Robots](/202608/23/2608.18552v1-real-time-control-constrained-ddp-for-underactuated-balancing-of-legged-robots)  
+   标签：评分：9.0/10、query:mpc-wbc
+   evidence：面向足式机器人平衡与运动学的实时模型预测控制
+11. [MILD: Tractable Terrain Modeling for Learning Improved Bipedal Locomotion on Deformable Surfaces](/202608/23/2608.19955v1-mild-tractable-terrain-modeling-for-learning-improved-bipedal-locomotion-on-deformable-surfaces)  
+   标签：评分：9.0/10、query:locowbc
+   evidence：双足机器人在可变形表面上的运动学习与控制
 
 ### 速读区论文标签
-1. [A Hierarchical Approach to Imitation Learning for Manipulation Tasks Requiring Time Varying Forces](/202608/16/2608.03103v1-a-hierarchical-approach-to-imitation-learning-for-manipulation-tasks-requiring-time-varying-forces)  
+1. [From Privileged Control to Deployable Adaptation:Fusing Mechanism-Guided Task Reduction with Learned Behavior](/202608/23/2608.10453v1-from-privileged-control-to-deployable-adaptationfusing-mechanism-guided-task-reduction-with-learned-behavior)  
    标签：评分：8.0/10、query:inverse-rl
-   evidence：面向接触丰富任务的层次化模仿学习，结合扩散策略与快速轨迹生成
-2. [EvoHIL: Self-Evolving Reward and Flow-Matched Policy Optimization for Robust Human-in-the-Loop Reinforcement Learning](/202608/16/2608.03872v1-evohil-self-evolving-reward-and-flow-matched-policy-optimization-for-robust-human-in-the-loop-reinforcement-learning)  
+   evidence：处理特权信息下安全模仿专家动作的问题
+2. [Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support](/202608/23/2608.10847v1-enabling-scalable-kinesthetic-teaching-via-observer-based-hand-guiding-with-active-support)  
    标签：评分：8.0/10、query:inverse-rl
-   evidence：人在回路强化学习中的自演进奖励模型
-3. [Enhancing VLM Reward Models Through Structure-Aware Fine-Tuning](/202608/16/2608.03875v1-enhancing-vlm-reward-models-through-structure-aware-fine-tuning)  
+   evidence：改进动觉示教以采集模仿学习演示数据
+3. [Learning Stock Trading Policies via Barycenter-Based Adversarial Inverse Reinforcement Learning](/202608/23/2608.15770v1-learning-stock-trading-policies-via-barycenter-based-adversarial-inverse-reinforcement-learning)  
    标签：评分：8.0/10、query:inverse-rl
-   evidence：通过结构感知微调VLM奖励进行奖励函数学习
-4. [SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation](/202608/16/2608.04196v1-simdex-mining-similar-egocentric-videos-for-cross-embodiment-dexterous-manipulation)  
+   evidence：使用对抗逆强化学习聚合多个专家示范并预训练策略
+4. [RAPAC-DP: Response-Aligned Pending-Action Compensation for Diffusion Policies under Delayed Execution](/202608/23/2608.15924v1-rapac-dp-response-aligned-pending-action-compensation-for-diffusion-policies-under-delayed-execution)  
    标签：评分：8.0/10、query:inverse-rl
-   evidence：利用第一视角人类视频作为机器人操作演示数据，属于模仿学习范畴
-5. [SkillMemo: Expert-guided Skill Memory Framework for Compositional Embodied Manipulation](/202608/16/2608.05970v1-skillmemo-expert-guided-skill-memory-framework-for-compositional-embodied-manipulation)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：将演示分解为潜在技能用于模仿学习
-6. [SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning](/202608/16/2608.09138v1-speedtuning-speeding-up-policy-execution-with-lightweight-reinforcement-learning)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：利用强化学习加速模仿学习策略的执行速度
-7. [Skills in Weights, Memory in Code: Hybrid Learning for Memory-Dependent Robot Manipulation](/202608/16/2608.09410v1-skills-in-weights-memory-in-code-hybrid-learning-for-memory-dependent-robot-manipulation)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：利用梯度模仿学习获取机器人低层技能
-8. [RynnValue: Scaling Robotic Value Foundation Models with Temporal Distance](/202608/16/2608.09853v1-rynnvalue-scaling-robotic-value-foundation-models-with-temporal-distance)  
-   标签：评分：8.0/10、query:inverse-rl
-   evidence：通用奖励模型与价值基础模型，用时序距离学习奖励
-9. [SpeedTuning: Speeding Up Policy Execution with Lightweight Reinforcement Learning](/202608/16/2608.09138v2-speedtuning-speeding-up-policy-execution-with-lightweight-reinforcement-learning)  
+   evidence：针对模仿学习策略的延迟执行问题提出补偿框架
+5. [Trajectory-Level Automatic Curriculum Learning for Legged Locomotion on Unstructured Terrain](/202608/23/2608.16164v1-trajectory-level-automatic-curriculum-learning-for-legged-locomotion-on-unstructured-terrain)  
+   标签：评分：8.0/10、query:locowbc
+   evidence：非结构化地形上腿式运动策略的自动课程学习
+6. [Revisiting Open-Loop Execution in Robotics: Toward Reactive, Higher-Performing Policies](/202608/23/2608.15938v1-revisiting-open-loop-execution-in-robotics-toward-reactive-higher-performing-policies)  
    标签：评分：7.0/10、query:inverse-rl
-   evidence：直接关注模仿学习策略的加速问题，使用强化学习补齐执行速度
-10. [Multi-Agent Reinforcement Learning via Agent-Specific Preference](/202608/16/2608.08604v1-multi-agent-reinforcement-learning-via-agent-specific-preference)  
+   evidence：模仿学习，动作分块与开环执行研究
+7. [Planner-Conditioned Diffusion for Coordinated Multi-Agent Exploration](/202608/23/2608.16229v1-planner-conditioned-diffusion-for-coordinated-multi-agent-exploration)  
+   标签：评分：7.0/10、query:inverse-rl
+   evidence：基于演示数据训练的扩散策略用于多智能体探索
+8. [Teach and Grow: An Agent-Centered Architecture for General Robot Learning](/202608/23/2608.17209v1-teach-and-grow-an-agent-centered-architecture-for-general-robot-learning)  
+   标签：评分：7.0/10、query:inverse-rl
+   evidence：利用少量成功演示构建可复用技能块；演示驱动的技能获取
+9. [Robust Brachiation on a Life-Sized Dual-Arm Robot Using Waypoint-Guided Reinforcement Learning](/202608/23/2608.17320v1-robust-brachiation-on-a-life-sized-dual-arm-robot-using-waypoint-guided-reinforcement-learning)  
+   标签：评分：7.0/10、query:locowbc
+   evidence：基于RL的双臂机器人摆荡运动，利用航点引导实现全身协调运动
+10. [ReForce: Learning Force-aware Retargeting for Dexterous Manipulation](/202608/23/2608.15560v1-reforce-learning-force-aware-retargeting-for-dexterous-manipulation)  
    标签：评分：6.0/10、query:inverse-rl
-   evidence：通过智能体特定偏好学习奖励函数
-11. [High Fidelity Capture, Reconstruction, and Transfer of Human Demonstrations for Robot-Assisted Bathing](/202608/16/2608.09127v1-high-fidelity-capture-reconstruction-and-transfer-of-human-demonstrations-for-robot-assisted-bathing)  
+   evidence：通过力感知的重定向从人类示教中学习机器人动作
+11. [Robo-Dopamine 2.0: History-Conditioned and OOD-Aware Process Reward Modeling for Robotic Manipulation](/202608/23/2608.15680v1-robo-dopamine-20-history-conditioned-and-ood-aware-process-reward-modeling-for-robotic-manipulation)  
    标签：评分：6.0/10、query:inverse-rl
-   evidence：面向机器人学习的人类演示高保真采集、重建与迁移
-12. [Real-Time Nonlinear MPC via Sequential Quadratic Programming with Structure-Exploiting ADMM and Interior-Point Methods for Underactuated Double-Pendulum Swing-Up](/202608/16/2608.09272v1-real-time-nonlinear-mpc-via-sequential-quadratic-programming-with-structure-exploiting-admm-and-interior-point-methods-for-underactuated-double-pendulum-swing-up)  
-   标签：评分：6.0/10、query:mpc-wbc
-   evidence：实时非线性模型预测控制方法，可迁移至全身运动控制
-13. [BooST: Bridging Semantics and Motions for Efficient Skill Transfer](/202608/16/2608.10600v1-boost-bridging-semantics-and-motions-for-efficient-skill-transfer)  
+   evidence：面向机器人操作的过程奖励模型学习
+12. [EATR-Stereo: Embodiment-Aware Token Routing of Paired Stereo Evidence for Humanoid Vision-Language-Action Control](/202608/23/2608.17453v3-eatr-stereo-embodiment-aware-token-routing-of-paired-stereo-evidence-for-humanoid-vision-language-action-control)  
+   标签：评分：6.0/10、query:locowbc
+   evidence：人形视觉-语言-动作控制中的具身感知双目光标记路由
+13. [DART-SD: Diamond-topology Aware Retrieval and Tuning for Self-Distillation of Multi-Turn Tool-Calling Agents](/202608/23/2608.18524v1-dart-sd-diamond-topology-aware-retrieval-and-tuning-for-self-distillation-of-multi-turn-tool-calling-agents)  
    标签：评分：6.0/10、query:inverse-rl
-   evidence：机器人学习中的技能抽象与迁移，可复用于模仿学习
+   evidence：语言智能体中的轨迹模仿学习与策略多样性
 
 
 <div class="dpr-home-promo-card">

@@ -1,0 +1,935 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-24T20:52:05.607547+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 12,
+    "deep_cap": 8,
+    "deep_selected": 8,
+    "quick_candidates": 14,
+    "quick_skim_target": 13,
+    "quick_selected": 13
+  },
+  "deep_dive": [
+    {
+      "id": "2608.16715v1",
+      "source": "arxiv",
+      "title": "MatchingPolicy: Correspondence-Aware Policy Enables Cross-Object In-Context Learning",
+      "abstract": "In-context imitation learning enables few-shot policy generalization but struggles to maintain performance on unseen objects and novel scenarios. To address this, we introduce MatchingPolicy, a correspondence-driven framework that explicitly decouples demonstration-to-scene matching from policy learning. Central to our method is a correspondence-aware diffusion policy that conditions robotic actions directly on dense semantic correspondences. This architectural separation resolves the inherent conflict between correspondence identification and action adaptation, enabling robust out-of-distribution transfer. Our framework integrates vision foundation models with a novel two-stage matching algorithm to dynamically establish reliable correspondences. Extensive evaluations on RLBench and real-world manipulation tasks confirm that MatchingPolicy achieves superior few-shot performance, generalizing reliably across unseen object instances and semantic categories.",
+      "authors": [
+        "Qijin She",
+        "Hanyang Yu",
+        "Zeming Li",
+        "Ping Tan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-17T15:29:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.16715v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "In-context imitation learning with correspondence-aware diffusion policy",
+      "llm_evidence_cn": "基于对应感知扩散策略的上下文模仿学习",
+      "llm_evidence": "基于对应感知扩散策略的上下文模仿学习",
+      "canonical_evidence": "基于对应感知扩散策略的上下文模仿学习",
+      "llm_tldr_en": "MatchingPolicy decouples demonstration-to-scene matching from policy learning via dense semantic correspondences, enabling robust cross-object in-context imitation learning.",
+      "llm_tldr_cn": "针对上下文模仿学习在未见对象和新型场景下泛化能力不足的问题，本文提出MatchingPolicy框架，将演示到场景的匹配与策略学习解耦，用视觉基础模型和两阶段匹配算法建立密集语义对应关系，并训练对应感知的扩散策略来生成动作。该方法解决了对应识别与动作适应之间的冲突，实验表明在跨对象分布外迁移上性能显著提升，为少样本模仿学习提供了鲁棒的架构方案。",
+      "llm_tldr": "针对上下文模仿学习在未见对象和新型场景下泛化能力不足的问题，本文提出MatchingPolicy框架，将演示到场景的匹配与策略学习解耦，用视觉基础模型和两阶段匹配算法建立密集语义对应关系，并训练对应感知的扩散策略来生成动作。该方法解决了对应识别与动作适应之间的冲突，实验表明在跨对象分布外迁移上性能显著提升，为少样本模仿学习提供了鲁棒的架构方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.19977v1",
+      "source": "arxiv",
+      "title": "Learning Highly Dynamic Skills Transition for Quadruped Jumping Through Constrained Space",
+      "abstract": "Although legged animals are capable of performing explosive motions while traversing confined spaces, replicating this behavior in quadrupedal robots has been a longstanding challenge. Here, we propose a hierarchical reinforcement learning pipeline that empowers the robots to perform aggressive locomotion through constrained obstacles--a narrow gate. The imitation learning technique is used to train the low-level policy, which mimics the behaviors of real animals and forms a set of diverse skills. The high-level controller, having an awareness of the capability of low-level skills and acquiring the gate information via vision-based detection, determines the suitable maneuvers with collision-free trajectories to traverse it dynamically. Notably, we also verify that this framework can be extended to other highly dynamic tasks. This is one of the first works that perform autonomous and agile aerial gate traversal tasks on ground-walking robots, extending the lifelike agility of legged robots to match that of their biological counterparts.",
+      "authors": [
+        "Zeren Luo",
+        "Jiahui Zhang",
+        "Yimin Han",
+        "Ji Ma",
+        "Minghao Lu",
+        "Ioannis Havoutis",
+        "Peng Lu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-20T12:50:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.19977v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "imitation learning for quadruped jumping through constrained space with hierarchical RL",
+      "llm_evidence_cn": "分层强化学习结合模仿学习实现四足机器人受限空间跳跃",
+      "llm_evidence": "分层强化学习结合模仿学习实现四足机器人受限空间跳跃",
+      "canonical_evidence": "分层强化学习结合模仿学习实现四足机器人受限空间跳跃",
+      "llm_tldr_en": "Proposes a hierarchical RL pipeline for quadruped jumping through constrained spaces. The low-level policy uses imitation learning to mimic real animal behaviors and form diverse skills, while a high-level controller selects collision-free maneuvers based on gate detection and skill capabilities.",
+      "llm_tldr_cn": "四足动物能穿越狭窄空间并做出爆发性动作，但让四足机器人复制这种能力很困难。论文提出层次化强化学习流水线：底层策略用模仿学习模仿真实动物行为，形成一组多样的运动技能；高层控制器通过视觉检测获取门信息并感知底层技能能力，决定合适的无碰撞机动来动态穿越窄门。这种方法使四足机器人能够执行激进的受限空间穿越，是模仿学习与机器人运动控制结合的典型范例。",
+      "llm_tldr": "四足动物能穿越狭窄空间并做出爆发性动作，但让四足机器人复制这种能力很困难。论文提出层次化强化学习流水线：底层策略用模仿学习模仿真实动物行为，形成一组多样的运动技能；高层控制器通过视觉检测获取门信息并感知底层技能能力，决定合适的无碰撞机动来动态穿越窄门。这种方法使四足机器人能够执行激进的受限空间穿越，是模仿学习与机器人运动控制结合的典型范例。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Imitation learning for legged locomotion and whole body control",
+      "matched_requirement_id": "req-23",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.20948v1",
+      "source": "arxiv",
+      "title": "Neural-Primitive: An Efficient End-to-end Local Planner with Primitive-based Imitation Learning for Autonomous Flight",
+      "abstract": "Autonomous flight in unknown cluttered environments is hindered by the computation-quality-memory trilemma of onboard trajectory generation. In this paper, we propose an efficient end-to-end local planner via imitation learning. A lightweight offline-primitive-based dataset collection framework is designed to produce safe and high-quality trajectory primitives in non-convex environments. A compact neural network directly maps sensory inputs to polynomial coefficients that inherently encode higher-order dynamical information. The learned policy generates smooth, empirically collision-free and dynamically feasible trajectories in real time without back-end solving. It achieves ultra-fast computation (below 1ms on a standard desktop and average 3.68ms during onboard flight), while maintaining low onboard memory requirements (less than 1.5MiB). Extensive simulation benchmarks demonstrate superiority in both planning latency and target-reaching progress quality. Zero-shot deployment in real-world experiments further validates the robust sim-to-real transfer capability of the proposed method.",
+      "authors": [
+        "Zhitao Liu",
+        "Guangtong Xu",
+        "Zihan Wang",
+        "Jialiang Hou",
+        "Chao Xu",
+        "Fei Gao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-21T10:13:44+00:00",
+      "link": "https://arxiv.org/pdf/2608.20948v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Primitive-based imitation learning for autonomous flight",
+      "llm_evidence_cn": "基于原语模仿学习的自主飞行",
+      "llm_evidence": "基于原语模仿学习的自主飞行",
+      "canonical_evidence": "基于原语模仿学习的自主飞行",
+      "llm_tldr_en": "Proposes an efficient end-to-end local planner via imitation learning from offline trajectory primitives, mapping sensory inputs directly to polynomial coefficients for real-time collision-free flight without back-end solving.",
+      "llm_tldr_cn": "自主飞行在未知杂乱环境中受制于机载轨迹生成的计算-质量-内存三难问题。本文提出一种基于原语模仿学习的高效端到端局部规划器，通过轻量离线原语数据集采集框架生成安全高质量轨迹原语，并用紧凑神经网络直接映射感知输入到多项式系数。学习到的策略无需后端求解即可实时生成平滑、无碰撞且动力学可行的轨迹。实验表明其计算速度极快，为机载实时自主飞行提供了高效方案。",
+      "llm_tldr": "自主飞行在未知杂乱环境中受制于机载轨迹生成的计算-质量-内存三难问题。本文提出一种基于原语模仿学习的高效端到端局部规划器，通过轻量离线原语数据集采集框架生成安全高质量轨迹原语，并用紧凑神经网络直接映射感知输入到多项式系数。学习到的策略无需后端求解即可实时生成平滑、无碰撞且动力学可行的轨迹。实验表明其计算速度极快，为机载实时自主飞行提供了高效方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15700v1",
+      "source": "arxiv",
+      "title": "Adaptive Mixing of Policies from Searching and Policies from Learning",
+      "abstract": "Background: Distillation of training targets generated thru search/planning has proven useful in reinforcement learning, but search can take exceedingly long. Objectives: Rather than perform search to the same depth every time (typically at a fixed period of steps), reduce the search depth proportionally to the quality of the policy network priors. Methods: We describe Flexer, an architecture that, for each step, mixes the policy from a neural network and the policy from Monte Carlo tree search. The mixing factor favors the MCTS policy as the policy imitation error of the network and the environment models' variance increases. Results: Flexer outperforms a version of AlphaZero (and DQN and ADP) for some experiments on three toy symbolic problems.",
+      "authors": [
+        "Gavin B. Rens"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-16T12:11:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.15700v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Adaptive mixing of policies from search and learning, using policy imitation error to balance search depth and policy quality.",
+      "llm_evidence_cn": "基于策略模仿误差自适应混合搜索与学习策略，属于从搜索中模仿学习。",
+      "llm_evidence": "基于策略模仿误差自适应混合搜索与学习策略，属于从搜索中模仿学习。",
+      "canonical_evidence": "基于策略模仿误差自适应混合搜索与学习策略，属于从搜索中模仿学习。",
+      "llm_tldr_en": "Flexer adaptively mixes a neural policy and MCTS policy per step, reducing search depth when the policy is accurate; the mixing factor uses policy imitation error and environment model variance, outperforming AlphaZero variants on three toy symbolic problems.",
+      "llm_tldr_cn": "针对搜索/规划蒸馏训练目标耗时过长的问题，本文提出Flexer架构，在每一步将神经网络策略与蒙特卡洛树搜索策略进行自适应混合，并根据策略模仿误差和环境模型方差动态调整混合因子，在搜索代价与策略质量之间取得平衡。实验表明，Flexer在三个玩具符号问题上优于AlphaZero变体、DQN和ADP。该方法表明利用模仿误差来监督在线搜索与离线学习的混合，是一种有效的模仿学习策略。",
+      "llm_tldr": "针对搜索/规划蒸馏训练目标耗时过长的问题，本文提出Flexer架构，在每一步将神经网络策略与蒙特卡洛树搜索策略进行自适应混合，并根据策略模仿误差和环境模型方差动态调整混合因子，在搜索代价与策略质量之间取得平衡。实验表明，Flexer在三个玩具符号问题上优于AlphaZero变体、DQN和ADP。该方法表明利用模仿误差来监督在线搜索与离线学习的混合，是一种有效的模仿学习策略。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.16433v1",
+      "source": "arxiv",
+      "title": "Robot-Body-Aware Traversal Risk Graph Planning for Wheeled-Legged Robots in Complex Terrain",
+      "abstract": "Traversal Risk Graphs (TRGs) provide a compact, terrain-aware representation for global navigation, but native TRG costs are computed over circular node neighborhoods and edge-aligned terrain regions rather than the robot's oriented body footprint. For wheeled-legged robots, this abstraction can miss partial support loss and body-terrain interference, especially during turns. We present Robot-Body-Aware TRG planning (RB-TRG), which builds on the sparse TRG representation and lifts edge-wise terrain-risk search to heading- and turn-aware body-risk transitions. An oriented rectangular footprint is sampled along graph edges and yaw sweeps to measure longitudinal support variation, lateral inclination, terrain interference, and exposure to untrusted map regions. Mean-and-upper-tail features are incorporated into transition costs, whose accumulated value is minimized by A* over ordered node-pair states, preserving TRG construction and its planning interface. We evaluate RB-TRG in a same-graph study on four scanned terrain environments and in paired closed-loop MuJoCo trials. RB-TRG reduces the three core geometric body-placement metrics and increases end-to-end success from 51.5% to 68.5%, while increasing mean path length by 2.3%. A Go2-W deployment further demonstrates RB-TRG with a full LiDAR navigation stack, which received the Best Autonomy and Best Mobility awards at the IEEE ICRA 2026 Legged Robot Challenges. The code for RB-TRG is released at https://github.com/ZhiqiaoGuo/RB-TRG.",
+      "authors": [
+        "Zhiqiao Guo",
+        "Bichi Zhang",
+        "Sören Schwertfeger"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-17T11:33:06+00:00",
+      "link": "https://arxiv.org/pdf/2608.16433v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "body-aware traversal risk graph planning for wheeled-legged robots in complex terrain",
+      "llm_evidence_cn": "考虑机器人本体的轮腿运动规划",
+      "llm_evidence": "考虑机器人本体的轮腿运动规划",
+      "canonical_evidence": "考虑机器人本体的轮腿运动规划",
+      "llm_tldr_en": "Presents Robot-Body-Aware TRG planning (RB-TRG) that lifts edge-wise terrain-risk search to heading- and turn-aware body-risk transitions for wheeled-legged robots in complex terrain.",
+      "llm_tldr_cn": "穿越风险图在全局导航中常以圆形邻域和边缘对齐地形计算代价，无法体现轮腿机器人转向时的本体足印干扰和支撑缺失。该文提出机器人本体感知的RB-TRG方法，沿图边和偏航角采样矩形足印，量化纵向支撑变化、横向倾角、地形干涉等风险，把边级风险搜索提升为朝向感知的本体风险转移，在复杂地形上明显减小了危险路径的选取。",
+      "llm_tldr": "穿越风险图在全局导航中常以圆形邻域和边缘对齐地形计算代价，无法体现轮腿机器人转向时的本体足印干扰和支撑缺失。该文提出机器人本体感知的RB-TRG方法，沿图边和偏航角采样矩形足印，量化纵向支撑变化、横向倾角、地形干涉等风险，把边级风险搜索提升为朝向感知的本体风险转移，在复杂地形上明显减小了危险路径的选取。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.20852v1",
+      "source": "arxiv",
+      "title": "Demonstration-Guided Humanoid Stand-Up on an Emulated Deformable Surface",
+      "abstract": "This paper presents a reference-guided reinforcement learning framework to generate stand-up motion for a 29-DOF Unitree G1 humanoid on deformable soft ground, using a human demonstration recorded on hard ground. The terrain compliance is modelled using solref and solimp parameters from MuJoCo's rigid body soft-contact model. The rewards consists of (i) reference motion tracking through residual joint-position control and (ii) explicit recovery objectives such as pelvis height, torso uprightness, and the final posture. First, the policy is trained with the specified rewards considering hard ground. Next, the terrain stiffness is lowered by updating solref and the nominal surface penetration zone is expanded using solimp. Subsequent training enables the policy to adapt to the delayed support force generation due to significant surface penetration during contact-intensive phases while preserving the original demonstration pattern. The learned policy successfully completes the fallen-to-standing task in simulation, reaching the targeted pelvis height and uprightness, with a maximum contact penetration of approximately 40 mm during the process. The proposed method is demonstrated on two stand-up sequences and successfully achieves the final recovery objective on both hard and soft ground. Ablation studies show that reference tracking alone is insufficient for successful stand-up, and that explicit recovery rewards are essential.",
+      "authors": [
+        "Aniruddh Kushwah",
+        "Vyankatesh Ashtekar",
+        "Ashish Dutta"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-21T08:16:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.20852v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "demonstration-guided RL for humanoid stand-up on deformable surface",
+      "llm_evidence_cn": "在可变形表面上使用演示引导强化学习实现人形站立",
+      "llm_evidence": "在可变形表面上使用演示引导强化学习实现人形站立",
+      "canonical_evidence": "在可变形表面上使用演示引导强化学习实现人形站立",
+      "llm_tldr_en": "Uses a human demonstration recorded on hard ground to guide RL training for a 29-DOF humanoid to stand up on deformable soft ground, via residual joint control and recovery rewards.",
+      "llm_tldr_cn": "针对人形机器人在软地面上的起身控制难题，本文提出参考引导的强化学习框架，利用硬地面上记录的人类演示，并结合残差关节位置控制和恢复奖励（骨盆高度、躯干直立度等）来生成软地面上的站立动作。先在硬地训练，再通过Mujoco软接触参数降低刚度并扩展穿透区，实现跨地形迁移。该方法展示了演示辅助RL在复杂接触环境中生成鲁棒运动的能力。",
+      "llm_tldr": "针对人形机器人在软地面上的起身控制难题，本文提出参考引导的强化学习框架，利用硬地面上记录的人类演示，并结合残差关节位置控制和恢复奖励（骨盆高度、躯干直立度等）来生成软地面上的站立动作。先在硬地训练，再通过Mujoco软接触参数降低刚度并扩展穿透区，实现跨地形迁移。该方法展示了演示辅助RL在复杂接触环境中生成鲁棒运动的能力。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Imitation learning applications in legged locomotion and whole body control",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.17432v1",
+      "source": "arxiv",
+      "title": "UniReflex: Plug-and-Play Force Control for Pretrained Generative Policies via Fast-Slow Reflex",
+      "abstract": "Generative imitation learning policies excel at trajectory planning but lack closed-loop force regulation, while directly incorporating force modalities often requires redesigning or retraining the network. We present UniReflex, a universal plug-and-play framework that equips frozen generative policies with variable impedance control (VIC) for contact regulation, guided by force-direction intent collected during demonstration, without further slow-backbone fine-tuning. By non-invasively intercepting deep latent representations from the action head, UniReflex drives a fast reflex network that decouples active force exertion from external interaction response. This scheme predicts normalized anisotropic stiffness directions for directional compliance allocation. Furthermore, UniReflex integrates an adaptive gating mechanism that enables seamless transitions between position-dominant planning and force-dominant execution. Real-world bimanual experiments demonstrate that UniReflex significantly improves contact stability and success rates while preserving original position accuracy. Our approach achieves 25-66x lower per-step backward latency relative to joint training strategies on the evaluated backbones.",
+      "authors": [
+        "Yan Huang",
+        "Shoujie Li",
+        "Ziwu Song",
+        "Wenbo Ding"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-18T06:54:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.17432v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "enhances imitation learning policies with force control",
+      "llm_evidence_cn": "增强模仿学习策略的力反馈能力",
+      "llm_evidence": "增强模仿学习策略的力反馈能力",
+      "canonical_evidence": "增强模仿学习策略的力反馈能力",
+      "llm_tldr_en": "UniReflex adds plug-and-play variable impedance control to frozen generative imitation policies via a fast reflex network that predicts stiffness directions from demo force intent, enabling contact regulation without retraining.",
+      "llm_tldr_cn": "生成式模仿学习策略在轨迹规划上表现优秀，但无法闭环调节接触力，而直接引入力模态往往需要重新训练网络。针对此问题，论文提出UniReflex即插即用框架：通过非侵入式截取动作头深层表征，驱动一个快反射网络为冻结的生成策略增加变阻抗控制，并利用示范中的力方向意图进行引导。该方法预测各向异性刚度方向，实现主动发力与外部交互响应的解耦，无需微调骨干网络即可获得接触力调节能力。UniReflex为已有模仿学习策略扩展力反馈提供了轻量化路径，对机器人接触作业具有重要价值。",
+      "llm_tldr": "生成式模仿学习策略在轨迹规划上表现优秀，但无法闭环调节接触力，而直接引入力模态往往需要重新训练网络。针对此问题，论文提出UniReflex即插即用框架：通过非侵入式截取动作头深层表征，驱动一个快反射网络为冻结的生成策略增加变阻抗控制，并利用示范中的力方向意图进行引导。该方法预测各向异性刚度方向，实现主动发力与外部交互响应的解耦，无需微调骨干网络即可获得接触力调节能力。UniReflex为已有模仿学习策略扩展力反馈提供了轻量化路径，对机器人接触作业具有重要价值。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.17027v1",
+      "source": "arxiv",
+      "title": "FetchMan: Learning Visual Humanoid Loco-Manipulation Policies from Simulated Experiences",
+      "abstract": "Visual loco-manipulation policies that can generalize to novel scenes and objects have long been a goal of robotics research. However, today's data-hungry algorithms make collecting sufficient demonstrations a struggle for tabletop manipulation, and even more so for humanoids that must also walk and balance. Learning from simulated data and transferring that behavior to the real world, as is commonly done in locomotion, sidesteps this struggle, so we replicate that recipe for loco-manipulation. In doing so, we find that cloning synthetic demonstrations results in a low performance ceiling no matter the amount of training data. Reinforcement learning breaks through it, and refining the cloned policy with Flow-GRPO on a single sparse reward yields performance that synthetic behavior cloning cannot match. Together, these stages form our end-to-end sim-to-real pipeline spanning more than 150,000 scenes, which we use to train FetchMan. We evaluate it on FetchMan-Bench, a simulation benchmark we release, and deploy it zero-shot on a real Unitree G1, where our single-object reach-and-pick policy walks to and grasps a target across unseen scenes at 73.3% success. Finally, we extend this recipe to multi-object training, a first step toward loco-manipulation generalist policies at this data scale.",
+      "authors": [
+        "Omar Rayyan",
+        "Zhi Li",
+        "Max Argus",
+        "Yuxin Jiang",
+        "Chang Yu",
+        "Chenfanfu Jiang",
+        "Yuchen Cui"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-17T18:24:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.17027v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "humanoid locomotion and whole-body control via learning from simulation",
+      "llm_evidence_cn": "通过模拟学习实现人形机器人移动与全身控制",
+      "llm_evidence": "通过模拟学习实现人形机器人移动与全身控制",
+      "canonical_evidence": "通过模拟学习实现人形机器人移动与全身控制",
+      "llm_tldr_en": "FetchMan learns visual humanoid loco-manipulation policies from simulated experiences, showing that reinforcement learning can surpass cloning synthetic demonstrations.",
+      "llm_tldr_cn": "人形机器人不仅要操作还要行走平衡，演示数据难以收集。FetchMan利用模拟数据训练视觉移动操作策略，发现纯克隆性能有限，改用Flow-GRPO强化学习在稀疏奖励下细化策略，成功突破克隆瓶颈。该方法为从模拟到真实的人形移动操作策略学习提供了可行方案。",
+      "llm_tldr": "人形机器人不仅要操作还要行走平衡，演示数据难以收集。FetchMan利用模拟数据训练视觉移动操作策略，发现纯克隆性能有限，改用Flow-GRPO强化学习在稀疏奖励下细化策略，成功突破克隆瓶颈。该方法为从模拟到真实的人形移动操作策略学习提供了可行方案。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "humanoid robot locomotion and control",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.18787v1",
+      "source": "arxiv",
+      "title": "Dream2Reward: Transition-Alignment Reward Models from Positive Demonstrations for Robotic Manipulation",
+      "abstract": "Learning robotic policies requires dense rewards that remain informative when behavior departs from successful demonstrations. Progress-based rewards estimate how far an observation has advanced along a nominal successful trajectory, but may remain high after an incorrect transition. We introduce Dream2Reward, which learns a language-conditioned successful latent transition field from positive demonstrations. Given the visual history up to a transition start, the model predicts the latent displacement associated with successful execution and scores the observed displacement through signed directional and symmetric magnitude agreement. This transition-level comparison penalizes wrong-direction, overshooting, and stagnant motion even when the resulting observation appears to show progress. Dream2Reward requires no failure annotations, progress labels, or synthetic negatives, and produces a dense causal reward. Across mechanism diagnostics and shared-trajectory evaluations, it provides stronger success-failure separation and more informative feedback on low-quality behavior than progress-based alternatives. Across online and offline policy learning, the same frozen reward model reduces reward hacking and supports stronger downstream performance, including in real-robot manipulation. These results show that comparing realized motion with predicted successful change provides an effective way to convert positive demonstrations into dense rewards for robot learning.",
+      "authors": [
+        "Haoyu Zhang",
+        "Zecui Zeng",
+        "Bin Wang",
+        "Lusong Li",
+        "Liang Lin",
+        "Long Cheng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-19T10:44:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.18787v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Learns transition-alignment reward models from positive demonstrations",
+      "llm_evidence_cn": "从正样例演示中学习转换对齐奖励模型",
+      "llm_evidence": "从正样例演示中学习转换对齐奖励模型",
+      "canonical_evidence": "从正样例演示中学习转换对齐奖励模型",
+      "llm_tldr_en": "Dream2Reward learns a language-conditioned transition-alignment reward model from positive demonstrations, penalizing incorrect transitions to provide denser rewards for robotic manipulation.",
+      "llm_tldr_cn": "该论文针对机器人操作中仅依赖进度式奖励在错误转移后仍保持高值的问题，提出Dream2Reward方法，从正样本演示中学习语言条件下的成功隐式转移场。该方法通过预测成功执行对应的潜位移并与观测位移进行方向和幅度一致性评分，在转换层面惩罚方向错误、过冲和停滞的转移。实验表明该奖励模型能为策略学习提供更密集且信息量更高的监督信号，提升操作任务的样本效率与成功率。",
+      "llm_tldr": "该论文针对机器人操作中仅依赖进度式奖励在错误转移后仍保持高值的问题，提出Dream2Reward方法，从正样本演示中学习语言条件下的成功隐式转移场。该方法通过预测成功执行对应的潜位移并与观测位移进行方向和幅度一致性评分，在转换层面惩罚方向错误、过冲和停滞的转移。实验表明该奖励模型能为策略学习提供更密集且信息量更高的监督信号，提升操作任务的样本效率与成功率。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.17323v1",
+      "source": "arxiv",
+      "title": "ORPA: Online Residual Policy Adaptation for Robot Manipulation Control with Human Feedback",
+      "abstract": "Robotic manipulation policies trained via imitation learning, such as Action Chunking with Transformers (ACT), can achieve strong performance under ideal conditions but often remain sensitive to small execution errors and distribution shifts. Correcting these failures typically requires dataset aggregation and full-policy retraining, which is computationally expensive and unsuitable for real-time deployment. In this work, we propose Online Residual Policy Adaptation (ORPA), a framework that enables immediate, feedback-driven correction of robot actions without modifying the underlying policy parameters. ORPA augments a pretrained control policy with a lightweight, feedback-conditioned module that predicts residual adjustments directly in joint space, allowing the system to adapt its behavior at runtime. We evaluate ORPA on a set of precision-sensitive manipulation tasks using the ALOHA platform, demonstrating improvements in success rate and recovery from small perturbations compared to baseline control policies and rule-based inverse kinematics corrections.",
+      "authors": [
+        "Muhammad A. Muttaqien",
+        "Tomohiro Motoda",
+        "Ryo Hanai",
+        "Yukiyasu Domae"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-18T03:30:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.17323v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Imitation learning policy correction via online residual adaptation",
+      "llm_evidence_cn": "通过在线残差自适应修正模仿学习策略",
+      "llm_evidence": "通过在线残差自适应修正模仿学习策略",
+      "canonical_evidence": "通过在线残差自适应修正模仿学习策略",
+      "llm_tldr_en": "Proposes ORPA, an online residual policy adaptation framework that corrects imitation-learned manipulation policies without retraining, using a lightweight feedback-conditioned module.",
+      "llm_tldr_cn": "模仿学习训练的操作策略对执行误差和分布偏移敏感，通常需要数据集聚合和重新训练。ORPA提出在线残差策略自适应，在不修改原策略参数的前提下，用轻量反馈条件模块预测残差，实时修正动作。该方法能低成本恢复策略鲁棒性，为机器人操作中的模仿学习部署提供新方案。",
+      "llm_tldr": "模仿学习训练的操作策略对执行误差和分布偏移敏感，通常需要数据集聚合和重新训练。ORPA提出在线残差策略自适应，在不修改原策略参数的前提下，用轻量反馈条件模块预测残差，实时修正动作。该方法能低成本恢复策略鲁棒性，为机器人操作中的模仿学习部署提供新方案。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.15440v1",
+      "source": "arxiv",
+      "title": "Accelerating Mixed Discrete-Continuous Motion Planning via Neural Graphs of Convex Sets",
+      "abstract": "Motion planning problems such as collision-free navigation and contact-rich manipulation can be naturally formulated as optimization problems that couple discrete decisions with continuous trajectories. The Graphs of Convex Sets (GCS) framework offers a practical solution to these problems. It represents discrete decisions as nodes of a graph and encodes continuous trajectories in the edges connecting them. However, the resulting optimization subproblems can become computationally prohibitive for online replanning.   In this work, we propose a learning-based strategy to mitigate this limitation. Specifically, we replace the costly convex relaxation step required by nominal GCS with a single forward pass through a Graph Attention Network that predicts a set of highly probable candidate paths through the graph. A lightweight ranking network then orders these candidates by their estimated trajectory cost. Evaluating them in this order, we terminate our search early while still recovering a near-optimal motion plan. We validate the resulting pipeline across diverse robotic tasks, including collision-free motion planning for a 3D quadrotor and a 7-DoF manipulator, and planning through contact for planar pushing. Across both convex and non-convex cost and constraint settings, our approach yields up to two orders of magnitude speedup over nominal GCS while maintaining a 100% success rate, at the cost of some suboptimality in the recovered solutions. Code implementations and video demonstrations can be found at https://neural-gcs.github.io/.",
+      "authors": [
+        "Ananya Trivedi",
+        "Sarvesh Prajapati",
+        "Mohamed Khalid M Jaffar",
+        "Zhexin Xu",
+        "David Rosen",
+        "Taskin Padir"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-15T22:51:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.15440v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Neural acceleration of Graphs of Convex Sets for mixed discrete-continuous motion planning, applicable to navigation and manipulation, relevant to motion planning for robot locomotion.",
+      "llm_evidence_cn": "用神经网络加速凸集图运动规划，适用于导航与操作等运动规划问题，与机器人运动规划相关。",
+      "llm_evidence": "用神经网络加速凸集图运动规划，适用于导航与操作等运动规划问题，与机器人运动规划相关。",
+      "canonical_evidence": "用神经网络加速凸集图运动规划，适用于导航与操作等运动规划问题，与机器人运动规划相关。",
+      "llm_tldr_en": "The paper accelerates mixed discrete-continuous motion planning by replacing costly convex relaxation in Graphs of Convex Sets with a Graph Attention Network forward pass, enabling faster online replanning for problems like navigation and contact-rich manipulation.",
+      "llm_tldr_cn": "针对凸集图框架中凸松弛步骤计算代价高、难以用于在线重规划的问题，本文提出用图注意力网络的单次前向传播替代该步骤，从而大幅加速混合离散-连续运动规划。方法适用于碰撞避免导航和接触丰富操作等任务，为机器人在线重规划提供了高效的学习型求解器。实验表明该方法在保持解质量的同时显著降低计算时间，是运动规划加速的一种有效策略。",
+      "llm_tldr": "针对凸集图框架中凸松弛步骤计算代价高、难以用于在线重规划的问题，本文提出用图注意力网络的单次前向传播替代该步骤，从而大幅加速混合离散-连续运动规划。方法适用于碰撞避免导航和接触丰富操作等任务，为机器人在线重规划提供了高效的学习型求解器。实验表明该方法在保持解质量的同时显著降低计算时间，是运动规划加速的一种有效策略。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "motion planning for robot locomotion",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.18827v1",
+      "source": "arxiv",
+      "title": "MLREF: Efficient Module Reuse for Reward Design in Reinforcement Learning via Large Language Models",
+      "abstract": "Reward function design remains a bottleneck in reinforcement learning. While large language models (LLMs) have enabled automated reward generation, existing methods generate and revise reward functions as monolithic programs, making it difficult to reliably preserve and reuse effective components discovered in earlier iterations, leading to unstable performance across iterations. To address this, we propose Module Level Reward Evolution Framework (MLREF). At the core of MLREF is a module pool, a persistent repository of reusable reward components. MLREF treats the module pool as the primary optimization object: the pool evolves across iterations by accumulating successful modules, refining underperforming ones, and reusing proven components; while reward functions are constructed as linear combinations of modules drawn from this pool. To drive this evolution, MLREF integrates three mechanisms: reflection-based refinement, hybrid credit assignment, and a merge strategy with rollback, which together improve the effectiveness and robustness of reward optimization. Experiments on 17 tasks show that MLREF outperforms strong baselines by 25.2% in locomotion and 6.6% in manipulation, with more stable optimization dynamics.",
+      "authors": [
+        "Chenglin Liu",
+        "Xun Wang",
+        "Ruishuo Chen",
+        "Zhuoran Li",
+        "Longbo Huang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-19T11:36:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.18827v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Proposes a framework for reward function design in RL using LLMs with reusable module pool, directly addressing reward function learning.",
+      "llm_evidence_cn": "提出利用LLM和可复用模块池的奖励函数设计框架，直接面向奖励函数学习。",
+      "llm_evidence": "提出利用LLM和可复用模块池的奖励函数设计框架，直接面向奖励函数学习。",
+      "canonical_evidence": "提出利用LLM和可复用模块池的奖励函数设计框架，直接面向奖励函数学习。",
+      "llm_tldr_en": "The paper presents MLREF, a module-level reward evolution framework that reuses successful reward components via a module pool, improving stability of LLM-based automated reward design in reinforcement learning.",
+      "llm_tldr_cn": "现有基于LLM的奖励生成方法常将奖励函数视为整体程序，难以保留和复用好用的组件，导致跨迭代性能不稳定。本文提出模块级奖励进化框架MLREF，以模块池为核心优化对象，通过积累成功模块、改进不足模块并复用它们，使奖励函数设计过程更稳定高效。实验表明该框架能有效提升奖励设计的可靠性和最终策略性能，为自动奖励函数学习提供了新思路。",
+      "llm_tldr": "现有基于LLM的奖励生成方法常将奖励函数视为整体程序，难以保留和复用好用的组件，导致跨迭代性能不稳定。本文提出模块级奖励进化框架MLREF，以模块池为核心优化对象，通过积累成功模块、改进不足模块并复用它们，使奖励函数设计过程更稳定高效。实验表明该框架能有效提升奖励设计的可靠性和最终策略性能，为自动奖励函数学习提供了新思路。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "reward function learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.19613v1",
+      "source": "arxiv",
+      "title": "What Matters for Latent Actions in Robot Learning",
+      "abstract": "Latent Action Models (LAMs) have emerged as a promising paradigm for enabling robot learning to leverage large-scale unlabeled videos through latent actions that serve as compact surrogates for physical actions. Despite rapid progress, research on LAM remains highly fragmented, with existing methods evaluating different design choices in isolation under inconsistent experimental settings, making it difficult to identify the factors that truly determine downstream robotic manipulation performance. In this work, we present the first comprehensive empirical study of latent action learning for robotic manipulation. We unify representative LAM methods within a common autoencoding framework and systematically investigate 41 LAM design choices across three dimensions, including latent action modeling paradigms, learning objectives and regularization methods, and latent action integration strategies. We further examine four proxy metrics for evaluating latent action quality and assess their ability to reliably predict downstream robotic manipulation performance. Extensive experiments on three widely used benchmarks provide strong empirical evidence that fine-tuning vision-language model (VLM) backbones with latent actions provides a stronger initialization for downstream policy learning, with further validation on real-world robot manipulation tasks.",
+      "authors": [
+        "Xizhou Bu",
+        "Qingda Hu",
+        "Lei Zhou",
+        "Lingfeng Zhang",
+        "Yingbo Tang",
+        "Zihao Liu",
+        "Xinyi Tao",
+        "Zhiqiang Ma",
+        "Qingqiu Huang",
+        "Chufeng Tang",
+        "Hongbo Wang",
+        "Jing Zhang",
+        "Jiayi Ma",
+        "Hangjun Ye",
+        "Wei Li",
+        "Xiaoshuai Hao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-20T03:54:51+00:00",
+      "link": "https://arxiv.org/pdf/2608.19613v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "comprehensive empirical study of latent action models for robot learning from videos",
+      "llm_evidence_cn": "面向视频机器人学习的隐动作模型综合实证研究",
+      "llm_evidence": "面向视频机器人学习的隐动作模型综合实证研究",
+      "canonical_evidence": "面向视频机器人学习的隐动作模型综合实证研究",
+      "llm_tldr_en": "Presents the first comprehensive empirical study of latent action learning for robotic manipulation. It unifies representative LAM methods within a common autoencoding framework and systematically investigates 41 design choices across three dimensions to identify factors that truly affect downstream performance.",
+      "llm_tldr_cn": "隐动作模型（LAM）让机器人学习利用大规模无标注视频，但领域内方法相互割裂，不同设计选择被孤立评估，难以确定影响下游操控性能的关键因素。论文首次对机器人操控的隐动作学习进行系统的实证研究，将代表性LAM方法统一到一个自编码框架内，并系统考察了三个维度共41项设计选择。通过一致实验设置，论文揭示了真正决定下游操控性能的因素，为后续LAM方法的设计和比较提供了基础。",
+      "llm_tldr": "隐动作模型（LAM）让机器人学习利用大规模无标注视频，但领域内方法相互割裂，不同设计选择被孤立评估，难以确定影响下游操控性能的关键因素。论文首次对机器人操控的隐动作学习进行系统的实证研究，将代表性LAM方法统一到一个自编码框架内，并系统考察了三个维度共41项设计选择。通过一致实验设置，论文揭示了真正决定下游操控性能的因素，为后续LAM方法的设计和比较提供了基础。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.16153v2",
+      "source": "arxiv",
+      "title": "Unified Condition-Action Modeling for Accurate One-Step Action Generation",
+      "abstract": "Robot manipulation requires policies that are both accurate and efficient, as robot control must respond to changing observations under tight latency constraints. Recent diffusion and flow policies are promising, but they often treat conditions as auxiliary signals rather than jointly evolving them with action trajectories. We find that this limitation can be effectively mitigated by a \\textbf{simple yet effective unified condition-action modeling design} that represents conditions and actions in a shared token space, allowing a compact model to achieve high performance while improving both inference speed and accuracy. Therefore, we propose UCA-Flow, a unified condition-action modeling framework for accurate one-step action generation. Our method unifies observation conditions, timestep conditions, interval conditions, and action tokens into a single sequence, and processes them with a Unified Condition-Action Transformer for joint condition-action representation learning. As a result, condition representations are dynamically reconstructed according to the current generation stage, highlighting information most relevant for action refinement. Furthermore, we introduce an improved dual-pass supervision scheme over $u$ and $v$ for stronger optimization of unified condition-action modeling. UCA-Flow improves the average success rate by 9.3 percentage points over the strongest baseline, while achieving $45.6\\times$ and $33.4\\times$ speedups over DP3 and Simple DP3, and remaining $4.3\\times$ and $2.3\\times$ faster than one-step FlowPolicy and MP1, respectively.",
+      "authors": [
+        "Xinyu Zhou",
+        "Zikun Cai",
+        "Kuangji Zuo",
+        "Gen Li",
+        "Boyu Ma",
+        "Yanshuo Lu",
+        "Yutong Song",
+        "Mingqi Yuan",
+        "Jiayu Chen",
+        "Jianfei Yang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-17T06:14:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.16153v2",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "unified condition-action modeling for accurate one-step action generation in robot manipulation",
+      "llm_evidence_cn": "面向机器人操作的单步动作生成策略建模",
+      "llm_evidence": "面向机器人操作的单步动作生成策略建模",
+      "canonical_evidence": "面向机器人操作的单步动作生成策略建模",
+      "llm_tldr_en": "Proposes UCA-Flow, a unified condition-action modeling framework that represents conditions and actions in a shared token space for accurate one-step action generation in robot manipulation.",
+      "llm_tldr_cn": "针对机器人操作中扩散和流策略把条件当作辅助信号、导致动作生成精度和速度受限的问题，文章提出UCA-Flow统一条件-动作建模框架，将条件与动作映射到共享令牌空间并联合演化，使用紧凑模型实现高效一步动作生成。实验显示该方法在保持高推理速度的同时显著提升准确率，为条件动作建模提供了简洁有效的设计思路。",
+      "llm_tldr": "针对机器人操作中扩散和流策略把条件当作辅助信号、导致动作生成精度和速度受限的问题，文章提出UCA-Flow统一条件-动作建模框架，将条件与动作映射到共享令牌空间并联合演化，使用紧凑模型实现高效一步动作生成。实验显示该方法在保持高推理速度的同时显著提升准确率，为条件动作建模提供了简洁有效的设计思路。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.20784v1",
+      "source": "arxiv",
+      "title": "Rethinking Demonstration Unlearning in Imitation Learning for Robotics",
+      "abstract": "Imitation learning for robotics depends on human demonstrations, some of which people may later ask to remove. Retraining without them is the natural reference, but its cost grows with policy and dataset scale, motivating cheaper operators that edit a trained policy. Metrics inherited from machine unlearning, such as forgetting loss or a single membership attack, do not establish what an edit removed from a policy acting in closed loop. We therefore introduce a retrain-calibrated audit that reads demonstration unlearning along two axes: behavior, whether the edited policy acts like one retrained without the removed demonstrations, and evidence, whether an auditor can still detect it was trained on them. The behavior axis measures action divergence to that retrain at matched states, calibrated by a floor built from independent retrains, so a policy at the floor is as close to a retrain as retrains are to each other. The evidence axis applies a per-demonstration membership attack against a retrain null, reporting both its rank and its absolute member-loss level, since rank alone accepts operators that inflate member losses past the null. A conformal test then combines both axes into one hypothesis of joint retrain consistency, against a fleet of independent retrains large enough to reject at conventional significance. Across five preregistered conditions on three real-robot policy classes and two simulation suites, the axes dissociate in both directions on one checkpoint, as an edit may repair task behavior while leaving evidence unchanged, or reduce evidence while moving behavior away from retraining. On the ACT arm, a redirect edit restores blind-scored robot success to 18 of 20 trials.",
+      "authors": [
+        "Jiazhuo Li",
+        "Yu Zhang",
+        "Yiming Fei",
+        "Kangkang Dong",
+        "Xiaojun Zhu",
+        "Houde Liu",
+        "Jinze Tao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-08-21T06:53:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.20784v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "demonstration unlearning in imitation learning for robotics",
+      "llm_evidence_cn": "机器人模仿学习中的演示遗忘/反学习",
+      "llm_evidence": "机器人模仿学习中的演示遗忘/反学习",
+      "canonical_evidence": "机器人模仿学习中的演示遗忘/反学习",
+      "llm_tldr_en": "Introduces a retrain-calibrated audit for demonstration unlearning in robot imitation learning. It evaluates edits along two axes: behavior (whether the policy behaves like one retrained without removed demos) and evidence (whether an auditor can still detect training on them).",
+      "llm_tldr_cn": "机器人模仿学习依靠人类演示，但人们有时要求删掉某些演示。重训代价高昂，因而需要更便宜的编辑操作，而现有的遗忘指标无法确认闭环策略实际删除了什么。论文提出重训校准的审计方法，从行为和证据两个维度衡量演示遗忘：行为维度比较编辑后策略与重训策略的动作差异，证据维度检验审计者能否发现训练痕迹。该方法为机器人模仿学习的演示删除提供了更可靠的评估框架，并提醒人们重新思考遗忘指标的有效性。",
+      "llm_tldr": "机器人模仿学习依靠人类演示，但人们有时要求删掉某些演示。重训代价高昂，因而需要更便宜的编辑操作，而现有的遗忘指标无法确认闭环策略实际删除了什么。论文提出重训校准的审计方法，从行为和证据两个维度衡量演示遗忘：行为维度比较编辑后策略与重训策略的动作差异，证据维度检验审计者能否发现训练痕迹。该方法为机器人模仿学习的演示删除提供了更可靠的评估框架，并提醒人们重新思考遗忘指标的有效性。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.20114v1",
+      "source": "arxiv",
+      "title": "DECOWAM: Decoupled Whole-Body World-Action Model for Legged Mobile Manipulation",
+      "abstract": "Mobile manipulation requires a robot to predict how locomotion and arm motion jointly alter future observations and control. Existing world-action models, developed largely for fixed-base platforms, do not explicitly distinguish camera ego-motion from base and arm actions. Here we introduce DECOWAM, a whole-body world-action model that separates these factors through dedicated conditional interfaces. DECOWAM freezes an adapted FastWAM backbone and trains residual adapters, an action-equivalent future bottleneck distilled from privileged observations, adversarially separated base and arm latents, and base-velocity conditioning for video prediction. We further introduce ARMDOG, a real-robot dataset that synchronizes video, whole-body state and action, and language. On a fixed replay protocol, DECOWAM improved both future-video and action prediction over FastWAM, reducing action MSE by 21.7% with 25.95M trainable adaptation parameters. Across 79 closed-loop trials per method, it achieved the highest observed whole-body coordination and base-displacement robustness among the compared systems, while task completion remained comparable to the strongest baseline. These results show that embodiment-aware factorization can support parameter-efficient joint visual prediction and whole-body control under moving viewpoints.",
+      "authors": [
+        "Siyuan Ma",
+        "Boshi Zhang",
+        "Yutian Zhang",
+        "Qinglian Wu",
+        "Jiaqi Zhai",
+        "Dong Wei",
+        "Qiaojun Yu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-08-20T14:44:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.20114v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Whole-body world-action model for legged locomotion and manipulation",
+      "llm_evidence_cn": "用于腿部运动与操作的全身世界-动作模型",
+      "llm_evidence": "用于腿部运动与操作的全身世界-动作模型",
+      "canonical_evidence": "用于腿部运动与操作的全身世界-动作模型",
+      "llm_tldr_en": "Introduces DECOWAM, a decoupled whole-body world-action model for legged mobile manipulation that separates ego-motion from base/arm actions via residual adapters and adversarial latents, plus the ARMDOG real-robot dataset.",
+      "llm_tldr_cn": "现有世界-动作模型主要针对固定基座平台，未显式区分相机自我运动与基座/机械臂动作。本文提出DECOWAM，一种解耦的全身世界-动作模型，通过专门的条件接口分离这些因素，并冻结FastWAM骨干训练残差适配器，同时引入同步视频与全身状态的ARMDOG真实机器人数据集。该模型为腿部移动操作中的视频预测与动作表征提供了全身体建模方案，有助于后续的运动与操作策略学习。",
+      "llm_tldr": "现有世界-动作模型主要针对固定基座平台，未显式区分相机自我运动与基座/机械臂动作。本文提出DECOWAM，一种解耦的全身世界-动作模型，通过专门的条件接口分离这些因素，并冻结FastWAM骨干训练残差适配器，同时引入同步视频与全身状态的ARMDOG真实机器人数据集。该模型为腿部移动操作中的视频预测与动作表征提供了全身体建模方案，有助于后续的运动与操作策略学习。",
+      "llm_tags": [
+        "query:locowbc:composite"
+      ],
+      "matched_query_tag": "query:locowbc:composite",
+      "matched_query_text": "Papers central to 请帮我查找机器人locomotion、WBC的工作, especially work that connects or combines: robot locomotion techniques and algorithms; whole-body control for robots; humanoid robot locomotion and control; legged locomotion planning and control; motion planning for robot locomotion; contact force control in locomotion; methods for whole body control in robot locomotion; recent advances in humanoid walking and whole body control; control strategies for bipedal robot locomotion; WBC framework for legged robot locomotion.",
+      "matched_requirement_id": "req-composite-locowbc",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.19375v1",
+      "source": "arxiv",
+      "title": "Learning the Right Abstraction: Neural Reduced Dynamics for Complex Robot Control",
+      "abstract": "High-fidelity embodied AI simulators provide realistic evaluation of complex robotic systems, but their computational cost limits their direct use for large-scale reinforcement learning campaigns. We advocate the use of less accurate but more expeditious simulations, which might draw on data-driven, e.g., neural dynamics, models. This contribution argues that the practical value of a neural dynamics model for complex robot control lies in learning the \\emph{right abstraction}: a reduced state that preserves the control-relevant physics of the high-fidelity system while enabling high-throughput policy learning. We develop a neural reduced dynamics (NRD) framework that separates the state the model propagates from what can be supplied as an input or recovered analytically, trains policies entirely inside the frozen learned model, and validates them back in the high-fidelity simulator. Two case studies instantiate it across three control tasks: terrain-aware HMMWV trajectory tracking on rigid, bumpy and deformable Continuum Representation Model (CRM) terrain; and goal reaching for a stock tracked vehicle and its front-mounted articulated arm. Every policy transfers back to the high-fidelity simulator. A single policy trained inside the terrain-conditioned dynamics model, and given no terrain input of its own, attains lower median and mean tracking error than both single-terrain specialists on all three terrains, including zero-shot bumpy terrain. Quantitatively, the tracked vehicle reaches 100 of 100 goals and the arm 97 of 100, with zero contacts or joint-limit violations. The NRD models advance roughly four orders of magnitude faster in simulated time than the high-fidelity simulator scenes they replace, making iterative on-policy learning practical and supporting neural reduced dynamics as a bridge between accurate but expensive physics simulation and scalable robot learning.",
+      "authors": [
+        "Harry Zhang",
+        "Dan Negrut"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-19T18:41:27+00:00",
+      "link": "https://arxiv.org/pdf/2608.19375v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "proposes neural reduced dynamics for robot control, transferable to locomotion",
+      "llm_evidence_cn": "提出用于机器人控制的神经约简动力学，可迁移到运动控制",
+      "llm_evidence": "提出用于机器人控制的神经约简动力学，可迁移到运动控制",
+      "canonical_evidence": "提出用于机器人控制的神经约简动力学，可迁移到运动控制",
+      "llm_tldr_en": "High-fidelity simulators are costly for RL; the paper argues for learning a reduced-state neural dynamics model that preserves control-relevant physics and enables high-throughput policy learning.",
+      "llm_tldr_cn": "高保真仿真器计算成本高昂，限制了其在大规模强化学习中的直接使用。本文主张采用数据驱动的神经约简动力学（NRD）框架，学习一个保留控制相关物理量的降维抽象状态，从而支持高吞吐策略学习。该方法分离了模型传播状态与外部输入，降低了仿真成本，同时保持了对复杂机器人控制的关键物理特性。研究结果凸显了正确抽象的重要性，并为足式运动等复杂机器人控制提供了可迁移的高效建模范式。",
+      "llm_tldr": "高保真仿真器计算成本高昂，限制了其在大规模强化学习中的直接使用。本文主张采用数据驱动的神经约简动力学（NRD）框架，学习一个保留控制相关物理量的降维抽象状态，从而支持高吞吐策略学习。该方法分离了模型传播状态与外部输入，降低了仿真成本，同时保持了对复杂机器人控制的关键物理特性。研究结果凸显了正确抽象的重要性，并为足式运动等复杂机器人控制提供了可迁移的高效建模范式。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "robot locomotion techniques and algorithms",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.21204v1",
+      "source": "arxiv",
+      "title": "Beyond Imitation: Self-Improving Robot Policies via Off-Policy Q-Planning",
+      "abstract": "Behaviour Cloning (BC) has driven remarkable progress in robot manipulation, yet it is fundamentally limited by its inability to self-improve: a policy that fails cannot learn from that failure without additional human demonstrations. Reinforcement Learning fine-tuning offers a path to self-improvement but has proven difficult to scale to the multi-billion-parameter models underpinning modern robot policies. We propose Q-Planning, which equips a large visuomotor BC policy with a small off-policy Q-function. Because a Q-function estimates value rather than imitates actions, it can be trained on the same successful demonstrations as the BC policy and later absorb both successful and failed deployment rollouts, an asymmetry BC does not have. We exploit this asymmetry to enable value-guided action selection at inference (a single-step Q-weighted average over BC draws) and online self-improvement that fine-tunes only the Q-function, leaving the BC weights untouched. On LIBERO and bimanual RoboTwin, ten iterations of self-improvement lift every benchmark score we tested (LIBERO-10 93% to 99%, RoboTwin 83.8% to 91.4%) and shorten successful episodes on the near-ceiling suites (LIBERO-Object, LIBERO-Goal). On two contact-rich bimanual real-robot tasks, the same loop (BC frozen, no human intervention) improves purely from its own deployment rollouts: stack-cups 40% to 90% and insert-wallet 25% to 80% in five iterations, whereas SFT on successful rollouts alone stalls at 55% and 30%. Under an identical online budget Q-Planning is the only method, among Best-of-N, filtered SFT, IBRL, DSRL, and DAWR, that improves stably from failures without training an auxiliary actor.",
+      "authors": [
+        "Varun Giridhar",
+        "Anant Khandelwal",
+        "Jeremy A. Collins",
+        "Ignat Georgiev",
+        "Animesh Garg"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-08-21T15:18:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.21204v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "behavior cloning and self-improving robot policies via off-policy Q-function",
+      "llm_evidence_cn": "行为克隆与基于离策略Q函数的机器人策略自改进",
+      "llm_evidence": "行为克隆与基于离策略Q函数的机器人策略自改进",
+      "canonical_evidence": "行为克隆与基于离策略Q函数的机器人策略自改进",
+      "llm_tldr_en": "Behavior cloning limits robot policies to failures without new demos; RL fine-tuning is hard to scale. Q-Planning equips a large visuomotor BC policy with a small off-policy Q-function to absorb successes and failures, enabling self-improvement after deployment.",
+      "llm_tldr_cn": "行为克隆推动了机器人操控的进步，但策略失败后无法自行改进，除非重新收集人类演示。强化学习微调虽然能改进，却难以扩展到数十亿参数的现代机器人策略中。论文提出Q-Planning，用一个小型离策略Q函数辅助大型视运动行为克隆策略，Q函数估计价值而非模仿动作，因此可以在相同成功演示上训练，并进一步吸收部署中成功与失败的轨迹。实验证明了这种不对称机制能够使策略在部署后持续自我改进，为大模型机器人策略的在线学习提供了新方向。",
+      "llm_tldr": "行为克隆推动了机器人操控的进步，但策略失败后无法自行改进，除非重新收集人类演示。强化学习微调虽然能改进，却难以扩展到数十亿参数的现代机器人策略中。论文提出Q-Planning，用一个小型离策略Q函数辅助大型视运动行为克隆策略，Q函数估计价值而非模仿动作，因此可以在相同成功演示上训练，并进一步吸收部署中成功与失败的轨迹。实验证明了这种不对称机制能够使策略在部署后持续自我改进，为大模型机器人策略的在线学习提供了新方向。",
+      "llm_tags": [
+        "query:inverse-rl"
+      ],
+      "matched_query_tag": "query:inverse-rl",
+      "matched_query_text": "imitation learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.20114v2",
+      "source": "arxiv",
+      "title": "DECOWAM: Decoupled Whole-Body World-Action Model for Legged Mobile Manipulation",
+      "abstract": "Mobile manipulation requires a robot to predict how locomotion and arm motion jointly alter future observations and control. Existing world-action models, developed largely for fixed-base platforms, do not explicitly distinguish camera ego-motion from base and arm actions. Here we introduce DECOWAM, a whole-body world-action model that separates these factors through dedicated conditional interfaces. DECOWAM freezes an adapted FastWAM backbone and trains residual adapters, an action-equivalent future bottleneck distilled from privileged observations, adversarially separated base and arm latents, and base-velocity conditioning for video prediction. We further introduce ARMDOG, a real-robot dataset that synchronizes video, whole-body state and action, and language. On a fixed replay protocol, DECOWAM improved both future-video and action prediction over FastWAM, reducing action MSE by 21.7% with 25.95M trainable adaptation parameters. Across 79 closed-loop trials per method, it achieved the highest observed whole-body coordination and base-displacement robustness among the compared systems, while task completion remained comparable to the strongest baseline. These results show that embodiment-aware factorization can support parameter-efficient joint visual prediction and whole-body control under moving viewpoints.",
+      "authors": [
+        "Siyuan Ma",
+        "Boshi Zhang",
+        "Yutian Zhang",
+        "Qinglian Wu",
+        "Jiaqi Zhai",
+        "Dong Wei",
+        "Qiaojun Yu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-08-20T14:44:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.20114v2",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "whole-body world-action model for legged mobile manipulation",
+      "llm_evidence_cn": "面向腿式移动操作的全身体世界-动作模型",
+      "llm_evidence": "面向腿式移动操作的全身体世界-动作模型",
+      "canonical_evidence": "面向腿式移动操作的全身体世界-动作模型",
+      "llm_tldr_en": "Introduces DECOWAM, a whole-body world-action model that decouples camera ego-motion from base and arm actions for legged mobile manipulation, with adversarial separation of base and arm latents.",
+      "llm_tldr_cn": "现有世界-动作模型主要面向固定基座，难以刻画腿式移动操作中运动与机械臂动作对未来的联合影响。DECOWAM通过解耦相机自运动与基座和机械臂动作，采用对抗分离的隐变量、残差适配器和基座速度条件化，在自采的ARMDOG真实机器人数据集上验证了全身体视频预测和动作建模能力，为腿式移动操作任务带来了全新的预测模型基础。",
+      "llm_tldr": "现有世界-动作模型主要面向固定基座，难以刻画腿式移动操作中运动与机械臂动作对未来的联合影响。DECOWAM通过解耦相机自运动与基座和机械臂动作，采用对抗分离的隐变量、残差适配器和基座速度条件化，在自采的ARMDOG真实机器人数据集上验证了全身体视频预测和动作建模能力，为腿式移动操作任务带来了全新的预测模型基础。",
+      "llm_tags": [
+        "query:locowbc:composite"
+      ],
+      "matched_query_tag": "query:locowbc:composite",
+      "matched_query_text": "Papers central to 请帮我查找机器人locomotion、WBC的工作, especially work that connects or combines: robot locomotion techniques and algorithms; whole-body control for robots; humanoid robot locomotion and control; legged locomotion planning and control; motion planning for robot locomotion; contact force control in locomotion; methods for whole body control in robot locomotion; recent advances in humanoid walking and whole body control; control strategies for bipedal robot locomotion; WBC framework for legged robot locomotion.",
+      "matched_requirement_id": "req-composite-locowbc",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.19443v1",
+      "source": "arxiv",
+      "title": "Hybrid Feedback Sampling for Sample-Efficient Model Predictive Control",
+      "abstract": "Thanks to its parallelizability and flexibility, sampling-based Model Predictive Control (MPC) has become widely popular for controlling real-world robotic systems. However, for high-dimensional and open-loop unstable dynamical systems, the required number of samples to improve the control sequence will grow exponentially with the horizon, leading to poor sample efficiency and numerical instability. This paper investigates the instability of shooting methods in sampling-based MPC and shows that the optimal sampling proposal distribution can be realized by sampling with an optimized feedback policy. We refer to this algorithm as Feedback Sampling MPC (FS-MPC). FS-MPC involves a hybrid sampling design which balances local and global search based on the system stability and the available computation budget. Our theoretical analysis shows that our hybrid sampling approach achieves faster convergence than standard MPPI and better optimality than standard feedback sampling. Empirically, in diverse contact-rich control tasks like humanoid loco-manipulation and dexterous manipulation, we show that FS-MPC successfully tackles dynamically unstable tasks where standard sample-based approaches struggle, and strictly outperforms feedback policies alone. Finally, we validate our method on humanoid robot locomotion and manipulation tasks in the real world.",
+      "authors": [
+        "Chaoyi Pan",
+        "Zeji Yi",
+        "John Zhang",
+        "Zachary Manchester",
+        "Guannan Qu",
+        "Guanya Shi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "eess.SY"
+      ],
+      "published": "2026-08-19T20:56:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.19443v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "MPC sampling method, no locomotion or WBC application",
+      "llm_evidence_cn": "MPC采样方法，未涉及运动或WBC应用",
+      "llm_evidence": "MPC采样方法，未涉及运动或WBC应用",
+      "canonical_evidence": "MPC采样方法，未涉及运动或WBC应用",
+      "llm_tldr_en": "Proposes FS-MPC, a feedback sampling MPC method that improves sample efficiency for high-dimensional unstable robotic control.",
+      "llm_tldr_cn": "针对采样型MPC在高维、开环不稳定系统中样本效率低的问题，本文提出反馈采样MPC（FS-MPC），通过优化反馈策略作为采样分布，实现混合采样设计以平衡局部与全局搜索，提升控制序列求解的样本效率和数值稳定性。该方法可望为腿足机器人的MPC控制提供算法借鉴。",
+      "llm_tldr": "针对采样型MPC在高维、开环不稳定系统中样本效率低的问题，本文提出反馈采样MPC（FS-MPC），通过优化反馈策略作为采样分布，实现混合采样设计以平衡局部与全局搜索，提升控制序列求解的样本效率和数值稳定性。该方法可望为腿足机器人的MPC控制提供算法借鉴。",
+      "llm_tags": [
+        "query:mpc-wbc"
+      ],
+      "matched_query_tag": "query:mpc-wbc",
+      "matched_query_text": "Model predictive control for legged locomotion and walking",
+      "matched_requirement_id": "req-25",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.20823v1",
+      "source": "arxiv",
+      "title": "Natural Sit-to-Stand Motion Synthesis For Humanoids via Guided Assistance Curricula and Staged Rewards",
+      "abstract": "A humanoid has infinitely many ways to stand up from sitting while maintaining balance, making sit-to-stand (STS) a challenging control problem. We synthesise natural humanoid STS motion from scratch using reinforcement learning, without demonstrations or reference trajectories. A single Proximal Policy Optimisation policy learns smooth, human-like rising driven by three complementary components. (i) A coupled force/chair-height curriculum is used. A vertical pelvis-assist force aids early trajectory exploration and decays over training. Taller chairs are unlocked with decaying assisting force. This ensures that the policy masters a viable STS trajectory at each chair height before being exposed to harder ones, avoiding the premature distribution shift that otherwise collapses generalisation. (ii) Motion robustness is achieved by randomly sampling from a large number of inverse kinematics-generated initial and target poses spanning over eight chair heights. (iii) A set of rewards is defined inspired from biomechanics and optimal control studies. They shape the robot's angular momentum for seat-off, and enable support-region transition via centre of pressure attraction function to ensure smooth low-effort actuation. On a deterministic force-free evaluator, the policy attains more than 97% balanced-standing success across eight chair heights. The policy generalises smooth motion across chair heights and enables the robot to rise from substantially deep-seated postures as compared to the state of the art.",
+      "authors": [
+        "Meet Pal Singh",
+        "Vyankatesh Ashtekar",
+        "Ashish Dutta"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-21T07:44:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.20823v1",
+      "tags": [
+        "keyword:MPC-WBC",
+        "keyword:inverse-rl",
+        "keyword:locoWBC",
+        "query:MPC-WBC",
+        "query:inverse-rl",
+        "query:locoWBC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "whole-body natural sit-to-stand motion synthesis for humanoids via RL",
+      "llm_evidence_cn": "基于强化学习的人形机器人自然起立全身运动合成",
+      "llm_evidence": "基于强化学习的人形机器人自然起立全身运动合成",
+      "canonical_evidence": "基于强化学习的人形机器人自然起立全身运动合成",
+      "llm_tldr_en": "Synthesizes natural humanoid sit-to-stand motion via reinforcement learning without demonstrations. A single PPO policy uses a coupled force/chair-height curriculum and staged rewards to learn smooth, human-like rising, avoiding the need for reference trajectories.",
+      "llm_tldr_cn": "人形机器人从坐到站有无数保持平衡的起立方式，是富有挑战的控制问题。论文在不使用演示或参考轨迹的情况下，用强化学习从零合成自然的起立运动。单一PPO策略借助三个互补组件：耦合的力/椅子高度课程、垂直骨盆辅助力逐步衰减，以及分阶段奖励，从而学到平滑类人的起立动作。实验表明该方法能生成自然、稳定的全身起立运动，为无参考轨迹的人形全身运动合成提供了课程强化学习的思路。",
+      "llm_tldr": "人形机器人从坐到站有无数保持平衡的起立方式，是富有挑战的控制问题。论文在不使用演示或参考轨迹的情况下，用强化学习从零合成自然的起立运动。单一PPO策略借助三个互补组件：耦合的力/椅子高度课程、垂直骨盆辅助力逐步衰减，以及分阶段奖励，从而学到平滑类人的起立动作。实验表明该方法能生成自然、稳定的全身起立运动，为无参考轨迹的人形全身运动合成提供了课程强化学习的思路。",
+      "llm_tags": [
+        "query:locowbc"
+      ],
+      "matched_query_tag": "query:locowbc",
+      "matched_query_text": "whole-body control for robots",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

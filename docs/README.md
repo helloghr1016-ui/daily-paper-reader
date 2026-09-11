@@ -6,86 +6,82 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-13 ~ 2026-09-11
-- 运行时间：2026-09-11 06:58:39 UTC
+- 最新运行日期：2026-09-11
+- 运行时间：2026-09-11 21:36:42 UTC
 - 运行状态：成功
-- 本次总论文数：22
-- 精读区：11
-- 速读区：11
+- 本次总论文数：20
+- 精读区：8
+- 速读区：12
 
 ### 今日简报（AI）
-本期从22篇机器人操作研究中精读11篇、速读11篇，重点聚焦精密装配与灵巧操作两大方向。最值得看的是力反馈结合局部高斯过程实现键位插孔（9.0分），以及ADEPT用强化学习预训练加后训练加速灵巧性习得（9.0分）。建议普通读者先读这两篇精读，再顺着速读里的NestDex和Robo-Dopamine 2.0了解灵巧操作与奖励建模的进展。
-- 详情：[/20260813-20260911/README](/20260813-20260911/README)
+今天从20篇推荐中精读8篇、速读12篇，VLA-Precision以满分10.0成为最亮眼焦点。  
+最值得关注的是VLA-Precision带来的VLA模型真实在线RL方向，速读中NebulaVLA、τ0-VLA和PVRA也均获8.0分。  
+普通读者可优先读满分精读，再按机器人操作、分层模型或装配兴趣挑速读。
+- 详情：[/202609/11/README](/202609/11/README)
 
 ### 精读区论文标签
-1. [Force-Based Offset Estimation for Keyed Peg-in-Hole Assembly Using Local Gaussian Process Regression](/20260813-20260911/2608.17691v1-force-based-offset-estimation-for-keyed-peg-in-hole-assembly-using-local-gaussian-process-regression)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：基于力觉的键槽销孔装配偏移估计
-2. [ADEPT: Accelerating Dexterity via Pre-Training and Post-Training using Reinforcement Learning](/20260813-20260911/2608.19182v1-adept-accelerating-dexterity-via-pre-training-and-post-training-using-reinforcement-learning)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：面向灵巧操作的大规模强化学习框架
-3. [Contact-Rich Robotic Manipulation in Construction via Zero-Shot Learning: A Diffusion Policy-Guided Adaptive Control](/20260813-20260911/2608.22100v1-contact-rich-robotic-manipulation-in-construction-via-zero-shot-learning-a-diffusion-policy-guided-adaptive-control)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：扩散策略结合自适应控制，应对紧公差接触丰富的机器人装配
-4. [GRAFT: Grounded and Efficient Online Reinforcement Adaptation for Fine-Grained Robot Manipulation](/20260813-20260911/2608.27079v1-graft-grounded-and-efficient-online-reinforcement-adaptation-for-fine-grained-robot-manipulation)  
+1. [VLA-Precision: Asymmetric Co-Bootstrapping for Efficient Real-World Online RL of Vision-Language-Action Models](/202609/11/2609.04355v1-vla-precision-asymmetric-co-bootstrapping-for-efficient-real-world-online-rl-of-vision-language-action-models)  
+   标签：评分：10.0/10、query:vla-rl
+   evidence：面向精密操作的真实在线强化学习VLA后训练
+2. [VLA-Precision: Asymmetric Co-Bootstrapping for Efficient Real-World Online RL of Vision-Language-Action Models](/202609/11/2609.04355v2-vla-precision-asymmetric-co-bootstrapping-for-efficient-real-world-online-rl-of-vision-language-action-models)  
+   标签：评分：10.0/10、query:vla-rl
+   evidence：面向精密操作的视觉语言动作模型在线强化学习后训练
+3. [Toward Physically Grounded JEPA World Models for Goal-Conditioned Robotic Planning](/202609/11/2609.03565v1-toward-physically-grounded-jepa-world-models-for-goal-conditioned-robotic-planning)  
    标签：评分：9.0/10、query:vla-rl
-   evidence：预训练VLA策略的在线强化自适应
-5. [GRAFT: Grounded and Efficient Online Reinforcement Adaptation for Fine-Grained Robot Manipulation](/20260813-20260911/2608.27079v2-graft-grounded-and-efficient-online-reinforcement-adaptation-for-fine-grained-robot-manipulation)  
+   evidence：面向目标条件机器人规划的JEPA世界模型
+4. [Toward Unified Robot Learning: Bridging Representation, Vision-Language-Action, and World Models](/202609/11/2609.03927v1-toward-unified-robot-learning-bridging-representation-vision-language-action-and-world-models)  
+   标签：评分：9.0/10、query:vla-rl
+   evidence：统一表征学习、VLA与世界模型的机器人学习综述
+5. [How to Learn from What a Human Would Avoid? Intervention-Aware World Models with Real-World RL for Dexterous Manipulation](/202609/11/2609.06009v1-how-to-learn-from-what-a-human-would-avoid-intervention-aware-world-models-with-real-world-rl-for-dexterous-manipulation)  
    标签：评分：9.0/10、query:rl-vla
-   evidence：面向精细操作的VLA策略在线强化适配
-6. [Facet-0: A Robotic Foundation Model for Contact-Rich Precise Manipulation](/20260813-20260911/2609.01596v1-facet-0-a-robotic-foundation-model-for-contact-rich-precise-manipulation)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：面向亚毫米接触装配的强化学习后训练基础模型
-7. [WISE: World-model-guided Imagination Scheduling for Efficient Post-training of Vision-Language-Action Models](/20260813-20260911/2609.03681v1-wise-world-model-guided-imagination-scheduling-for-efficient-post-training-of-vision-language-action-models)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：以世界模型引导想象调度，高效后训练视觉-语言-动作策略
-8. [CR-VLA-Force: Learning Control-aware Compliance VLA Model for Robust Contact-rich Robotic Manipulation](/20260813-20260911/2609.05832v1-cr-vla-force-learning-control-aware-compliance-vla-model-for-robust-contact-rich-robotic-manipulation)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：面向接触丰富操作的力感知VLA模型
-9. [Knowledge-Guided Hierarchical Policy Learning for High-Precision Cylindrical Assembly under Tight Tolerances](/20260813-20260911/2609.06522v1-knowledge-guided-hierarchical-policy-learning-for-high-precision-cylindrical-assembly-under-tight-tolerances)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：面向高精度圆柱装配的分层强化学习策略
-10. [DeCAL: Towards Physically-Grounded Dexterous Vision-Language-Action Models via Contact-Aware Latent Co-Imagination](/20260813-20260911/2609.09119v1-decal-towards-physically-grounded-dexterous-vision-language-action-models-via-contact-aware-latent-co-imagination)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：面向接触丰富操作的物理接地灵巧VLA模型
-11. [Assembling Two Parts in One Hand](/20260813-20260911/2609.10137v1-assembling-two-parts-in-one-hand)  
-   标签：评分：9.0/10、query:rl-vla
-   evidence：单手内灵巧装配的强化学习
+   evidence：面向灵巧操作的干预感知世界模型与真实世界强化学习
+6. [WorldAgen: Unified State-Action Prediction with Test-Time World Model Training](/202609/11/2609.08162v1-worldagen-unified-state-action-prediction-with-test-time-world-model-training)  
+   标签：评分：9.0/10、query:vla-rl
+   evidence：统一世界模型与动作预测并支持测试时训练
+7. [CAST: Alternating State-Value Targets and Expanded Policy Gradients for Model-Based Reinforcement Learning](/202609/11/2609.08853v1-cast-alternating-state-value-targets-and-expanded-policy-gradients-for-model-based-reinforcement-learning)  
+   标签：评分：9.0/10、query:vla-rl
+   evidence：面向机器人的基于模型强化学习，改进价值学习与在线规划
+8. [HaWMPO: Hallucination-Aware World Model-based Policy Optimization for Generalist Robot Policy](/202609/11/2609.09941v1-hawmpo-hallucination-aware-world-model-based-policy-optimization-for-generalist-robot-policy)  
+   标签：评分：9.0/10、query:vla-rl
+   evidence：面向VLA机器人策略的世界模型强化学习优化
 
 ### 速读区论文标签
-1. [NestDex: Nested Policy Learning with Copilot Assisted Teleoperation for Dexterous Manipulation](/20260813-20260911/2608.13362v1-nestdex-nested-policy-learning-with-copilot-assisted-teleoperation-for-dexterous-manipulation)  
+1. [NebulaVLA: A Dual-Frequency Vision-Language-Action Model With Guide Action for Robotic Manipulation](/202609/11/2608.16503v1-nebulavla-a-dual-frequency-vision-language-action-model-with-guide-action-for-robotic-manipulation)  
    标签：评分：8.0/10、query:rl-vla
-   evidence：面向灵巧操作的嵌套策略学习与辅助遥操作
-2. [AdvDex: Learning Dexterous Manipulation from Human Demonstrations via Joint-Aligned Actions and Adversarial Learning](/20260813-20260911/2608.14028v1-advdex-learning-dexterous-manipulation-from-human-demonstrations-via-joint-aligned-actions-and-adversarial-learning)  
+   evidence：面向机器人操作的双频视觉-语言-动作模型
+2. [$τ_0$-VLA: a Hierarchical Robot Foundation Model with World-Model-Guided Test-Time Computation](/202609/11/2608.16885v1-0-vla-a-hierarchical-robot-foundation-model-with-world-model-guided-test-time-computation)  
    标签：评分：8.0/10、query:rl-vla
-   evidence：从演示中学习灵巧操作的统一VLA框架
-3. [Robo-Dopamine 2.0: History-Conditioned and OOD-Aware Process Reward Modeling for Robotic Manipulation](/20260813-20260911/2608.15680v1-robo-dopamine-20-history-conditioned-and-ood-aware-process-reward-modeling-for-robotic-manipulation)  
-   标签：评分：8.0/10、query:vla-rl
-   evidence：用过程奖励建模结合强化学习优化VLA策略
-4. [ViTaR: Visuo-Tactile Residual Adaptation for Foundation VLA Manipulation](/20260813-20260911/2608.15816v1-vitar-visuo-tactile-residual-adaptation-for-foundation-vla-manipulation)  
+   evidence：世界模型引导推理的分层VLA机器人基础模型
+3. [PVRA: A Pointwise Key-point Voting Framework for Robotic Assembly](/202609/11/2608.19968v1-pvra-a-pointwise-key-point-voting-framework-for-robotic-assembly)  
    标签：评分：8.0/10、query:rl-vla
-   evidence：面向基础VLA操作的视触觉残差自适应
-5. [Reflex: Enabling Fast and Predictive Vision-Language-Action Models for Reaction-Critical Manipulation](/20260813-20260911/2608.14379v1-reflex-enabling-fast-and-predictive-vision-language-action-models-for-reaction-critical-manipulation)  
+   evidence：面向机器人装配的三维关键点框架，学习装配依赖关系
+4. [RoMAN-Flow: Taming Autoregressive Normalizing Flows for Offline Reinforcement Learning in Robotic Manipulation](/202609/11/2608.20208v1-roman-flow-taming-autoregressive-normalizing-flows-for-offline-reinforcement-learning-in-robotic-manipulation)  
+   标签：评分：8.0/10、query:rl-vla
+   evidence：面向机器人操作策略的离线强化学习框架
+5. [FWBC-VLA: Force-Aware Whole-Body Compensation for Contact-Rich Loco-Manipulation](/202609/11/2609.03889v1-fwbc-vla-force-aware-whole-body-compensation-for-contact-rich-loco-manipulation)  
    标签：评分：7.0/10、query:rl-vla
-   evidence：面向反应关键操作的高效VLA模型
-6. [Max-Q Selective Imitation for Human-in-the-Loop Online Robot Learning](/20260813-20260911/2608.15088v1-max-q-selective-imitation-for-human-in-the-loop-online-robot-learning)  
-   标签：评分：7.0/10、query:rl-vla
-   evidence：面向真实机器人的人在回路在线强化学习
-7. [ReForce: Learning Force-aware Retargeting for Dexterous Manipulation](/20260813-20260911/2608.15560v1-reforce-learning-force-aware-retargeting-for-dexterous-manipulation)  
-   标签：评分：7.0/10、query:rl-vla
-   evidence：面向灵巧操作的力感知重定向
-8. [Teach and Grow: An Agent-Centered Architecture for General Robot Learning](/20260813-20260911/2608.17209v1-teach-and-grow-an-agent-centered-architecture-for-general-robot-learning)  
+   evidence：面向接触丰富移动操作的力感知VLA控制
+6. [WorldReward: Reward Modeling for Camera-Conditioned World Models](/202609/11/2609.03952v1-worldreward-reward-modeling-for-camera-conditioned-world-models)  
    标签：评分：7.0/10、query:vla-rl
-   evidence：以智能体为中心，将示范转化为可复用技能块，支撑通用VLA机器人学习
-9. [ORPA: Online Residual Policy Adaptation for Robot Manipulation Control with Human Feedback](/20260813-20260911/2608.17323v1-orpa-online-residual-policy-adaptation-for-robot-manipulation-control-with-human-feedback)  
+   evidence：用视觉语言模型为相机条件世界模型做奖励建模
+7. [Adaptive Vision-Language Grasping via Composable Foundation Priors and Generalizable Grasp Synthesis](/202609/11/2609.04096v1-adaptive-vision-language-grasping-via-composable-foundation-priors-and-generalizable-grasp-synthesis)  
+   标签：评分：7.0/10、query:rl-vla
+   evidence：面向多种机械手通用抓取合成的视觉-语言-抓取框架
+8. [RefGuard: Identity-Aware Language-Guided Robot Manipulation via Joint Target-Anchor-Frame Grounding](/202609/11/2609.06221v1-refguard-identity-aware-language-guided-robot-manipulation-via-joint-target-anchor-frame-grounding)  
+   标签：评分：7.0/10、query:rl-vla
+   evidence：面向语言引导VLA机器人操作的身份感知接地框架
+9. [RoboTok: An Internet-Scale Data Engine for Human Demonstration Retrieval and Dexterous Manipulation Learning](/202609/11/2609.03199v1-robotok-an-internet-scale-data-engine-for-human-demonstration-retrieval-and-dexterous-manipulation-learning)  
    标签：评分：6.0/10、query:rl-vla
-   evidence：基于人类反馈的机器人操作在线残差策略自适应
-10. [Iterative Grasp Pose Refinement: A Deep Reinforcement Learning Approach for 2D Vision](/20260813-20260911/2608.17628v1-iterative-grasp-pose-refinement-a-deep-reinforcement-learning-approach-for-2d-vision)  
+   evidence：检索人类视频用于灵巧操作策略学习的数据引擎
+10. [R2S-Eval: Robot Evaluation with Real-to-Sim Calibration via Vision-Language Models](/202609/11/2609.03276v1-r2s-eval-robot-evaluation-with-real-to-sim-calibration-via-vision-language-models)  
    标签：评分：6.0/10、query:rl-vla
-   evidence：基于深度强化学习的抓取位姿迭代优化
-11. [GOAG: Generative and Object-Agnostic Grasp Planner for Dexterous Robotic Manipulation](/20260813-20260911/2608.19759v1-goag-generative-and-object-agnostic-grasp-planner-for-dexterous-robotic-manipulation)  
+   evidence：基于视觉语言模型的VLA机器人操作策略评估流程
+11. [Revisiting Topological Graphs for Macro Action based Closed-loop Reinforcement Learning of Vision Language Navigation in Continuous Environment](/202609/11/2609.03906v1-revisiting-topological-graphs-for-macro-action-based-closed-loop-reinforcement-learning-of-vision-language-navigation-in-continuous-environment)  
+   标签：评分：6.0/10、query:vla-rl
+   evidence：将视觉语言导航建模为分层MDP的闭环强化学习
+12. [FailureSpot: Label-Efficient Timestamp-Level Failure Detection for Vision-Language-Action Models](/202609/11/2609.04277v1-failurespot-label-efficient-timestamp-level-failure-detection-for-vision-language-action-models)  
    标签：评分：6.0/10、query:rl-vla
-   evidence：灵巧多指抓取规划器
+   evidence：面向视觉-语言-动作模型的失败检测
 
 
 <div class="dpr-home-promo-card">

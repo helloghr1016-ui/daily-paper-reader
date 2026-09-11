@@ -1,0 +1,861 @@
+Title: Exploring Nonlinear Body Oscillations for Natural Quadruped Gaits
+
+URL Source: https://arxiv.org/pdf/2609.00539v2
+
+Published Time: Fri, 04 Sep 2026 00:23:35 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+> 1
+
+# Exploring Nonlinear Body Oscillations for Natural Quadruped Gaits 
+
+Annika Schmidt 1,2,* , Davide Calzolari 1,2 , Arne Sachtler 1,2 , Florian Loeffl 2, Daniel Seidel 2, Milan Hermann 2,Robert Burger 2, Thomas Gumpert 2, Antonin Raffin 2, Tristan Ehlert 2, Maximilian Pries 2, David Wandinger 2,Florian Schmidt 2, Manuel Keppler 2,3 , Jinoh Lee 2,4 , and Alin Albu-Schäffer 1,2 1Technical University of Munich (TUM), Department of Computer Engineering, Germany. 
+
+> 2
+
+German Aerospace Center (DLR), Institute of Robotics and Mechatronics, Weßling, Germany. 
+
+> 3
+
+Eindhoven University of Technology (TU/e), Department of Mechanical Engineering, The Netherlands. 
+
+> 4
+
+Korea Advanced Institute of Science & Technology (KAIST), Department of Mechanical Engineering, South Korea. 
+
+> *
+
+Corresponding author: annika.schmidt@dlr.de 
+
+Summary —The research demonstrates how the analysis of nonlinear normal modes aids to develop natural, multi-gait loco-motion in a compliant quadruped robot leveraging its inherent mechanics, offering a design tool to shape embodied intelligence in robotics. 
+
+Abstract —Animals’ body morphology shapes the gait patterns they can perform, where mechanical resonance reduces the need for active control. By tuning posture and muscle stiffness, they leverage their embodied intelligence to achieve effective gaits for different speeds. In contrast, most quadruped robots are not specifically designed to exploit mechanical resonance due to the complexity of nonlinear dynamics and require dedicated locomotion controllers. To provide an alternative, we present a proof-of-concept framework making the nonlinear dynamics of a robot predictable in the design process and show how this knowledge can be leveraged such that multi-gait locomotion can emerge from nonlinear resonances—shaped by gravity, inertia, and elasticity. We present the highly compliant quadruped robot 
+
+eBert , on which we identify six nonlinear normal modes (NNMs) using our new theoretical tools and validate their existence in simulation and hardware. With black-box optimization to determine step length, simulations show how each NNM naturally develops into a distinct gait, manifesting different speeds, which also largely transfers to the robotic hardware. Our experiments show that eBert can exploit its mechanics to generate task-specific movements which may serve as foundation for designing a new generation of agile and efficient robots leveraging embodied intelligence. 
+
+I. I NTRODUCTION 
+
+Quadrupedal robots hold great potential for real-world ap-plications due to their inherent stability and weight-bearing capabilities, leading to a rapidly expanding market [1], [2]. Despite improving capabilities, most quadrupeds converge on similar designs driven by stiff actuation with high-gain feedback, yielding gaits dictated by the controller rather than mechanics [3]. In contrast, animals achieve efficient, habitat-specific movement [4] through tight coupling between mor-phology and neural wiring [5], [6]. This integration enables locomotion to emerge from the natural interplay of mechanics and control [7] - a principle known as embodied intelligence 
+
+[8]. One key aspect is that an animal’s morphology not only supports locomotion but also constrains and shapes its dynamics. Thus, an animal’s body structure determines which gaits it can perform [9] and which are preferred at different speeds [10], [11]. Hoyt and Taylor famously demonstrated this in horses, showing that switching gaits at specific speeds minimized energy costs [12]. To maintain energy efficiency across speeds, animals adjust their posture, gait patterns, and muscle stiffness, effectively tuning their body’s resonance [13], [14], while the elasticity in tendons and muscles enhances robustness by absorbing impact energy [15]. Motivated by these biomechanical insights, a line of re-search on legged locomotion has focused on including elastic elements in robotic designs [16], [17], [18], [19] and leverag-ing the added compliance through matched control strategies [20], [21], [22], [23]. This extends early work on passive dynamic walkers that exploit intrinsic mechanical responses to generate inherently stable, energy-efficient locomotion, with dynamics well approximated by an inverted pendulum [24]. Adding a spring to the simple walking template resulted in the 
+
+spring-loaded inverted pendulum (SLIP) model [25], [26], [27] enabling the characterization of multiple gaits and their tran-sitions. Several robotic experiments validated that exploiting elasticity increases energy efficiency and robustness [18], [28], [29], [30]. Simulations of an elastic sagittal quadruped with prismatic legs showed that minimizing energy consumption with optimal control naturally produces different gaits at vary-ing speeds [31], [32], consistent with biological observations. Adaptive oscillators, similar to the biological principle of 
+
+Central Pattern Generators (CPG), proved effective to extract and excite the intrinsic frequencies of robotic hardware [33], [34]. Notable examples include the works of Badri-Spröwitz and Ijspeert demonstrating that locomoting robots inspired by biological mechanics can display natural gaits with remarkably simple CPG controllers [18], [29], [33]. Well-designed systems such as BirdBot can exhibit gaits even under open-loop con-trol [18], but feedback remains generally essential to entrain control frequency to intrinsic system dynamics and exploit arXiv:2609.00539v2 [cs.RO] 2 Sep 2026 2
+
+compliance, as demonstrated on the quadruped Morti [29]. However, without explicit engineering, compliant hardware typically converges to a single gait pattern dictated by its dominant mechanical resonance. Achieving different gaits through hardware properties re-quires meticulous design derived from detailed analysis of biological principles, as exemplified by the synergies imple-mented in the quadruped robot PAWS [30]. More generally, designing legged robots where the compliance enables multi-ple gaits remains a challenge [3] because its typically nonlinear dynamics are difficult to predict in advance. Recent advances in nonlinear mode theory enabled us to address this challenge and design hardware with diverse purposeful dynamics. Using mathematical tools based on differential geometry and algebraic topology [35], [36], we can analyze nonlinear oscillations in complex systems [37] to identify families of periodic orbits in energy-conservative systems, including Nonlinear Normal Modes (NNMs) [38], which generalize linear eigenmodes to nonlinear dynamics. This offers a framework to systematically compute the natural dynamics even in complex, high-dimensional systems with significant nonlinearities. Building on the biological insight that efficient locomotion is tightly connected to exploiting body resonance [10], [13], we hypothesize that common quadrupedal gaits – such as trotting, pacing, and bounding – may naturally arise from NNMs in purposefully designed quadrupeds. While the theoretical foundation of the NNM analysis has been established in prior work [35], [37], this paper presents the first application of the complete framework to a full 3D quadruped robot to develop locomotion. This includes: A) the design of the highly elastic quadruped eBert ;B) the analysis of eBert ’s nonlinear modes uncovering the robot’s natural movement tendencies; and C) the excitation of these modes to generate gaits using only minimal control. Starting from biological leg stiffness approximations, 
+
+eBert ’s design encodes functional oscillations through its mechanics (Fig. 1A). Using our developed methods [37], [38], [35], we identify six NNMs of the conservative dynamics, which we validate in simulations and hardware, excited by a deliberately simple feedback-based state-switching controller to compensate for friction. Extending this controller to lift the feet according to a pattern matching each mode enables distinct, and biologically plausible gaits to emerge naturally from the robot’s dynamics (Fig. 1B). With our hypothesis successfully validated, eBert is, to the best of our knowledge, the first full robotic quadruped demon-strating that diverse gaits naturally emerge from purposefully designed nonlinear resonances, manifesting embodied intel-ligence in robotic hardware. Rather than replicating animal locomotion in stride, speed, or efficiency, we claim to show that eBert ’s emerging gaits follow biological principles where body resonance naturally organizes multi-legged coordination without explicit scripting. Our framework can guide robotic co-design with intrinsic oscillations tailored to desired tasks, while improved dynamics analysis can deepen understanding of biological movement, advancing both robotic and biological knowledge. II. R ESULTS 
+
+A. The highly elastic quadruped eBert 
+
+Animal gaits can be viewed as periodic oscillations that exploit resonance of the musculoskeletal system to minimize energy expenditure [13], [14]. Similarly, compliant robots can improve efficiency by exciting their natural resonances with controllers entrained to the mechanics [33], [39], but usually only one or few gaits arise from the most prominent resonance [18], [29]. A richer locomotion repertoire based on resonances requires a robot that mechanically encodes multiple useful high-amplitude body oscillations, which we realized with the highly-compliant quadruped eBert with 12 degrees of freedom (DOF). 
+
+eBert was designed with lightweight elastic legs and large enough compliance to encode multiple functional body oscilla-tions at frequencies and amplitudes suitable for gait generation (Fig. 2A,B). The precise leg stiffness of eBert was estimated assuming the body dimensions of a small dog weighing 4.5 kg 
+
+using calculations for animal leg stiffness [40]. Adapting the initial stiffness estimation such that eBert could stand upright without active corrections led to a stiffness of 6.55 N m rad −1
+
+in the hip and knee joints, and 13 N m rad −1 in the shoulders .Design and stiffness details are in the Method section Design for Purposeful Oscillations in eBert . The hardware elasticity was implemented using Serial Elastic Actuators (SEAs) with springs having the respective stiffness at each joint. This can mimic the energy storage of animals’ muscles and tendons but, unlike biology, SEA stiffness cannot be adjusted and is joint-local instead of distributed throughout the body [13]. Nevertheless, SEAs provide a practical way to add mechanical compliance in robots [41] (Fig. 1A). With the implemented compliance eBert encodes large mechanical oscillations in var-ious directions, yielding much higher system compliance than previous elastic quadrupeds exploiting embodied intelligence [29], [30]. Replicating embodiment in robotics also requires control that matches the system dynamics. While in animal bodies mechanics and neural control are tightly coupled, robotics allows separate analysis of each to aid better understanding of individual contributions. In eBert we focused on the mechani-cal aspects encoding oscillations through design, only applying minimalistic control. We first analyzed the inherently nonlinear system dynamics of eBert enabled by our recently devel-oped numerical methods [37], [35] to identify the system’s 
+
+Nonlinear Normal Modes (NNMs). These NNMs extend the concept of linear normal modes, which characterize periodic coordinated oscillations of a mechanical system around an equilibrium with a constant amplitude and phase. In contrast, NNMs vary with energy levels changing shape and period on curved surfaces called Eigenmanifolds [35] (Fig. 2C). Using our methods, the NNMs of the conservative model can be computed, which describe intrinsic oscillations purely from the robot’s mechanical properties, without control input. Com-putational details are outlined in the Supplementary Methods 
+
+Nonlinear modal analysis .We hypothesized that distinct gaits can emerge from the different NNMs. As starting point, we analyzed eBert ’s nat-3M1 M2
+
+Excite nonlinear modes in system 
+
+> LH LF RF RH
+
+Bound Pace 
+
+> LH LF RF RH
+
+step step step 
+
+Identify nonlinear modes via toolbox Naturally emerging locomotion pattern 
+
+servo motor spring 
+
+mode 1 mode n mode 2   
+
+> -0.05 00.05
+
+y [m]   
+
+> 0.18 0.19 0.2 0.21
+> z [m]
+> -0.05 00.05
+
+x [m] 
+
+> 0.18 0.19 0.2 0.21
+> z [m]
+
+## AB
+
+Fig. 1. Workflow to develop gaits based on embodied intelligence in eBert . (A) Inspired by the elasticity of biological tendons and muscles, the quadruped robot eBert features series elastic actuation with soft springs to implement this function mechanically. High compliance in the hardware design results in a system that naturally displays large amplitude oscillations in different directions. (B) Leveraging the biological concept of embodied intelligence, the natural oscillations encoded in the robotic hardware can be exploited following three key aspects: First, the mathematical description and analysis of the system motions; second, the excitation of nonlinear resonance; and finally, the generation of (loco)motion patterns, leading to gaits that resemble the ones known in animals. 4EF
+
+M1  
+
+> -0.05 00.05 y [m]
+> 0.18 0.19 0.2 0.21
+> z [m]
+> -0.05 0.05 0 y [m]
+> 0.2 0.19
+> -0.2 0.2 0y [m/s]
+> z [m]
+
+M3 M4 M5 M6M2    
+
+> -0.05 0x [m] 0.05
+> 0.18 0.19 0.2 0.21
+> z [m]
+> -0.02 0.02 0x [m]
+> 0.2 0.19
+> -0.2 0.2 0
+> z [m]
+
+M2
+
+M1
+
+> x [m/s]
+> M2
+> M5
+
+M4
+
+M6
+
+M1
+
+B
+
+## CAD
+
+M3shoulder hip knee foot 
+
+Front Hind 
+
+Left Right 
+
+Fig. 2. Overview of eBert and the nonlinear normal modes encoded in its mechanics. (A) Hardware of the highly elastic quadruped robot eBert crouching. 
+
+(B) Indication of axes and motion directions of eBert with modes M1-M6 from different perspectives. (C) Exemplary depiction of mode oscillations of M1
+
+(left) and M2 (right), each orbit computed as solution to the equations of motion of the energy-conservative dynamics requiring no control. Plotting motions over respective relevant axes and in state space projections visualizes the nonlinearity. (D) Visualization of each mode by plotting the motion of the robot’s center of mass in the respective relevant axes for different energy levels apparent from (F). (E) Phase diagram of each mode plotted in the relevant axes along which each mode oscillation develops with increasing energy. (F) Progression of the period of each mode over different energy levels. The y-axis displays the change of period relative to the period determined for the linearized system ( y = 1 .00 ). 5
+
+ural motion tendencies around a symmetric standing position (shoulders neutral, hips and knees slightly flexed, Fig. 2B) with the commanded motor positions θ0 for the three joints per leg being 
+
+θ0,FR = θ0,FL = θ0,HR = θ0,HL 
+
+= [ 0,
+
+> ↑
+> shoulder
+
++0 .4,
+
+> ↑
+> hip
+
+−0.4
+
+> ↑
+> knee
+
+]⊤ rad 
+
+≈ [ 0,
+
+> ↑
+> shoulder
+
++23 ◦,
+
+> ↑
+> hip
+
+−23 ◦↑
+
+> knee
+
+]⊤ ,
+
+(1) where subscripts F and H refer to the robot’s front and hind leg, respectively, while L and R denote the left and right sides, relative to the motion direction. Assuming fixed foot positions but free rotations yields a constrained system with n = 6 DOFs and six corresponding linear modes, from which at least six NNMs were expected based on the Seifert conjecture [35]. The six computed NNMs are displayed in Fig. 2, with the associated eigenvectors w and their characteristic oscillation frequency of the linearized system summarized on the left side of Table I. As predicted by theory, NNM frequency and shape vary with energy as the system enters the nonlinear regime at larger deflections (Fig. 2D,F). Sorting the NNMs by frequency revealed that the slowest mode (M1) is atranslation of the robot body along the y-axis coupled with rolling (Fig. 2B,D). The second mode ( M2) couples a pitching oscillation with a forward-backward motion along the x-axis. The third mode ( M3) manifests as rotation around the z-axis going vertically through the body’s center of mass (COM). The fourth motion ( M4) is a translational up-and-down motion along the z-axis. The fifth ( M5) and sixth modes ( M6) are the pure pitch and roll motions, respectively, both oscillating at much higher frequencies (Tab. I, left bottom). Especially the first two modes show large bending for higher energy levels, while the remaining modes only display small displacements in Cartesian space due to the higher oscillation frequencies (Fig. 2D). The phase plot of each NNM for the respective dominant motion direction (Fig. 2E) still verifies the expected nonlinearity for all modes except M6, which appears to adhere to the special case of a strict mode [38], [36], which in this case also resembles a linear mode (Fig. 2D) and orbits project to concentric ellipses in the phase plot (Fig. 2E). The Supplementary Methods Quantifying Nonlinearity of the Modes present more detailed quantification of the modes’ nonlinearity. In essence, we demonstrated that eBert ’s design encodes multiple distinct NNMs with large enough amplitudes, ex-pected to serve as foundations for different gaits. 
+
+B. Existence of modal oscillations on hardware 
+
+To prove the practical relevance of the NNMs to develop locomotion in robotic hardware, predicted dynamics computed from the conservative eBert model must be excitable and sustainable in the real system which is not energy-conservative and constantly loses energy, e.g., due to friction. Thus, while NNMs are theoretically optimally efficient, sustaining them in hardware requires a controller to compensate for energy losses. Therefore, we implemented a state-switching controller derived in previous works inspired by human control strategies [42], [43]. The controller functions analogously to pushing a playground-swing when it naturally comes to a halt on either side, avoiding motor commands during the system’s motion flow, which would disturb the natural dynamics. Alternative approaches, such as feedback-modulated CPGs [23], [29] or even feedforward control given the known system frequen-cies could also be used to excite the oscillations. However, prior work comparing the alternatives [44] showed the state-switching controller excites dynamics effectively with minimal tuning, motivating this choice for initial validation. The controller injects an empirically defined energy θz at the extreme points, where the robot’s oscillation naturally sub-sides and the combined spring deflection τz [42] is maximal. Crossing a threshold ϵτ near equilibrium armed the control trigger (Fig. 3A), waiting to inject energy when the next direction change was detected from the combined Cartesian body velocity ˙xb. The sign of θz depended on the oscillation direction according to 
+
+θz =
+
+
+
+−ˆθz if τz < −ϵτ and ˙ xb < 0,
+
++ˆθz if τz > ϵτ and ˙ xb > 0,
+
+0 otherwise .
+
+(2) The eigenvector w of each mode M1 − M6 (Tab. I, left) transformed the control signal back into joint space yielding a position command θosc for all joints (Eq. (12)). This position jump was simultaneously commanded to all motors to momen-tarily inject energy (Fig. 3A). As the robot moves back towards the middle, τz decreases until reaching a minimum near the system equilibrium, where crossing ϵτ armed or released the trigger depending on the motion direction (Fig. 3A). Refer to the Methods section Mode excitation controller for controller details, and Supplementary Material for chosen threshold values. Applying the state-switching controller in a eBert simulation with friction, and its hardware, successfully excited all six expected NNMs at distinct energy levels. Modes M3–M6
+
+remained with their small oscillation amplitudes in a regime, where they appear linear, although Figure 2 had verified that all but M6 become visibly nonlinear for higher energy levels. For the investigated regime, the simulations matched NNM predictions closely (Fig. 3B, orange), though hardware required higher energy due to more pronounced friction, resulting in slightly larger amplitudes (Fig. 3B, yellow). Due to the lower oscillation frequencies, the modes M1 and M2
+
+showed larger amplitudes entering the regime that exhibits pronounced nonlinear behavior with hysteresis effects in both simulation and hardware. This hysteresis may stem from a slight misalignment in the direction of energy injection at the turning points comparable to pushing the playground-swing off-center. Nevertheless, the oscillations in eBert remained stable, demonstrating the system’s inherent self-stabilizing behavior. Minor asymmetries in M2 and offsets in M5 were most likely caused by hardware imperfections. 6
+
+TABLE I 
+
+DESCRIPTIVE VALUES OF MODAL OSCILLATIONS OF eBert . V ALUES ARE PRESENTED FOR THE INITIAL STANDING POSE (LEFT ) AND THE CONFIGURATION USED FOR STEPPING FORWARD (RIGHT ) CALCULATED FOR THE CONSERVATIVE MODEL , IN SIMULATION WITH FRICTION (LIGHT GRAY ) 
+
+> AND FROM THE HARDWARE OF
+
+eBert (DARK GRAY ). 
+
+Standing Leg Config Stepping Leg Config 
+
+θ0,F = [ 0 .0, 0.4, −0.4] ⊤ θ0,F = [ −0.1, 0.4, −0.4] ⊤
+
+θ0,H = [ 0 .0, 0.4, −0.4] ⊤ θ0,H = [ −0.1, 0.4, −0.3] ⊤
+
+Mode Osc. Frequency in place [ Hz ] Osc. Frequency in place [ Hz ]
+
+conserv. model simulation hardware conserv. model simulation hardware 
+
+M1 (ytrans ) 0.99 0.99 0.8 1.05 1.02 1.07 
+
+M2 (xtrans ) 1.56 1.59 1.5 1.56 1.57 1.52 
+
+M3 (zrot ) 3.22 3.20 2.50 3.12 3.12 2.45 
+
+M4 (ztrans 3.70 3.99 3.60 4.00 3.39 4.42 
+
+M5 (xrot ) 5.88 6.09 5.30 5.88 7.01 5.76 
+
+M6 (yrot ) 8.33 8.79 6.60 8.33 10.57 7.21 
+
+Spring Exploitation η Stepping in Simulation 
+
+simulation hardware Forward Velocity [ m s −1] Frequency [ Hz ]dominant (underlying) 
+
+M1 (ytrans ) 0.86 0.65 0.054 4.13 (1.35) 
+
+M2 (xtrans ) 0.79 0.75 0.098 3.54 (1.74) 
+
+M3 (zrot ) 0.48 0.50 0.11 2.90 
+
+M4 (ztrans ) 0.49 0.81 0.15 3.60 
+
+M5 (xrot ) 0.25 0.44 0.34 3.77 (7.66) 
+
+M6 (yrot ) 0.16 0.33 0.17 10.35 
+
+Eigenvector of Linearized System w Stepping in Hardware 
+
+Forward Velocity [ m s −1] Frequency [ Hz ]
+
+x y z pitch roll yaw dominant (underlying) 
+
+M1 (ytrans ) [0 -0.27 0 0.96 0 0]⊤ 0.038 1.18 (3.63) 
+
+M2 (xtrans ) [0.46 0 0 0 0.89 0]⊤ - -
+
+M3 (zrot ) [0 0 0 0 0 1]⊤ 0.084 2.33 
+
+M4 (ztrans ) [0 0 -1 0 0 0]⊤ 0.11 3.60 
+
+M5 (xrot ) [0 0 0 0 1 0]⊤ - -
+
+M6 (yrot ) [0 0 0 1 0 0]⊤ 0.25 6.80 
+
+Comparing the mode frequencies of the ideal NNMs with simulation and hardware results (Tab. I, left), showed that oscillation frequencies remained of similar magnitude across all cases, preserving the predicted sequence from M1 to M6.However, oscillation frequencies in the simulation with friction were up to 6% higher compared to the ideal conservative model, likely due to the control slightly altering the natural dynamics. In contrast, hardware frequencies were consistently lower (Tab. I, left) likely because of unmodeled losses and actuation delays. The largest deviations (around 20%) occurred for M1, M3, and M6, whose substantial lateral shoulder motion suggests increased joint friction or delay in this direc-tion; all remaining modes stayed within 10% of the predicted values. Plotting the motor positions θ versus link deflections q
+
+confirmed resonant amplification of power across all modes, exemplified for mode M1 in Fig. 3C in simulation (left) and hardware (right). Calculating the percentage η of positive me-chanical work provided passively per cycle further quantifies the exploitation of natural mechanical responses (Tab. I, left) indicating a significant portion of the motion is passively generated, with some modes reaching η-values up to 80%. In summary, we confirmed that all six NNMs predicted for the conservative model of eBert could be reliably excited and sustained in the hardware with minimal control largely preserving the system’s intrinsic dynamics. 
+
+C. From modes to locomotion 
+
+After validating the predicted NNMs in the eBert hardware, we finally test our hypothesis that each identified NNM may serve as foundation for a gait inspired by the biological concept of embodied intelligence [10], [13]. To this end, we gradually ramp up the energy injection with the state-switching controller to increase each mode amplitude until eBert starts lifting its feet (Supplementary Video 1). Commanding the free legs forward, we expected the robot to naturally fall 
+
+into gaits driven by resonances of its intrinsic dynamics. Since NNMs are only defined for conservative, stable systems like the constrained standing pose analyzed previously, the NNM theory no longer strictly applies now. Still, the modes capture dominant coordination patterns shaped by the robot’s geometry, inertia, and elasticity - properties persisting despite contact changes. Thus, NNMs computed from the symmet-ric standing pose serve as proxies for the robot’s natural movement tendencies. This mirrors biological observations, where gaits reflect body resonance despite changing contacts [10], [13], motivating NNMs as foundation for locomotion 7B 
+
+> 56-5.7 05.7
+
+C   
+
+> 056
+> -2.3 02.3 time[s] hip knee shoulder time[s]
+> θFL
+> θFR
+> qFL
+> qFR computed NNM simulation hardware
+
+M1 M2
+
+> -2.3 2.3
+
+M3
+
+M6M5M4
+
+mode M3   
+
+> 0.0 1.0 2.0 -1.0 -2.0 τz
+
+A
+
+> -0.4 -0.8 0.0 0.4 0.8
+> .
+> body velocity  xb
+
+mode M1                 
+
+> z
+> combined torque threshold turning points
+> position [deg]  position [deg]  position [deg]
+> Fig. 3. Excitation of the NNMs in the hardware with a state switching controller. (A) State machine of the switching control to sustain the modal oscillations in the simulation and hardware exhibiting friction, conceptually visualized for mode M1.(B) Overlay of the computed NNM of the conservative system with the Gazebo simulation and hardware system, which both incorporate friction effects. The motions of each mode M1−M6are plotted on the respective relevant axes. (C) Example plot for the joints of one robot leg (top: shoulder, middle: hip, bottom: knee) taken from the oscillation of M3in simulation (orange) and hardware (yellow). The commanded motor signals θand the robot’s measured link position qare plotted for each joint, visualizing the amplification created by the resonance effects of the spring.
+
+beyond ideal conditions. For the same reason, we relaxed the symmetric standing pose and considered more walking-oriented postures, where the COM is slightly shifted to aid falling forward [45] and feet slightly turn outward to enhance stability [46]. Following a posture grid search (detailed in the Supplementary Materials), the eBert ’s leg joint configuration for locomotion was set to 
+
+θ0,F = [ −0.1, 0.4, −0.4] ⊤rad ,
+
+θ0,H = [ −0.1, 0.4, −0.3] ⊤rad . (3) The linearized eigenvectors were recomputed for the adapted leg configuration to guide the direction of the controlled energy injection and estimate the expected motion frequencies. Consistent with earlier results (Tab. I, left), the oscillation frequencies in hardware remained slightly lower than in sim-ulation (Tab. I, right). Gradually increasing energy during mode excitation in this new configuration, eBert began to lift its feet in specific patterns in each mode (Fig. 4A, C). The foot pairs lifting simultaneously corresponded to symmetries in the linearized eigenvectors (Supplementary Tab. S1), suggesting that NNMs not only capture global body oscillations but also indicate which foot pattern aligns with each mode. For example, the lateral rocking motions of M1 and M6 resembled the side-to-side swing of pace-gait seen in camels. The forward-backward motions of M2 and M5 aligned with simultaneous front-hind leg movements, typical of bounding in squirrels. Diagonal coordination in M3 suggested trotting as in horses, while vertical translation in M4 enabled hopping, observable in springboks (Fig. 4C). To realize the forward stepping with the identified foot pat-terns, the state-switching controller was extended to command swing-leg motion whenever eBert crossed the equilibrium, i.e., when weight shifted between foot pairs. The step command was retained until the next crossing, which triggered stepping of the opposite pair. Thus, the controller both sustained the mode oscillations and generated forward stepping (Fig. 4B, Supplementary Video). For controller details, see Methods 8B
+
+## C
+
+D
+
+> t = 0 s t = 10 s
+
+5 5.5 6 6.5 7 7.5 8time [sec] -4 -2 024
+
+> trigger
+
+time [sec] 0 1 2 3
+
+> latent space signal
+
+## A
+
+MMMMMM    
+
+> 00.5 11.5 2x [m]
+> 0
+> y [m]
+
+M1 M2 M3 M4 M5 M6      
+
+> 00.5 11.5 2x [m] -0.4 00.4
+> y [m]
+> -0.4 0.4 simulation hardware
+
+## E
+
+bang signal step signal 
+
+> z
+
+Fig. 4. Each NNM suggests a matching step pattern to develop a locomotion gait. (A) Definition of the feet naming of the robot with arrows indicating the direction of the step trigger (blue/pink) and bang-signal (orange). (B) Control signals commanded in 1D-control space to trigger the bang-bang signal (yellow) and forward steps (blue/pink) based on the combined torque signal of all joints τz and the body velocity. (C) For each mode, M1 − M6, a matching step pattern can be identified, where a binary encoding can express which feet move together. (D) Visualization of the robot moving forward in a pace-like gait developed from M1 indicating the motion of the right foot pair. (E) Top view of the robot’s COM moving forward is based on the oscillations of the different modes in simulation (left) and hardware (right). 
+
+Stepping Controller and Optimizing step length .With the minimal control intervention, each intrinsic mode evolved into a gait in eBert (Fig. 4C-E), where the respec-tive gaits’ forward velocity appeared to correlate with the frequency of the underlying mode (Tab. I, right). Interestingly, modes with differing frequencies but same foot pairing, like 
+
+M2 and M5, produced different gait expressions: M2 resulted in slow bounding gait with alternating front-hind contact, while M5 produced a faster, hopping-like bound (see Supple-mentary Video 1). An exception to the relation between mode frequency and forward velocity was only M6 in simulation, where the foot contact appeared too short to establish steps, 9
+
+causing the system to “vibrate” forward rather than walk. In hardware, the modes M1, M3, M4, and M6 produced the predicted gaits from simulation, with M6 stabilizing into a gait likely due to friction increasing ground contact. Overall, the gaits in hardware exhibited slightly reduced frequencies and step speeds compared to simulation (Tab. I, right). The modes M2 and M5, both involving motion about the y-axis, could not fully develop into gaits in hardware, because high torques in the hind legs’ hip and knee joints caused unforeseen slippage in the belt transmissions. Although the actuators were designed to withstand these loads, the transmission slippage prevented sustained locomotion. Notably, some gaits, like M1,exhibited two frequency peaks during stepping (Tab. I, right). In all gaits in simulation and the ones realizable in hardware, one peak aligned with the expected frequency of the pure modal oscillation, while the second frequency peak was likely induced by the step-driven energy input. The combined findings support our hypothesis that intrinsic system dynamics, like NNMs, provide a promising foundation for generating distinct gaits in purposefully designed robots such as eBert . Unique gaits naturally emerge from different modal oscillations, shaped by their frequency and direction. III. D ISCUSSION AND OUTLOOK 
+
+Motivated by the biological principle of embodied intelli-gence, we explored whether nonlinear normal modes (NNMs) as a specific form of nonlinear dynamics may underlie nat-urally emerging gaits in robotic locomotion. To test this, we developed the elastic quadruped robot eBert as a unique test platform encoding multiple slow, large-amplitude oscillations. Established template-based approaches, such as the SLIP-inspired Raibert hoppers [47], Thumper [26], ATRIAS [48], and Cassie [49], exploit passive dynamics by shaping and stabilizing limit cycles within the Hybrid Zero Dynamics framework. In contrast, we pursued a fundamentally different perspective that engages the full mechanical system rather than relying on reduced-order templates. This leads to dynamically consistent orbits that emerge naturally and are well-suited to stabilization via simple controllers, as we demonstrated in one-dimensional [42] and multi-dimensional systems [50]. The purposeful design of eBert was enabled by our recently developed methods identifying six distinct NNMs within the 12-DOF robot, which could be excited in both simulation and hardware using a simple state-switching controller supporting the robot’s natural dynamics. Remarkably, when this controller was extended to trigger steps in distinct foot pairs matching respective modal oscillations, on flat ground each NNM natu-rally unfolded into a gait without complex planning or precise foot placement in simulations, which largely translated to the hardware. Motion amplification from motor to link (Fig. 3) and the metric η (Tab. I) quantified that mode resonances were successfully excited, indicating efficient use of elastic me-chanics. While eBert ’s stepping resembled biological gaits in temporal and spatial foot-contact symmetries, the gaits’ energy efficiency was not yet evaluated nor were the relationship of arising stride length, forward velocity, and dynamic coupling, compared to biological or robotic counterparts. Rather, this work showed that embodied intelligence in robots need not precisely replicate biological form, but intentionally shaping intrinsic dynamics can exploit this principle for functionally equivalent multi-gait emergence. Nevertheless, future inves-tigations on explicit control are needed to address how the different emerging gaits can be shaped to vary characteristics like step length and gait velocity along with performance evaluation of efficiency and stability across regimes and in more complex environments. 
+
+A. eBert as Test Platform for Embodied Intelligence eBert presents a new unique platform implementing very high compliance encoding multiple nonlinear resonances in different directions, from which multiple diverse gaits devel-oped expanding works on other bioinspired robots like BirdBot [18], Morti [29] and PAWS [30], where gaits were constrained to the sagittal plane. Our robot design was guided by principles of Gan et al. [51], suggesting massless legs for energy conser-vative gaits. Accordingly, eBert ’s light legs (under 10% of total mass) minimize impact losses during foot–ground contact and preserve the system’s intrinsic dynamics allowing the main body to dominate motion behaviors. This mirrors biology, where fast-running animals like cheetahs have slender limbs supporting rapid repositioning. However, robots lack biological tissue complexity and neu-romuscular control to stabilize motions, making lightweight legs prone to vibrations during lift-off limiting passive dynam-ics exploitation, particularly complicated by soft SEA springs, during flight phases [50]. Quasi-direct drives generating virtual elasticities could address this issue, allowing more precise foot coordination during flight since previous works confirmed that our dynamics analysis methods remain valid for stiff actuators, where NNMs and other periodic orbits similarly reduce energy expenditure [37], [52], [53]. Nevertheless, eBert intentionally embedded nonlinear dynamics through mechanical springs to minimize control and focus on the role of intrinsic mechanics in locomotion. Notably, different from cheetahs and eBert , many large terrestrial animals also feature heavier, proximally loaded limbs [15], such as muscular horse thighs. This anatomical configuration enhances stability and force production, by en-abling greater inertial control during flight-stance transitions and reducing reliance on active control through momentum-driven passive stabilization [30], [54]. Thus, such mass distri-butions in robots could also enhance embodied intelligence, as demonstrated by BirdBot [18] and PAWS [30], which in-corporated biological leg mechanisms and weight distribution with actuation synergies leading to gaits that purposefully exploited leg dynamics. However, this approach demands detailed analysis of biology through methods like cadaver studies. Better general understanding biological principles and ways to embed them in robots without replicating specific biological mechanisms would be more scalable. Our related work [55] demonstrated that NNMs can also be encoded in a system with heavier legs, which could facilitate smoother oscillation transitions and improved contact dynamics without 10 
+
+relying on biological data. Future elastic quadrupeds could explore varied mass distributions to balance mechanical sim-plicity with bio-inspired effectiveness, which can be supported by our presented analysis tools. 
+
+B. Applicability of Conservative NNMs to Robotic Hardware 
+
+Our analysis methods could identify six NNMs in the conservative eBert model with grounded legs, where especially the first two modes ( M1, M2) showed pronounced nonlinearity with large deflections (Fig. 2) which is not predictable through linearization. In theory, NNMs represent self-sustaining oscil-lations requiring no external energy; in practice, friction and motor dynamics distort system behavior, necessitating active control to drive oscillations. Evidently, excited modes in the simulation and hardware with friction shows discrepancies to the idealized conservative NNMs predicted with our tools (Fig. 5). Despite these deviations, prior work [44], [50] and the eBert experiments showed that the dynamics derived for the conservative system still dominate the behavior of the compliant quadruped even when applying minimal discrete control interventions. Although improved methods will be needed for the transition from the ideal conservative model to real systems, NNMs prove their practical relevance and may serve as useful principle to shape and optimize intrinsic robotic dynamics [36]. 
+
+C. Limitations of Excitation Methods and Control Approach 
+
+The original state-switching controller design [42] injected energy near a system’s equilibrium where linearized mode vectors characterize motion direction. However, applying this controller to the real eBert hardware required adaptations as commanding the energy injection near the equilibrium caused slight disturbances in the motion flow due to the motors’ delayed following of the instantaneous signals, which disturbed the natural dynamics. Tests showed that initiating the motor command at NNMs’ turning points instead, where motions naturally come to a halt, reduced disturbance of the natural oscillations. However, this adjustment caused a downside: linearized eigenvectors approximate energy injection direction only near equilibrium [35], [52], thus not remaining valid at the NNMs’ turning points, especially for the highly nonlinear modes M1
+
+and M2 at larger deflections. This caused observable hysteresis when exciting these modes in hardware (Fig. 3). Despite this, the simple state-switching controller remained effective due to the brief energy injection duration and the intrinsic mechanical dynamics dominating the motions. Nevertheless, further ways to excite NNMs in hardware should be explored such as alternative control approaches like pure or feedback-modulated CPGs [33] or learning-based oscillators [39]. Prior work had compared the differences of the state-switching controller versus different CPG-versions to excite modes in a single 2-DOF leg of an earlier bert -robot [44], while on-going research is currently comparing their performances on 
+
+eBert . Nevertheless, the state-switching controller remained a viable choice for the presented initial investigations because it allowed the robot’s intrinsic mechanics to govern motions while primarily compensating friction. 
+
+D. Potential of Gaits emerging from NNMs 
+
+Regardless of control method for mode excitation (state-switching, CPGs, or learning-based approaches), NNMs seem to offer physics-grounded coordination priors linking structural compliance to feasible motion patterns. In eBert , foot-pair coordination that enabled forward stepping emerged directly from linearized eigenvector symmetries, with only step width learned via black-box optimization. The resulting gait shape appeared largely shaped by the underlying NNM, and the individual observations suggest that there may exist also a relationship between the gait velocity and frequency of the modal oscillations, consistent with biology where animals prefer different gaits for different speeds [12], [13]. Therefore, the NNMs present a structural constraint naturally reducing coordination search spaces and aligning the robot’s mechanical DOFs, illustrating how modal structure can guide control strategies without prescribing them exclusively. However, it is important to clarify that NNMs represent invariant manifolds that organize phase-space behavior around natural frequencies, rather than standalone motion generators. NNMs are formally only defined for smooth, conservative systems with fixed boundary conditions, while quadrupedal lo-comotion is inherently a hybrid process involving intermittent ground contact, friction, and state-dependent energy exchange. Consequently, a strict mathematical equivalence between the conservative NNM manifold and the observed hybrid gait attractors does not exist. Instead, we conceptualize NNMs as intrinsic coordination templates encoding preferred phase relationships, symmetries, and joint-space trajectories. Unlike reduced-order templates like the SLIP model, where gaits emerge explicitly from hybrid dynamics [56], the conser-vative NNMs only provide a lower-dimensional morphological scaffold without replicating impact physics. Nevertheless, our experiments suggest that NNMs still serve as valid proxies for natural movement tendencies in the hybrid case. Related work on an alternative 8-DOF bert -version demonstrated closer resemblance to the reduced-order templates drawing a formal link between conservative the modal structure and hybrid gaits by identifying and exciting periodic orbits across entire gait cycles [50]. Consequently, our proposed framework covers neither all possible limit cycle types nor ways to actuate or control them; rather, it shows how exploiting intrinsic dynamics in the form of NNMs, can reduce control burden and enhance robustness in compliant systems. 
+
+E. Robotic Design aided by Intrinsic Dynamics 
+
+Our research suggests that analyzing natural dynamics like NNMs during mechanical design offers new avenues for robot optimization by accounting for physical constraints and design limitations early on. A key advantage of the NNM framework over linear modal analysis is its predictive power for large-amplitude, multi-directional dynamics. Linear modes only describe behavior near equilibrium, but tools like our NNM framework reveal how modes that may appear linear for small amplitudes like M3 − M6 (Fig. 3) behave for larger energy-levels (Fig. 2). This aids designers to anticipate which modes 11 
+
+will be stable and exploitable for intended motion patterns before building the robot. Although experiments with eBert verified that identified dynamics influence movement beyond conservative assump-tions, they also revealed limitations of our applied design approach. By analyzing only the conservative model, we did not account for the full actuation chain, leading to belt slippage in M2 and M5 despite sufficient motor torque preventing us to realize these modes in hardware. This highlights the need for more robust methods to bridge from the analysis of idealized models to hardware. Thus, future implementations for automated co-design frameworks should treat mechanical dynamics as active learning priors [57]. This can be supported by our methods [37], [52], which were unavailable during 
+
+eBert ’s early development stage, but now offer a powerful framework for such design analysis of robots when extended to include full actuation chains. However, we emphasize whether dynamics like NNMs is 
+
+functional or efficient remains fundamentally task-dependent. While eBert provides a compelling research platform for exploring embodied intelligence, its design highlights key trade-offs that may not suit commercial quadrupeds. Although 
+
+eBert ’s high compliance enables diverse exploitable intrinsic dynamics with inherent impact resilience, the same compliance can reduce structural rigidity and complicate control. While our work demonstrates the possibility to develop locomotion from intrinsic oscillations, it lacks rigorous evalua-tion across varying controllers, perturbations, and unstructured environments. Future research is required for a systematic evaluation comparing elastic, dynamics-driven robots with conventional stiff-control systems, which needs quantifiable metrics to scope the potential and limitations of exploiting intrinsic dynamics. The analytical framework presented here can be extended for such comparisons as the methods are ap-plicable to various architectures, including soft robots, tendon-driven systems, and gravity-driven rigid designs [52], [58] In essence, the proposed methodologies suggest a promis-ing direction for future robotics: designing machines where mechanical structure and control co-evolve such that motion arises from physical intelligence rather than from indepen-dently scripted commands. Future work aims to extend the NNM framework for task-driven co-design to parameterize the search space over leg compliance, mass distribution, and joint coupling by using NNMs or other intrinsic motion patterns as dynamic priors or stability constraints. Learning from the limitations of our current platform, like the transmission con-straints, nonlinear dynamics predicted by our methods should guide mechanical design decisions rather than only be applied to idealized models. This can support automating discovery of morphology–controller pairs optimized for specific locomotion objectives (e.g., rough-terrain compliance, energy-minimized steady-state gaits, high-speed running). Aligning with embod-ied AI paradigms seeking to close the loop between physical design, intrinsic dynamics, and adaptive control, this could enable robots whose bodies and brains co-emerge through task-aware co-evolution [59]. Our work supports this vision by presenting a framework for robot design with predictable embodied motion patterns and demonstrating the applicability of NNM analysis to real hardware in the 12-DOF quadruped 
+
+eBert , where locomotion emerged from encoded mechanics with minimal control. IV. M ETHODS 
+
+A. Design for Purposeful Oscillations in eBert 
+
+The eBert design followed previous versions of an 8-DOF 
+
+bert -quadruped to investigate intrinsic modal oscillations [60], which were based on insights of [51]. Consequently, the robot kinematics and mass distribution were designed such that the foot tip elasticity in the sagittal plane corresponded to the assumptions in [51]. The robot dimensions were based on the body size of a small dog [61] with two leg segments, each having a length of 120 mm (Fig. 5A). The weight was estimated to be 4.5 kg , aiming to keep the total system mass low to minimize energy consumption. Based on these size and mass assumptions, the robot legs were designed. 
+
+Kinematics: eBert was designed with a bi-articular cou-pled drivetrain for the hip and knee joints (Fig. 5B), tested in the previous bert versions [60]. This allowed the arrangement of the motors for the hip and knee off-axis in the shoulder module (Fig. 5A) to keep the mass of the legs minimal. This coupling also implemented an equal load sharing between the hip and knee motor. It aligned the principal axis of the stiffness ellipsoid with the legs’ longitudinal axis (Fig. 5B). 
+
+Stiffness Approximations: Based on the size and mass estimations and the given kinematics, the stiffness of all joints of eBert was estimated. The compliance design is non-trivial since it determines the trajectories and frequencies of the natural oscillations. Ideally, these oscillations should have frequencies with amplitudes that match the body dimension to facilitate effective and useful movement patterns. During the design phase of eBert , the methods to predict nonlinear oscillations from [35], [37], [52] were not yet fully developed and validated. Therefore, we explored bio-inspired designs, where the leg stiffness of animals can be related to their speed, size, and body mass according to [40, page 11, caption of Fig. 3]. 
+
+Kleg = 0 .715 M 0.67 ±0.15 kN m −1 , (4) where Kleg is the combined leg stiffness of two legs assumed to be in contact, and M refers to the mass of the system. The estimated total mass m = 4 .5 kg led to a value of 
+
+Kleg =1 .96 kN m −1. Projecting the stiffness in the knee with a leg segment length of l = 120 mm and assuming a normal knee angle qknee = 0 .5 rad , we obtained: 
+
+Kknee = Kleg l2 sin 2(qknee ) = 6 .48 N m rad −1 . (5) Respecting the actuation kinematics, the closest available spring stiffness of K = Kknee = Khip = 6 .55 N m rad −1
+
+was implemented in the robot’s hips and knees. To estimate the shoulder stiffness, we analyzed the reflected Cartesian stiffness of the overall system and assessed its local stability. The analysis assumed a configuration where the shoulders remained at the neutral position, ensuring no static torque on them, with the leg springs Khip , K knee and their corresponding rest positions qhip , q knee . Under the effect 12 base 
+
+> leg module
+> thigh
+> shank
+
+knee axis 
+
+hip axis 
+
+> shoulder axis
+> 330mm 120mm
+
+180mm 
+
+knee drive pulley 
+
+A B summing pulley synchonous belt stiffness ellipsoid 
+
+> modified Savöx servomotors pulley drives coaxial hip and knee drive shaft on hip axis series elastic spring module
+
+C        
+
+> Fig. 5. Overview of the kinematics and drivetrain of the newly designed eBert robot. (A) Kinematic chain with rigid body base, leg module, thigh and shank, joint names, and key dimensions. (B) Orientation of the resulting stiffness ellipsoid with respect to the leg geometry as a result of the bi-articular coupling drivetrain transferring the summed motion of the hip joint and knee motor to the knee joint via a synchronous belt drive. (C) Drivetrain elements inside a leg module.
+
+of gravity, this setup led to an equilibrium pose xeq of the trunk at a height of 18 .2 cm , with hip and knee joint angles of approximately 0.77 rad . With q denoting the joint angles, we expressed the reflected Cartesian stiffness Kx ∈ R6×6 [62] in trunk coordinates as 
+
+Kx = J⊤
+
+> qx
+
+Kq Jqx , Kq = ∂2V∂q2 qeq 
+
+, Jqx = ∂f ik 
+
+∂x xeq 
+
+, (6) 
+
+where qeq = fik (xeq ) represents the inverse kinematics solution with fixed feet, and Jqx its Jacobian. A linear sta-bility analysis indicated that achieving a marginally stable equilibrium at xeq , characterized by eigenvalues with real parts approximately zero, necessitates a shoulder stiffness of at least 4 N m rad −1. To achieve a similar reflected Cartesian stiffness in the X and Y directions, i.e., K(1 ,1)  
+
+> x
+
+≈ K(2 ,2)  
+
+> x
+
+, a shoulder stiffness of approximately 9.6 N m rad −1 is required. Increasing the shoulder stiffness beyond this value raises the stiffness in the Y direction, which promotes sagittal motion rather than excessive lateral oscillations. Thus, to obtain sym-metric rotational stiffness in the shoulders, guarantee stability, and encourage forward locomotion, we chose 13 N m rad −1
+
+for the shoulder springs resulting in a stiffness matrix for all joints of 
+
+Kq =
+
+ 13 .1 −6.55 
+
+−6.55 6.55 
+
+
+
+. (7) 
+
+Energy considerations: To estimate the robustness of the 
+
+eBert system, the mechanical energy storage capability of the springs was considered. The equal distribution of gravitational forces on all joints in the sagittal plane, i.e., hip and knee joints, allows the assumption that all the engaged springs contribute equally to vertical energy storage. This entails that all the energy stored in the springs of the knee and hip joints, here denoted K = 6 .55 N m rad −1, can be released to counteract gravity: 
+
+mgh = 12K nτ 2max (8) where τmax is the joint max torque in Tab. S2. Considering all joints acting in the sagittal plane ( n = 8 ) gives an estimate of the robustness of the system against falling: 
+
+h = τ 2max nKmg . (9) Substituting the relevant values for mass and stiffness revealed that eBert should be robust to impacts from 59 .6 cm without exceeding the allowable torque. 13 
+
+Details on the realization of the system design in robotic hardware can be found in the Supplementary Methods Robotic Implementation . The total weight of the completed robot of 
+
+4.56 kg matched well the initial bioinspired approximations. However, when adding the battery of 0.65 kg , the completed system was slightly heavier, with 5.2 kg . All final dimensions of eBert are summarized in Fig. 5A and the Supplementary Table S2. 
+
+B. Simulation model and pipeline 
+
+For initial validation and testing, a multibody system model was derived from the CAD data of the eBert hardware to simulate the system using Gazebo 11 with the default ODE solver. For the initial mode excitation, the robot’s feet were constrained to the ground by ball joints, while later these joints were removed such that the robot could lift its feet to develop locomotion. No dedicated motor model was implemented in the robot simulation. Still, a velocity limiter was applied to the motor signal in simulation and hardware alike, such that the behavior closely matched. The model inputs and outputs were defined according to the hardware’s available interfaces so that an identical control framework implemented in MATLAB Simulink could be used. The motor position control of the SEA-drive train in hardware was simulated with a PD-controller, where the P-gain corresponded to the spring stiffness kj in each joint j, and the D-value applied a damping 
+
+dj = 0 .02 kj to approximate hardware friction effects. Thus, commanded motor positions were relayed to the simulated robot joints analogous to the SEA-driven hardware. A deflec-tion limiter was also applied in hardware and simulation to protect motors from physical overloads above the 5 N m set as a limit during the design phase. Positions and velocities of the motors and links were available as feedback in simulation and hardware. As middleware, the DLR-developed Links and Nodes was used [63]. 
+
+C. Nonlinear modal analysis 
+
+To identify the nonlinear modes of the quadruped robot, we utilize a conservative model based solely on the interaction of multi-body dynamics with gravitational and elastic forces. To find the modes of the mechanical system, we remove the motor dynamics by fixing the motor positions to the rest configuration of the springs, and we fix the feet to the ground. Starting from the eigenvectors of the linearized system, we find the nonlinear modes of the quadruped using numerical continuation. The procedure is detailed in the section Nonlin-ear modal analysis of the Supplementary Material. 
+
+D. Mode excitation controller 
+
+NNMs extend the concept of linear normal modes, which characterize motions in linear systems or small-amplitude oscillations in nonlinear ones. In linear modes, all components oscillate at the same natural frequency and with a constant phase relationship. Exciting modes at their natural frequency induces resonance, which efficiently transfers energy into the system, leading to an increasing amplitude. Local linear modes of eBert can be identified by linearizing the equations of motion around an upright standing position, yielding a multi-dimensional second-order system decomposed into n modal oscillators. From these, our methods can compute their nonlin-ear extensions by numerically continuing solutions as energy increases. This extends the concept of modes as a “vibration-in-unison” of all masses [64]. Details for computing the NNMs of eBert can be found in the Supplementary Material section 
+
+Nonlinear modal analysis .The controller to excite and sustain the predicted NNM oscillations in a hardware system with friction was based on our previous research that deduced a simple switching control law from observations of human strategies to induce intrinsic system oscillations [42]. The control approach allowed for the orchestration of multiple joints with a single signal by linearly transforming sensory input from a multi-dimensional joint space into a one-dimensional controller space [42]. The needed transformation weights w could be extracted with a learning rule that was mathematically equivalent to Oja’s rule ,which showed that the weights converged to the mode vector of the linearized system for close-to-optimal energy-efficient movements [65]. It was validated in various elastic robots, a biomimetic robotic arm [42], and a hopping leg [65], [66], as well as a previous bert version [67]. Additionally, simulations [68] and a human subject study supported the hypothesis of a similarly functioning effect in humans to control dynamic body movements [43]. Applying this control law to the 12-DOF eBert , required to calculate the torques τ in each joint based on the measured motor positions θ and link positions q using the known spring stiffness matrix K:
+
+τ = Kq (θ − q) . (10) Using the eigenvectors w of the linearized system for the different modes M1−6 as stated in Tab. I, the individual joint torques can be mapped into a one-dimensional control space expressed as the scalar value τz that combines all joint torques: 
+
+τz = 1
+
+|| w|| wTτ . (11) Within this control space, the trigger signal ˆθz was set accord-ing to Equation (2), which detected the point on which the state-switching controller should inject energy by monitoring the combined Cartesian body velocity ˙xb, which flipped the sign at the return points where the oscillation in one direction naturally subsided. The vector w corresponded to the respec-tive mode vector of the linearized system listed in Table I and the chosen parameter values for ˆθz and ϵτ can be found in the Supplementary method section Control Parameters for the Mode Excitations .Applying the vectors w of the linearized modes as trans-formation weights again, ˆθz was mapped back to joint space, providing a position command θosc for all joints: 
+
+θosc = w
+
+|| w|| θz . (12) This position command was added to the initial position of the motors θ0 that combines the joint commands to the individual 14 
+
+legs θ0 = [ θFR ,0, θFL ,0, θHR ,0, θHL ,0]. Thus, the combined signal θcmd to sustain the mode oscillations became 
+
+θcmd = θ0 + θosc . (13) 
+
+E. Quantifying the exploitation of nonlinear resonance 
+
+To quantify the contribution of the natural mechanical response to achieve motion, we define the efficiency η as the ratio of positive work performed by the actuator to the positive joint work [69] 
+
+η = 1 −
+
+R T max( ˙θ⊤τ , 0) d t
+
+R T max( ˙ q⊤τ , 0) d t . (14) This indicates the percentage of positive work that can be provided passively in a cycle. A value of 1 corresponds to perfect exploitation of the nonlinear passive dynamics, while a value of 0 means that the control is not taking advantage of the mechanics. It was used in [69] to assess mechanical efficiency in single-legged robotic hopping, and it can also serve to compare performance across different robots and against animal in-place hopping. Applied to eBert , the calculated values suggest that the nonlinear passive dynamics were exploited across all modes in simulation and hardware, although with varying percentage (Tab. I). 
+
+F. Initial joint configurations 
+
+To initially analyze and validate the NNMs in eBert , a symmetric configuration was chosen, commanding identical motor positions to all joints per leg in eBert as stated in Equation (1). However, as stated in the Results section From modes to locomotion , a more natural pose was assumed to discover locomotion based on the known characteristics of dogs, where the COM is slightly shifted to the front and the feet are turned outwards [45]. For such poses, a grid search over varying initial configurations was carried out, always assuming that all feet remained attached to the ground. As expected, the dedicated NNM shape and frequencies varied with the different configurations; however, the overall motion patterns and frequencies of the identified modes M1−6 always remained similar. Applying the aforementioned state-switching controller to the different configurations in simulations re-vealed that for some configurations, the inclined robot body pose was already sufficient to realize a forward motion without adding steps. Taking the covered distance in simulation for each mode as a metric to judge the suitability of a configura-tion for locomotion, eventually, the joint configuration stated in Equation (3) was determined as most promising. Details on the grid search can be found in the Supplementary Methods 
+
+Determining Initial Configuration for Locomotion .
+
+G. Encoding of modal feet couplings 
+
+For each modal oscillation, a foot pairing that naturally matched the intrinsic motion could be extracted from sym-metries of the linearized eigenvectors in joint space (Supple-mentary Tab. S1). The derived pairing of feet that should move simultaneously based on these symmetries per mode (Fig. 4B) could be expressed through a binary vector. Thus, the feet that were derived to move together were encoded with a 1,while the other foot pair was encoded with 0. For example, the motion along the y-axis manifested in the modes M1
+
+and M6 (Fig. 2C) suggested moving the two feet on the left simultaneously in an alternate fashion with steps from the two right feet. The corresponding binary stepping vector bstep was thus: 
+
+[HL , FL , FR , HR] = [0 , 0, 1, 1] = bstep (m1) . (15) The motions of M2 and M5 around the y-axis proposed to move the front feet pair alternating with the back feet, leading to a bounding-like gait ( bstep = [0 , 1, 1, 0] ). The rotation around the z-axis realized by mode M3 suggested the diagonal feet pair to be simultaneously weight-bearing, similar to the step pattern in trotting horses. Thus, the front right leg is moved with the hind left leg, and the front left with the hind right leg ( bstep = [1 , 0, 1, 0] ). Exciting the fourth mode M4
+
+naturally led to a hopping motion, where all feet lifted from the ground simultaneously. Here, the robot’s body inclination sufficed to create a forward motion, such that no dedicated step had to be commanded for this mode ( bstep = [1 , 1, 1, 1] ). 
+
+H. Stepping Controller 
+
+The state-switching controller was extended to trigger the alternating forward stepping of the identified foot pairs for each modal oscillation of eBert to develop locomotion pat-terns. As in Equation (2), this step command sf eet was triggered in the 1D control space to apply a step whenever the robot shifted its weight from one foot-pair to the other. As trigger value, the earlier defined τz metric was used that combined the torques of all joints according to Equation (11). Since the combined torques should be at a minimum close to the equilibrium position, the same threshold value ϵτ of the initial state switching controller could be used to detect the zero-crossing where the robot’s weight support shifted from one foot-pair to the other. However, in contrast to the switching rule to inject energy in Equation (2), the step signal was applied independently of the Cartesian body velocity. Instead, crossing ϵτ directly triggered the step command sfeet 
+
+that encoded which leg pair should move forward. This step command had to be sustained until the robot next crossed the equilibrium position, where the robot’s weight shifted back to the feet that had previously stepped forward, freeing the opposite foot-pair. Thus, the corresponding switching rule was defined as 
+
+sfeet =
+
+
+
+bstep if τz > ϵ τ
+
+!bstep if τz < −ϵτ
+
+[0 , 0, 0, 0] otherwise 
+
+, (16) The step vector sfeet was multiplied with the determined step length encoded by defined values for the shoulder, hip, and knee joint of each individual leg, leading to a 4 × 3 matrix. Each row encoded the position change for the three joint motors of each leg to command a step, where the order of the rows remained [FR , FL , HR , HL] ⊤. Through the binary encoding, only one foot-pair was commanded to move, while 15 
+
+the zeros cancel the step term for the stance legs. Flattening the obtained matrix, the step positions θstep were added to the previously derived motor control for a combined position command of 
+
+θ = θ0 + θosc + θstep . (17) The applied parameter values for ˆθz and ϵτ with each mode can be found in the Supplementary method section Control Parameters for the Mode Excitations .
+
+I. Optimizing step length 
+
+To determine the step length fitting each modal oscillation, we used black-box optimization. The shoulder joint was as-sumed to remain in its plane, as stepping forward does not require leg abduction. Only the values for the hip and knee joints were changed to achieve a forward step. To further limit the search space, we took advantage of the robot’s sagittal symmetry, assuming the left and right legs would take the same step. However, since the robot was inclined forward, we optimized the front and hind legs separately. This resulted in optimizing two parameters for the front legs ( F ) and two for the hind legs ( H), giving a search space of four parameters: 
+
+θF, step = [0 , h F , k F ]⊤; θH, step = [0 , h H , k H ]⊤ , (18) where the parameters h and k refer to the hip and knee joints, respectively. In addition to optimizing the step length, we also relearned the scaling of the motor signal ˆθz since the added energy and motion from stepping forward required a smaller energy injection at the turning points compared to the value to maintain pure oscillations. Empirically estimated values for the parameters were as-sumed to start the optimization process. These values were optimized in simulation, where the robot was repeatedly ini-tialized and excited in the different mode oscillations. Next, the extended state switching controller was activated to add a step, starting the learning trial. Each simulation trial lasted 8 s , with the forward velocity serving as the objective function [39]. The used algorithm for the optimization was the covariance matrix adaptation evolution strategy (CMAES) [70] from the Optuna library [71]. For all modes, it took 100-200 simulation trials to find suitable step parameters that led to gait patterns realizing locomotion forward. Following, the optimization process for each mode was repeated directly on the hardware, starting from the simulation values. The determined step values for each mode can be found in the Supplementary method section 
+
+Control Parameters for the Mode Excitations .V. D ATA AND MATERIALS AVAILABILITY 
+
+All data needed to evaluate the conclusions of the paper are available in the paper or the Supplementary Materials. Additionally, the raw data of the robot trials in simulation and hardware are deposited on figshare accessible under https://doi.org/10.6084/m9.figshare.29514518 [72]. VI. C ODE AVAILABILITY 
+
+The code to analyze the provided data stated above can likewise be found in the same figshare repository acces-sible over https://doi.org/10.6084/m9.figshare.29514518. In this repository, you find the raw data recorded for the robot experiments in simulation and hardware as well as the nonlinear normal modes computed for the eBert robot using the methods detailed in the Supplementary Mate-rials. Additionally, we provide code to recreate the fig-ures of the manuscript. Furthermore, we provide sepa-rately the code to calculate the oscillation modes of the 
+
+eBert robot as detailed in the Supplementary Materials un-der https://github.com/anschm189/eBert_modes.git [73]. This repository visualizes the nonlinear normal modes of the quadruped model of eBert . While the underlying continuation algorithm was developed by Yannik P. Wotte, Filip Bjelonic, Cosimo Della Santina, and Arne Sachtler in previous work, the contribution of this manuscript is the eBert -compatible quadruped model and the code for its analysis and simulation developed by Davide Calzolari, which are new and specific to this work. The repository contains the full model and analysis pipeline for eBert. VII. A CKNOWLEDGEMENTS 
+
+The authors thank Yannik P. Wotte (University of Twente, Bergische Universität Wuppertal), Filip Bjelonic (ETH Zurich), and Dr. Cosimo Della Santina (TU Delft) for their support in developing algorithms used for the nonlinear modal analysis. Furthermore, the authors thank Dr. Michael Panzirsch and Dr.-Ing. Alexander Dietrich (both DLR) for in-ternal feedback on early manuscript versions. They also thank Nepomuk Werner for supporting the final code preparation. VIII. F UNDING STATEMENT 
+
+This research was supported by the European Research Council (ERC) through the European Union’s Horizon 2020 Research and Innovation Programme under Grant 835284 (M-Runners). IX. A UTHOR CONTRIBUTIONS STATEMENT 
+
+Conceptualization: F.L., D.S., M.H., T.G., A.A-S., R.B., D.C., An.S.; Methodology: Ar.S., A.R., F.L., D.S., M.H., T.G., A.A-S., D.C., An.S., M.P.; Investigation: F.L., D.S., M.H., T.G., D.C., R.B., F.S., T.E., A.R., An.S.; Visualization: A.R., An.S., Ar.S., M.P.; Funding acquisition: A.A-S., D.S., F.L.; Project administration: An.S., A.A-S.; Supervision: A.A-S.; Writing–original draft: An.S., D.C., F.L.; Writing–review and editing: An.S., Ar.S., D.C., F.L., M.K., D.W., M.P., D.S., A.R., T.E., J.L., A.A-S. X. C OMPETING INTERESTS 
+
+The authors declare that they have no competing interests. 16 
+
+REFERENCES [1] P. Biswal and P. K. Mohanty, “Development of quadruped walking robots: A review,” Ain Shams Engineering Journal, vol. 12, no. 2, pp. 2017–2031, 2021. [2] O. H. Chi, C. G. Chi, D. Gursoy, and R. Nunkoo, “Customers’ acceptance of artificially intelligent service robots: The influence of trust and culture,” International Journal of Information Management, vol. 70, p. 102623, 2023. [3] A. Fukuhara, M. Gunji, and Y. Masuda, “Comparative anatomy of quadruped robots and animals: a review,” Advanced Robotics, vol. 36, no. 13, pp. 612–630, 2022. [4] A. Zeffer, L. C. Johansson, and Å. Marmebro, “Functional correlation between habitat use and leg morphology in birds (aves),” Biological Journal of the Linnean Society, vol. 79, no. 3, pp. 461–484, 2003. [5] J. E. Niven and S. B. Laughlin, “Energy limitation as a selective pressure on the evolution of sensory systems,” Journal of Experimental Biology, vol. 211, no. 11, pp. 1792–1804, 2008. [6] F. J. Valero-Cuevas and A. Erwin, “Bio-robots step towards brain–body co-adaptation,” Nature Machine Intelligence, vol. 4, no. 9, pp. 737–738, 2022. [7] R. Pfeifer, M. Lungarella, and F. Iida, “Self-organization, embodiment, and biologically inspired robotics,” science, vol. 318, no. 5853, pp. 1088–1093, 2007. [8] R. A. Brooks, “New approaches to robotics,” Science, vol. 253, no. 5025, pp. 1227–1232, 1991. [9] R. Blickhan, E. Andrada, E. Hirasaki, and N. Ogihara, “Trunk and leg kinematics of grounded and aerial running in bipedal macaques,” Journal of Experimental Biology, vol. 224, no. 2, p. jeb225532, 2021. [10] J. P. van der Weele and E. J. Banning, “Mode interaction in horses, tea, and other nonlinear oscillators: The universal role of symmetry,” American journal of physics, vol. 69, no. 9, pp. 953–965, 2001. [11] Y. Kurita, Y. Matsumura, S. Kanda, and H. Kinugasa, “Gait patterns of quadrupeds and natural vibration modes,” Journal of System Design and Dynamics, vol. 2, no. 6, pp. 1316–1326, 2008. [12] D. F. Hoyt and C. R. Taylor, “Gait and the energetics of locomotion in horses,” Nature, vol. 292, no. 5820, pp. 239–240, 1981. [13] R. M. Alexander, Principles of animal locomotion. Princeton university press, 2003. [14] G. A. Cavagna and M. A. Legramandi, “Running, hopping and trotting: tuning step frequency to the resonant frequency of the bouncing system favors larger animals,” Journal of Experimental Biology, vol. 218, no. 20, pp. 3276–3283, 2015. [15] R. M. Alexander, Elastic mechanisms in animal movement. Cambridge University Press, 1988. [16] C. Della Santina, M. G. Catalano, and A. Bicchi, Soft Robots. Berlin, Heidelberg: Springer, 2020, pp. 1–15. [17] C. Zhang, W. Zou, L. Ma, and Z. Wang, “Biologically inspired jumping robots: A comprehensive review,” Robotics and Autonomous Systems, vol. 124, p. 103362, 2020. [18] A. Badri-Spröwitz, A. Aghamaleki Sarvestani, M. Sitti, and M. A. Daley, “Birdbot achieves energy-efficient gait with minimal control using avian-inspired leg clutching,” Science Robotics, vol. 7, no. 64, 2022. [19] K. Fründ, F. Beck, A. Shu, F. Loeffl, and J. Lee, “Bipedal running: Bioinspired fundamentals for versatile humanoid robot locomotion,” in 2023 IEEE-RAS 22nd International Conference on Humanoid Robots (Humanoids). IEEE, 2023, pp. 1–8. [20] S. Rutishauser, A. Sprowitz, L. Righetti, and A. J. Ijspeert, “Passive com-pliant quadruped robot using central pattern generators for locomotion control,” in 2008 2nd IEEE RAS & EMBS International Conference on Biomedical Robotics and Biomechatronics. IEEE, 2008, pp. 710–715. [21] J. Chen, Z. Liang, Y. Zhu, C. Liu, L. Zhang, L. Hao, and J. Zhao, “Towards the exploitation of physical compliance in segmented and elec-trically actuated robotic legs: A review focused on elastic mechanisms,” Sensors, vol. 19, no. 24, p. 5351, 2019. [22] D. Calzolari, C. Della Santina, A. M. Giordano, A. Schmidt, and A. Albu-Schäffer, “Embodying quasi-passive modal trotting and pronk-ing in a sagittal elastic quadruped,” IEEE Robotics and Automation Letters, vol. 8, no. 4, pp. 2285–2292, 2023. [23] A. J. Ijspeert and M. A. Daley, “Integration of feedforward and feedback control in the neuromechanics of vertebrate locomotion: a review of experimental, simulation and robotic studies,” Journal of Experimental Biology, vol. 226, no. 15, p. jeb245784, 2023. [24] T. McGeer, “Passive bipedal running,” Proceedings of the Royal Society of London. B. Biological Sciences, vol. 240, no. 1297, pp. 107–134, 1990. [25] R. Blickhan, “The spring-mass model for running and hopping,” Journal of Biomechanics, vol. 22, pp. 1217–1227, 1989. [26] I. Poulakakis and J. W. Grizzle, “The spring loaded inverted pendulum as the hybrid zero dynamics of an asymmetric hopper,” IEEE Transactions on Automatic Control, vol. 54, no. 8, pp. 1779–1793, 2009. [27] H. Geyer, A. Seyfarth, and R. Blickhan, “Compliant leg behavior explains basic dynamics of walking and running,” Proceedings of the Royal Society B, vol. 273, pp. 2861–2867, nov 2006. [28] M. Hutter, C. D. Remy, M. A. Hoepflinger, and R. Siegwart, “High compliant series elastic actuation for the robotic leg scarleth,” in Field Robotics. World Scientific, 2012, pp. 507–514. [29] F. Ruppert and A. Badri-Spröwitz, “Learning plastic matching of robot dynamics in closed-loop central pattern generators,” Nature Machine Intelligence, vol. 4, no. 7, pp. 652–660, 2022. [30] F. Stella, M. M. Achkar, C. Della Santina, and J. Hughes, “Synergy-based robotic quadruped leveraging passivity for natural intelligence and behavioural diversity,” Nature Machine Intelligence, pp. 1–14, 2025. [31] W. Xi, Y. Yesilevskiy, and C. D. Remy, “Selecting gaits for economical locomotion of legged robots,” The International Journal of Robotics Research, vol. 35, no. 9, pp. 1140–1154, 2016. [32] M. Raff, N. Rosa, and C. D. Remy, “Generating families of optimally actuated gaits from a legged system’s energetically conservative dynam-ics,” in 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2022, pp. 8866–8872. [33] A. J. Ijspeert, “Central pattern generators for locomotion control in animals and robots: a review,” Neural networks, vol. 21, no. 4, pp. 642– 653, 2008. [34] P. Ramdya and A. J. Ijspeert, “The neuromechanics of animal loco-motion: From biology to robotics and back,” Science Robotics, vol. 8, no. 78, 2023. [35] A. Albu-Schäffer and C. Della Santina, “A review on nonlinear modes in conservative mechanical systems,” Annual Reviews in Control, vol. 50, pp. 49–71, 2020. [36] A. Sachtler and A. Albu-Schäffer, “Strict modes everywhere–bringing order into dynamics of mechanical systems by a potential compatible with the geodesic flow,” IEEE Robotics and Automation Letters, vol. 7, no. 2, pp. 2337–2344, 2022. [37] F. Bjelonic, A. Sachtler, A. Albu-Schäffer, and C. Della Santina, “Experimental Closed-Loop Excitation of Nonlinear Normal Modes on an Elastic Industrial Robot,” IEEE Robotics and Automation Letters, vol. 7, no. 2, pp. 1689–1696, apr 2022. [38] A. Albu-Schäffer, D. Lakatos, and S. Stramigioli, “Strict nonlinear nor-mal modes of systems characterized by scalar functions on riemannian manifolds,” IEEE Robotics and Automation Letters, vol. 6, no. 2, pp. 1910–1917, 2021. [39] A. Raffin, O. Sigaud, J. Kober, A. Albu-Schäffer, J. Silvério, and F. Stulp, “An open-loop baseline for reinforcement learning locomotion tasks,” Reinforcement Learning Journal, vol. 1, 2024. [40] C. T. Farley, J. Glasheen, and T. A. McMahon, “Running springs: Speed and animal size,” Journal of Experimental Biology, vol. 185, no. 1, pp. 71–86, 1993. [41] S. Kim, C. Laschi, and B. Trimmer, “Soft robotics: a bioinspired evolution in robotics,” Trends in biotechnology, vol. 31, no. 5, pp. 287– 294, 2013. [42] D. Lakatos, F. Petit, and A. Albu-Schäffer, “Nonlinear oscillations for cyclic movements in human and robotic arms,” IEEE Transactions on Robotics, vol. 30, no. 4, pp. 865–879, 2014. [43] P. Stratmann, A. Schmidt, H. Höppner, P. van der Smagt, T. Meindl, D. W. Franklin, and A. Albu-Schäffer, “Human short-latency reflexes show precise short-term gain adaptation after prior motion,” Journal of Neurophysiology, vol. 132, no. 6, pp. 1680–1692, 2024. [44] A. Schmidt, B. Feldotto, T. Gumpert, D. Seidel, A. Albu-Schäffer, and P. Stratmann, “Adapting highly-dynamic compliant movements to changing environments: A benchmark comparison of reflex-vs. cpg-based control strategies,” Frontiers in Neurorobotics, vol. 15, p. 762431, 2021. [45] T. A. Johnson, W. J. Gordon-Evans, B. D. X. Lascelles, and M. G. Conzemius, “Determination of the center of mass in a heterogeneous population of dogs,” Plos one, vol. 17, no. 4, p. e0267361, 2022. [46] C. Zink and M. R. Schlehr, “Working dog structure: evaluation and relationship to function,” Frontiers in Veterinary Science, vol. 7, p. 559055, 2020. [47] M. H. Raibert, “Hopping in legged systems—modeling and simula-tion for the two-dimensional one-legged case,” IEEE Transactions on Systems, Man, and Cybernetics, no. 3, pp. 451–463, 1984. 17 
+
+[48] A. Hereid, S. Kolathaya, M. S. Jones, J. Van Why, J. W. Hurst, and A. D. Ames, “Dynamic multi-domain bipedal walking with atrias through slip based human-inspired control,” in Proceedings of the 17th international conference on Hybrid systems: computation and control, 2014, pp. 263– 272. [49] J. Reher, W.-L. Ma, and A. D. Ames, “Dynamic walking with com-pliance on a cassie bipedal robot,” in 2019 18th European Control Conference (ECC). IEEE, 2019, pp. 2589–2595. [50] D. Calzolari, C. Della Santina, and A. Albu-Schäffer, “Exciting families of passive gaits in an elastic quadruped via natural motion manifold control,” The International Journal of Robotics Research, vol. 45, no. 2, pp. 233–258, 2026. [51] Z. Gan and C. D. Remy, “A passive dynamic quadruped that moves in a large variety of gaits,” in 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems, 2014, pp. 4876–4881. [52] A. Sachtler, D. Calzolari, M. Raff, A. Schmidt, Y. P. Wotte, C. D. Santina, C. D. Remy, and A. Albu-Schäffer, “Swing-up of a weakly actuated double pendulum via nonlinear normal modes,” in European Control Conference, 4 2024. [53] T. Ehlert, A. Sachtler, A. Schmidt, D. Calzolari, and A. Albu-Schäffer, “Locomotion of an elastic snake robot via natural dynamics,” IEEE Robotics and Automation Letters, 2026. [54] A. A. Biewener, “Patterns of mechanical energy change in tetrapod gait: pendula, springs and work,” Journal of Experimental Zoology Part A: Comparative Experimental Biology, vol. 305, no. 11, pp. 899–911, 2006. [55] A. Sesselmann, F. Loeffl, C. Della Santina, M. A. Roa, and A. Albu-Schäffer, “Embedding a nonlinear strict oscillatory mode into a seg-mented leg,” in 2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2021, pp. 1370–1377. [56] M. Srinivasan and A. Ruina, “Computer optimization of a minimal biped model discovers walking and running,” Nature, vol. 439, no. 7072, pp. 72–75, 2006. [57] A. J. Ijspeert, J. Nakanishi, H. Hoffmann, P. Pastor, and S. Schaal, “Dynamical movement primitives: learning attractor models for motor behaviors,” Neural computation, vol. 25, no. 2, pp. 328–373, 2013. [58] P. Pustina, D. Calzolari, A. Albu-Schäffer, A. De Luca, and C. Della Santina, “Nonlinear modes as a tool for comparing the mathematical structure of dynamic models of soft robots,” in 2024 IEEE 7th International Conference on Soft Robotics (RoboSoft). IEEE, 2024, pp. 779–785. [59] S. Gaba, K. Rana, S. Sai, V. Chamola, and D. Niyato, “A comprehensive review of generative physical artificial intelligence,” IEEE Internet of Things Journal, 2026. [60] D. Lakatos, K. Ploeger, F. Loeffl, D. Seidel, F. Schmidt, T. Gumpert, F. John, T. Bertram, and A. Albu-Schäffer, “Dynamic locomotion gaits of a compliantly actuated quadruped with slip-like articulated legs embodied in the mechanical design,” IEEE Robotics and Automation Letters, vol. 3, no. 4, pp. 3908–3915, Oct 2018. [61] D. F. Morey, “Size, shape and development in the evolution of the domestic dog,” Journal of Archaeological Science, vol. 19, no. 2, pp. 181–204, 1992. [62] S.-F. Chen and I. Kao, “Conservative congruence transformation for joint and cartesian stiffness matrices of robotic hands and fingers,” The International Journal of Robotics Research, vol. 19, no. 9, pp. 835–847, 2000. [63] F. Schmidt, J. Nix, M. Mühlbauer, J. Cremer, M. Chalon, T. Bachmann, and A. Raffin, “Links and nodes: Middleware for distributed real-time robotic systems,” Journal of Open Source Software, vol. 11, no. 124, p. 10777, 2026. [64] R. Rosenberg, “On nonlinear vibrations of systems with many degrees of freedom,” Advances in applied mechanics, vol. 9, pp. 155–242, 1966. [65] P. Stratmann, D. Lakatos, M. C. Özparpucu, and A. Albu-Schäffer, “Legged elastic multibody systems: adjusting limit cycles to close-to-optimal energy efficiency,” IEEE Robotics and Automation Letters, vol. 2, no. 2, pp. 436–443, 2016. [66] D. Wandinger, A. Schmidt, A. Raffin, A. Albu-Schäffer, and M. Keppler, “Tele-running: Trajectory generation for monopod robots by teleopera-tion,” in 2024 IEEE International Conference on Systems, Man, and Cybernetics (SMC). IEEE, 2024, pp. 273–278. [67] D. Seidel, A. Schmidt, X. Luo, A. Raffin, L. Mayershofer, T. Ehlert, D. Calzolari, M. Hermann, T. Gumpert, F. Löffl, E. den Exter, A. Köp-ken, R. Luz, A. Bauer, N. Batti, F. Lay, A. Manaparampil, A. Albu-Schäffer, D. Leidner, P. Schmau, T. Krüger, and N. Y. Lii, “Toward space exploration on legs: Iss-to-earth teleoperation experiments with a quadruped robot,” in 2024 IEEE Conference on Telepresence. IEEE, 2024, pp. 10–15. [68] P. Stratmann, D. Lakatos, and A. Albu-Schäffer, “Neuromodulation and synaptic plasticity for the control of fast periodic movement: energy efficiency in coupled compliant joints via pca,” Frontiers in neurorobotics, vol. 10, p. 2, 2016. [69] M. Hutter, C. D. Remy, M. A. Hoepflinger, and R. Siegwart, “Efficient and versatile locomotion with highly compliant legs,” IEEE/ASME Transactions on Mechatronics, vol. 18, pp. 449–458, 2013. [70] N. Hansen and A. Ostermeier, “Completely derandomized self-adaptation in evolution strategies,” Evolutionary computation, vol. 9, no. 2, pp. 159–195, 2001. [71] T. Akiba, S. Sano, T. Yanase, T. Ohta, and M. Koyama, “Optuna: A next-generation hyperparameter optimization framework,” in Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining, ser. KDD ’19. New York, NY, USA: Association for Computing Machinery, 2019, p. 2623–2631. [72] A. Schmidt, “eBert data and analysis code,” 2026-08-31. [Online]. Available: https://doi.org/10.6084/m9.figshare.29514518 [73] D. Calzolari, A. Sachtler, A. Raffin, and A. Schmidt, “eBert modes,” 9 2026. [Online]. Available: https://github.com/anschm189/ebert_mode_ oscillations.git [74] M. J. Pollayil, C. Della Santina, G. Mesesan, J. Englsberger, D. Seidel, M. Garabini, C. Ott, A. Bicchi, and A. Albu-Schaffer, “Planning natural locomotion for articulated soft quadrupeds,” in 2022 International Conference on Robotics and Automation (ICRA). IEEE, 2022, pp. 6593–6599. [75] H. E. Michael, C. M. McGowan, and H. K. Hyytiäinen, “Posture and postural dysfunction in dogs: Implications for veterinary physiotherapy,” The Veterinary Journal, vol. 305, p. 106107, 2024. 
+
+APPENDIX ASUPPLEMENTARY METHODS 
+
+A. Nonlinear modal analysis 
+
+The numerical continuation method used to compute the NNMs is based on established algorithms from prior work [37], [38], [35]. This section details the adaptation and appli-cation of this method to the specific kinematic and dynamic model of the eBert quadruped. To identify the nonlinear modes of the quadruped robot, we utilize a conservative model based solely on the interaction of multi-body dynamics with a potential field V comprising gravitational and elastic parts (Fig. S1). The equations of motion of a serially elastically actuated quadruped are 
+
+M (z) ¨ z + c(z, ˙z) + g(z) = ST K(θ − q) + J⊤ 
+
+> c
+
+(q)λ (S1) 
+
+B ¨θ + K(θ − q) = τ , (S2) where the coordinates z = ( x, q) ∈ Rn comprise the trunk position and orientation x ∈ R6 and the leg link positions 
+
+q ∈ Rnj . The symbol M denotes the inertia matrix, c collects the Coriolis and centrifugal forces, while g are the gravita-tional forces. The motor positions are denoted by θ ∈ Rnj , the respective motor torques by τ , and the projected motor inertia by B. The matrix K is the joint spring stiffness, while S is a selection matrix. The contact forces λ ∈ Rnλ are projected by the contact Jacobian Jc ∈ Rn×nλ .To find the modes of the mechanical system, we remove the motor dynamics by fixing θ to a constant value (i.e., the rest configuration of the springs). Then, the system is rewritten in a minimal set of coordinates. When the four feet are fixed to the ground, the robot is left with 6 DOF. Therefore, x is taken as a minimal coordinate. By partitioning z into the independent and dependent variables, x and q, respectively, and utilizing the Jacobian of the constraint equation for the feet, we obtain 
+
+[Jc,x Jc,q ]
+
+ ˙x
+
+˙q
+
+
+
+= 0 → ˙q = −J−1 
+
+> c,q
+
+Jc,x ˙x . (S3) 18 (x, z ) φk
+
+# (mb, I b)
+
+# θi
+
+# qi
+
+# θj
+
+# qj k   
+
+> Fig. S1. Sagittal view of the conservative model representing eBert .This serially elastically actuated quadruped model was used to compute the modal oscillations.
+
+We can then express the generalized velocities ˙z = ( ˙ x, ˙q)
+
+in terms of the independent variables via a transformation 
+
+T (x) such that ˙z = T (x) ˙ x [74]. Additionally, the inverse kinematics q = fik (x) is assumed to be available. The system can now be written as 
+
+Mx(x) ¨ x + cx(x, ˙x) + gx(x) + ∂⊤V (x)
+
+∂x = 0 , (S4) where Mx(x) = T ⊤M T , cx(x, ˙x) are the Coriolis/centrifugal forces and gx(x) the gravity forces in this compact representation. The total mechanical energy is E = 12 ˙x⊤Mx(x) ˙ x + V (x).
+
+Linear modes computation: The linearization around a stable equilibrium xeq yields 
+
+Mx(xeq )¨˜x + Kx(xeq ) ˜ x = 0 , (S5) where ˜x = x − xeq is the deviation from the equilibrium and 
+
+Kx(x) ≈ T ⊤(S⊤KS + ∂g 
+
+> ∂z
+
+)T . For each eigenvalue λi and eigenvector vi pair, Equation (S5) leads to solutions of the form 
+
+˜x(t) = viA sin( ωit + φ) (S6) where ωi = √λi are the oscillation frequencies, while the amplitude A and the phase φ depend on the initial conditions. For example, the linearized mode vectors in joint space of tilted position, which was determined for eBert to develop locomotion following the methods from Determining Initial Configuration for Locomotion, are summarized in Table S1. 
+
+Nonlinear modes computation: To compute an Eigen-manifold, we start by investigating the behavior of the non-linear system Equation (S4) in a neighborhood of the equi-librium. If we initialize the system with a small deviation 
+
+x(0) = xeq + ϵvi at ˙x(0) = 0, system Equation (S4) behaves like a harmonic oscillator with frequency ωi and along vi.These periodic orbits will have exactly two turning points where the velocity is zero. We call this type of orbit brake orbit. As we increase the energy, the nonlinearity will prevent these periodic orbits from existing in the Eigenplanes spawned by the eigenvectors. We can, however, recover a periodic motion by adjusting the turning points. This is a numerical continuation problem starting from the known linear mode, with the constraint that the periodic orbits must have exactly two turning points. By iteratively increasing the energy and adjusting the turning points, this process creates a continuous family of brake orbits starting from the i-th linear mode. We call this collection of orbits the i-th nonlinear normal mode. Since this process can be performed for each eigenvector, a system with n DOFs is expected to have at least n Eigenman-ifolds. The turning points q↶ of the nonlinear mode can now be described by a function q↶ = Gi±(E), which we choose to parameterize by the energy E. By initializing the system to either Gi+(E) or Gi−(E) with zero velocity, we obtain a periodic orbit oscillating between the two turning points. Formally 
+
+x(0) = Gi±(E) ˙x(0) = 0
+
+x(t) = x(t + Ti(E)) ˙x(t) = ˙ x(t + Ti(E)) .
+
+We call the functions Gi±(E) the generators of the i-th mode [35]. In this sense, they can be interpreted as the nonlinear counterparts of eigenvectors. Finally, when collecting all trajectories of the i-th NNM for each energy level E, we get a two-dimensional submanifold 
+
+Mi ⊂ R2n of the state space, i.e., the Eigenmanifold 
+
+Mi =
+
+ x(t)˙x(t)
+
+
+
+∈ R2n x(0) = Gi±(E),
+
+˙x(0) = 0,E ∈ [0 , E max ),t ∈ [0 , T i(E)) .
+
+
+
+,
+
+where [x(t), ˙x(t)] ⊤ is a solution to Equation (S1). Fig. S2 reports oscillations on two distinct Eigenmanifolds of eBert .
+
+B. Quantifying Nonlinearity of the Modes 
+
+To verify that the modes are truly nonlinear, i.e., that linear theory or linearization is not sufficient to describe and analyze the system, we quantify the nonlinearity by measuring the error introduced by a linear approximation. Each point on the Eigenmanifold is a state [x, ˙x]⊤ ∈ Mi of the system that belongs to the i-th mode. As outlined above, we use a numerical continuation algorithm that generates a data-driven approximation of the Eigenmanifold Mi: by sweeping through energy and collecting all time-points along                                                                                            
+
+> TABLE S1
+> LINEARIZED MODE VECTORS FOR THE TILTED WALKING CONFIGURATION OF eBert IN JOINT SPACE .THE COLOR CODE POINTS OUT RESPECTIVE SIMILARITIES OF THE SHOULDER (S), HIP (H), AND KNEE (K)JOINTS ,DEFINING WHICH LEGS SHOULD BE MOVED SIMULTANEOUSLY AS SHOWN IN FIG . 4C.
+> M1M2M3M4M5M6
+> s+0.75 -0.07 +0.97 -0.38 -0.08 -1.08 h+1.31 +4.30 -0.34 +7.22 +0.58 +0.95 FR
+> k-1.10 +1.31 -0.65 -8.74 -2.47 -0.94 s-0.75 -0.07 -0.97 -0.40 -0.07 +1.08 h-1.31 +4.30 +0.34 +7.23 +0.57 -0.95 FL
+> k+1.10 +1.31 +0.65 -8.74 -2.46 +0.95 s+1.14 -0.02 -0.79 +0.13 -0.06 -1.00 h+0.82 +1.36 -0.25 +5.30 -3.26 +1.12 HR
+> k-0.64 +4.07 -0.46 -6.60 +1.27 -1.08 s-1.14 -0.02 +0.79 +0.12 -0.05 +1.00 h-0.82 +1.36 +0.25 +5.31 -3.27 -1.11 HL
+> k+0.64 +4.07 +0.46 -6.60 +1.28 +1.07 19
+> Fig. S2. Visualization of eBert ’s first two nonlinear modal oscillations . To compute them numerical continuation was applied.
+> Fig. S3. Singular values of reconstructing the modes.
+
+the periodic orbits, we obtain a point cloud representation of 
+
+Mi.The main idea to quantify the nonlinearity is the following: if the mode Mi is linear, all points will lie on a two-dimensional plane in the state space; and if the mode is nonlinear, the Eigenmanifold will be curved and require a volume of higher dimension to contain all points. To quantify this, we apply a Principal Component Analysis (PCA) to the point cloud of the Eigenmanifold Mi. Therefore, we collect all points into a data matrix X ∈ Rm×12 
+
+X(Mi) = 
+
+
+
+x⊤ 
+
+> 1
+
+˙x⊤
+
+> 1
+
+... ...
+
+x⊤ 
+
+> m
+
+˙x⊤
+
+> m
+
+ for [xi, ˙xi]⊤ ∈ Mi, (S7) where m is the number of points in the point cloud. Then we compute the singular value decomposition 
+
+X(Mi) − ¯X(Mi) = U ΣV ⊤, (S8) where ¯X(Mi) is the column-wise mean of the point cloud and Σ contains the twelve singular values ¯σi on its diagonal. We normalize the singular values to P σi = 1 by 
+
+σi = ¯σi
+
+P 
+
+> j
+
+¯σj
+
+, (S9) and report the results in Fig. S3. We see that the first two modes each have four singular values that are significantly larger than zero. Hence, for those modes we need at least a four-dimensional volume to contain all points of the Eigen-manifold and the system cannot be approximated by a plane, i.e., a linear mode. 
+
+C. Robotic Implementation 
+
+Following the hardware implementations of the previous 
+
+bert versions [60], eBert was designed to be low-cost with off-the-shelf components and rapid prototyping methods, building on the gained knowledge from the earlier quadruped versions. 
+
+Body fabrication: All body parts were manufactured from polyamide using direct laser sintering to provide the load-carrying shell that protects the inner components and forms the robot’s physical appearance (Fig. 2A). The onboard computer and most electronics were housed in the base body of eBert (Fig. 5A), while the shoulder modules included the three individual SEA units for each leg (Fig. 5C), as well as the modules for the link sensors. Consequently, the main mass of eBert was concentrated in the body’s trunk, while the legs were comparatively massless as initially derived from the work from Gan et al [51]. The biarticular coupling of the hip and knee joints was implemented via synchronous belt drives (Fig. 5B). 
+
+Actuation: The actuator in each SEA was a servo drive based on the commercially available Savöx SB-2290SG. It incorporated a brushless motor and a four-stage steel gearbox with a 321:1 gear ratio to transmit the power to the output shaft (Fig. 5C). The electronics were replaced in-house to pro-vide necessary telemetry data and control accuracy for robot control. The custom PCBs incorporated a discrete 3-phase GaN-based power stage, a 32-bit STM microcontroller with a 
+
+400 MHz clock rate, and a contactless 14-bit on-axis magnetic position sensor based on the Hall effect. The brushless motor was internally operated at 12 V with a 250 kHz current con-troller. The communication interface to the control host was implemented using DS402 EtherCAT with a communication rate of 1 kHz . The peak forward torque was 2.9 N m . The total weight of one servo unit was 79 g . The shaft of each 20                                    
+
+> TABLE S2
+> OVERVIEW OF ALL RELEVANT PARAMETERS OF eBert .Parameter Value Parameter Value Unit
+> overall length 462 overall width 265 [mm ]maximum height 296 minimum height 145 [mm ]stance length 330 stance width 180 [mm ]leg segment length 120 [mm ]total weight 4568 battery weight 655 [g]shoulder stiffness 13 hip/knee stiffness 6.55 [N m rad −1]motor max speed 12 [rad s −1]motor max torque 3[N m ]joint max torque 5[N m ]control rate 1[kHz ]
+
+servo motor is connected directly to a torsional spring with the respective stiffness for the shoulder, hip, and knee joint as defined by the stiffness matrix K. For each joint, the servo motors were placed off-axis, driving the joint via synchronous belts (Fig. 5C). 
+
+Communication and power management: The eBert 
+
+robot was equipped with an AAEON UP Squared onboard computer using the Intel Atom x86 platform as the real-time computer. Thus, the system can run fully standalone without any external processing sources. The 12 servo motors com-municated via EtherCAT, and multiple Arduino Micro boards were utilized for communication with additional sensors. This included the link-side hall sensors to read position values after the spring, which were identical to the ones used in the servo modules, as well as an inertial measurement unit (Bosch BNO055) on the base body. The communication interface between the Arduino boards and the control host was imple-mented via isochronous USB 2.0 to allow for synchronous data exchange of 1 kHz . The robot utilizes 12 V input voltages and can be powered by an external power supply or exchangeable LiPo batteries. A battery pack with 111 W h capacity allows an operation time of up to two hours. 
+
+High-level control: The high-level controllers were im-plemented in MATLAB Simulink, which provided commands to all 12 motors simultaneously. The command could be encoded as motor position or velocity control, as well as current control, which acted analogously to torque control, giving the correct scaling. The control loop ran at 1 kHz .The information of all sensors and encoders incorporated in the robotic hardware was read out and post-processed in the Simulink model, and updated motor commands were sent back to the motors. As middleware, the DLR-developed Links and Nodes was used [63]. A Python wrapper allows tuning control parameters from a Logitech gamepad. 
+
+Dimensions: The overall dimensions of the final eBert 
+
+hardware match the intended dimensions of a small dog [61] with a height of 30 cm and a length of 33 cm . The total weight of the completed robot matched the initial bioinspired approximations well at 4.56 kg . However, when adding the battery of 0.65 kg the completed system was slightly heavier at 5.2 kg . All final dimensions of eBert are summarized in Fig. 5A and Tab. S2. 
+
+D. Determining Initial Configuration for Locomotion 
+
+As outlined in the Results section From modes to lo-comotion , for a first intuition about a suitable initial joint configuration to develop locomotion, we once more turned to biology. Due to the similarity in size and weight, especially dogs appeared as a promising biological inspiration for eBert .As mentioned, the Center of Mass (COM) in dogs is usually shifted to the front [75], inherently aiding the body to fall 
+
+forward, while slightly externally rotated feet enhance stability [46]. To find an adequately tilted body position that is favorable for developing the excited mode oscillations into a useful gait, a grid search was carried out. As visualized in Figure S4, different robot configurations defined by the commanded hip and knee angles of the front and hind legs were considered. Since a forward tilt is intended, the front leg joints are assumed to be more flexed, while the hind leg joints should be more extended, assuming symmetry about the sagittal plane. Starting from the originally chosen equilibrium positions from Equation (1), the grid search tests all possible combina-tions of the following angle modifications 
+
+θF (hip) = 0.4 + 0 .1iθF (knee) = −0.4 − 0.1jθH (hip) = 0.4 − 0.1kθH (knee) = −0.4 + 0 .1l, (S10) where i, j, k, l index all combinations of these angle modifica-tions that are tested. Combining the four modifications applied to the front and hind leg angles leads to 16 different body configurations, all realizing a slight forward tilt. The shoulder angles of the front and hind legs remained identical throughout the search. To test the suitability of the different robot configurations in the different modes, the robot was initialized in the Gazebo simulation of eBert (including friction) with each considered joint configuration (Fig. S4). Although the derived linearized eigenvectors assumed all feet to remain in contact with the ground, this constraint was purposefully not realized in the simulation. Instead, the state switching controller from Equa-tion (2) was applied with a control signal that was empirically tuned in the beginning to inject enough energy that the robot starts to lift its feet. Solely based on the forward tilt of the body, the robot started to move forward. The simulation was continued for 40 s . Afterward, the distance that the robot traveled with each initial configuration, only applying the state switching controller, was evaluated for every mode separately. The resulting plot showing the xy-plane in which the robots move forward is exemplary, as shown in Figure S5 on the right. The traveled distance, defined as the norm distance between the starting point of the robot at the beginning of the simulation and the current location of the robot after 40 s is determined for all modes of each tested joint configuration (Fig. S5). It was intended to identify a favorable initial configuration that leads to a forward motion in all modes as a starting point to develop locomotion gaits when a step is added. For this first 21 
+
+exploration, it was decided to consider only a single, generally useful initial configuration for all modes to keep the searchable parameter space small. In further investigations, the best initial configuration for different modes should be considered. Of all the 16 tested initial joint configurations, only configurations 2, 10, and 14 appeared to enable a forward motion in all modes, as highlighted in red in Figure S5. In the first trials, especially mode M3 appeared promising to develop into a gait pattern for locomotion, which seemed to be best realizable by configuration 2, being the one stated in Equation (3). Thus, this configuration was chosen for the initial exploration of gaits based on modes, but should be extended in future work to explore other promising leg configurations. 
+
+E. Control Parameters for the Mode Excitations 
+
+In order to excite the mode oscillations of the damped 
+
+eBert system in simulation and hardware as described in Section Existence of modal oscillations on hardware and From modes to locomotion , the state switching controller based on the work of [42] was implemented as described in the method section Mode excitation controller . This controller injected energy into the system scaled by ˆθz whenever the robot body naturally came to a halt after arming the trigger when crossing 
+
+ϵtau . The parameter values were kept identical if possible, but had to be adapted especially for the faster modes M4 − M6 to overcome the minimum friction. For the simulation, a velocity limiter was additionally implemented to mimic the behavior of the motor dynamics in the real system. The same limiter was also added to the hardware to ensure consistency of control architecture and system behavior. For the initial comparison of the mode excitation and the initial symmetric leg configuration of Equation (1), the parameters detailed in Table S3 were used to obtain the data shown in Figure 3. In the later experiments to develop locomotion as detailed in Section Stepping Controller , steps were added to each mode oscillation, where the step length and other parameter scaling were determined through black-box optimization. Here, in addition to the aforementioned parameters, the limit of the motor velocity could be slightly increased. The maximum value for this parameter was 5 rad s −1, which was determined by the actual hardware capabilities. The determined parameters for each mode M1 − M6 to develop the locomotion pattern shown in Figure 4 are presented in Table S4. 
+
+TABLE S3 
+
+PARAMETER VALUES OF THE STATE CONTROLLER IN eBert ’S INITIAL MODE COMPARISON .motor bang signal threshold mode vel. limit ˆθz ϵτ
+
+simulation m1 1 0.05 0.05 
+
+m2 1 0.05 0.05 
+
+m3 1 0.05 0.05 
+
+m4 1 0.1 0.05 
+
+m5 1 0.1 0.05 
+
+m6 1 0.1 0.05 
+
+hardware m1 1 0.05 0.05 
+
+m2 1 0.05 0.05 
+
+m3 1 0.05 0.05 
+
+m4 1 0.1 0.0 
+
+m5 1 0.05 0.0 
+
+m6 1 0.05 0.0 0 1 2 3
+
+> Approximation of linearized modes for differential initial leg configuration Excite each mode with state switching control
+> config 1 config 2 config 3 config 4 config 5 config 6 config 7 config 8 config 9 config 10 config 11 config 12 config 13 config 14 config 15 config 16
+> Simulate robot for 40 s Initialize robot with selected
+> 01-1
+> x[m]
+> y[m]
+
+Fig. S4. Grid search to determine favorable body posture. 16 joint configurations are investigated, where the hip and shoulder joint angles vary. For each robot configuration, the bang-bang controller is applied to excite the different modes in the realistic robot simulation (with friction), where the feet are not constrained to the ground. After 40 s simulation, the traveled distance of the robot without further control is evaluated. 22 16 14 12 10 86420 0 1 2 3 1 2 316 14 12 10 86420 0travelled distance [m] 
+
+> initial joint configuration  0
+
+travelled distance [m] travelled distance [m] travelled distance [m] travelled distance [m] travelled distance [m] 1 2 316 14 12 10 86420 0 1 2 316 14 12 10 86420 0 1 2 316 14 12 10 86420 0 1 2 316 14 12 10 86420 0
+
+mode M6
+
+mode M5mode M4mode M3mode M2mode M1
+
+Fig. S5. Travelled distance for tested initial joint configurations in the different modes. The configurations 2, 10, and 14 achieved a forward motion with all six modes. TABLE S4 
+
+PARAMETER VALUES OF THE STATE CONTROLLER FOR eBert ’S MODE -BASED LOCOMOTION 
+
+motor bang signal threshold step length mode vel. limit ˆθz ϵtau [FR FL HR HL] 
+
+simulation m1 3 0.05 0.1 [-0.25 -0.30 -0.07 -0.13 ] 
+
+m2 2 0.2 0.1 [-0.25 -0.15 -0.25 -0.15 ] 
+
+m3 5 0.1 0.1 [ 0.00 -0.30 -0.0 -0.10 ] 
+
+m4 5 0.7 0.0 [ 0.00 0.00 0.0 0.00 ] 
+
+m5 5 0.2 0.1 [ 0.30 -0.30 0.35 -0.40 ] 
+
+m6 5 0.3 0.1 [-0.20 -0.30 -0.2 0.15 ] 
+
+hardware m1 3 0.03 0.1 [-0.07 -0.15 -0.07 -0.25 ] 
+
+m2 - - - - - - -
+
+m3 5 0.1 0.1 [ 0.00 -0.25 0.00 -0.25 ] 
+
+m4 3.5 0.4 0.1 [ 0.00 0.00 0.00 0.00 ] 
+
+m5 - - - - - - -
+
+m6 5 0.1 0.1 [ 0.00 -0.30 0.00 -0.30 ]

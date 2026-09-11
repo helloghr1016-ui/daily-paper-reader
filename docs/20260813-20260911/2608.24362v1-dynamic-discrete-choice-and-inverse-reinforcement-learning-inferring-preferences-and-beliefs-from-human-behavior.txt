@@ -1,0 +1,1148 @@
+Title: Dynamic Discrete Choice and Inverse Reinforcement Learning: Inferring Preferences and Beliefs From Human Behavior
+
+URL Source: https://arxiv.org/pdf/2608.24362v1
+
+Published Time: Wed, 26 Aug 2026 00:56:28 GMT
+
+Number of Pages: 39
+
+Markdown Content:
+# Dynamic Discrete Choice and Inverse Reinforcement Learning: Inferring Preferences and Beliefs From Human Behavior ∗
+
+Pranjal Rawat † John Rust ‡
+
+August 3, 2026 
+
+Abstract 
+
+This article surveys two deeply connected literatures that approach the same fundamental problem from different disciplinary traditions: dynamic discrete choice (DDC) in structural econometrics and inverse reinforcement learning (IRL) in machine learning. Both seek to infer the preferences of decision makers from observed sequential behavior, assuming that individuals act to maximize an expected reward function within a dynamic, uncertain environment for-malized as a Markov decision process (MDP). Despite independent origins, the two fields have converged on similar mathematical formulations. We show that the “soft Q-learning” framework now prevalent in IRL is closely related to DDC models under additive extreme value preference shocks, yielding the same softmax (multinomial logit) choice probabilities and smooth Bellman equations that underpin structural estimation in economics. We compare the estimation and computational methods developed in each field. DDC has emphasized maximum likelihood estimation, conditional choice probability estimators, and policy iteration methods. IRL has developed scalable alternatives, including maximum entropy methods, adversarial approaches, and model-free temporal difference estimators that extend to high-dimensional state spaces using deep neural networks. Model-free IRL estimators that combine temporal difference learning with classical two-step methods from econometrics represent a promising direction for bridging the two literatures. Both fields confront shared foundational challenges: the identification problem, whereby multiple reward functions can rationalize the same observed behavior, and the curse of dimensionality in solving the underlying MDP. Each literature addresses these challenges un-der different assumptions and with different objectives, DDC prioritizing counterfactual policy evaluation and IRL prioritizing training agents from expert demonstrations. We believe that cross-fertilization offers substantial opportunities for methodological progress in both fields. 
+
+Keywords: Dynamic discrete choice, Inverse reinforcement learning, Reinforcement Learning, Q learning, Markov decision processes, Structural estimation, Maximum entropy, Maximum likelihood, Reward identification, Conditional choice probabilities 
+
+> ∗
+
+John Rust is grateful for support from his Georgetown University Professorship. This is the authors’ accepted manuscript of an article published in the Oxford Research Encyclopedia of Economics and Finance (Oxford University Press, August 3, 2026). The version of record is available at https://doi.org/10.1093/9780197851418.003.0990. 
+
+> †
+
+Georgetown University pp712@georgetown.edu 
+
+> ‡
+
+Professor Emeritus, Georgetown University jr1393@georgetown.edu arXiv:2608.24362v1 [econ.EM] 25 Aug 2026 1 Introduction 
+
+This article compares dynamic discrete choice (DDC), a subfield of structural econometrics (SE), to inverse reinforcement learning (IRL), a subfield of machine learning (ML). The goal of both is to infer preferences of individuals from observations of their choices over time assuming they are 
+
+rational, i.e. that their choices over time maximize an expected reward (or “utility”) function based on beliefs of how their actions affect uncertain current and future outcomes and payoffs. Individual choices are affected by stochastic shocks that make their behavior appear probabilistic from the standpoint of outside observers. DDC and IRL share a common framework, Markovian decision processes (MDP) that can be viewed as dynamic versions of random utility models in economics, allowing inference of preferences by methods such as maximum likelihood, see McFadden (1973) and Rust (1987). DDC and IRL differ primarily in the methods used to solve the MDP, conduct inference, as well as the overall rationale for inferring preferences. SE focuses on testing and evaluating economic theories and making counterfactual predictions of the effect of changes in the environment and economic policies on economic behavior, outcomes, and welfare. 1 SE differs from reduced-form econometrics that focus on summarizing behavior without attempting to infer preferences and thus without requiring the rationality assumption, analogous to the corresponding distinction between IRL and imitation learning (IL) in the ML literature. 2
+
+Reduced-form models can be used to make some types of counterfactual predictions when there is sufficient historical variation in policies to allow them to be treated as covariates in the model. By uncovering preferences, SE models allow us to assess the welfare impacts of policy changes that are not possible using reduced-form models and enable counterfactual predictions of policy changes that have no close historical antecedent. For example, Denmark has long had one of the world’s highest tax rates on new cars, but with little historical variation that could be used by reduced form approaches to predict how reductions in this tax would affect the Danish economy. Gillingham et al. (2022) structurally estimated an equilibrium model of ownership and trading of cars to recover consumer preferences under the high tax status quo regime, and used it to compute counterfactual equilibria under a variety of alternative tax rates. They showed that by reducing the tax on new cars and increasing the gas tax, Denmark can: 1) improve the welfare of most of its citizens, 2) increase total tax revenue from cars, and 3) reduce total CO 2 pollution. Credible structural models are a faster, cheaper way of predicting the effects of policy changes by “crash testing” them with computer simulations before actually implementing them in reality. IRL, introduced by Ng and Russell (2000), builds on reinforcement learning (RL) (Sutton and         
+
+> 1In economics “policy” refers to government interventions (tax rates, regulations, etc.), whereas in RL/MDP it refers to a decision rule, i.e. a mapping of states into a probability distribution over actions.
+> 2Other names for this include behavioral cloning, learning from demonstration and apprenticeship learning. These are types of supervised learning in the ML literature, where an individual’s decision rule can be learned from sufficient data on pairs of actions and states, ( a, s ), without any assumption that actions taken are “optimal”, see Hussein et al. (2018).
+
+1Barto, 1998). Its goal is to develop intelligent agents that can perform complex robotic and intel-lectual tasks without the need for explicit programming or an explicit reward function to direct behavior. The success of ML is largely due to supervised learning algorithms (such as neural networks) to predict outcomes using labeled data. However this is data-intensive and does not naturally handle sequential decision making where actions have long-term consequences. RL over-comes this by training agents to maximize a reward through trial-and-error, via repeated dynamic interactions with the environment. When the reward function is known, RL can approximate op-timal behavior without labeled examples. Chess is an example with a known reward (1 for a win, -1 for a loss and 0 for a draw). RL has been able to learn superhuman performance via self-play, 
+
+i.e. repeatedly playing the algorithm against itself resulting in performance that exceeds the best human and computerized chess players, see e.g. Silver et al. (2018). Unfortunately, it is often unclear what reward function to use to program tasks in AI and robotic applications using RL. For example, Christiano et al. (2017) note that RL provides no guidance on the appropriate reward function to “train a robot to clean a table or scramble an egg.” IRL solves this by learning a reward function from limited data on human or expert demonstrations. Using the inferred reward function, these algorithms can be trained more rapidly and cheaply via RL using computer simulations that result in intelligent behavior consistent with human preferences in situations outside of those in a limited demonstration data set. For example, Google Maps trip data (Barnes et al., 2024) revealed travelers’ route preferences reflecting trade-offs between traffic, distance, hills, safety, and scenery. They massively scaled IRL to estimate a route preference function (360M parameters, 110M trips) enabling RL to generate recommendations achieving 16-24% improvement in global route quality, and to the best of our knowledge, represents the largest published application of IRL in a real-world setting to date. Section 2 reviews Dynamic Programming (DP) and Markovian Decision Processes (MDP), the common framework used in the DDC and IRL literatures, and reinforcement learning (RL). Section 3 reviews the DDC literature and section 4 the IRL literature. Section 5 concludes, com-paring/contrasting the literatures and the key challenges and limitations they both face. 
+
+2 Background on DP and MDPs 
+
+DDC and IRL apply the recursive mathematical characterization of optimal sequential decision making under uncertainty known as dynamic programming (DP), Bellman (1957). 3 We focus on stationary, infinite horizon Markovian Decision Problems (MDP), a subclass of DPs introduced by Bellman and Howard (1960) that are the dominant paradigm in SE and RL. MDPs are defined by 1) a state space S, 2) an action space A, and 3) the objects {r, p, β }, where r(s, a ) is the reward or utility function providing the payoff to a decision maker (DM), p(s′|s, a ) is a transition density 
+
+for next period’s state when the state is s and action is a and β ∈ (0 , 1) is a discount factor. To simplify exposition and avoid technicalities, we assume that S and A are finite sets with |S| and 
+
+> 3See Bertsekas (2017) for an excellent introduction to the DP literature.
+
+2|A| elements, respectively. A policy or decision rule π is a conditional probability of choosing a feasible action a ∈ A(s) for all s ∈ S. It is called a mixed strategy in game theory to distinguish it from a pure strategy, i.e. a deterministic function a = δ(s) that chooses a single optimal action with probability 1. Since mixed strategies include pure strategies as a special case, we can express the DM’s objective as the choice of a policy π that maximizes expected discounted rewards given by 
+
+V (s) = max  
+
+> π
+
+Vπ(s), where Vπ(s) = Eπ
+
+( ∞X
+
+> t=0
+
+βtr(st, a t)|s0 = s
+
+)
+
+, (1) where Eπ denotes the expectation operator over the Markov process {st, a t} implied by the transi-tion probability p and policy π. The optimal value function can be defined recursively via Bellman’s equation 
+
+V (s) = max 
+
+> a∈A(s)
+
+"
+
+r(s, a ) + β X
+
+> s′∈S
+
+V (s′)p(s′|s, a )
+
+#
+
+≡ Γ( V )( s). (2) 
+
+V is the fixed point V = Γ( V ) to an operator Γ( V ) known as the “Bellman operator” which can be shown to be a contraction mapping (i.e. for any vectors V, W ∈ R|S| we have ∥Γ( V ) − Γ( W )∥ ≤ 
+
+β∥V − W ∥ where β is less than 1 and ∥ · ∥ is the Euclidean norm). This implies that a unique solution V to Bellman’s equation exists, and the optimal policy π takes the form of a pure strategy, i.e. a deterministic function a = δ∗(s) that can be recovered from V by 
+
+δ∗(s) = argmax 
+
+> a∈A(s)
+
+"
+
+r(s, a ) + β X
+
+> s′∈S
+
+V (s′)p(s′|s, a )
+
+#
+
+, (3) since generically a unique action a∗ = δ∗(s) attains the max on the right hand side of (3). Thus, a mixed strategy π cannot be optimal in general. This appears to challenge the relevance of the MDP framework since most strategies we estimate/learn empirically will be mixed rather than pure. The DDC literature resolves this by assuming that we only observe a subset of the full state vector the individual observes. This allows an optimal pure strategy to appear to us as a mixed strategy given our inability to observe the agent’s full information set. It also facilitates statistical inference of the MDP as we show in Section 3. We now summarize the key methods for solving for V and δ∗.
+
+2.1 Successive Approximations 
+
+Since a contraction mapping Γ has a unique fixed point V = Γ( V ), the contraction property guarantees that the sequence {Vk} given by Vk = Γ( Vk−1), for k = 1 , 2, . . . starting from any initial starting guess V0 converges to the fixed point V = Γ( V ) at a geometric rate in β, which is very slow when β is close to 1. 32.2 Policy Iteration 
+
+The Howard (1960) policy iteration (PI) algorithm is a faster method for solving MDPs that al-ternates between policy valuation and policy improvement steps. At iteration k the PI algorithm has a candidate policy δk. The policy valuation step calculates the value of δk, Vδk , by solving the linear system 
+
+Vδk = rδk + βE δk Vδk , (4) where rδk is the vector whose sth element is r(s, δ k(s)) and Eδk is the |S|×| S| matrix whose element in row s and column s′ is given by Eδk (s, s ′) = p(s′|s, δ k(s)). For any feasible deterministic policy 
+
+δ the matrix Eδ is a Markov transition probability matrix with matrix norm ∥Eδ∥ = 1, which implies that equation (4) has a unique solution given by Vδk = [ I − βE δk ]−1rδk . Given the value 
+
+Vδk the policy improvement step calculates a new decision rule δk+1 given by the right hand side of equation (3) except with Vδk substituted for V . If δk+1 = δk then policy iteration has converged and it is not hard to show that Vδk = V , the unique solution to Bellman’s equation (2). 
+
+2.3 Randomization, function approximation, and the Curse of Dimensionality 
+
+Inference in DDC and IRL requires repeated solutions of the MDP to find a reward function whose implied optimal behavior best approximates observed behavior according to different metrics of goodness of fit, such as maximizing a likelihood function. It is already challenging to solve a single MDP when |S| or |A| is large since each SA step requires O(|A|| S|2) arithmetic operations to compute the expectation and maximization operators in equation (2) for all s ∈ S. Though PI requires only a few iterations to converge and thus can be faster for smaller problems when β
+
+is near 1, the downside is the O(|S|3) operations required to solve the linear system (4) in each policy valuation step. In the absence of sparsity or other “special structure” alternative methods are required when |S| or |A| is large. Bellman called this the curse of dimensionality because it arises when discretization and in-terpolation are used to approximate solutions to MDPs with multiple continuous state variables. Approximating a continuous MDP with d state variables using a finite grid of N points in each dimension results in an approximate finite MDP with |S| = O(N d) states which grow exponentially in d. The curse of dimensionality is unavoidable (Chow and Tsitsiklis, 1989): MDPs with ds con-tinuous state and dc continuous choice variables have a worst-case complexity (minimum number of arithmetic operations to compute an ε-approximation to V ) that is bounded below by a function that grows at rate 1 /[(1 − β)ε)] 2ds+dc , a lower bound that holds for any possible algorithm. 
+
+It may be possible to break the curse of dimensionality for subclasses of MDPs with spe-cial structure, such as DDCs where the choice set A is finite. When |A| is small, most of the work to solve the MDP is spent on 1) numerical integration to compute conditional expectations 
+
+EV (s, a ) = R V (s′)p(s′|s, a ), and 2) interpolation/approximation needed to find V (s′) for s′ ∈ S.While randomization techniques such as Monte Carlo integration have been proposed to mitigate 4the curse of dimensionality (Rust, 1997), their general applicability remains debated (Bray, 2022). Another way to break the curse of dimensionality is to approximate V by a function Vϕ that depends on a small number of unknown parameters ϕ for which Vϕ approximately solves the Bellman equation. For example Vϕ could be the linear combination Vϕ(s) = PKk=1 ϕkρk(s) where {ρk}
+
+are “basis functions” and ϕ = ( ϕ1, . . . , ϕ K ) are coefficients, or Vϕ could be a nonlinear function of ϕ such as a neural network. Neural networks are universal approximators, which might help break the curse of dimensionality of approximating V , at least for certain subclasses of sufficiently smooth functions as first demonstrated by Barron (1993). Let Vˆϕ denote a best approximation to 
+
+V , where ˆϕ minimizes the mean squared “Bellman residuals” BE( ϕ) over some grid of N points 
+
+SN = ( s1, . . . , s N ) in S
+
+ˆϕ = argmin 
+
+> ϕ
+
+BE( ϕ) = Es∼SN
+
+n
+
+[Vϕ(s) − Γ( Vϕ)( s)] 2o
+
+, (5) where Es∼SN {h(s)} = 1
+
+> N
+
+PNi=1 h(si) denotes the sample average over the N points in SN . Neural net approximation breaks the curse of dimensionality by allowing us to approximate V with a small number of network weights/parameters ϕ. Randomization also helps break the curse of dimensionality via Monte Carlo integration instead of deterministic quadrature to approximate the conditional expectations EV (s, a ) entering the Bellman operator Γ( Vϕ)( s), transforming the solution of the Bellman equation for V into a nonlinear regression problem (5). Using the Triangle inequality and the contraction property of Γ, we can derive the error bound 
+
+∥V − Vϕ∥∞ ≤ ∥ Vϕ − Γ( Vϕ)∥∞/(1 − β). 4 Thus, using a richer class of functions FK = {Vϕ|ϕ ∈ RK }
+
+(i.e. a larger K) we can make the Bellman error ∥Vϕ − Γ( Vϕ)∥∞ smaller and better approximate the true solution to the Bellman equation V = Γ( V ). In general, we require both N and K to increase to infinity at appropriate rates to manage a classic bias-variance tradeoff to ensure that the nonlinear least squares estimator Vˆϕ (5) is a consistent estimator of the true V . Even when we can approximate V well with relatively few parameters K, there may still be a curse of dimensionality associated with finding a global minimizer ˆϕ.5 Further, when β is close to 1 Vˆϕ is not guaranteed to be close to the true V . For example, if we start with the true solution V = Γ( V ) and perturb it by adding a constant C, the perturbed solution has a Bellman error of (1 − β)C which can be small even when C is large if β is close to 1. Fortunately, DDCs do not require precise approximation of the level V to accurately approximate the optimal policy in (3) since shifting V by a constant leaves δ∗ unaffected. 6                            
+
+> 4Here ∥f∥∞denotes the supremum norm of the function f,∥f∥∞= sup s∈S∥f(s)∥.
+> 5Though stochastic optimization methods such as stochastic gradient descent can be helpful in avoiding getting stuck at local minima, randomization does not break the curse of dimensionality of continuous non-convex optimiza-tion (Yudin and Nemirovski, 1976).
+> 6Fujimoto et al. (2022) show that Bellman error is a poor proxy for value error in offline RL. Nguyen (2025) shows that in DDC problems, we obtain more accurate solutions for δ∗by minimizing the sum of squared anchored Bellman errors, Vϕ(sj)−Vϕ(s1)−[Γ( Vϕ)( sj)−Γ( Vϕ)( s1)] that difference out parallel shifts in Vϕ, allowing the minimizer to more accurately approximate the shape of Vby ignoring its level, which is a version of “relative value iteration” proposed by Puterman (2014) for solving MDPs under the long run average criterion.
+
+52.4 Reinforcement Learning 
+
+These are stochastic iterative algorithms for approximating the value function V and the optimal policy π inspired by models of trial and error learning by animals and humans. 7 One of the first RL methods was temporal difference learning (TD) (Sutton, 1988) which can be regarded as a type of asynchronous stochastic approximation (Robbins and Munro, 1951) for solving the linear system (4) for Vδ in the policy valuation step of PI. TD is a special case of Q-learning (Watkins, 1989) where Q is the choice-specific value function implied by the Bellman equation 
+
+Q(s, a ) = r(s, a ) + β X
+
+> s′
+
+V (s′)p(s′|s, a ) = r(s, a ) + β X
+
+> s′
+
+max  
+
+> a′∈A(s′)
+
+Q(s′, a ′)p(s′|s, a ) ≡ Λ( Q)( s, a ). (6) 
+
+Q-learning can be viewed as a stochastic version of successive approximations {Qt} for finding the fixed point Q = Λ( Q) via the updating rule 
+
+Qt+1 (st, a t) = Qt(st, a t) + αt
+
+
+
+r(st, a t) + β max 
+
+> a∈A(st)
+
+[Qt(˜ st+1 , a )] − Qt(st, a t)
+
+
+
+, (7) where ( st, a t) is the state and action taken at t, and ˜ st+1 is a random draw from the transition probability p(s′|st, a t). Tsitsiklis (1994) showed that if the step size sequence {αt} converges to 0 at a sufficiently slow rate, the sequence {Qt} converges with probability 1 to the unique Q that solves (6). 8 Equation (7) does not specify how at is chosen: optimality requires a greedy policy 
+
+at = argmax a∈A(st) Qt(st, a ), but a key requirement for the convergence of Q-learning is that all pairs ( s, a ) are sampled infinitely often. This presents an exploration/exploitation dilemma that implies that suboptimal actions must be taken infinitely often in order for Q learning to converge, but this cannot occur under a greedy policy which is generically a pure strategy. One solution is to use an ε-greedy policy that takes the greedy action at with probability 1 − ε, and with probability ε
+
+a randomly selected suboptimal action. However unless ε converges to 0 with t, the policy we use to learn Q is necessarily suboptimal and different from the optimal policy we are trying to learn. Thus Q-learning is an example of what Sutton and Barto (2020) refer to as off-policy learning. 
+
+Haarnoja et al. (2017) resolved the exploration/exploitation tradeoff by building on the maxi-mum entropy reinforcement learning framework of (Ziebart et al., 2008), resulting in an algorithm they call soft-Q learning. They used Q-learning to solve a modified MDP where the reward includes an entropy term that forces the optimal policy to be mixed rather than pure. This ensures that Q-learning results in continuous exploration with all feasible actions being chosen infinitely often, and they showed it converges with probability 1 to the optimal mixed strategy π given by the classic logit or softmax formula that we will derive in equation (21) of section 3. The entropy of π             
+
+> 7See Sutton and Barto (2020) and Bertsekas (2025) for excellent introductions to this literature.
+> 8The conditions on the step size are 1) P
+> tαt=∞and 2) P
+> tα2
+> t<∞. Note αt= 1 /t satisfies these conditions.
+
+6is H(π(s)) = − P 
+
+> a∈A(s)
+
+π(a|s) log( π(a|s)). Adding it to the reward results in the MDP 
+
+V (s) = max  
+
+> π
+
+Vπ(s), where Vπ(s) = Eπ
+
+( ∞X
+
+> t=0
+
+βt[r(st, a t) + σH (π(st))] |s0 = s
+
+)
+
+. (8) When σ = 0 the objective (8) reduces to the original MDP objective (1) where π is the pure strategy (3). As σ → ∞ the optimal policy for (8) converges to a uniform distribution, the maximum entropy solution. For 0 < σ < ∞ the optimal policy π takes the form of a multinomial logit or “softmax” function (21) and the optimal value function V in equation (8) satisfies a “soft Bellman equation” identical to the “smoothed Bellman equation” derived by Rust (1988) for a “partially observed” MDP in equations (19) and (18) of section 3. In DDC models, individuals use optimal pure strategies and the entropy term σH (π(s)) equals the expectation of components of rewards that individuals observe but we do not observe. In contrast, the IRL literature uses entropy to enforce a direct preference for using mixed rather than pure strategies. 9
+
+We say that RL is model-free if it does not require explicit specification or knowledge of p(s′|s, a ). Otherwise it is model-based . Q-learning can be model-free, unlike SA or PI, to the extent that it does not require a specification for the transition probability p(s′|s, a ) and avoids numerical integration to update V and Q. This is possible when “the environment” generates new states rather than a computer simulation based on an explicit mathematical model for p(s′|s, a ). In Watkins’ example of an animal learning to adapt and thrive, we do not need to know p since the environment “draws” the successor states st+1 needed to implement the update in Qt in equation (7). When trained in this manner Q-learning is indeed model-free and so are other RL algorithms that interact directly with the environment (or use historical transitions for training/estimation as we discuss in section 4). In many situations Q-learning and related RL methods produce policies that are too noisy and converge too slowly to be useful in real applications, especially when the number of states is large. As Jiang and Xie (2024, p. 1) note, their “decisions can lead to undesirable outcomes, especially at the early stages of learning when the algorithm has little knowledge of the environment. This is not a problem when the environment is a simulator, but can lead to serious consequences when people are part of the environment.” As a result RL training is increasingly done in simulation environments with sufficient computer power to rapidly conduct many thousands or millions of training iterations to produce a much better solution than could be achieved from limited real-     
+
+> 9From an economic standpoint, it is not clear why individuals should care about the entropy of a policy π: instead the random utility framework posits that individuals care about the policy they use only to the extent that it directly maximizes their rewards. Matejka and McKay (2015) provide an interpretation of the random utility model as a Bayesian decision problem that involves a first stage choice of how much information to acquire about a finite set of alternative choice options, where entropy captures the cost of information. They show that under an optimal information acquisition strategy, the second stage choice probabilities take the multinomial or “softmax” form (21) derived in section 3. However this is a one shot model of information acquisition: extending it to DDC models involving sequential choices requires a Bayesian MDP formulation that includes a component of the state variable that captures the posterior distribution of the individual’s beliefs about the rewards from various choices which is gradually updated over time, reflecting “learning by doing.” A classic example is the “multi-armed bandit problem” Gittins and Jones (1974).
+
+7world experience. The ability to simulate from the true p(s′|s, a ) (or a good approximation to it) for a large number of iterations is key to producing good solutions using RL. For this reason most of the successful recent applications of RL are model-based in the sense that they rely on a model 
+
+p(s′|s, a ) to simulate outcomes in offline training even while using model-free RL algorithms to train the Q values. 10 
+
+Tabular (i.e. finite state/action) Q-learning, (7), is far too slow for MDPs with large state or action spaces. A scalable solution to this problem is to use function approximation methods such as Deep Q-Networks (DQN), which are deep neural networks with weights ϕ that parameterize the Q-function as Qϕ similar to the way V is approximated by Vϕ in (5). Instead of iteratively updating Q-values, as in (7), the goal is to find ˆϕ that minimizes the mean squared Bellman error BE( ϕ) = E(s,a )∼D 
+
+n
+
+[Λ( Qϕ)( s, a ) − Qϕ(s, a )] 2o
+
+= E(s,a )∼D 
+
+n
+
+[r(s, a ) + βEV ϕ(s, a ) − Qϕ(s, a )] 2o
+
+,
+
+(9) where D = {(si, a i)|i = 1 , . . . , N } is a deterministic or random grid of ( s, a ) pairs and EV ϕ(s, a ) is the “emax” function P 
+
+> s′
+
+max a′∈A(s′) Qϕ(s′, a ′)p(s′|s, a ). Minimizing BE( ϕ) can be a difficult, high dimensional optimization problem and we cannot even calculate it if the transition probability p
+
+is unknown. There is also a danger that overfitting Q can produce solutions with low Bellman error BE( ˆϕ) but suboptimal implied policies πˆϕ (Fu et al., 2019). However there are ways to deal with these challenges, and minimizing BE( ϕ) is the most common objective when using DQN and other parametric methods to find approximate solutions to large scale MDPs. Some methods instead target the mean squared projected Bellman error, recognizing that the range of the Bellman operator need not lie in the approximating class. An important goal in RL is to try to avoid numerical integration with respect to p(s′|s, a )entering BE( ϕ) to obtain model-free learning similar to tabular Q-learning, (7). This suggests modifying the BE( ϕ) criterion to choose to ˆϕ to minimize mean squared temporal difference error 
+
+TD( ϕ) = E(s,a,s ′)∼D 
+
+(
+
+r(s, a ) + β max  
+
+> a′∈A(s′)
+
+Qϕ(s′, a ′) − Qϕ(s, a )
+
+2)
+
+. (10) Unfortunately, it is well known that the ˆϕ that minimizes TD( ϕ) differs from the value that mini-mizes BE( ϕ), since it is easy to see that TD( ϕ) = BE( ϕ) + β2E(s,a,s ′)∼D 
+
+(
+
+max  
+
+> a′∈A(s′)
+
+Qϕ(s′, a ′) − EV ϕ(s, a )
+
+2)
+
+, (11) a classic “bias-variance” decomposition, where the second term on the right hand side of (11),     
+
+> 10 The use of Q-learning to train chess strategies is an interesting intermediate case. Although the functional form of p(s′|s, a ) for chess is unknown since this transition probability depends on the action of the opponent, Q-learning can be classified as model-free since it relies on the environment to produce the next state st+1 directly via self-play, without explicitly modeling or using the game’s rules to calculate p(s′|s, a ). In contrast, an algorithm like AlphaZero that uses Monte Carlo tree search explicitly uses the game rules for planning and can be classified as model-based.
+
+8VQ( ϕ), is the variance of the TD error. We now describe three main modifications to the TD criterion (11) that are used in current applications of RL to achieve the benefits of model-free simulation and training while still con-sistently estimating the true Q and V in (6). The first, proposed by Antos et al. (2008), is to parametrize the emax function EV using separate parameters ψ as EV ψ(s, a ) and use (11) to write the Bellman error as BE( ϕ, ψ ) = TD( ϕ) − β2VQ( ϕ, ψ ), and solve the minimax problem ( ˆϕ, ˆψ) = argmin ϕ argmax ψ BE( ϕ, ψ ). They showed that this modification results in a consistent estimator of Q and V , but with the downside that the resulting minimax problem may result “in considerable additional computational burden”. A second approach is to modify TD to include a moving “target function” for Q, resulting in an iterative approach to minimizing BE called fitted value iteration (FVI) Munos and Szepesv´ ari (2008). Suppose we have some estimate of ϕ at itera-tion t − 1, ˆϕt−1. FVI results in an updated estimate ˆϕt = argmin ϕ TD( ϕ, ˆϕt−1) where the modified TD criterion using the target function Qˆϕt−1 is TD( ϕ, ˆϕt−1) = E(s,a,s ′)∼D 
+
+(
+
+r(s, a ) + β max  
+
+> a′∈A(s′)
+
+Qˆϕt−1 (s′, a ′) − Qϕ(s, a )
+
+2)
+
+. (12) The target function “trick” converts the original TD objective (10) into a standard linear or nonlin-ear regression, and it is easy to see that by doing this, the variance term in (11) no longer depends on ϕ, so when Qˆϕt−1 is close to the true Q, BE( ϕ) and TD( ϕ, ˆϕt−1) are both minimized by the same value ˆϕt, and the implied Qˆϕt will be close to the true Q. The third approach is referred to as a 
+
+semi-gradient method (see section 9.3 of Sutton and Barto (2020)) since it equals the ˆϕ that solves (or approximately solves) the K “moment conditions” 0 = E(s,a,s ′)∼D 
+
+ 
+
+r(s, a ) + β max  
+
+> a′∈A(s′)
+
+Qϕ(s′, a ′) − Qϕ(s, a )
+
+
+
+∇ϕQϕ(s, a )
+
+
+
+, (13) where ∇ϕQϕ(s, a ) is the gradient of Qϕ with respect to ϕ.11 If Q = Qϕ∗ , then it is easy to see that for each ( s, a ) the conditional expectation of r(s, a ) + β max a′∈A(s′) Qϕ(s′, a ′) − Qϕ(s, a ) = 0, and hence the moment conditions defining the semi-gradient estimator hold at ϕ = ϕ∗. In the case of a linear approximator, if Q(s, a ) = ⃗ρ(s, a ) ⊤ϕ∗ where ⃗ρ = ( ρ 1, . . . , ρ K ), then the ϕ∗ that solves (13) is given by the least squares TD formula in section 9.8 of Sutton and Barto (2020), 
+
+ϕ∗ =
+
+
+
+E(s,a,s ′)∼D 
+
+⃗ρ(s, a ) ⊤[⃗ρ(s, a ) − β max 
+
+> a′∈A(s′)
+
+⃗ρ(s ′, a ′)] 
+
+ −1
+
+E(s,a )∼D 
+
+n⃗ρ(s, a ) ⊤r(s, a )
+
+o
+
+. (14) Training of parameters in RL and ML models is customarily done sequentially and incrementally using stochastic gradient descent (SGD) where the parameters ϕ are updated in lockstep as each new observation ( st+1 , s t, a t) arrives in a simulated trajectory rather than only periodically after    
+
+> 11 It is referred to as a “semigradient” since the expression on the right hand side of (13) is not a full gradient of TD( ϕ) with respect to ϕin (10), but only with respect to the last term, Qϕ(s, a ).
+
+9the estimation objective and its gradient is evaluated for the full sample (or batch) of simulated outcomes D. SGD can be viewed as the application of stochastic approximation to find a parameter 
+
+ϕ that sets the expected value of a system of equations to zero. In an optimization context such as RL, this system might be the expected gradient of the objective function we are trying to minimize. For example consider the linear semigradient estimator for ϕ which solves (13). Instead of directly solving it with, say, Newton’s method, SGD solves it via the iterations 
+
+ϕt+1 = ϕt + αt
+
+
+
+r(st, a t) + β max  
+
+> a′∈A(st+1 )
+
+Qϕt (st+1 , a ′) − Qϕt (st, a t)
+
+
+
+∇ϕQϕt (st, a t), (15) where αt > 0 is a step size parameter that satisfies the same conditions as for tabular Q-learning in footnote 8. Melo et al. (2008) showed that if we approximate Q as a linear combination of K
+
+features ⃗ρ(s, a ), Q ϕ(s, a ) = ⃗ρ(s, a ) ⊤ϕ, then iterations of the form (15) converge with probability 1 to a parameter ϕ∗ ∈ RK satisfying Qϕ∗ = PK (Λ( Qϕ∗ )) where PK is the orthogonal projection operator onto the linear subspace spanned by the K functions ⃗ρ(s, a ). If Q is in this subspace, then 
+
+Q = Qϕ∗ , PK Λ = Λ, and ϕ∗ is given by (14). Counterexamples due to Baird (1995) and Tsitsiklis and Roy (1997) show that linear semigra-dient TD learning methods such as (15) can diverge unless special care is taken. Sutton and Barto (2020) refer to the problem as the deadly triad that can arise when off-policy training is combined with function approximation and a “bootstrapping target” (i.e. the term max a′∈A(s′) Qϕt (st+1 , a ′)in (15)) that changes too rapidly over iterations t. Melo et al. (2008) prove convergence under a condition on the moment matrix Eπ{⃗ρ(s, a ) ⊤⃗ρ(s, a )} of the basis functions ⃗ρ(s, a ) that guarantees that “the trajectories of the algorithm to closely follow those of an associated ODE with a globally asymptotically stable equilibrium point.” (p. 666). However the main approach to ensuring stability of iterations with nonlinear approximators such as DQN is to use a “target network” that changes more slowly across iterations t. Munos and Szepesv´ ari (2008) provided sufficient conditions for convergence in probability of FVI iterations ˆϕt = argmin ϕ TD( ϕ, ˆϕt−1) where ˆϕt−1 constitute the target network parameters. However their analysis assumes ˆϕt is computed in “batch mode” (i.e. using the entire simulated dataset D) rather than updated recursively using SGD. Zhang et al. (2021, p. 12621) showed that SGD is convergent for linear approximators under “a two-timescale framework, where the main network is updated faster than the target network.” Zhang et al. (2023) provided sufficient conditions for convergence of a SGD implementation of DQN, i.e. FVI using deep neural network approximators Qϕ but using SGD iterations for ϕt. Their analysis also allows for experience replay, i.e. the innovation of storing simulated outcomes in a replay buffer to help improve stability and reduce the computational burden of SGD by using random sampling of simulated outcomes in “minibatches” from the replay buffer to reduce instabilities due to serially correlated training data and smooth the learning process. The DQN algorithm of Zhang et al. (2023) involves a double loop of iterations, with t = 0 , . . . , T 
+
+indexing the “outer” FVI iterations and m = 1 , . . . , M indexing the “inner” SGD iterations. Let 10 ϕt,m be the parameter value at iteration ( t, m ) of this algorithm. The target network parameters are set to ϕt, 0 and are only updated in the outer t loop but are held fixed for all iterations m in the inner SGD loop, whereas the inner SGD iterations at FVI iteration t are given by 
+
+ϕt,m +1 = ϕt,m +αt
+
+ X
+
+> n∈D t,m
+
+
+
+r(sn, a n) + β max  
+
+> a′∈A(sn+1 )
+
+Qϕt, 0 (sn+1 , a ′) − Qϕt,m (sn, a n)
+
+
+
+∇ϕQϕt,m (sn, a n)
+
+ ,
+
+(16) where Dt,m is a minibatch of simulated trajectories drawn at random from the experience replay buffer Dt of trajectories {(sn, a n)|n = 1 , . . . , N } simulated for N time steps under a εt-greedy policy. The experience replay buffer Dt is refreshed at each step t of the outer FVI loop of the training process, but held fixed over the M inner SGD iterations. Theorem 1 of Zhang et al. (2023) provides sufficient conditions (notably a realizability assumption that the true Q lies in the deep-neural-network class Qϕ, their Assumption 1) for the DQN algorithm (16) to generate estimates of Q that converge uniformly at rate 1 /√N , the size of the experience replay buffer: 
+
+∥Qϕt, 0 − Q∥∞ = Op(1 /√N ). 12 
+
+As a result of these algorithm design features that mitigate the deadly triad, DQN is not only convergent but has been successfully applied to solve a number of important large scale problems that were previously intractable. Mnih et al. (2015) used a DQN to train effective strategies for classic Atari 2600 video games. Similar methods were subsequently used for board games such as chess, Go and Shogu, see Silver et al. (2018). In these applications, the transition probability 
+
+p for the states is unknown due to the unknown response of opposing players. However they obtained a model-free implementation of DQN by simulating game paths using self-play where opponent players make choices according to the same εt-greedy policy used by the player who is being trained. Zhang et al. (2023) cites additional empirical successes of DQN in robotics and autonomous vehicles. 
+
+3 Structural Estimation of DDCs 
+
+The term “structural” refers to the attempt to infer the underlying preferences and beliefs of economic agents rather than simply summarizing their behavior, the main goal of reduced-form econometrics. In a DDC model the agent’s decision rule π(a|s) is referred to as a “reduced-form model” that captures behavior: structural econometrics refers to methods that attempt to invert 
+
+π to infer the underlying preferences and beliefs {β, r, p } that generate observed behavior. Key references include Rust (1987), Rust (1994) and the survey by Aguirregabiria and Mira (2010). 13    
+
+> 12 The sup-norm consistency of Zhang et al. (2023) relies on realizability. van der Laan and Kallus (2026) relax this for fitted-Q evaluation: without Bellman completeness, reweighting each Bellman regression by the target-to-behavior stationary density ratio yields finite-sample convergence, in the L2norm of the target’s stationary distribution, to the fixed point of the projected Bellman operator rather than sup-norm convergence to the true Q.
+> 13 See Rust (2014) for a discussion of the origins of SE, dating back to work at the Cowles Foundation in the 1940s and the rationale for this literature including the argument of Robert E. Lucas (1976) that structural models are superior to reduced-form for counterfactual prediction of policy changes. The development of DP in the 1950s and
+
+11 An obstacle to inference is the fact that the optimal policy δ∗ in (3) is a pure strategy (i.e. deterministic function of s). This leads to a problem of statistical degeneracy because different individuals in the same observed state s will typically make different choices, something the model cannot explain. To explain this heterogeneity we augment the state variable as x = ( s, ε ) where ε
+
+is a vector of idiosyncratic preference shocks observed by the agent but not by others. Even though 
+
+δ∗(s, ε ) is still a pure strategy from the agent’s standpoint, it produces choices that appear random from the observer’s standpoint. Under additional assumptions that include the assumption A(s)is finite for all s ∈ S, we can derive a conditional choice probability (CCP) π(a|s) implied by the strategy δ∗ that admits positive probabilities for all feasible choices a ∈ A(s). Using this, we can form a likelihood function to infer {β, r, p } from data on agents’ states and choices. Rust (1987) extended McFadden (1973)’s work on static random utility models of discrete choice to DDC models, resulting in an analytic formula for the CCP π(a|s) known as the multinomial logit model (“softmax” function in the RL literature). Suppose that for each s, ε is a vector with the same length as |A(s)| the number of actions, so for ε(a) is the component of ε associated with action 
+
+a ∈ A(s). Assume that the reward for action a in state ( s, ε ) can be written as r(s, a ) + ε(a). We also assume that the transition density p(s′, ε ′|s, ε, a ) factors as g(ε′|s′)p(s′|s, a ) for a conditional density g(ε′|s′), where ε has a multivariate Gumbel or Type 1 extreme value (EV) distribution with common scale parameter σ and expectation equal to E{ε(a)|s} = 0 for a ∈ A(s). Let V (s, ε ) be the optimal value of this MDP, the solution to the Bellman equation (2). Under these assumptions we can show V (s, ε ) has the representation 
+
+V (s, ε ) = max 
+
+> a∈A(s)
+
+[Q(s, a ) + ϵ(a)] , (17) where Q = Λ σ(Q) is the unique fixed point to the “soft Bellman operator” Λ σ given by Λσ(Q)( s, a ) = r(s, a ) + β X
+
+> s′
+
+σ log 
+
+ X
+
+> a′∈A(s′)
+
+exp {Q(s′, a ′)/σ }
+
+ p(s′|s, a ). (18) The derivation of (17) and (18) use an important property of the EV distribution for ε, namely that the expectation of V (s, ε ) with respect to ε has an analytical expression given by the so-called log-sum or “soft max function” V (s)
+
+V (s) ≡ E {V (˜ s, ˜ε) |˜s = s} =
+
+Z
+
+> ε
+
+max  
+
+> a∈A(s)
+
+[Q(s, a ) + ε(a)] g(dε |s) = σ log 
+
+ X
+
+> a∈A(s)
+
+exp {Q(s, a )/σ }
+
+ .
+
+(19)   
+
+> 60s revolutionized economics by enabling models of sequential decision making under uncertainty, dynamic strategic interactions, and dynamic equilibria in markets which are key features of nearly all economic problems. DP led to new dynamic economic theories based on rational expectations that showed how beliefs about uncertain future events affect the current choices of rational forward looking agents.
+
+12 Using equations (18) and (19) we can derive a “soft Bellman equation” for VV (s) = σ log 
+
+ X
+
+> a∈A(s)
+
+exp 
+
+(
+
+[r(s, a ) + β X
+
+> s′
+
+V (s′)p(s′|s, a )] /σ 
+
+) . (20) Equation (18) defines a “soft Q” as the fixed point of the smoothed Bellman operator Qσ = Λ σ(Qσ), and (20) defines V as a fixed point of the smoothed Bellman operator Vσ = Γ σ(Vσ) and both are contractions. These operators are equivalent to the corresponding “hard operators” Λ 0 and Γ 0 in MDPs without the state variable ε, and one can show that Qσ and Vσ converge to the standard hard Q and V functions as σ ↓ 0. The representation of V (s, ε ) in equation (17) means that the decision rule π(a|s, ε ) is isomorphic to a static random utility model where Q(s, a ) + ε(a) is the reward from action a. The CCP π(a|s)is the conditional probability that the DM chooses action a ∈ A(s) given the observed state s, and under the assumptions above, it has the multinomial logit form 
+
+π(a|s) =
+
+Z
+
+I
+
+
+
+Q(s, a ) + ε(a) ≥ max 
+
+> a′∈A(s)
+
+[Q(s, a ′) + ε(a′)] 
+
+
+
+F (dε |s)= exp {Q(s, a )/σ }
+
+P 
+
+> a′∈A(s)
+
+exp {Q(s, a ′)/σ } . (21) As σ ↓ 0, π(a|s) converges to a degenerate probability that equals 1 if Q(s, a ) is the largest Q
+
+value and 0 otherwise, i.e. to the optimal pure strategy π in equation (3) for MDPs without the 
+
+ε variable. It follows that the choice-specific values Q(s, a ) in (18) and CCPs π(a|s) in (21) are exactly the same as the “soft Q” values and optimal policy derived in the RL literature under the assumption that agents care about entropy of the policy π, given in equation (8) of section 2.4. Aguirregabiria and Mira (2002) showed how to implement a “soft” analog of policy iteration, 
+
+see section 2.2, to solve the soft Bellman equation (20). Equation (21) is the policy improvement step, the analog of (3), that computes the policy π implied by Q. The analog of the policy valuation 
+
+step (4) is the function Vπ that solves the linear system 
+
+Vπ(s) = X
+
+> a∈A(s)
+
+π(a|s)[ r(s, a ) + Eπ{ε(a)|s, a } + β X
+
+> s′
+
+Vπ(s′)p(s′|s, a )] , (22) where Eπ{ε(a)|s, a } is the conditional expectation of ε(a) given that action a is chosen in state s
+
+under decision rule π. The EV assumption implies that Eπ{ε(a)|s, a } = −σ log( π(a|s)), and using equation (21), we see that right side of (22) equals the soft max function defining the soft Bellman operator in equation (20). Soft policy iteration solves the soft Bellman equation Vσ = Γ σ(Vσ)by cycling between policy valuation steps (22) and policy improvement steps (21), using the Qπ
+
+implied by Vπ in equation (18). Hard/soft policy iteration is equivalent to using Newton’s method to solve the hard/soft Bellman equations for V .13 Equation (22) is the Bellman equation for the entropy-adjusted MDP problem, (8), where the entropy term H(π(s)) equals the expectation of the unobserved component of rewards ε under an optimal pure strategy δ∗(s, ε ) for the MDP with augmented state variable ( s, ε ), value function 
+
+V (s, ε ) (17), and implied CCP π (21). It also implies that σ log( π(a|s)) = Q(s, a ) − V (s) ≡ A (s, a ), where A(s, a ) is known as the advantage function in the RL literature. We can use it to rewrite the fixed point equation (18) for Q as a linear system depending on r(s, a ) and log( π(a|s)), 
+
+Q(s, a ) = r(s, a ) + β X
+
+> s′
+
+X
+
+> a′∈A(s′)
+
+−σ log( π(a′|s′)) + Q(s′, a ′) π(a′|s′)p(s′|s, a ). (23) 
+
+Q decomposes as Q(s, a ) = Qr(s, a ) + Qε(s, a ) where Qr(s, a ) is the component of discounted value from observed rewards r and Qε(s, a ) is the component from unobserved rewards ε. Substituting expression (22) in place of (20) in the equation for Q in (18), we can show that Qr and Qε are solutions to the linear systems 
+
+Qr(s, a ) = r(s, a ) + β X
+
+> s′
+
+X
+
+> a′∈A(s′)
+
+Qr(s′, a ′)π(a′|s′)p(s′|s, a ) (24) 
+
+Qε(s, a ) = β X
+
+> s′
+
+X
+
+> a′∈A(s′)
+
+−σ log( π(a′|s′)) + Qε(s′, a ′) π(a′|s′)p(s′|s, a ). (25) The next section shows how this decomposition can reduce the computational burden of estimating DDCs. 
+
+3.1 Estimation Methods for DDCs 
+
+The most common estimation method for DDCs is some form of maximum likelihood. Suppose we observe a random sample of trajectories D = {τi|i = 1 , . . . , N } where the trajectory τi for individual i is a sequence of consecutive states and actions τi = {(sit , a it )|t = 0 , . . . , T i}. Suppose that we smoothly parametrize ( r, p ) using a vector unknown parameters θ, which we denote by rθ
+
+and pθ.14 Using the implicit function theorem, we can show that Vθ and Qθ, the contraction fixed points given in equations (19) and (18), are continuously differentiable function of θ. Using these fixed points and the logit formula for π(a|s) in equation (21) we can write a full likelihood function 
+
+Lf
+
+> D
+
+(θ) for the data as a function of the unknown parameters θ given by 
+
+Lf
+
+> D
+
+(θ) = 
+
+> N
+
+Y
+
+> i=1
+> Ti
+
+Y
+
+> t=1
+
+πθ(ait |sit )pθ(sit |sit −1, a it −1). (26) The smoothness of Vθ and Qθ in θ implies that the CCP πθ and the likelihood Lf
+
+> D
+
+(θ) are both smooth functions of θ so the standard asymptotic efficiency properties of parametric maximum likelihood estimation apply.    
+
+> 14 The discount factor βis often treated as known, though in some cases it is also estimated and thus part of θ.
+
+14 The Nested Fixed Point algorithm (NFXP) (Rust, 1988) computes the MLE of θ via a standard outer hill-climbing loop that maximizes Lf
+
+> D
+
+(θ), where each evaluation calculates the contraction fixed point Qθ = Λ θ(Qθ) that defines the choice-specific values Qθ where Λ θ is the operator defined on the right hand side of equation (18). Notice that Lf
+
+> D
+
+(θ) depends on θ via Qθ. An alternative strategy (Su and Judd, 2012) computes the MLE via the MPEC algorithm, maximizing Lf
+
+> D
+
+(θ, Q )as a function of ( θ, Q ) subject to the fixed point constraint Qθ = Λ θ(Qθ). 15 NFXP’s computational burden stems from computing the inner fixed point Qθ = Λ θ(Qθ) for each trial value of θ in the outer hill-climbing algorithm. 16 Newton’s method (e.g. policy iteration) is typically used to solve for Qθ or for Vθ from the soft Bellman equation (20). Even though Newton’s method converges rapidly, it requires O(|S|3) operations per Newton/policy iteration step, making NFXP burdensome for large state spaces S. Therefore alternative estimation methods have been proposed that reduce the total number of policy iteration steps required to estimate θ.The “CCP estimator” (Hotz and Miller, 1993) for r uses a non-parametric estimate of π(a|s) to avoid repeated solution of Q over the search for θ that NFXP requires. Consider the case where rθ
+
+is linear in parameters, i.e. we can write rθ(s, a ) = r(s, a ) ∗ θ ≡ PKk=1 rk(s, a )θk for known functions ⃗r = ( r 1, . . . , r K ) called features in the IRL literature. Then (24) implies that Qr(s, a ) = R(s, a )⊤θ
+
+where R is the solution to 
+
+R(s, a ) = ⃗r(s, a ) + β X
+
+> s′
+
+X
+
+> a′∈A(s′)
+
+R(s′, a ′)π(a′|s′)p(s′|s, a ) = ⃗r(s, a ) + βER (s, a ), (27) and ER (s, a ) is a shorthand for the conditional expectation of R(s, a ) in the middle of the expression in (27). It follows that we only need to solve (27) once using a non-parametric estimate of ˆ π along with Qε in (25) to serve as a “correction term” to obtain the following form for the CCP 
+
+πθ(a|s) = exp { ˆR(s, a )⊤θ + ˆQε(s, a )}
+
+P 
+
+> a′∈A(s)
+
+exp { ˆR(s, a ′)⊤θ + ˆQε(s, a ′)} , (28) where ˆR(s, a ) is the solution to (27) and ˆQε is the solution to (25) using non-parametric first stage estimators ˆ π(a|s) and ˆ p(s′|s, a ). The CCP estimator ˆθ maximizes the partial likelihood Lp
+
+> D
+
+(θ) given by 
+
+Lp
+
+> D
+
+(θ) = 
+
+> N
+
+Y
+
+> i=1
+> Ti
+
+Y
+
+> t=1
+
+πθ(ait |sit ), (29) where π is given in (28). 17 Thus, when r is a linear combination of known features, we only need         
+
+> 15 Su and Judd (2012) claim that the MPEC algorithm is substantially faster than NFXP, but this was due to using SA (Iskhakov et al., 2016) to compute the fixed point Qθ= Λ θ(Qθ), which is slow when βis close to 1. When Newton’s method is used to compute this fixed point, the cpu times for MPEC and NFXP are roughly comparable with NFXP being faster on test problems with large sample sizes.
+> 16 O˘ guz and Bray (2026) avoid the inner fixed-point loop via unnested fixed point (UFXP and OUFXP) estimators built on a dual representation of the Bellman equation, reporting DDC estimation speedups of up to three orders of magnitude while allowing neural-network utilities.
+> 17 See Chernozhukov et al. (2022) for a modified version of the CCP estimator that is “locally robust” i.e. it corrects
+
+15 to compute ˆR and ˆQε once at the start of the estimation, requiring K + 1 solutions of systems with 
+
+|S| equations and unknowns, where K is the number of features. This can be further reduced to a single solution if we assume that r(s, a s) is known for some “normalizing alternative” as ∈ A(s)(see Section 3.3). A cost of the CCP estimator is that it is less efficient than using NFXP to estimate the same partial likelihood criterion (29) due to the noise in the first stage non-parametric estimates ˆ π that are used to construct the ˆQε function in (28). Aguirregabiria and Mira (2002) (AM) addressed this problem by proposing an iterative estimator called nested pseudo likelihood (NPL) that uses an initial non-parametric estimate ˆ π to compute the value function Vˆπ implied by this initial estimate by solving for it in the policy valuation step in equation (22), which we denote as ˆVθ, ˆπ since it depends both on ˆ π and the parameters θ entering the reward function. NPL estimates ˆθ using a pseudo-likelihood similar to (29) except that the CCP πθ(a|s) is evaluated using (21) using estimated Q functions given by ˆQθ(s, a ) = rθ(s, a ) + β X
+
+> s′
+
+ˆVθ, ˆπ(s′|s, a )p(s′|s, a ), (30) Thus, the likelihood Lπ(θ) depends implicitly on the first stage non-parametric CCP estimate ˆπ, which can be regarded as a “nuisance parameter”. In principle, estimation noise in ˆ π will contaminate and affect the asymptotic covariance matrix for the parameters of interest θ. However at the fixed point, we have ∂V (s)/∂π = 0 and AM showed that this zero Jacobian property implies that the information matrix for the parameters of interest θ is “Neyman orthogonal” with respect to estimation error in the first stage nuisance parameter ˆ π, so the NPL estimator of θ is unaffected by noise in the first stage ˆ π, at least asymptotically. In smaller samples the orthogonality may not hold exactly, but NPL can be iterated to result in improved finite sample properties. An iterative or 
+
+k-step version of NPL uses the initial estimate ˆθ to update the estimate of the CCPs using equation (21), then using the updated policy ˆ π = πˆθ and a soft policy valuation step (23) to obtain updated 
+
+V and Q functions (30), which are in turn used in the likelihood (29) to produce an updated estimate ˆθ′. Iterative NPL amounts to “swapping” the policy iteration and maximization steps of the NFXP estimator (NFXP maximizes the likelihood over θ in the “outside” loop and does policy iteration in the “inside” loop). Swapping the order of maximization and policy iteration reduces the total number of policy iteration steps required to estimate θ. AM showed that if the iterated version of NPL converges, it produces the same estimate ˆθ that NFXP produces from maximization of the partial likelihood (29). Thus the iterated NPL estimator is as efficient but faster than NFXP and more efficient but slower than the CCP estimator. 18 
+
+The extreme value (EV) assumption, while restrictive, dramatically reduces computational burden via the analytic expressions it implies for the softmax CCP (21) and expected value func-    
+
+> for sampling error in the first stage estimates of the functions ˆH(s, a ) and Qε(s, a ).
+> 18 See also efficient pseudo likelihood (EPL) (Dearing and Blevins, 2025), a similar iterative procedure that is also an efficient sequential estimator that can estimate parameters of dynamic games.
+
+16 tion (19). Other natural choices for the unobserved ε such as multivariate normal do not result in analytical expressions and thus considerable computation to approximate these quantities. The conditional independence (CI) of the {εt} shocks is another restrictive assumption driven by compu-tational considerations. Though there are computationally efficient recursive likelihood integration methods, e.g. Reich (2018), that can allow for serial correlation in εt shocks, these methods are still burdensome for estimation. Imai et al. (2009) and Norets (2009) introduced Bayesian inference in DDC models that use Markov Chain Monte Carlo (MCMC) methods to simulate from rather than directly compute the posterior by numerical integration. MCMC facilitates data augmenta-tion where latent variables can be simulated symmetrically with observed ones rather than being marginalized from the likelihood, allowing us to relax the EV and CI assumptions. They also show that RL can be used to update the Q functions of the underlying MDP problem in parallel inside the overall do-loop for the MCMC simulations where the structural parameters are drawn from the likelihood using Gibbs’ or Metropolis-Hastings’ samplers. There are also non-Bayesian, non-likelihood based simulation estimators such as the method of simulated moments (MSM) McFadden (1989), indirect inference Gourieroux et al. (1993), the 
+
+moment inequality estimator of Bajari et al. (2007), and the adversarial estimator of Kaji et al. (2023) that use stochastic simulations to estimate problems where it is difficult to explicitly specify or compute a likelihood function. All the estimators discussed so far are designed for problems where the state space is discrete and small enough to be enumerable. When the state space is large or contains continuous variables, these methods become computationally infeasible, motivating the function approximation techniques we turn to next. 
+
+3.2 Function Approximation Methods for Large State Spaces 
+
+When the state space S is large (i.e. the DDC has many continuous state variables that must be discretized) the approaches discussed above that use PI and repeated solution of large linear systems with |S| equations and unknowns are computationally infeasible. Following section 2.3 we can approximate the fixed point Q = Λ σ(Q) of the soft Bellman operator in equation (18) by 
+
+Qϕ(s) with a flexible parametric family such as a neural network with weights ϕ, and approximate the solutions to the fixed point problems (18) and (19) more tractably as nonlinear least squares problems. Let BE( ϕ, θ ) be the mean squared Bellman error defined in equation (9). It depends both on the parameters (weights) ϕ of the neural network approximation Qϕ as well as the structural parameters θ via the soft Bellman operator Λ σ,θ (Qϕ) defined in (18) via the dependence of the structural functions {β, r, p } on the parameters θ. A nested least squares estimator similar to NFXP can estimate θ by maximizing the likelihood Lf
+
+> D
+
+(θ) (26) while minimizing BE( ϕ, θ ) over 
+
+ϕ for each value of θ. A penalized likelihood estimator called SEES (Luo and Sang, 2024), for 
+
+sieve-based efficient estimator for structural models , chooses ˆθ and ˆϕ to maximize (ˆθ, ˆϕ) = argmax 
+
+> θ,ϕ
+
+log( Lf
+
+> D
+
+(θ)) − λBE( ϕ, θ ), (31) 17 where λ ≥ 0 is a penalization parameter. Consistency of SEES requires the use of a sieve, i.e. the dimension of ϕ must grow to infinity at certain rate with the sample size so that the approximation error in approximating Q by Qϕ converges to zero. A related estimator, the neural network efficient estimator (NNES) of Nguyen (2025), maximizes a penalized criterion similar to SEES in a modified version of the sequential NPL estimator of Aguirregabiria and Mira (2002). A challenge facing sieve-based estimators is that ϕ are high dimensional “nuisance parameters” (their only purpose is to approximate Q) whereas θ are the “parameters of interest” that determine rewards and beliefs, {β, r, p }. Since ˆϕ minimizes the sum of squared residuals BE( ϕ, θ ) for each θ,it follows that ˆϕ will be an implicit function of θ. The asymptotic covariance matrix for ˆθ requires 
+
+∇θQˆϕ(θ), the gradient of Qˆϕ(θ) with respect to θ. ˆϕ(θ) is a well defined smooth function of θ by the Implicit Function Theorem, and differentiating the first order condition for ˆϕ(θ), ∇ϕQϕ = 0 at 
+
+ϕ = ˆϕ(θ), to compute ∇θ ˆϕ(θ) requires calculating the Hessian matrix ∇2
+
+> ϕ,ϕ
+
+Qϕ which is typically infeasible to compute. Thus computing ∇θQˆϕ(θ) = ∇ϕQˆϕ(θ)∇θ ˆϕ(θ) via the chain rule is generally out of the question. Computing ∇θQ via numerical differentiation of Qˆϕ(θ) with respect to θ is also time-consuming and potentially inaccurate because multiple local optima in ϕ result in fragile solutions ˆϕ(θ) where small changes in θ produce discontinuous jumps in ˆϕ(θ) and Qˆϕ(θ). Nguyen (2025) shows that a fast and accurate way to compute ∇θQˆϕ(θ) is to use the method of equilibrium propagation introduced by Zucchet and Sacramento (2022). 
+
+3.3 The Identification Problem 
+
+Section 2 showed how π is calculated from the structure {β, r, p }, which we summarize by the mapping π = f (β, r, p ). The Identification Problem asks if this mapping is invertible: given π
+
+is there a unique underlying structure {β, r, p } that implies it? Unfortunately, without further restrictions the answer is negative, as shown by Hotz and Miller (1993), Rust (1994), Ng et al. (1999), and Magnac and Thesmar (2002). Consider the first step of the inversion process, uncovering 
+
+Q from π:log  π(a|s)/π (a′|s) = Q(s, a ) − Q(s, a ′), s ∈ S, a, a ′ ∈ A. (32) Thus, knowledge of π is insufficient to recover all the Q values: only the differences in Q are iden-tified. Indeed, the structure {β, r, p } contains 1 + |S|(|A| − 1) + |S|2|A| parameters, more than the 
+
+|S|(|A| − 1) parameters of π, so we will generally have “more equations than unknowns” so the structure is only partially identified. Unique (or “point”) identification requires additional restric-tions on {β, r, p }. A common assumption is that r and p have known parametric functional forms that depend on a relatively small number of parameters θ. In some situations the reward function can be treated as known, and this facilitates the identification of subjective beliefs p(s′|s, a ). 19        
+
+> 19 For example Anderson et al. (2025) are able to identify the subjective beliefs of professional tennis servers about how their serve strategies affects their probability of winning a tennis game. These beliefs take the form of a transition
+> p(s′|s, a ) where sdenotes the point state of the game and adenotes serve direction. Identification of beliefs is possible because it is reasonable to assume ris known: i.e. the server earns a reward of 1 if they win the game and 0 otherwise, and due to reasonable parametric restrictions on p.
+
+18 Rational expectations is a strong identifying assumption, i.e. agents’ subjective beliefs p(s′|s, a )correspond to the actual probability governing these transitions. With sufficient data, p can be estimated non-parametrically and treated as known from the standpoint of identification. The dis-count factor β is often assumed to be known a priori, though Abbring and Daljord (2020) showed that β is identified under rational expectations with certain restrictions on rewards. 20 
+
+When {β, p } are known, identification of r depends on the assumption that either it has a known parametric functional form rθ where the dimension of θ is less than |S|(|A| − 1), or that for each s ∈ S there is a normalizing or “anchor action” as such that r(s, a s) is known. The latter assumption amounts to |S| restrictions that imply there are only |S|(|A| − 1) unknown rewards to be recovered, the same number of free values of π. Hotz and Miller (1993) and Kang et al. (2025) show that in this “exactly identified” case, we can calculate Q(s, a s) from knowledge of r(s, a s) and 
+
+π(as|s) using equation (23) and then (32) allows us to recover all remaining Q values. Using the Q
+
+values we can back out the remaining unknown rewards r from the soft Bellman equation (18). 21 
+
+The assumption that r(s, a s) is known for some normalizing action as in each state s ∈ S is far from innocuous. If wrong, estimated rewards will not equal true rewards even though the model perfectly fits π, and counterfactual predictions may differ from actual outcomes. For example we can always estimate rewards with the trivial estimator ˆ r(s, a ) = log( π(a|s)) that perfectly fits observed behavior and is optimal, i.e. the implied Q function satisfies the fixed point Q = Λ σ(Q)in (18). However easy to see this estimator differs from the true reward: ˆr(s, a ) = r(s, a ) + 
+
+β R V (s′)p(s′|s, a ) − V (s). Indeed, in the absence of any prior restrictions on rewards, we can only identify a set of rewards R(r) = {rh} that are observationally equivalent to r given by rh(s, a ) = 
+
+r(s, a ) + β P 
+
+> s′
+
+h(s′)p(s′|s, a ) − h(s) for any function h : S → R. Ng et al. (1999) refers to R(r) as “potential-based reward shaping” and shows that policy invariance holds: i.e. πrh = f (β, r h, p ) = 
+
+πr = f (β, r, p ) for all rh ∈ R (r). However for alternative transition probabilities λ(s′|s, a )̸ =
+
+p(s′|s, a ) policy invariance does not hold: πrh = f (β, r h, λ )̸ = πr = f (β, r, λ ), i.e. counterfactual behavior implied by observationally equivalent rewards rh and r differ in the new environment λ.Identification can potentially be established if we have the luxury of being able to conduct experiments with subjects to see how their behavior changes in different environments. For example, Cao et al. (2021) prove rewards are identifiable up to a constant if the agent is observed in two environments with sufficiently different transition laws. The DDC and IRL literatures use different assumptions to overcome the identification problem, reflecting different goals of the respective fields. van der Laan et al. (2026) and Kalouptsidi et al. (2021) show that some counterfactuals are identified even if {β, r, p } is partially identified, providing a “call for caution while leaving room for optimism: although counterfactual behavior and welfare can be sensitive to identifying restrictions imposed on the model, there exists important classes of counterfactuals that are robust to such        
+
+> 20 Yao et al. (2024) show that observing experts with different planning horizons identifies both rewards and discount factors.
+> 21 van der Laan et al. (2026) provide an alternative condition that implies exact identification of r, namely that there exists some known policy π(a|s) with zero expected reward, 0 = P
+> a∈A(s)r(s, a )π(a|s), for all s∈S.
+
+19 restrictions.” (p. 385). 22 
+
+4 Inverse Reinforcement Learning 
+
+The IRL literature (Ng and Russell, 2000, p. 663) has two motivations for inferring rewards: 1) “the potential use of reinforcement learning and related methods as potential models for human and animal learning” and 2) to provide a reward function that RL can use to construct an “intelligent agent that can behave successfully in a particular domain.” Though they note that imitation and apprenticeship learning (IL and AL) can be used to learn a policy π, “the reward function often provides a much more parsimonious description of behavior” (Ng and Russell, 2000, pp. 663–664) so that IRL can constitute an effective form of AL. IRL has become an important method in many areas of robotics and Wang et al. (2025, p. 5446) note that IRL has “found great success in predicting trajectories through inferring cost or reward functions from expert demonstrations, and then using these functions to guide the behavior of self-driving vehicles in unseen driving environments.” The IRL problem (Ng and Russell, 2000) is to infer the reward function rθ(s, a ) from expert demonstrations. Given observed trajectories D = {τi}Ni=1 where τi = {(sit , a it )}Ti
+
+> t=0
+
+, or an expert policy πE (the demonstrator’s behavioral policy), we seek the parameters θ that rationalize observed behavior. The problem is ill-posed: many θ can yield the same observed behavior. For linear rewards, Abbeel and Ng (2004) showed that matching the expert’s expected discounted feature counts (the discounted sum of features accumulated along trajectories under a policy) suffices for policy imitation but does not uniquely identify θ. Different IRL algorithms represent different principles for selecting a unique θ from this equivalence class. We selectively review methods most relevant to DDC and economic applications, referring readers to Azar et al. (2020), Arora and Doshi (2021), Gleave and Toyer (2022), and Adams et al. (2022) for comprehensive surveys. Originally, Ng and Russell (2000) proposed selecting a unique θ via maximum margin: require the expert’s cumulative reward to exceed any alternative policy’s by a margin. Ratliff et al. (2006) refined this by making the margin grow with the alternative’s deviation from expert behavior, penalizing vastly different policies more heavily. 23 However, as Ziebart et al. (2010) argued, margin methods treat the expert demonstration as a clear “winner” that must beat every alternative by a fixed cushion under one reward function. Real demonstrations are noisy, sometimes suboptimal, and features inevitably miss factors the expert cared about. These limitations motivated the probabilistic approaches that follow. 
+
+> 22 Rolland et al. (2022) prove that linearly independent transition matrices across environments guarantee transfer even without full reward identification.
+> 23 This framework resembles moment inequality estimators in dynamic games (Bajari et al., 2007).
+
+20 4.1 Maximum Entropy and Maximum Likelihood Methods 
+
+The first use of likelihood-based approach in IRL with a softmax formulation for π equal to the logit CCP (21) in the DDC literature was Bayesian IRL (BIRL) (Ramachandran and Amir, 2007). Rather than seeking a single reward function, BIRL treats IRL as Bayesian inference: it specifies a prior Π( r) over reward functions, defines a likelihood of observed behavior given r, and uses MCMC to sample from the posterior Π( r|D ). The likelihood models expert actions using the softmax form (21), but with the “hard Q” associated with the Bellman equation (6) with unobserved states/shocks ε rather than the internally consistent “soft Q” equation (18) that accounts for these shocks. Thus BIRL treats stochastic choice as optimization error rather than entropy-regularized optimality. Ramachandran and Amir (2007) showed that the maximum margin algorithm of Ng and Russell (2000) corresponds to the maximum a posteriori (MAP) estimator under a Laplacian prior, revealing that margin maximization implicitly assumes sparse reward structures. 24 
+
+Ziebart et al. (2010) introduced maximum causal entropy (MCE) IRL, deriving the optimal policy from entropy maximization. Following Jaynes (1957), when multiple policies are consistent with observed behavior, maximum entropy selects the one least committed to structure beyond what the data require. Let μD = 1
+
+> N
+
+PNi=1 
+
+PTi 
+
+> t=0
+
+βt⃗r(s it , a it ) denote the expert’s discounted feature counts. MCE IRL solves max  
+
+> π
+
+Hc(π) subject to Eπ
+
+( TX
+
+> t=0
+
+βt⃗r(s t, a t)
+
+)
+
+= μD, (33) where Hc(π) = Eπ{− PTt=0 βt log π(at|st)} is causal entropy. 25 Introducing Lagrange multipliers 
+
+θ ∈ RK and solving the KKT conditions yields the softmax policy (21), where Qθ and Vθ satisfy the soft Bellman equations (18)–(19) with linear reward rθ(s, a ) = ⃗r(s, a ) ⊤θ.26 This establishes mathematical equivalence between MCE IRL and DDC under extreme value (EV) shocks; Ziebart et al. (2010)’s maximum causal entropy IRL is nearly isomorphic to DDC models under the AS/CI/EV assumptions discussed in section 3. Equivalently, assuming experts choose according to (21), maximum likelihood estimation yields the log partial likelihood (29). The gradient takes the form ∇θ log Lp
+
+> D
+
+(θ) = μD −Eπθ {P 
+
+> t
+
+βt⃗r(s t, a t)},which is the difference between expert and model feature expectations. At the optimum these expec-tations match, precisely the constraint in (33), confirming equivalence of the entropy and likelihood               
+
+> 24 BIRL’s local normalization produces label bias : paths with fewer branches receive higher probability even when total rewards are equal. MCE IRL eliminates this via soft Bellman backups that couple each state’s value to all future branching. MCE also offers convex optimization (versus MCMC), a unique solution, robustness to suboptimal demonstrations, and natural extension to deep RL; see Ni et al. (2022) for a unified treatment.
+> 25 Ziebart et al. (2008) originally maximized Shannon entropy H(τ) = −P
+> τP(τ) log P(τ) over trajectories τ, which suffices for deterministic MDPs. However, Shannon entropy includes randomness from state transitions, creating a risk-seeking bias in stochastic MDPs. Causal entropy isolates policy randomness; the two coincide when transitions are deterministic.
+> 26 Pitombeira-Neto et al. (2024) independently derive this softmax policy from RUM with Gumbel shocks, redis-covering the DDC approach.
+
+21 perspectives (Ziebart et al., 2010). 27 Babes-Vroman et al. (2011) made this MLE interpretation explicit by directly maximizing trajectory likelihood. The Max-Ent IRL algorithm (Ziebart et al., 2010) iterates until convergence. First, a backward pass solves the soft Bellman equation (18)–(19) for Qθ and Vθ, from which the policy πθ(a|s) follows from (21). Next, a forward pass computes expected state-action visitation Eπθ {P 
+
+> t
+
+βt⃗r(s t, a t)} via dynamic programming or Monte Carlo simulation. Finally, the gradient update θ ← θ + α(μD −
+
+Eπθ {·} ) adjusts reward parameters. This requires solving the soft Bellman equation and computing state visitation frequencies at each iteration, making the method model-based. Classic MaxEnt IRL further requires a discrete, enumerable state space and knowledge of p(s′|s, a ), limiting applicability to tabular settings. 28 
+
+Abbeel (2016) (Guided Cost Learning, GCL) scaled MaxEnt IRL to high-dimensional con-tinuous domains by addressing these limitations. Three key innovations enable this: (1) neural networks enable both feature learning and nonlinear cost representation, replacing hand-crafted features with more flexible reward functions rθ(s, a ); (2) importance sampling corrects the distri-bution mismatch when policy samples come from a suboptimal generator rather than the current optimal policy; and (3) lazy policy optimization runs the inner RL loop for only a few iterations per reward update, avoiding the prohibitive cost of full convergence. GCL approximates the MaxEnt gradient μD − Eπθ {⃗r} using these sampled, reweighted trajectories, enabling end-to-end training in continuous control tasks. 
+
+4.2 Adversarial Methods 
+
+Adversarial methods frame IRL as a different type of bi-level optimization: an outer loop updates reward parameters while an inner loop finds the optimal policy, implemented via a discriminator-generator game. While Max-Ent IRL requires solving Bellman equations (and hence knowing 
+
+p(s′|s, a )), adversarial methods offer a model-free alternative using the discounted occupancy mea-sure dπ(s, a ) = Eπ{P∞ 
+
+> t=0
+
+βtI(st = s, a t = a)}, which reformulates cumulative reward as an inner product ⟨dπ, r ⟩. Ho and Ermon (2016) show that relaxing feature-matching to occupancy-measure divergence yields Generative Adversarial Imitation Learning (GAIL), resulting in the saddle point problem min  
+
+> π
+
+max  
+
+> D:S×A→(0 ,1)
+
+EdE {log D(s, a )} + Eπ{log(1 − D(s, a )) } − λH c(π), (34) where dE is the expert’s occupancy measure and λ weights causal entropy Hc(π). The inner maximization trains a discriminator D to distinguish expert from policy samples; the outer min-imization updates π via RL to fool D. At equilibrium, the objective equals the Jensen-Shannon 
+
+> 27 This duality (that maximizing entropy subject to feature-matching constraints yields the same solution as max-imum likelihood in exponential families) is a general result; see Berger et al. (1996) for a comprehensive treatment in the context of natural language processing. Ziebart et al. (2008) applied MCE IRL to taxi driver route choices in Pittsburgh, correctly predicting nearly 80% of paths in a holdout sample.
+> 28 Kim et al. (2021) prove strong identifiability in tabular MaxEnt requires the MDP’s domain graph to be coverable and aperiodic.
+
+22 divergence between occupancy measures. GAIL is model-free: only samples from π and the ex-pert are needed. However, the optimal discriminator approximates the density ratio D∗(s, a ) = 
+
+dE (s, a )/[dE (s, a ) + dπ(s, a )], and because occupancy measures depend on transition dynamics 
+
+p(s′|s, a ), the induced reward log D(s, a ) bakes in training dynamics and causes policy failure when transferring to new environments. 29 This failure of transferability is a major drawback for counter-factual analysis. To recover a truly portable reward, Fu et al. (2018) introduced Adversarial IRL (AIRL) with a structured discriminator whose logits decompose as 
+
+fϕ(s, a, s ′) = gϕ(s, a ) + βh ϕ(s′) − hϕ(s). (35) Here gϕ : S × A → R is the reward approximator and hϕ : S → R is a learned shaping potential, both parameterized by neural network weights ϕ. This structure implements potential-based reward shaping from Section 3.3: gϕ captures the intrinsic reward while hϕ absorbs dynamics-dependent value contributions. 30 The discriminator takes the form 
+
+Dϕ(s, a, s ′) = exp( fϕ(s, a, s ′)) exp( fϕ(s, a, s ′)) + π(a|s) . (36) After training, the portable reward is extracted as r(s, a ) = gϕ(s, a ). The theoretical guarantee requires restrictions. Under deterministic dynamics, a reward func-tion r(s) that does not depend on action a, and gϕ restricted to depend only on s, Fu et al. (2018) prove that at the optimum gϕ(s) = r(s) + const and hϕ(s) = V (s) + const. Thus gϕ recovers the intrinsic reward up to a constant, enabling transfer to new dynamics. Without the state-only restriction, or under stochastic dynamics, the decomposition is approximate. Kaji et al. (2023) provide theoretical foundations showing adversarial estimation is a principled extremum estimator. With a logistic discriminator distinguishing real from simulated data, the adversarial objective asymptotically reduces to optimally-weighted MSM, automatically selecting informative moments. Under correct specification the estimator achieves parametric efficiency; un-der misspecification it attains the parametric rate. When applied to IRL, the generator corresponds to πθ producing occupancy measures while the discriminator plays the same role as in AIRL. This justifies why adversarial IRL scales to high-dimensional settings: the discriminator is an optimal moment selector that adapts to the data distribution, not merely a learned cost function. Recent work addresses AIRL’s identification limitations in economic settings. The disen-tanglement theorem of Fu et al. (2018) requires deterministic dynamics and state-only rewards 
+
+gϕ(s), assumptions rarely satisfied in economic applications where utilities are inherently action-dependent. 31 When rewards depend on actions, the decomposition (35) is not unique: variation in        
+
+> 29 Fu et al. (2018) demonstrate this dramatically: a GAIL-trained quadrupedal ant fails completely when two legs are disabled at test time, while AIRL’s portable reward allows the agent to develop a new crawling gait.
+> 30 AIRL’s per-transition decomposition fϕ(s, a, s ′) matches the original definition in Ng et al. (1999) (Theorem 1):
+> F(s, a, s ′) = γΦ( s′)−Φ( s). The expected form rh(s, a ) in Section 3.3 integrates this over p(s′|s, a ).
+> 31 When rewards depend on actions, identification requires normalizing assumptions analogous to the anchor action
+
+23 gϕ can be offset by changes in hϕ, creating an entanglement between immediate payoffs and forward-looking anticipation. Lee et al. (2026, p. 1) showed how to relax these restrictions in an empirical application to serialized content consumption (i.e. where consumers read fiction or watch television series in successive episodes) which is inherently forward-looking: “users weigh the immediate cost of access against the expected value of continuing further along the sequence, with content shaping how those trade-offs evolve over time.” They show that economic structure provides a credible identifying normalization to distinguish current and future rewards: consumers have an exit option with known flow payoff gϕ(s, exit) = 0 leading to an absorbing state with hϕ(sabs ) = 0. These anchors pin down the shaping potential, then gϕ(s, read) is identified by substitution. This mir-rors the normalizing action assumption in DDC identification (Rust, 1994; Magnac and Thesmar, 2002). Methodologically, Lee et al. (2026) demonstrate AIRL can be used with neural networks to estimate reward functions over unstructured chapter text as high-dimensional state variables while allowing for unobserved heterogeneity in consumers. Using the estimated reward functions they evaluate counterfactual pricing policies such as wait for free access and demonstrate that “For high–willingness-to-pay users, free access facilitates progression through weaker episodes and can increase downstream purchases” and “concentrating paywalls at high-engagement episodes and leaving weaker episodes free preserves progression and raises monetization” (Lee et al., 2026, p. 33). 
+
+4.3 Model-Free IRL 
+
+The AIRL estimator of serialized fiction consumption is an example of model-free IRL. The eco-nomic model presumes individuals have a belief p(s′|s, a ) about how content of the next episode s′
+
+depends on the current episode s, which is key to their binary decision a of whether to consume the next episode, yet it is not clear how to specify or estimate this belief empirically. As Adams et al. (2022, p. 4327) notes, “in many scenarios, the transition function may be unknown and difficult or impossible to estimate.” 32 Model-free IRL avoids this by using observed transitions ( s, a, s ′)directly, reminiscent of experience replay in deep Q-learning (Mnih et al., 2015). Jain et al. (2019) is an early example of model-free IRL, using a MLE framework with a Max-Ent log-likelihood ob-jective but replacing the model-based Bellman update with a differentiable variant of Q-learning, where gradients are estimated using only sampled transitions. This section discusses two other MLE-based model-free approaches to IRL that use function approximation to handle large state spaces. Adusumilli and Eckardt (2025) (AE) proposed a model-free estimator that combines a core method of RL, the method of temporal differences (TD), Sutton and Barto (2020), and the two step Hotz and Miller (1993) CCP estimator in section 3.1 that avoids the need to estimate or make        
+
+> in DDC (Section 3.3); see Lee et al. (2026) below.
+> 32 In RL, “model-free” means using raw transitions ( s, a, s ′) without explicitly estimating p(s′|s, a ), whereas “model-based” means constructing or estimating pfor planning (Sutton and Barto, 2020). In SE/DDC, methods using historical data are often called “model-based” since pcan be estimated from observed transitions. We follow RL terminology throughout.
+
+24 parametric assumptions about p(s′|s, a ). Similar to the CCP estimator, they assume the reward is a linear combination of known features, i.e. rθ(s, a ) = ⃗r(s, a ) ⊤θ, and estimate the structural parameters θ by maximizing the partial likelihood (29). However rather than numerically computing functions R and Qε that enter as covariates in the CCP π in equation (28), they use observed state transitions to estimate R and Qε under the assumption they can be approximated as linear combinations of a set of K known basis functions ⃗ρ = ( ρ 1, . . . , ρ K ) that depend on ( s, a ) and a corresponding vector of parameters ϕ. Let Rϕ(s, a ) = ⃗ρ(s, a ) ⊤ϕ be the approximation of R, and assume a similar approximation is used to compute Qε (omitted for brevity). Treating the observed data set D as a single batch, AE estimate ˆϕ using the same least-squared TD formula (14) of section 9.8 of Sutton and Barto (2020). Using ˆϕ, the estimated Rˆϕ(s, a ) = ⃗ρ(s, a ) ⊤ ˆϕ that can be used as the covariate in the CCP estimator of θ in (28), and the other “correction term” ˆQε(s, a ) can be estimated in similar fashion. The asymptotic distribution of this two-stage TD/CCP estimator of 
+
+θ is affected by “estimation noise” in the ˆR and ˆQε functions that can introduce bias and noise. To deal with this, AE propose a third estimation stage that uses a modified score (i.e. gradient) of the partial log-likelihood (29) to create a robust (Neyman orthogonal) version of the score function (Chernozhukov et al., 2022), obtaining an improved estimator ˆθ robust to first stage estimation noise in ˆR and ˆQε by setting the modified score to zero. 33 
+
+AE also propose iterative estimators of θ for specifications where θ enters the reward function in a non-linear-in-parameter fashion, i.e. rθ(s, a ), using the “target network” idea underlying the FVI algorithm (12) which they call the approximate value iteration (AVI) estimator, and note that AVI can also overcome a “limitation of the linear semi-gradient method is that it requires one to choose a series basis and also does not allow for high-dimensional state spaces” (Adusumilli and Eckardt, 2025, p. 13). However “Compared to the semi-gradient approach, AVI is computationally more expensive as it requires solving J prediction problems” (Adusumilli and Eckardt, 2025, p. 13). They note that because the TD estimator is model-free, it will be less efficient than full information maximum likelihood estimator (e.g. NFXP or NPL) when p has a known parametric functional form. On the other hand, “if we make the model for the transition density richer, while still keeping it parametric, the performance of NFXP and NPL will start to degrade and become worse than TD estimation” (Adusumilli and Eckardt, 2025, p. 24). They conjecture that the TD estimator attains “the semi-parametric efficiency bound when the transition density is unknown” (Adusumilli and Eckardt, 2025, p. 24). The GLADIUS estimator (Kang et al., 2025) (Gradient-based Learning with Ascent-Descent for Inverse Utility learning from Samples) is model-free, does not require first-stage CCP estima-tion, and uses flexible function approximation. Kang et al. (2025) show that occupancy-matching methods (GAIL, IQ-Learn) minimize average Bellman error only on the expert’s support, so Q is   
+
+> 33 See Khwaja and Srivastava (2025) for an alternative approach to AE’s TD methods that they call RLTD-CCS that combines the TD algorithm from RL with the Conditional Choice Simulator (CCS) estimator of Hotz et al. (1994) that relies on forward simulations of paths to produce a Monte Carlo estimate of the Qθ(s, a ) and hence is a model-based approach to estimation.
+
+25 unidentified off-support. GLADIUS addresses this by following the approach of Antos et al. (2008) and separately parameterizing Qϕ and EV ψ using two neural networks with separate parameters 
+
+ϕ and ψ, recovering the reward as r(s, a ) = Qˆϕ(s, a ) − βEV ˆψ(s, a ) via the soft Bellman equation (18). GLADIUS maximizes a penalized likelihood where the penalty targets the Bellman error using formula (11) to write the Bellman error as BE( ϕ, ψ ) = TD( ϕ) − β2VQ( ϕ, ψ ) and estimate the parameters as a maxmin problem to find ( ˆϕ, ˆψ), where the outer maximization searches for ˆϕ
+
+to maximize the penalized likelihood, and the inner minimization finds ˆψ to estimate EV ψ needed to compute the conditional variance term to correctly calculate the mean squared Bellman error BE( ϕ, ψ ) without requiring knowledge of p(s′|s, a ). Like the CCP estimator, GLADIUS imposes a normalizing action assumption for identification, using the Hotz-Miller inversion (32) to recover re-maining Q values. Under realizability assumptions (i.e. that Q = Qϕ∗ for some ϕ∗ and EV = EV ψ∗
+
+for some ψ∗), GLADIUS achieves global convergence with error O(1 /T ) + O(1 /N ), the first such guarantee for methods minimizing mean squared Bellman residuals. 
+
+4.4 Alternative Approaches 
+
+Closely related to IRL is the Inverse Optimal Control (IOC) tradition in control theory. Originat-ing with Kalman (1964) for linear-quadratic systems, IOC was later adapted to complex, nonlinear biological behaviors by Mombaur et al. (2010) and Berret et al. (2011). Their approach employed numerical bilevel optimization that, analogous to the nested fixed point algorithm in DDC, re-quires solving the full forward control problem within the inner loop of parameter estimation. The computational intractability of this inner loop for high-dimensional continuous domains led to the local probabilistic approximations of Levine and Koltun (2012), which in turn enabled the deep, sampling-based Guided Cost Learning of Abbeel (2016), which merged the IOC tradition with IRL. A parallel stream in cognitive science connects “mentalizing” to inverse reinforcement learning. Baker et al. (2009) modeled action understanding as inverse planning, a framework explicitly con-nected to the IRL literature by Jara-Ettinger (2019): observers infer unobservable mental states by inverting a forward RL model. These models extend standard IRL by recovering subjective epis-temic and motivational states. The Bayesian Theory of Mind (BToM) framework treats agents as POMDP planners acting on potentially false beliefs (Baker et al., 2017), while the “naive utility cal-culus” (Jara-Ettinger et al., 2016) grounds social reasoning in agent-specific cost-reward trade-offs. Although recent approaches like ToMnet (Rabinowitz et al., 2018) scale via meta-learning without recovering explicit reward functions, this literature provides ways to model beliefs as separate from states and offers behavioral microfoundations for IRL. A new direction of research integrates behavioral economics constraints directly into IRL. Hoiles et al. (2020), for example, model agents under Rational Inattention, where acquiring information about the state s incurs an information-theoretic cost. The agent first chooses an attention policy 
+
+α(s′|s) (mapping true states s to perceived signals s′) to maximize expected utility net of informa-tion costs. The observed choice probability π(a|s) emerges as a mixture over these signals. The 26 IRL problem is then to test whether observed choices are consistent with a reward function rθ(s, a )solving this attention-constrained optimization. This revealed preference approach allows simulta-neous recovery of the agent’s reward parameters θ and their implicit information acquisition cost, providing a framework to test for and model bounded rationality directly from choice data. 
+
+4.5 Applications 
+
+We have surveyed IRL methods most relevant to DDC. Model-free methods avoid specifying 
+
+p(s′|s, a ) but implicitly assume rational expectations. For counterfactual analysis involving changed dynamics, model-based methods remain necessary, since inaccurate models from finite data with limited coverage can compound errors in estimated rewards (Zeng et al., 2024). 34 As Gleave and Toyer (2022, p. 2) notes, “algorithms based on MCE IRL have scaled to high-dimensional environ-ments,” with Maximum Entropy Deep IRL (Wulfmeier et al., 2016) learning rewards from pixel observations, and GCL and AIRL scaling to continuous control tasks. Large-scale applications include Barnes et al. (2024) using IRL to infer route preferences from Google Maps data and Zhao and Liang (2023) applying AIRL to taxi trajectories. 35 Liang et al. (2025) address the opacity of Deep IRL via knowledge distillation, training a surrogate multino-mial logit (MNL) model on the Deep AIRL policy’s soft labels to recover interpretable preference parameters. Lee et al. (2026) extend AIRL to serialized content consumption, using chapter text as state variables to study reader retention. Autonomous vehicles illustrate why IRL matters: Lu et al. (2023) combined imitation and RL (behavioral cloning–soft actor-critic, BC-SAC), achiev-ing 38% fewer safety failures than imitation alone, while Remonda et al. (2021) found RL agents with engineered lap-time rewards matched human speed but used fundamentally different control patterns, highlighting that engineered rewards fail to capture implicit human trade-offs. 
+
+5 Discussion 
+
+Our survey reveals the broad similarity between the DDC literature which arose in the 1980s followed by IRL over a decade later. Despite their different origins, they have a common goal: inferring a reward function r presumed to govern the observed behavior of rational “experts.” Both fields use the same mathematical framework to model optimal dynamic decision making (e.g. MDPs based on “soft Q” and “softmax” formulas of section 3), and both infer rewards using the same bilevel optimization problem : an “outer” maximization that searches over reward functions to maximize “model fit” (e.g. likelihood), and an “inner” minimization that solves the MDP for the optimal policy πr. However, the literatures differ on the method used to solve MDPs (DDC using deterministic algorithms such as value and policy iteration, IRL using the stochastic iterative 
+
+> 34 Schlaginhaufen and Kamgarpour (2024) show that with finite data, rank conditions for transfer (Rolland et al., 2022) are insufficient; principal angles between training environments’ transition laws bound reward error.
+> 35 The Shanghai application succeeded because road networks provide deterministic transitions and the goal was matching observed trajectories rather than counterfactual analysis.
+
+27 methods developed in RL), the interpretation of apparent randomness in individual behavior (DDC explaining randomness via unobserved state variables versus IRL’s use of mixed strategies and entropy) and on their primary motivation. DDC focuses on accurate inference for counterfactual policy evaluation, while IRL prioritizes automating complex behaviors like driving without explicit programming. We discussed two key challenges facing both literatures: 1) the identification problem, and 2) the curse of dimensionality. The latter is problematic for DDC and IRL due to the need to repeatedly solve an MDP in the inside loop of the bilevel optimization problem. We discussed the use of neural networks and randomization as two ways to circumvent the curse of dimensionality. While there is no formal proof that they actually “break” this curse, the astounding successes of deep reinforcement learning in RL applications such as Alpha-Zero’s ability to beat any human player in chess or Go suggest that these methods combined with sufficient computer power will enable us to use RL, DDC and IRL to tackle an increasing number of large scale, realistic problems. At the same time, these RL success stories call into question the assumption of human rationality: if Alpha-Zero beats all humans, we evidently cannot be perfectly rational optimizers. Instead humans may be better modeled as boundedly rational (Simon, 1957), but there is relatively little work on how to adapt DDC and IRL to infer rewards of boundedly rational agents and understand whether suboptimal “satisficing” behavior is due to inability to optimize or irrational beliefs. 36 
+
+To overcome the identification problem, we have to be willing to impose strong a priori assump-tions about rewards and beliefs, otherwise it is not possible to uniquely invert (identify) rewards and beliefs consistent with observed behavior and make valid counterfactual predictions. But this means that counterfactual predictions are dependent on hard-to-verify assumptions. This is not just a problem for the credibility of counterfactual forecasts of economic policies from DDC mod-els: it also can limit the ability of IRL-trained agents to perform intelligently in environments that differ from the one they were trained in. For example, if we identify rewards for an autonomous vehicle (AV) using data in an urban environment with transition probability p(s′|s, a ), but fail to disentangle preferences from dynamics, the AV may perform well in the city but fail in a rural environment where traffic is governed by a different transition probability λ(s′|s, a ). Thus, mis-identified structural models may be subject to the same problems for counterfactual prediction that we noted for reduced-form models in the DDC literature or for imitation learning methods such as 
+
+behavioral cloning in the machine learning literature: they can fail to correctly predict how humans change their behavior and rapidly adapt to new environments. Despite these challenges, when correct (or at least approximately correct) identifying assump-tions are imposed, DDC and IRL models can make accurate counterfactual/out-of-sample predic-tions. For example, Todd and Wolpin (2006) and Lee et al. (2026) demonstrated that a structural model estimated using data on a control group accurately predicts the change in behavior of a treat-
+
+> 36 Anderson et al. (2025) argue that suboptimal play of professional tennis players is due to distorted subjective beliefs, and Mu et al. (2025) show that suboptimal behavior of human subjects in lab experiments is due to subjective beliefs that differ from rational beliefs implied by Bayes Rule.
+
+28 ment group in field experiments, and Zhuang et al. (2024) showed that AVs governed by reward functions trained by IRL “can guide the direction of the policy network well in driving scenarios it had not encountered during training, thus validating the generalization capabilities of the reward functions across different drivers.” (p. 8100). We distinguished between model-free vs model-based approaches to DDC, RL and IRL. Most of the work in DDC is model-based, i.e. it requires the researcher to specify and estimate a model for the transition probability p(s′|s, a ) which is estimated along with the reward function. While it is possible to estimate p non-parametrically in a first stage estimation before estimating {β, r },this still entails the strong assumption of rational expectations and entails the burden of numerical integration with respect to p to solve the associated MDP for the optimal policy πr. Model-free IRL methods have been developed that mimic the model-free approaches developed in the RL literature such as Q-learning discussed in section 2.4, but instead of being done in real-time in online training 
+
+using the “environment” to simulate draws s′ ∼ p(s′|s, a ), model-free IRL can be done offline 
+
+using historical data on transitions to fit parametric approximations (e.g. deep Q networks) Qϕ,bypassing the need to estimate p or do explicit numerical integration. Thus, model-free IRL has computational advantages and avoids the need to specify and ex-plicitly estimate p. Yet, model-free IRL is not assumption-free: it requires the strong implicit assumption that individuals have rational expectations, which may be dubious as we noted above. Confidence in model-free estimates of rewards requires sufficient data on ( s′, s, a ) transitions. Lim-ited/sparse data can lead to poor estimates of Q and noisy, unreliable estimates of the reward function, resulting in poor performance similar to what one observes in RL after only a limited amount of initial training. Good performance from RL usually requires substantial level of training, and this is why most of the successful applications of RL to solve complex large scale problems are model-based. Even in cases where we have sufficient data, such as the case of AVs where “easily captured large-scale datasets of human driving to be used to train deep learning approaches to near human standard” (Mero et al., 2022, p. 14128), substantial additional offline training is often required to provide sufficient evidence that the AV can be trusted to operate safely in an online environment in real-time. The success of offline training using computer simulations presumes we have an accurate model that covers a wide range of driving environments. It should be obvious that even with an accurately estimated reward function, extensive RL training with a poor model of the environment will not necessarily result in good performance. This leads to the conundrum: how to develop an accurate model of the environment using limited data? This is a deep, unresolved question, and an example of where methods developed in RL have inspired new insights into human intelligence in neuroscience and psychology, particularly with respect to the puzzle of how humans are able to adapt and learn to perform reasonably well on a wide range of novel tasks with only limited prior training and experience. Tomov et al. (2023) introduced theory based reinforcement learning which “posits that the agent learns the theory from experience using probabilistic inference and uses it together with an internal simulator to predict 29 and evaluate the outcomes of different action sequences generated by an internal planner. It has captured patterns of human learning, exploration, and generalization in complex domains where model-free and simpler model-based RL approaches fail or learn rather differently.” (p. 1331) 30 References 
+
+Abbeel, Chelsea Finn Sergey Levine Pieter , “Guided Cost Learning: Deep Inverse Optimal Control via Policy Optimization,” arXiv , 2016, arXiv:1603.00448v3. 
+
+Abbeel, Pieter and Andrew Y. Ng , “Apprenticeship Learning via Inverse Reinforcement Learn-ing,” in “Proceedings of the Twenty-First International Conference on Machine Learning” ACM 2004, pp. 1–8. 
+
+Abbring, Jaap and Øystein Daljord , “Identifying the discount factor in dynamic discrete choice models,” Quantitative Economics , 2020, 11 (2), 471–501. 
+
+Adams, Stephen, Tyler Cody, and Peter A. Beling , “A survey of inverse reinforcement learning,” Artificial Intelligence Review , 2022, 55 , 4307–4436. 
+
+Adusumilli, Karun and Dita Eckardt , “Temporal-Difference Estimation of Dynamic Dis-crete Choice Models,” Review of Economic Studies , 2025. Advance online publication. DOI: 10.1093/restud/rdaf081. 
+
+Aguirregabiria, Victor and Pedro Mira , “Swapping the nested fixed point algorithm: A class of estimators for discrete Markov decision models,” Econometrica , 2002, 70 , 1519–1543. 
+
+and , “Dynamic discrete choice structural models: A survey,” Journal of Econometrics , 2010, 
+
+156 , 38–67. 
+
+Anderson, Axel, Jeremy Rosen, John Rust, and Kin-Ping Wong , “Disequilibrium Play in Tennis,” Journal of Political Economy , 2025, 133 (1), 190–251. 
+
+Antos, Andras, Csaba Szepesv´ ari, and R´ emi Munos , “Learning near-optimal policies with Bellman-residual minimization based fitted policy iteration and a single sample path,” Conference On Learning Theory , 2008, inria-00117130 , 574–587. 
+
+Arora, Saurabh and Prashant Doshi , “A survey of inverse reinforcement learning: Challenges, methods and progress,” Artificial Intelligence , 2021, 297 (103500). 
+
+Azar, Nematollah Ab, Aref Shahmansoorian, and Mohsen Davoudi , “From inverse opti-mal control to inverse reinforcement learning: A historical review,” Annual Reviews in Control ,2020, 50 , 119–138. 
+
+Babes-Vroman, Monica, Vukosi Marivate, Kaushik Subramanian, and Michael Littman , “Apprenticeship Learning About Multiple Intentions,” Proceedings of the 28th In-ternational Conference on Machine Learning , 2011. 
+
+Baird, F. , “Residual algorithms: Reinforcement learning with function approximation,” in “Pro-ceedings of the 12 th International Conference on Machine Learning” 1995, pp. 30–37. 
+
+Bajari, Patrick, C. Lanier Benkard, and John Levin , “Estimating Dynamic Models of Imperfect Competition,” Econometrica , 2007, 75 (5), 1331–1370. 
+
+Baker, Chris L., Julian Jara-Ettinger, Rebecca Saxe, and Joshua B. Tenenbaum , “Ra-tional Quantitative Attribution of Beliefs, Desires and Percepts in Human Mentalizing,” Nature Human Behaviour , 2017, 1 (4), 0064. 31 , Rebecca Saxe, and Joshua B. Tenenbaum , “Action Understanding as Inverse Planning,” 
+
+Cognition , 2009, 113 (3), 329–349. 
+
+Barnes, M., M.Abueg, O. F. Lange, M. Deeds, J. Trader, D. Molitor, M. Wulfmeier, and S. O’Banion , “Massively Scalable Inverse Reinforcement Learning in Google Maps,” Open-Review.net , 2024, pp. 1–22. 
+
+Barron, Andrew , “Universal Approximation Bounds for Superpositions of a Sigmoidal Function,” 
+
+IEEE Transactions on Information Theory , 1993, 39 , 930–945. 
+
+Bellman, Richard , Dynamic Programming , 4th ed., Princeton University Press, 1957. 
+
+Berger, Adam L., Vincent J. Della Pietra, and Stephen A. Della Pietra , “A Maximum Entropy Approach to Natural Language Processing,” Computational Linguistics , 1996, 22 (1), 39–71. 
+
+Berret, Bastien, Enrico Chiovetto, Francesco Nori, and Thierry Pozzo , “Evidence for Composite Cost Functions in Arm Movement Planning: An Inverse Optimal Control Approach,” 
+
+PLOS Computational Biology , 2011, 7 (10), e1002183. 
+
+Bertsekas, Dimitri P. , Dynamic Programming and Optimal Control (volumes 1 and 2) , 4th ed., Athena Scientific, Belmont Massachusetts, 2017. , A Course in Reinforcement Learning , 2nd ed., Athena Scientific, Belmont Massachusetts, 2025. 
+
+Bray, Robert L. , “A Comment on ‘Using Randomization to Break the Curse of Dimensionality’,” 
+
+Econometrica , 2022, 90 (4), 1915–1929. 
+
+Cao, Haoyang, Samuel N. Cohen, and Lukasz Szpruch , “Identifiability in inverse reinforce-ment learning,” arXiv preprint arXiv:2106.03498 , 2021. 
+
+Chernozhukov, Victor, Juan Carlos Escanciano, Hidehiko Ichimura, Whitney K. Newey, and James M. Robins , “Locally Robust Semiparametric Estimation,” Economet-rica , 2022, 90 (4), 1051–1535. 
+
+Chow, C. S. and J. N. Tsitsiklis , “The Complexity of Dynamic Programming,” Journal of Complexity , 1989, 5, 466–488. 
+
+Christiano, Paul F, Jan Leike, Tom B Brown, Miljan Martic, Shane Legg, and Dario Amodei , “Deep reinforcement learning from human preferences,” in “Advances in Neural Infor-mation Processing Systems,” Vol. 30 2017, pp. 4302–4310. 
+
+Dearing, Adam and Jason Blevins , “Efficient and Convergent Sequential Pseudo-Likelihood Estimation of Dynamic Discrete Choice Games,” Review of Economic Studies , 2025, 92 ,981–1021. 
+
+Fu, Justin, Aviral Kumar, Matthew Soh, and Sergey Levine , “Diagnosing Bottlenecks in Deep Q-learning Algorithms,” in “Proceedings of the 36th International Conference on Machine Learning” PMLR 2019, pp. 2021–2030. 
+
+, Katie Luo, and Sergey Levine , “Learning Robust Rewards with Adversarial Inverse Rein-forcement Learning,” in “International Conference on Learning Representations (ICLR)” 2018. 32 Fujimoto, Scott, David Meger, Doina Precup, Ofir Nachum, and Shixiang Shane Gu ,“Why Should I Trust You, Bellman? The Bellman Error is a Poor Replacement for Value Error,” in “Proceedings of the 39th International Conference on Machine Learning” PMLR 2022, pp. 6907–6935. 
+
+Gillingham, Kenneth, Fedor Iskhakov, Anders Munk-Nielsen, John Rust, and Bertel Schjerning , “Equilibrium Trade in Automobiles,” Journal of Political Economy , 2022, 130 (10), 2534–2593. 
+
+Gittins, J. C. and D. M. Jones , “A dynamic allocation index for the sequential design of experiments,” in J. Gani, ed., Progress in Statistics , North-Holland, Amsterdam, 1974, pp. 241– 266. 
+
+Gleave, Adam and Sam Toyer , “A Primer on Maximum Causal Entropy Inverse Reinforcement Learning,” arXiv , 2022, arXiv:2203.11409v1. 
+
+Gourieroux, C., A. Monfort, and E. Renault , “Indirect Inference,” Journal of Applied Econo-metrics , 1993, 8, S85–S118. 
+
+Haarnoja, Tuomas, Haoran Tang, Pieter Abbeel, and Sergey Levine , “Reinforcement Learning with Deep Energy-Based Policies,” Proceedings of the 34th International Conference on Machine Learning , 2017. 
+
+Ho, Jonathan and Stefano Ermon , “Generative Adversarial Imitation Learning,” in “Advances in Neural Information Processing Systems,” Vol. 29 2016, pp. 4565–4573. 
+
+Hoiles, William, Vikram Krishnamurthy, and Kunal Pattanayak , “Rationally Inattentive Inverse Reinforcement Learning Explains YouTube Commenting Behavior,” Journal of Machine Learning Research , 2020, 21 (170), 1–39. 
+
+Hotz, Joseph V. and Robert A. Miller , “Conditional choice probabilities and the estimation of dynamic models,” Review of Economic Studies , 1993, 60 , 497–529. 
+
+, , Seth Sanders, and Jeffrey Smith , “A simulation estimator for dynamic models of discrete choice,” Review of Economic Studies , 1994, 61 , 265–289. 
+
+Howard, Ronald A. , Dynamic Programming and Markov Processes , Technology Press, Cam-bridge, MA, 1960. 
+
+Hussein, Ahmed, Mohammed Medhat Gaber, Eyad Elyan, and Chrisina Jayne , “Im-itation Learning: A Survey of Learning Methods,” ACM Computing Surveys , 2018, 50 (2), 21:1–21:35. 
+
+Imai, Susumu, Neelam Jain, and Andrew Ching , “Bayesian Estimation of Dynamic Discrete Choice Models,” Econometrica , 2009, 77 (6), 1865–1899. 
+
+Iskhakov, Fedor, Jinhyuk Lee, John Rust, Bertel Schjerning, and Kyoungwon Seo ,“Constrained Optimization Approaches to Estimation of Structural Models: Comment,” Econo-metrica , 2016, 84 (1), 365–370. 33 Jain, Ayush, Prashant Doshi, and Bikramjit Banerjee , “Model-Free IRL Using Maximum Likelihood Estimation,” in “Proceedings of the AAAI Conference on Artificial Intelligence,” Vol. 33 2019, pp. 3951–3958. 
+
+Jara-Ettinger, Julian , “Theory of Mind as Inverse Reinforcement Learning,” Current Opinion in Behavioral Sciences , 2019, 29 , 105–110. 
+
+, Hyowon Gweon, Laura E. Schulz, and Joshua B. Tenenbaum , “The Na¨ ıve Utility Calculus: Computational Principles Underlying Commonsense Psychology,” Trends in Cognitive Sciences , 2016, 20 (10), 589–604. 
+
+Jaynes, Edwin T. , “Information Theory and Statistical Mechanics,” Physical Review , 1957, 106 
+
+(4), 620–630. 
+
+Jiang, Nan and Tengyang Xie , “Offline Reinforcement Learning in Large State Spaces: Algo-rithms and Guarantees,” manuscript, University of Illinois , 2024. 
+
+Kaji, Tetsuya, Elena Manresa, and Guillaume Pouliot , “An Adversarial Approach to Struc-tural Estimation,” Econometrica , 2023, 91 (6), 2041–2063. 
+
+Kalman, R. E. , “When is a linear control system optimal?,” Journal of Basic Engineering , 1964, 
+
+86 , 119–138. 
+
+Kalouptsidi, Myrto, Paul T. Scott, and Eduardo Souza-Rodrigues , “Identification of counterfactuals in dynamic discrete choice models,” Quantitative Economics , 2021, 12 (2), 351– 403. 
+
+Kang, Enoch H., Hema Yoganarasimhan, and Lalit Jain , “An Empirical Risk Mini-mization Approach for Offline Inverse RL and Dynamic Discrete Choice Model,” arXiv , 2025, 
+
+arXiv:2502.14131. 
+
+Khwaja, Ahmed and Sonal Srivastava , “Reinforcement Learning Based Computation-ally Faster Conditional Choice Simulation Estimation of Dynamic Discrete Choice Models,” 
+
+manuscript, Judge Business School, University of Cambridge , 2025. 
+
+Kim, Kuno, Shivam Garg, Kirankumar Shiragur, and Stefano Ermon , “Reward Identifi-cation in Inverse Reinforcement Learning,” in “Proceedings of the 38th International Conference on Machine Learning” PMLR 2021, pp. 5496–5505. 
+
+Lee, Peter S., K. Sudhir, and Tong Wang , “Consumer Engagement with Sequential Content: A Content-Aware Dynamic Choice Model,” 2026. Yale School of Management. 
+
+Levine, Sergey and Vladlen Koltun , “Continuous Inverse Optimal Control with Locally Op-timal Examples,” in “Proceedings of the 29th International Conference on Machine Learning (ICML)” 2012. 
+
+Liang, Yuebing, Shenhao Wang, Jiangbo Yu, Zhan Zhao, Jinhua Zhao, and Sandy Pentland , “Analyzing sequential activity and travel decisions with interpretable deep inverse reinforcement learning,” Travel Behaviour and Society , 2025, 43 , 101171. 34 Lu, Yiren, Justin Fu, George Tucker, Xinlei Pan, Eli Bronstein, Becca Roelofs, Benjamin Sapp, Aleksandra Faust, Brandyn White, Shimon Whiteson, Dragomir Anguelov, and Sergey Levine , “Imitation Is Not Enough: Robustifying Imitation with Rein-forcement Learning for Challenging Driving Scenarios,” in “IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)” 2023. 
+
+Lucas, Jr. Robert E. , “Econometric Policy Evaluation: A Critique,” in Alan Meltzer, ed., The Phillips Curve and Labor Markets. Carnegie-Rochester Conference Series on Public Policy. Vol. 1, Elsevier, 1976, pp. 19–46. 
+
+Luo, Yao and Peijun Sang , “Efficient Estimation of Structural Models via Sieves,” arXiv , 2024, 
+
+arXiv:2204.13488v2. 
+
+Magnac, Thierry and David Thesmar , “Identifying Dynamic Discrete Decision Processes,” 
+
+Econometrica , 2002, 70 , 801–816. 
+
+Matejka, Filip and Alisdair McKay , “Rational Inattention to Discrete Choices: A New Foun-dation for the Multinomial Logit Model,” American Economic Review , 2015, 105 (1), 272–298. 
+
+McFadden, D. , “A Method of Simulated Moments for Estimation of Discrete Response Models Without Numerical Integration,” Econometrica , 1989, 57 , 995–1026. 
+
+McFadden, Daniel L. , “Conditional Logit Analysis of Qualitative Choice Behavior,” in P. Zarem-bka, ed., Frontiers in Econometrics , Academic Press, 1973, pp. 105–142. 
+
+Melo, Francisco S., Sean P. Meyn, and M. Isabel Ribeiro , “An Analysis of Reinforcement Learning with Function Approximation,” in “Proceedings of the 25 th International Conference on Machine Learning” 2008, pp. 665–671. 
+
+Mero, L. Le, D. Yi, M. Dianati, and A. Mouzakitis , “A survey on imitation learning tech-niques for end-to-end autonomous vehicles,” IEEE Transactions on Intelligent Transportation Systems , 2022, 23 (9), 14128–14147. 
+
+Mnih, V., K. Kavukcuoglu, D. Silver, A. A. Rusu, J. Veness, M. G. Bellemare, A. Graves, M. Riedmiller, A. K. Fidjeland, G. Ostrovski, S. Petersen, C. Beat-tie, A. Sadik, I. Antonoglou, H. King, D. Kumaran, D. Wierstra, S. Legg, and D. Hassabis , “Human-level control through deep reinforcement learning,” Nature , 2015, 518 ,518–533. 
+
+Mombaur, Katja, Anh Truong, and Jean-Paul Laumond , “From human to humanoid loco-motion: an inverse optimal control approach,” Autonomous Robotics , 2010, 28 , 369–383. 
+
+Mu, Tianshi, Pranjal Rawat, John Rust, Chengjun Zhang, and Qixuan Zhong , “Who is More Bayesian: Humans or ChatGPT?,” 2025. arXiv:2504.10636v1. 
+
+Munos, R´ emi and Csaba Szepesv´ ari , “Finite-Time Bounds for Fitted Value Iteration,” Journal of Machine Learning Research , 2008, 9, 815–857. 
+
+Ng, Andrew Y. and Stuart Russell , “Algorithms for Inverse Reinforcement Learning,” Pro-ceedings of the Seventeenth International Conference on Machine Learning , 2000, p. 663–670. 35 , Daishi Harada, and Stuart Russell , “Policy Invariance Under Reward Transformations: Theory and Application to Reward Shaping,” in “Proceedings of the Sixteenth International Conference on Machine Learning” 1999, pp. 278–287. 
+
+Nguyen, Hoang , “Neural Networks for Efficient Estimation of High-Dimensional Dynamic Dis-crete Choice Models,” manuscript, Georgetown University , 2025. 
+
+Ni, Tianwei, Harshit Sikchi, Yufei Wang, Tejus Gupta, Lisa Lee, and Ben Eysen-bach , “f-IRL: Inverse Reinforcement Learning via State Marginal Matching,” arXiv preprint arXiv:2011.04709 , 2022. 
+
+Norets, Andriy , “Inference in Dynamic Discrete Choice Models With Serially Correlated Unob-served State Variables,” Econometrica , 2009, 77 (5), 1665–1682. 
+
+O˘ guz, Ecenur and Robert L. Bray , “Training Neural Networks Embedded in Dynamic Discrete Choice Models,” arXiv preprint arXiv:2604.09736 , 2026. 
+
+Pitombeira-Neto, Anselmo R., Helano P. Santos, Ticiana L. Coelho da Silva, and Jos´ eAntonio F. de Macedo , “Trajectory Modeling via Random Utility Inverse Reinforcement Learning,” Information Sciences , 2024, 660 , 120128. 
+
+Puterman, Martin L. , Markov Decision Processes: Discrete Stochastic Dynamic Programming ,New York: John Wiley & Sons, 2014. 
+
+Rabinowitz, Neil C., Frank Perbet, H. Francis Song, Chiyuan Zhang, S.M. Ali Eslami, and Matthew Botvinick , “Machine Theory of Mind,” in “Proceedings of the 35th International Conference on Machine Learning” ICML 2018, pp. 4218–4227. 
+
+Ramachandran, Deepak and Eyal Amir , “Bayesian Inverse Reinforcement Learning,” Pro-ceedings IJCAI , 2007, p. 2586–2591. 
+
+Ratliff, Nathan D., J. Andrew Bagnell, and Martin A. Zinkevich , “Maximum Margin Planning,” in “Proceedings of the 23rd International Conference on Machine Learning” ACM 2006, pp. 729–736. 
+
+Reich, Gregor , “Divide and Conquer: Recursive Likelihood Function Integration for Hidden Markov Models with Continuous Latent Variables,” Operations Research , 2018, 66 (6), 1457– 1470. 
+
+Remonda, Adrian, Eduardo Veas, and Granit Luzhnica , “Comparing driving behavior of humans and autonomous driving in a professional racing simulator,” PLOS ONE , 2021, 16 (2), e0245320. 
+
+Robbins, H. and S. Munro , “A Stochastic Approximation Method,” Annals of Statistics , 1951, 
+
+22 , 400–407. 
+
+Rolland, Paul, Volkan Cevher, Matthieu Geist, and Gergely Neu , “Identifiability and Generalizability in Constrained Inverse Reinforcement Learning,” in “Proceedings of the 39th International Conference on Machine Learning” PMLR 2022, pp. 18540–18562. 
+
+Rust, John , “Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher,” Econometrica , 1987, 55 (5), 993–1033. 36 , “Maximum Likelihood Estimation of Discrete Control Processes,” SIAM Journal on Control and Optimization , 1988, 26 (5), 1006–1024. , “Structural Estimation of Markov Decision Processes,” in R. Engle and D. McFadden, eds., 
+
+The Handbook of Econometrics, Volume 4 , Elsevier, 1994, pp. 3082–3139. , “Using Randomization to Break the Curse of Dimensionality,” Econometrica , 1997, 65 (3), 487–516. , “The Limits to Inference with Theory: A Review of Wolpin (2013),” Journal of Economic Literature , 2014, 52 (3), 820–850. 
+
+Schlaginhaufen, Andreas and Maryam Kamgarpour , “Identifiability and Generalizability from Multiple Experts in Inverse Reinforcement Learning,” in “Advances in Neural Information Processing Systems,” Vol. 37 2024, pp. 21461–21501. 
+
+Silver, David, Thomas Hubert, Julian Schrittwieser, Ioannis Antonoglou, Matthew Lai, Arthur Guez, Marc Lanctot, Laurent Sifre, Dharshan Kumaran, Thore Graepel, Timothy Lillicrap, Karen Simonyan, and Demis Hassabis , “A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play,” Science , 2018, 362 ,1140–1144. 
+
+Simon, Herbert A. , Administrative Behavior: A Study of Decision-Making Processes in Admin-istrative Organization , 2nd ed., Macmillan, New York, 1957. 
+
+Su, Che-Lin and Kenneth L. Judd , “Constrained Optimization Approaches to Estimation of Structural Models,” Econometrica , 2012, 80 (5), 2213–2230. 
+
+Sutton, Richard J. and Andrew G. Barto , Reinforcement Learning An Introduction , 2nd ed., MIT Press, 2020. 
+
+Sutton, Richard S. , “Learning to Predict by the Methods of Temporal Differences,” Machine Learning , 1988, 3, 9–44. 
+
+and Andrew G. Barto , Reinforcement Learning An Introduction , 1st ed., MIT Press, 1998. 
+
+Todd, Petra and Kenneth I. Wolpin , “Assessing the impact of a school subsidy program in Mexico: Using a social experiment to validate a dynamic behavioral model of child schooling and fertility,” American Economic Review , 2006, 96 (5), 1384–1417. 
+
+Tomov, Momchil S., Pedro A. Tsividis, Thomas Pouncy, Joshua B. Tenenbaum, and Samuel J. Gershman , “The neural architecture of theory-based reinforcement learning,” Neu-ron , 2023, 111 , 1331–1334. 
+
+Tsitsiklis, John N. , “Asynchronous Stochastic Approximation and Q-Learning,” Machine Learn-ing , 1994, 16 , 185–202. 
+
+and Benjamin Van Roy , “An analysis of temporal-difference learning with function approx-imation,” IEEE transactions on automatic control , 1997, 42 , 674–690. 
+
+van der Laan, Lars and Nathan Kallus , “Fitted Q Evaluation Without Bellman Completeness via Stationary Weighting,” arXiv preprint arXiv:2512.23805 , 2026. 37 , Aur´ elien Bibaut, and Nathan Kallus , “Efficient Inference for Inverse Reinforcement Learn-ing and Dynamic Discrete Choice Models,” arXiv , 2026, arXiv:2512.24407v1. 
+
+Wang, Siyue, Zhaorun Chen, Zhuokai Zhao, Chaoli Mao, Yiyang Zhou, Jiayu He, and Albert Sibo Hu , “ESCIRL: Evolving Self-Contrastive IRL for Trajectory Prediction in Autonomous Driving,” 8th Conference on Robot Learning (CoRL 2024) , 2025, pp. 1–20. 
+
+Watkins, C. J. C. H. , Learning from Delayed Rewards , PhD Thesis, Kings College, Cambridge UK, 1989. 
+
+Wulfmeier, Markus, Peter Ondr´ uˇ ska, and Ingmar Posner , “Maximum Entropy Deep In-verse Reinforcement Learning,” arXiv , 2016, arXiv:1507.04888v3. 
+
+Yao, Jiayu, Eli Lichtenstein, Alihan H¨ uy¨ uk, and Barbara E. Engelhardt , “Inverse Rein-forcement Learning with Multiple Planning Horizons,” arXiv preprint arXiv:2409.18051 , 2024. 
+
+Yudin, D. B. and A. S. Nemirovski , “Estimating the Computational Complexity of Mathe-matical Programming Problems,” Ekonomika i Matematicheskie Metody , 1976, 12 (1), 128–142. In Russian. 
+
+Zeng, Siliang, Mingyi Hong, and Alfredo Garcia , “Structural Estimation of Markov Decision Processes in High-Dimensional State Space with Finite-Time Guarantees,” Operations Research ,2024, 73 (2), 720–737. DOI: 10.1287/opre.2022.0511. 
+
+Zhang, Shangtong, Hengshuai Yao, and Shimon Whiteson , “Breaking the Deadly Triad with a Target Network,” in “Proceedings of the 38 th International Conference on Machine Learn-ing,” Vol. 139 of PMLR 2021, pp. 12621–12631. 
+
+Zhang, Shuai, Hongkang Li, Meng Wang, Miao Liu, Pin-Yu Chen, Songtao Lu, Sijia Liu, Keerthiram Murugesan, and Subhajit Chaudhury , “On the Convergence and Sam-ple Complexity Analysis of Deep Q-Networks with ε-Greedy Exploration,” 37th Conference on Neural Information Processing Systems , 2023. 
+
+Zhao, Zhan and Yuebing Liang , “A deep inverse reinforcement learning approach to route choice modeling with context-dependent rewards,” Transportation Research Part C , 2023, 149 ,104079. DOI: 10.1016/j.trc.2023.104079. 
+
+Zhuang, Hejian, Hongqing Chu, Yafei Wang, Bingzhao Gao, and Hong Che , “HGRL: Human-Driving-Data Guided Reinforcement Learning for Autonomous Driving,” IEEE Trans-actions on Intelligent Vehicles , 2024, 9 (12), 8089–8103. 
+
+Ziebart, Brian D., Andrew Maas, J. Andrew Bagnell, and Anind K. Dey , “Maximum Entropy Inverse Reinforcement Learning,” Proceedings of the Twenty-Third AAAI Conference on Artificial Intelligence , 2008, 55 (5), 1433–1438. 
+
+, J. Andrew Bagnell, and Anind K. Dey , “Modeling Interaction via the Principle of Maxi-mum Causal Entropy,” Proceedings of the 27th International Conference on Machine Learning ,2010. 
+
+Zucchet, Nicolas and Jo˜ ao Sacramento , “Beyond Backpropagation: Bilevel Optimization Through Implicit Differentiation and Equilibrium Propagation,” Neural Computation , 2022, 34 
+
+(12), 2309–2346. 38

@@ -1,20 +1,116 @@
 {
-  "generated_at": "2026-08-30T22:38:21.473919+00:00",
-  "updated_date": "20260830",
+  "generated_at": "2026-09-11T03:55:14.123894+00:00",
+  "updated_date": "20260813-20260911",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
-      "updated_date": "20260830",
+      "updated_date": "20260813-20260911",
       "carryover_days": 9,
       "items": []
     },
     "inverse-rl": {
-      "updated_date": "20260830",
+      "updated_date": "20260813-20260911",
+      "carryover_days": 9,
+      "items": [
+        {
+          "id": "2608.25350v1",
+          "source": "arxiv",
+          "title": "Beyond Pairwise Feedback: Listwise Vision-Language Supervision for Preference-Based Reward Learning",
+          "abstract": "Vision-language models (VLMs) have emerged as a powerful source of supervision for reinforcement learning, enabling agents to leverage rich semantic knowledge during training. Inspired by the success of preference-based reward learning (PbRL) in reinforcement learning from human feedback (RLHF), vision-language model generated image-based preferences provide an effective source for learning reward functions. This can be done by visually comparing two outcomes through the Bradley-Terry (BT) model. However, this pairwise formulation utilizes only two observations at a time, despite VLMs being capable of ranking multiple candidates. The Plackett-Luce (PL) formulation can shape a reward model with listwise rankings as opposed to pairwise preferences, allowing for a more suited use of a VLM based ranking. In this work, to our knowledge, we introduce the first framework that combines VLM-generated preferences with the Plackett-Luce model for reward learning. We evaluate our approach on Meta-World manipulation tasks and show that Plackett-Luce (PL) reward models can train robotic policies from VLM-generated rankings as effectively as pairwise Bradley-Terry, $K$-wise Bradley-Terry, and RL-VLM-F baselines. Across all environments, at least one PL ranking size ($K \\in \\{3,4,5\\}$) consistently performs with or outperforms other methods in mean success rate. Unlike pairwise methods, which are restricted to $K=2$, PL supports different ranking sizes and can therefore be adapted to the environment and desired feedback format. Our best PL configuration achieves an 86% mean final success rate and matches the Oracle baseline on Drawer Open. Overall, these results demonstrate that listwise VLM preference supervision is a competitive and flexible approach to reward learning for reinforcement learning.",
+          "authors": [
+            "Srivalli Katkuri",
+            "Maxwell Kawada",
+            "Juan Wachs"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.RO"
+          ],
+          "published": "2026-08-26T04:09:21+00:00",
+          "link": "https://arxiv.org/pdf/2608.25350v1",
+          "tags": [
+            "keyword:MPC-WBC",
+            "keyword:VLA-RL",
+            "keyword:inverse-rl",
+            "keyword:locoWBC",
+            "query:MPC-WBC",
+            "query:VLA-RL",
+            "query:inverse-rl",
+            "query:locoWBC"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "listwise vision-language supervision for reward learning",
+          "llm_evidence_cn": "列表式视觉语言监督用于奖励学习",
+          "llm_evidence": "列表式视觉语言监督用于奖励学习",
+          "canonical_evidence": "列表式视觉语言监督用于奖励学习",
+          "llm_tldr_en": "Proposes listwise Plackett-Luce reward learning using vision-language model rankings, moving beyond pairwise Bradley-Terry to extract richer preference signals for RL.",
+          "llm_tldr_cn": "现有基于视觉语言模型的偏好奖励学习多采用成对Bradley-Terry模型，仅利用两两比较，未能充分利用VLM的多候选排序能力。该文提出基于Plackett-Luce的列表式排序监督方法，用列表排名构建奖励模型。实验表明列表式监督能获得更丰富的偏好信号，提升奖励学习的质量。",
+          "llm_tldr": "现有基于视觉语言模型的偏好奖励学习多采用成对Bradley-Terry模型，仅利用两两比较，未能充分利用VLM的多候选排序能力。该文提出基于Plackett-Luce的列表式排序监督方法，用列表排名构建奖励模型。实验表明列表式监督能获得更丰富的偏好信号，提升奖励学习的质量。",
+          "llm_tags": [
+            "query:inverse-rl"
+          ],
+          "matched_query_tag": "query:inverse-rl",
+          "matched_query_text": "reward function learning",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2608.25350v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.04066v1",
+          "source": "arxiv",
+          "title": "Subspace Inference Enables Efficient Active Reward Learning from Preferences",
+          "abstract": "Reinforcement learning from human feedback (RLHF) has emerged as a powerful yet sample-inefficient approach for learning reward models from human preferences, making active learning a critical component in synthesizing informative preference queries. However, effective uncertainty quantification required for active learning remains a key challenge for large neural network reward models. In this paper, we introduce PreferenceEKF, a sample-efficient approach that tracks reward model uncertainty by framing active preference learning as a sequential Bayesian filtering problem. Instead of relying on computationally prohibitive posterior inference over the full neural network parameter space, our method performs sequential inference via an extended Kalman filter within a low-dimensional parameter subspace, continuously updating the reward model posterior as new preference queries arrive. Our approach enables scalable sampling of neural network parameters to efficiently compute acquisition functions for active reward learning. Experiments on the D4RL and V-D4RL benchmarks demonstrate that our approach achieves better sample efficiency, runtime, scalability, and calibration compared to other Bayesian deep learning approaches, and the learned reward models lead to competitive offline reinforcement learning policy performance. This highlights the potential of scalable Bayesian methods for preference-based reward modeling in RLHF. Our code is available at https://github.com/yutaizhou/bnn_pref.",
+          "authors": [
+            "Yutai Zhou",
+            "Erdem Bıyık"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI",
+            "cs.RO"
+          ],
+          "published": "2026-09-03T16:39:55+00:00",
+          "link": "https://arxiv.org/pdf/2609.04066v1",
+          "tags": [
+            "keyword:MPC-WBC",
+            "keyword:VLA-RL",
+            "keyword:inverse-rl",
+            "keyword:locoWBC",
+            "query:MPC-WBC",
+            "query:VLA-RL",
+            "query:inverse-rl",
+            "query:locoWBC"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "active reward learning from preferences using sequential Bayesian filtering",
+          "llm_evidence_cn": "基于顺序贝叶斯滤波的主动偏好奖励学习",
+          "llm_evidence": "基于顺序贝叶斯滤波的主动偏好奖励学习",
+          "canonical_evidence": "基于顺序贝叶斯滤波的主动偏好奖励学习",
+          "llm_tldr_en": "Proposes PreferenceEKF for sample-efficient active reward learning by tracking uncertainty with extended Kalman filter in subspace, reducing preference query cost.",
+          "llm_tldr_cn": "针对人类反馈强化学习中奖励模型不确定度量困难导致主动学习效率低的问题，提出PreferenceEKF方法，将主动偏好学习视为顺序贝叶斯滤波问题，在低维子空间进行扩展卡尔曼滤波推理，有效跟踪大型奖励模型的不确定性，实现样本高效的主动查询。实验表明该方法能显著减少所需的偏好查询次数。",
+          "llm_tldr": "针对人类反馈强化学习中奖励模型不确定度量困难导致主动学习效率低的问题，提出PreferenceEKF方法，将主动偏好学习视为顺序贝叶斯滤波问题，在低维子空间进行扩展卡尔曼滤波推理，有效跟踪大型奖励模型的不确定性，实现样本高效的主动查询。实验表明该方法能显著减少所需的偏好查询次数。",
+          "llm_tags": [
+            "query:inverse-rl"
+          ],
+          "matched_query_tag": "query:inverse-rl",
+          "matched_query_text": "reward function learning",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.04066v1",
+          "carry_days": 1
+        }
+      ]
+    },
+    "MPC-WBC": {
+      "updated_date": "20260813-20260911",
       "carryover_days": 9,
       "items": []
     },
-    "MPC-WBC": {
-      "updated_date": "20260830",
+    "VLA-RL": {
+      "updated_date": "20260813-20260911",
       "carryover_days": 9,
       "items": []
     }

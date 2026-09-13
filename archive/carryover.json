@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-11T21:27:06.209356+00:00",
-  "updated_date": "20260911",
+  "generated_at": "2026-09-13T21:58:41.496544+00:00",
+  "updated_date": "20260913",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,59 +110,14 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260911",
+      "updated_date": "20260913",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260911",
+      "updated_date": "20260913",
       "carryover_days": 9,
       "items": [
-        {
-          "id": "2608.22419v1",
-          "source": "arxiv",
-          "title": "Robust Bimanual Vision-Language-Action Models via Embarrassingly Simple Modality Masking",
-          "abstract": "Query-based Vision-Language-Action (VLA) models offer low-latency inference that is attractive for bimanual robotic manipulation, but we observe that they can still exhibit discontinuous actions and execution failures in complex dual-arm tasks. We hypothesize that unstable multi-view and language fusion is one contributing factor in these failures, often coinciding with attention spreading to distracting regions. To improve robustness, we introduce the Modality Masking Mechanism (M3), an embarrassingly simple, training-only strategy that requires no architectural changes or large-scale robot pretraining. M3 stochastically masks subsets of modality channels during training, exposing the policy to controlled partial observations and encouraging it to rely less on distracting cues and more on evidence that remains reliable. We evaluate M3 on ten bimanual tasks from RoboTwin 2.0 and on three long-horizon real-world tasks. Compared with the Adapter baseline, M3 improves average success by 21.7% in the Clean setting and 11.4% in Clean2Rand, where policies are trained on clean demonstrations and evaluated on randomized scenes, while also improving averaged real-world full-task success by over 30%. These results suggest that structured training-time masking is a practical way to improve the robustness of query-based VLA policies for bimanual manipulation.",
-          "authors": [
-            "Dongzhou Cheng",
-            "Ziang Li",
-            "Yixiao Zhou",
-            "Haojuan Li",
-            "Jinghao Zhang",
-            "Lei Lei",
-            "Minjing Dong",
-            "Jie Gui",
-            "Jiaqi Wang"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.CV"
-          ],
-          "published": "2026-08-23T13:48:57+00:00",
-          "link": "https://arxiv.org/pdf/2608.22419v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "VLA models for bimanual robotic manipulation robustness",
-          "llm_evidence_cn": "面向双臂操作的视觉语言动作模型鲁棒性",
-          "llm_evidence": "面向双臂操作的视觉语言动作模型鲁棒性",
-          "canonical_evidence": "面向双臂操作的视觉语言动作模型鲁棒性",
-          "llm_tldr_en": "Query-based VLA models can fail in complex dual-arm tasks due to unstable multi-view and language fusion. The paper proposes Modality Masking Mechanism (M3), a training-only strategy that stochastically masks modality channels, improving robustness without architectural changes.",
-          "llm_tldr_cn": "查询式视觉语言动作模型在复杂双臂操作中常出现动作不连续与执行失败，作者认为多视角与语言融合不稳定是重要原因。为此提出模态掩码机制M3，这是一种仅在训练阶段使用的简单策略，通过随机掩蔽部分模态通道让策略接触受控的部分观测。实验表明该方法无需改变网络结构或大规模机器人预训练即可提升双臂操作的鲁棒性，为VLA模型稳定部署提供了低成本方案。",
-          "llm_tldr": "查询式视觉语言动作模型在复杂双臂操作中常出现动作不连续与执行失败，作者认为多视角与语言融合不稳定是重要原因。为此提出模态掩码机制M3，这是一种仅在训练阶段使用的简单策略，通过随机掩蔽部分模态通道让策略接触受控的部分观测。实验表明该方法无需改变网络结构或大规模机器人预训练即可提升双臂操作的鲁棒性，为VLA模型稳定部署提供了低成本方案。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.22419v1",
-          "carry_days": 1
-        },
         {
           "id": "2609.05266v1",
           "source": "arxiv",
@@ -203,7 +158,7 @@
           "matched_requirement_id": "req-19",
           "selection_source": "carryover_cache",
           "paper_id": "2609.05266v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2608.25585v1",
@@ -244,7 +199,7 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2608.25585v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2608.26053v1",
@@ -289,134 +244,7 @@
           "matched_requirement_id": "req-1",
           "selection_source": "carryover_cache",
           "paper_id": "2608.26053v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.24741v1",
-          "source": "arxiv",
-          "title": "One-Shot Learning from Demonstration of Contact-Rich Robotic Manipulation by Identifying Physical Interactions",
-          "abstract": "Learning from Demonstration (LfD) allows robots to learn manipulation tasks directly from humans, thereby supporting the versatile application of robots. Most LfD methods do not explicitly model the physical interactions between a robot and its environment, such as the making and breaking of contact, while these are crucial during manipulation tasks. Because the same basic physical interactions recur often, they can be a basis for robust, generalizable, and adaptive task reproduction. We propose an LfD method that explicitly uses what physical interactions take place where and when. Using that information, a hybrid position-force controller tracks demonstrated trajectories until contact-based transition conditions from the demonstrations are met. We evaluate our method in real robot experiments consisting of opening doors and locks, bolt picking and screwing, dislodging, and surface contouring. We show that explicitly modeling physical interactions benefits LfD in four ways. First, by allowing reproduction of complex, sequential, and contact-rich manipulation tasks using only a single demonstration and no prior knowledge of the task. Second, by facilitating robustness to unknown geometric variations in the environment. Third, by facilitating generalization when geometric variations are known. Fourth, by facilitating online adaptation using geometric information explored during task reproduction. We discuss how robustness, generalization, and adaptivity can be explicitly implemented, which is generally lacking in the LfD literature. Thereby, our work aims to close a gap in interpretable few-shot LfD of robotic manipulation.",
-          "authors": [
-            "A. H. G. Overbeek",
-            "H. van der Kooij",
-            "M. Vlutters"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-08-25T15:48:03+00:00",
-          "link": "https://arxiv.org/pdf/2608.24741v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "one-shot LfD for contact-rich robotic manipulation",
-          "llm_evidence_cn": "面向接触丰富操作的单次示教学习",
-          "llm_evidence": "面向接触丰富操作的单次示教学习",
-          "canonical_evidence": "面向接触丰富操作的单次示教学习",
-          "llm_tldr_en": "This LfD method explicitly models where and when physical interactions such as contact making and breaking occur, using a hybrid position-force controller to reproduce contact-rich manipulation tasks.",
-          "llm_tldr_cn": "大多数示教学习方法没有显式建模机器人与环境之间的物理交互,如接触的建立与断开,而这些交互对操作任务至关重要。本文提出一种单次示教学习方法,显式利用物理交互发生的位置与时刻信息。方法基于这些信息使用混合位置-力控制器跟踪示教轨迹,直至满足基于接触的转移条件。由于相同的基本物理交互会反复出现,该方法可实现鲁棒、可泛化且自适应的任务复现,为接触丰富操作提供有效方案。",
-          "llm_tldr": "大多数示教学习方法没有显式建模机器人与环境之间的物理交互,如接触的建立与断开,而这些交互对操作任务至关重要。本文提出一种单次示教学习方法,显式利用物理交互发生的位置与时刻信息。方法基于这些信息使用混合位置-力控制器跟踪示教轨迹,直至满足基于接触的转移条件。由于相同的基本物理交互会反复出现,该方法可实现鲁棒、可泛化且自适应的任务复现,为接触丰富操作提供有效方案。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "learning based policies for contact rich robotic manipulation such as precise insertion and assembly",
-          "matched_requirement_id": "req-9",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.24741v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.24042v1",
-          "source": "arxiv",
-          "title": "Hierarchical Skill Retrieval for Data-Efficient Adaptation of Vision-Language-Action Models",
-          "abstract": "While Vision-Language-Action (VLA) models pretrained on large-scale robot datasets provide a strong foundation for robot manipulation, their performance can degrade when adapted to new tasks with limited task-specific demonstrations. Retrieval offers a practical way to reuse existing demonstrations for data-efficient adaptation, but existing methods often rely on visual similarity, state-action representations, or task-level language matching. These approaches may overlook the hierarchical structure of long-horizon manipulation tasks, where complete task matches are rare but reusable skills are often abundant. To address this challenge, we propose Hierarchical Skill Retrieval (HSR), a retrieval framework for data-efficient VLA adaptation. Specifically, HSR first decomposes a target task into candidate skill sequences. It evaluates each plan based on both semantic plausibility and skill reliability estimated from the prior dataset. The selected decomposition is then used for hybrid retrieval. This combines subtask-level language retrieval with behavior-feature reranking to identify demonstrations that are both semantically relevant and compatible with the target task. Finally, we adapt the policy through a two-stage pretraining and finetuning pipeline, which separates general skill acquisition from task-specific adaptation. Experiments on the LIBERO benchmark and several real-world robot manipulation tasks show that HSR improves the average success rate by 10.3% and 21.3% over the strongest baseline, respectively. These results demonstrate the effectiveness of structured skill-level retrieval for data-efficient VLA adaptation. Videos and code are available at https://hoar012.github.io/HSR-Project.",
-          "authors": [
-            "Haoran Hao",
-            "Shahram Najam Syed",
-            "Jeff Schneider",
-            "Jeffrey Ichnowski"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI",
-            "cs.LG"
-          ],
-          "published": "2026-08-25T04:04:49+00:00",
-          "link": "https://arxiv.org/pdf/2608.24042v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "hierarchical skill retrieval for data-efficient VLA adaptation",
-          "llm_evidence_cn": "面向VLA数据高效自适应的分层技能检索",
-          "llm_evidence": "面向VLA数据高效自适应的分层技能检索",
-          "canonical_evidence": "面向VLA数据高效自适应的分层技能检索",
-          "llm_tldr_en": "HSR is a retrieval framework that reuses hierarchical skills rather than whole-task matches to enable data-efficient adaptation of Vision-Language-Action models with limited demonstrations.",
-          "llm_tldr_cn": "视觉-语言-动作模型虽在大规模机器人数据上预训练,但在仅有少量任务演示时进行适配往往性能退化。现有检索方法多依赖视觉相似度、状态-动作表示或任务级语言匹配,忽略了长时程操作任务的分层结构,而完整任务匹配罕见但可复用技能丰富。本文提出分层技能检索框架HSR,通过检索可复用技能实现数据高效的VLA适配。实验表明该方法在少样本新任务上优于整任务匹配的检索方式,为VLA快速适配提供了新思路。",
-          "llm_tldr": "视觉-语言-动作模型虽在大规模机器人数据上预训练,但在仅有少量任务演示时进行适配往往性能退化。现有检索方法多依赖视觉相似度、状态-动作表示或任务级语言匹配,忽略了长时程操作任务的分层结构,而完整任务匹配罕见但可复用技能丰富。本文提出分层技能检索框架HSR,通过检索可复用技能实现数据高效的VLA适配。实验表明该方法在少样本新任务上优于整任务匹配的检索方式,为VLA快速适配提供了新思路。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.24042v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.25308v1",
-          "source": "arxiv",
-          "title": "V-Link: Recovering Lost Visual Representations in Action DiT for Vision-Language-Action Models",
-          "abstract": "Vision-language-action (VLA) models provide a scalable path toward generalist robotic manipulation by integrating visual perception, language understanding, and continuous action control. However, we reveal a critical limitation of VLA architectures: the action expert has limited access to the 3D geometric and 2D semantic information available in VLM features. This accessibility gap weakens perceptual grounding and limits performance on fine-grained robotic manipulation. To address this issue, we propose V-Link, which explicitly recovers visual representations during the vision-language (VL) to action (A) feature transfer. Specifically, V-Link learns complementary Spatial and Semantic Query representations within the VLM and injects them into Action DiT through asymmetric pathways. Semantic Queries complement the original VLM image tokens, whereas Spatial Queries provide dedicated geometric conditioning for spatially grounded action generation. Across LIBERO, LIBERO-Plus, and RoboTwin 2.0, our V-Link improves the average success rate over base model GR00T N1.6 by +1.9%, +31.2%, and +18.8%, respectively. On the AGIBOT A3 Ultra, V-Link further achieves gains of +20% and +24% on two real-world humanoid tasks.",
-          "authors": [
-            "Yehao Lu",
-            "Jiarui Yang",
-            "Yuning Su",
-            "Yufeng Xie",
-            "Yu Zhong",
-            "Yazhou Zhang",
-            "Haiyu Lan",
-            "Kaixiang Lu",
-            "Peiwen Lin",
-            "Chuang Wang",
-            "Zequn Qin",
-            "Enyu Li",
-            "Xi Li"
-          ],
-          "primary_category": "cs.CV",
-          "categories": [
-            "cs.CV"
-          ],
-          "published": "2026-08-26T02:32:18+00:00",
-          "link": "https://arxiv.org/pdf/2608.25308v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "recovering visual representations in action diffusion transformer for vision-language-action manipulation",
-          "llm_evidence_cn": "在动作扩散Transformer中恢复视觉表征，提升VLA精细操作",
-          "llm_evidence": "在动作扩散Transformer中恢复视觉表征，提升VLA精细操作",
-          "canonical_evidence": "在动作扩散Transformer中恢复视觉表征，提升VLA精细操作",
-          "llm_tldr_en": "V-Link addresses the accessibility gap where the action expert in VLA models poorly accesses VLM 3D geometric and 2D semantic features, recovering spatial and semantic query representations to improve fine-grained manipulation.",
-          "llm_tldr_cn": "视觉-语言-动作模型整合视觉、语言与连续动作控制，是实现通用机器人操作的可扩展路径，但其动作专家难以访问VLM特征中的三维几何与二维语义信息，削弱了感知基础并限制精细操作性能。论文提出V-Link，在视觉-语言到动作的特征传递过程中显式恢复视觉表征，学习互补的空间与语义查询表示并注入动作专家。该方法缓解了可访问性差距，提升了细粒度机器人操作的表现。",
-          "llm_tldr": "视觉-语言-动作模型整合视觉、语言与连续动作控制，是实现通用机器人操作的可扩展路径，但其动作专家难以访问VLM特征中的三维几何与二维语义信息，削弱了感知基础并限制精细操作性能。论文提出V-Link，在视觉-语言到动作的特征传递过程中显式恢复视觉表征，学习互补的空间与语义查询表示并注入动作专家。该方法缓解了可访问性差距，提升了细粒度机器人操作的表现。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.25308v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2609.07747v2",
@@ -450,13 +278,13 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "visual-tactile dexterous manipulation from human videos",
+          "llm_evidence_en": "visual-tactile dexterous manipulation learning from human videos",
           "llm_evidence_cn": "从人类视频学习视觉-触觉灵巧操作",
           "llm_evidence": "从人类视频学习视觉-触觉灵巧操作",
           "canonical_evidence": "从人类视频学习视觉-触觉灵巧操作",
-          "llm_tldr_en": "DEX-X learns deployable visual-tactile dexterous manipulation policies from human videos without robot-side data, using simulation as a tactile completion engine that reconstructs hand-object interaction and contact dynamics.",
-          "llm_tldr_cn": "人类视频虽蕴含丰富灵巧操作行为，却缺失接触丰富交互所需的触觉信息，且难以在无机器人数据下学习可部署策略。本文提出DEX-X框架，将仿真作为触觉补全引擎，从单目人类演示中重建手-物交互，并利用物理接触动力学生成触觉监督。实验显示该方法无需机器人侧数据采集即可学到可部署的视觉-触觉灵巧操作策略。其贡献在于打通了从人类视频到真实机器人接触丰富操作的迁移路径。",
-          "llm_tldr": "人类视频虽蕴含丰富灵巧操作行为，却缺失接触丰富交互所需的触觉信息，且难以在无机器人数据下学习可部署策略。本文提出DEX-X框架，将仿真作为触觉补全引擎，从单目人类演示中重建手-物交互，并利用物理接触动力学生成触觉监督。实验显示该方法无需机器人侧数据采集即可学到可部署的视觉-触觉灵巧操作策略。其贡献在于打通了从人类视频到真实机器人接触丰富操作的迁移路径。",
+          "llm_tldr_en": "Dex-X learns deployable visual-tactile dexterous manipulation policies from human videos by using simulation as a tactile completion engine, reconstructing hand-object interactions with contact dynamics.",
+          "llm_tldr_cn": "针对人类视频缺乏接触丰富交互所需的触觉信息、且难以采集机器人侧数据的问题，本文提出Dex-X框架，借助仿真从单目人类演示中学习可部署的视觉-触觉灵巧操作策略。其核心思想是把仿真作为触觉补全引擎，重建手-物交互并由物理接触动力学提供触觉监督。该方法无需机器人侧数据采集即可获得接触感知的灵巧操作能力，为灵巧操作与接触丰富任务提供了新的数据与学习途径。",
+          "llm_tldr": "针对人类视频缺乏接触丰富交互所需的触觉信息、且难以采集机器人侧数据的问题，本文提出Dex-X框架，借助仿真从单目人类演示中学习可部署的视觉-触觉灵巧操作策略。其核心思想是把仿真作为触觉补全引擎，重建手-物交互并由物理接触动力学提供触觉监督。该方法无需机器人侧数据采集即可获得接触感知的灵巧操作能力，为灵巧操作与接触丰富任务提供了新的数据与学习途径。",
           "llm_tags": [
             "query:rl-vla"
           ],
@@ -465,60 +293,6 @@
           "matched_requirement_id": "req-15",
           "selection_source": "carryover_cache",
           "paper_id": "2609.07747v2",
-          "carry_days": 1
-        },
-        {
-          "id": "2608.24603v1",
-          "source": "arxiv",
-          "title": "Gripper-aware Vision Language Action Models",
-          "abstract": "Vision language action models (VLAs) have advanced general purpose robotic grasping and manipulation by enabling robots to interpret visual observations and natural language instructions to generate executable action sequences. However, existing VLAs often implicitly assume gripper invariance, despite grasping strategies being inherently embodiment-dependent. Different gripper types, such as parallel-jaw and suction, usually require distinct interaction strategies to achieve the same grasping objective. Moreover, current datasets for VLAs predominantly rely on parallel-jaw grippers, limiting gripper-aware learning. To address this gap, we introduce MiGA, a multi-gripper-aware dataset spanning five distinct gripper types across multiple robots with 103,000 demonstrations, explicitly capturing strategy divergence under shared task objectives. We further propose GVLA, which combines a new multi-gripper tokenizer with adapter-based policy routing. Our new gripper encoding induces structured embedding information that balances parameter sharing and strategy differentiation, while layer-wise probing confirms meaningful gripper-conditioned representations for VLAs. Intensive experiments in both simulation and real-world robots show that our GVLA outperforms the current baselines across evaluated settings. Our method also improves zero-shot generalization or few-shot adaptation to new objects or unseen tasks, and enable more efficient gripper adaptation.",
-          "authors": [
-            "Hanyi Zhang",
-            "Zihong Luo",
-            "Tianyu Li",
-            "Khang Nguyen",
-            "Basu Hela",
-            "Shreyas Kumar",
-            "Ngoc Duy Tran",
-            "Feng Dai",
-            "Charith Munasinghe",
-            "Jorge Peña Queralta",
-            "Giovanni Toffetti",
-            "Khoa Vo",
-            "Ngan Le",
-            "Ravi Prakash",
-            "Quan Vuong",
-            "Tung D. Ta",
-            "Long Hu",
-            "Anh Nguyen",
-            "Baoru Huang"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-08-25T14:24:51+00:00",
-          "link": "https://arxiv.org/pdf/2608.24603v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "gripper-aware vision-language-action models for robotic manipulation",
-          "llm_evidence_cn": "面向机器人操作的夹爪感知视觉-语言-动作模型",
-          "llm_evidence": "面向机器人操作的夹爪感知视觉-语言-动作模型",
-          "canonical_evidence": "面向机器人操作的夹爪感知视觉-语言-动作模型",
-          "llm_tldr_en": "This work introduces a multi-gripper-aware dataset and VLA approach that removes the implicit gripper-invariance assumption for general robotic manipulation.",
-          "llm_tldr_cn": "针对现有视觉-语言-动作模型隐含假设夹爪不变性、忽视不同夹爪需不同交互策略的问题，本文指出平行夹爪与吸盘等夹爪类型在实现同一抓取目标时策略差异显著，且现有数据集多依赖平行夹爪。作者构建了MiGA多夹爪感知数据集，覆盖五种夹爪类型、多机器人平台与十万余条演示。该工作使VLA模型具备夹爪感知能力，推动了通用机器人抓取与操作。",
-          "llm_tldr": "针对现有视觉-语言-动作模型隐含假设夹爪不变性、忽视不同夹爪需不同交互策略的问题，本文指出平行夹爪与吸盘等夹爪类型在实现同一抓取目标时策略差异显著，且现有数据集多依赖平行夹爪。作者构建了MiGA多夹爪感知数据集，覆盖五种夹爪类型、多机器人平台与十万余条演示。该工作使VLA模型具备夹爪感知能力，推动了通用机器人抓取与操作。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.24603v1",
           "carry_days": 1
         },
         {
@@ -561,7 +335,7 @@
           "matched_requirement_id": "req-6",
           "selection_source": "carryover_cache",
           "paper_id": "2609.00906v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2608.25864v1",
@@ -610,7 +384,7 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2608.25864v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2608.27609v1",
@@ -653,7 +427,7 @@
           "matched_requirement_id": "req-8",
           "selection_source": "carryover_cache",
           "paper_id": "2608.27609v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2608.29828v1",
@@ -691,7 +465,7 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2608.29828v1",
-          "carry_days": 1
+          "carry_days": 3
         },
         {
           "id": "2609.01938v2",
@@ -733,6 +507,46 @@
           "matched_requirement_id": "req-5",
           "selection_source": "carryover_cache",
           "paper_id": "2609.01938v2",
+          "carry_days": 3
+        },
+        {
+          "id": "2609.11775v1",
+          "source": "arxiv",
+          "title": "Rapid Learning of Dexterous In-Hand Pen Writing through Real-Time Jacobian Estimation",
+          "abstract": "Dexterous in-hand manipulation of a grasped object with an anthropomorphic hand is an unsolved frontier for robot dexterity. The contact-richness and highly dynamic nature of object-hand interactions tend to require extensive modeling or data-collection efforts for learning-based approaches. Modern simulators used for reinforcement learning (RL) cannot fully replicate the required contact complexity, while collecting dexterous demonstrations for imitation learning (IL) remains an open problem. In this research, we present an embodied control approach based on real-time task Jacobian estimation of the combined hand and object system on the physical robot. Using only the CPU on a laptop, the proposed controller begins in-hand pen writing after approximately 18 s of initialization and continues to adapt online, without an analytic hand--object kinematic/contact model, simulation training, or precollected task demonstrations. We demonstrate that the same estimator/controller formulation works on three anthropomorphic robotic hand systems (one physical, two simulated) to show human-like, in-hand articulation of a grasped pen by an embodiment-independent formulation. Sub-millimeter in-plane precision (mean 0.6 mm across runs) is achieved across letters and shapes written in the air and on paper on a physical robot. To our knowledge, this is the first demonstration of an anthropomorphic hand writing arbitrary single-stroke trajectories with a grasped pen through purely in-hand motion, and it showcases an alternative to compute- and data-heavy approaches such as RL and IL for achieving dexterous manipulation through computationally simple and data-efficient algorithms.",
+          "authors": [
+            "Kai Stewart",
+            "Yasunori Toshimitsu",
+            "Robert K. Katzschmann"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-09-10T16:29:00+00:00",
+          "link": "https://arxiv.org/pdf/2609.11775v1",
+          "tags": [
+            "keyword:VLA-RL",
+            "keyword:rl-vla",
+            "query:VLA-RL",
+            "query:rl-vla"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "dexterous contact-rich in-hand manipulation",
+          "llm_evidence_cn": "接触丰富的灵巧手内操作",
+          "llm_evidence": "接触丰富的灵巧手内操作",
+          "canonical_evidence": "接触丰富的灵巧手内操作",
+          "llm_tldr_en": "Presents an embodied controller based on real-time task Jacobian estimation of the combined hand and object system, enabling rapid learning of dexterous in-hand pen writing on a physical robot using only a laptop CPU.",
+          "llm_tldr_cn": "手内灵巧操作接触丰富且高度动态，仿真器难以复现接触复杂性，灵巧示范采集也仍属难题。本文提出基于真实机器人上手与物体联合系统实时任务雅可比估计的具身控制方法。该方法仅用笔记本CPU即可快速开始手内钢笔书写，实现接触丰富的灵巧操作。该工作为灵巧手内操作提供了无需大量建模与数据的实用控制途径。",
+          "llm_tldr": "手内灵巧操作接触丰富且高度动态，仿真器难以复现接触复杂性，灵巧示范采集也仍属难题。本文提出基于真实机器人上手与物体联合系统实时任务雅可比估计的具身控制方法。该方法仅用笔记本CPU即可快速开始手内钢笔书写，实现接触丰富的灵巧操作。该工作为灵巧手内操作提供了无需大量建模与数据的实用控制途径。",
+          "llm_tags": [
+            "query:rl-vla"
+          ],
+          "matched_query_tag": "query:rl-vla",
+          "matched_query_text": "dexterous robotic manipulation algorithms",
+          "matched_requirement_id": "req-15",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.11775v1",
           "carry_days": 1
         }
       ]

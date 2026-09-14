@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-13T21:58:41.496544+00:00",
-  "updated_date": "20260913",
+  "generated_at": "2026-09-14T22:30:14.335520+00:00",
+  "updated_date": "20260914",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,12 +110,12 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260913",
+      "updated_date": "20260914",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260913",
+      "updated_date": "20260914",
       "carryover_days": 9,
       "items": [
         {
@@ -158,93 +158,7 @@
           "matched_requirement_id": "req-19",
           "selection_source": "carryover_cache",
           "paper_id": "2609.05266v1",
-          "carry_days": 3
-        },
-        {
-          "id": "2608.25585v1",
-          "source": "arxiv",
-          "title": "RA-VLA: Retrieval-Augmented VLA for Test-Time Adaptation",
-          "abstract": "Vision-Language-Action (VLA) models provide a versatile foundation for general robotic manipulation, yet they exhibit significant brittleness when confronted with novel task distributions. While In-Context Imitation Learning (ICIL) offers a training-free alternative, existing frameworks suffer from an adaptation bottleneck that hinders the effective translation of expert context to executable actions. This failure originates from superficial retrieval mechanisms and an inherent behavioral inertia that anchors the policy to its pre-trained priors. To address these limitations, we present RA-VLA, a retrieval-augmented VLA framework that integrates behavior-aligned context retrieval with a grounded execution pipeline. By enforcing faithful adherence to functional cues within a scalable architecture, RA-VLA facilitates seamless task adaptation while preserving inference efficiency. Our empirical evaluations across the LIBERO benchmark and a real-world UR5e environment demonstrate that RA-VLA achieves superior success rates and computational efficiency, establishing a robust framework for training-free robotic adaptation.",
-          "authors": [
-            "Sanghwan Jang",
-            "Minjin Jeon",
-            "Minsoo Kim",
-            "Seongjin Choi",
-            "Dongha Kim",
-            "Hwanjo Yu"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-08-26T09:52:30+00:00",
-          "link": "https://arxiv.org/pdf/2608.25585v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "retrieval-augmented VLA framework for test-time adaptation",
-          "llm_evidence_cn": "面向测试时自适应的检索增强VLA框架",
-          "llm_evidence": "面向测试时自适应的检索增强VLA框架",
-          "canonical_evidence": "面向测试时自适应的检索增强VLA框架",
-          "llm_tldr_en": "RA-VLA addresses the brittleness of Vision-Language-Action models on novel task distributions by combining behavior-aligned context retrieval with a grounded execution pipeline to overcome the adaptation bottleneck.",
-          "llm_tldr_cn": "视觉-语言-动作模型在通用机器人操作上表现良好,但面对新任务分布时十分脆弱,现有上下文模仿学习因检索浅层化和行为惯性而存在适应瓶颈。本文提出RA-VLA,一种检索增强的VLA框架,将行为对齐的上下文检索与接地执行管线相结合。该方法促使策略忠实遵循功能性线索,缓解了预训练先验对策略的锚定效应。实验表明其提升了VLA在测试时的任务自适应能力,为机器人控制的少样本泛化提供了新思路。",
-          "llm_tldr": "视觉-语言-动作模型在通用机器人操作上表现良好,但面对新任务分布时十分脆弱,现有上下文模仿学习因检索浅层化和行为惯性而存在适应瓶颈。本文提出RA-VLA,一种检索增强的VLA框架,将行为对齐的上下文检索与接地执行管线相结合。该方法促使策略忠实遵循功能性线索,缓解了预训练先验对策略的锚定效应。实验表明其提升了VLA在测试时的任务自适应能力,为机器人控制的少样本泛化提供了新思路。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.25585v1",
-          "carry_days": 3
-        },
-        {
-          "id": "2608.26053v1",
-          "source": "arxiv",
-          "title": "$R^3$: Training Robots to Reason in Natural Language via Reinforcement Learning",
-          "abstract": "Reasoning in language allows foundation models to spend more test-time compute on hard problems, such as those requiring decomposition, constraint tracking, and prediction of future consequences. Whether this mechanism can improve robotic manipulation remains unclear, where long-horizon tasks require tracking partial progress, reasoning about object relations, recovering from mistakes, and steering noisy low-level policies. In this paper, we study whether VLMs can be trained to reason directly in natural language to guide low-level manipulation policies. We introduce $R^3$, a simple post-training recipe that turns off-the-shelf VLMs into robotic reasoners: it first mid-trains a VLM on expert-generated reasoning traces to initialize the desired reasoning style, then improves the reasoner with single-step rubric-based RL from offline action data. Unlike prior robotic reasoning methods that mostly use structured traces as auxiliary supervision, $R^3$ trains free-form language reasoning to produce test-time guidance for action. We instantiate $R^3$ on Language Table and simulated bimanual grocery packing, two controlled testbeds for studying robotic reasoning and long-horizon manipulation. $R^3$ improves exploration and generalization across unseen tasks and significantly outperforms instruction-only imitation learning baselines on both benchmarks. Our analyses suggest that free-form language reasoning can function as a test-time compute mechanism for steering low-level policies. Our project page is available at https://robotic-reasoner.github.io/.",
-          "authors": [
-            "Lehong Wu",
-            "Yuxiao Qu",
-            "Zheyuan Hu",
-            "Ivan Zhang",
-            "Limin Wei",
-            "Zackory Erickson",
-            "Aviral Kumar"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI",
-            "cs.CL",
-            "cs.LG"
-          ],
-          "published": "2026-08-26T17:25:10+00:00",
-          "link": "https://arxiv.org/pdf/2608.26053v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "training VLMs to reason in language to guide low-level manipulation policies",
-          "llm_evidence_cn": "训练VLM用语言推理以指导低层操作策略",
-          "llm_evidence": "训练VLM用语言推理以指导低层操作策略",
-          "canonical_evidence": "训练VLM用语言推理以指导低层操作策略",
-          "llm_tldr_en": "R^3 is a post-training recipe that mid-trains a VLM on expert reasoning traces and uses reinforcement learning to make it reason in natural language for guiding low-level robotic manipulation policies.",
-          "llm_tldr_cn": "长时程机器人操作需要跟踪部分进度、推理物体关系、从错误中恢复并引导噪声较大的低层策略,但语言推理能否改善操作尚不明确。本文提出R^3,一种简单的后训练配方:先在专家生成的推理轨迹上对现成VLM进行中训,再通过强化学习使其学会用自然语言进行机器人推理。该方法让VLM的推理能力用于指导低层操作策略。实验表明语言推理可提升长时程操作表现,为强化学习与视觉语言模型结合的操作学习提供了新途径。",
-          "llm_tldr": "长时程机器人操作需要跟踪部分进度、推理物体关系、从错误中恢复并引导噪声较大的低层策略,但语言推理能否改善操作尚不明确。本文提出R^3,一种简单的后训练配方:先在专家生成的推理轨迹上对现成VLM进行中训,再通过强化学习使其学会用自然语言进行机器人推理。该方法让VLM的推理能力用于指导低层操作策略。实验表明语言推理可提升长时程操作表现,为强化学习与视觉语言模型结合的操作学习提供了新途径。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "reinforcement learning for robotic manipulation tasks",
-          "matched_requirement_id": "req-1",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.26053v1",
-          "carry_days": 3
+          "carry_days": 4
         },
         {
           "id": "2609.07747v2",
@@ -278,13 +192,13 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "visual-tactile dexterous manipulation learning from human videos",
+          "llm_evidence_en": "Visual-tactile dexterous manipulation learned from human videos",
           "llm_evidence_cn": "从人类视频学习视觉-触觉灵巧操作",
           "llm_evidence": "从人类视频学习视觉-触觉灵巧操作",
           "canonical_evidence": "从人类视频学习视觉-触觉灵巧操作",
-          "llm_tldr_en": "Dex-X learns deployable visual-tactile dexterous manipulation policies from human videos by using simulation as a tactile completion engine, reconstructing hand-object interactions with contact dynamics.",
-          "llm_tldr_cn": "针对人类视频缺乏接触丰富交互所需的触觉信息、且难以采集机器人侧数据的问题，本文提出Dex-X框架，借助仿真从单目人类演示中学习可部署的视觉-触觉灵巧操作策略。其核心思想是把仿真作为触觉补全引擎，重建手-物交互并由物理接触动力学提供触觉监督。该方法无需机器人侧数据采集即可获得接触感知的灵巧操作能力，为灵巧操作与接触丰富任务提供了新的数据与学习途径。",
-          "llm_tldr": "针对人类视频缺乏接触丰富交互所需的触觉信息、且难以采集机器人侧数据的问题，本文提出Dex-X框架，借助仿真从单目人类演示中学习可部署的视觉-触觉灵巧操作策略。其核心思想是把仿真作为触觉补全引擎，重建手-物交互并由物理接触动力学提供触觉监督。该方法无需机器人侧数据采集即可获得接触感知的灵巧操作能力，为灵巧操作与接触丰富任务提供了新的数据与学习途径。",
+          "llm_tldr_en": "Human videos lack tactile signals crucial for contact-rich manipulation. Dex-X uses simulation as a tactile completion engine, reconstructing hand-object interactions from monocular human demos to learn deployable visual-tactile dexterous policies.",
+          "llm_tldr_cn": "人类视频是灵巧操作行为的丰富来源，但缺乏接触丰富交互所需的触觉信息。本文提出Dex-X框架，以仿真作为触觉补全引擎，从单目人类演示重建手-物交互并获取物理接触监督，从而学习可部署的视觉-触觉灵巧操作策略。该工作展示了无需机器人侧数据即可从人类视频学习接触丰富操作。",
+          "llm_tldr": "人类视频是灵巧操作行为的丰富来源，但缺乏接触丰富交互所需的触觉信息。本文提出Dex-X框架，以仿真作为触觉补全引擎，从单目人类演示重建手-物交互并获取物理接触监督，从而学习可部署的视觉-触觉灵巧操作策略。该工作展示了无需机器人侧数据即可从人类视频学习接触丰富操作。",
           "llm_tags": [
             "query:rl-vla"
           ],
@@ -335,99 +249,7 @@
           "matched_requirement_id": "req-6",
           "selection_source": "carryover_cache",
           "paper_id": "2609.00906v1",
-          "carry_days": 3
-        },
-        {
-          "id": "2608.25864v1",
-          "source": "arxiv",
-          "title": "MA-VLA: Multi-Arm Vision-Language-Action Model for Collaboration and Compositional Generalization",
-          "abstract": "Multi-arm collaboration is becoming a core capability in embodied manipulation. Recent vision-language-action (VLA) models integrate perception, language, and control, but most represent language as a single global instruction and do not provide an explicit mechanism for assigning and composing arm-specific behaviors. This design limits transfer to collaboration patterns that differ from those observed during training. We present MA-VLA, a unified framework for multi-arm collaboration via atomic action assignment. MA-VLA decomposes cooperative behavior into mid-level atomic prompts and allocates them to individual arms, enabling explicit subgoal specification and compositional reuse across tasks. To reduce reliance on fixed execution roles, we introduce Arm Shuffle, a training-time permutation of the observation, state, and assigned atomic prompts for each arm. This permutation enforces role-agnostic instruction following and supports recomposition into unseen coordination patterns, which we term multi-arm compositional generalization. We also construct a benchmark in which test-time collaboration patterns are absent in training set. Across simulation and real-world evaluations, prior state-of-the-art VLAs largely fail under these unseen collaborations, while MA-VLA consistently succeeds. These results indicate that structured, per-arm atomic action assignment offers a practical route to scalable generalization in multi-arm embodied systems. Code, models, and data are available at https://github.com/zhangzaibin/future-robots",
-          "authors": [
-            "Zaibin Zhang",
-            "Junlan Xiao",
-            "Zhongbo Zhang",
-            "Yifan Wang",
-            "Li Kang",
-            "Yiran Qin",
-            "Changxing Xia",
-            "Heng Zhou",
-            "Talas Fu",
-            "Enshen Zhou",
-            "Ruimao Zhang",
-            "Zhenfei Yin",
-            "Huchuan Lu",
-            "Lijun Wang"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-08-26T14:38:04+00:00",
-          "link": "https://arxiv.org/pdf/2608.25864v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "multi-arm vision-language-action framework for embodied manipulation collaboration",
-          "llm_evidence_cn": "面向具身操作协作的多臂视觉-语言-动作框架",
-          "llm_evidence": "面向具身操作协作的多臂视觉-语言-动作框架",
-          "canonical_evidence": "面向具身操作协作的多臂视觉-语言-动作框架",
-          "llm_tldr_en": "MA-VLA addresses multi-arm collaboration by decomposing cooperative behavior into atomic prompts assigned to individual arms, enabling explicit subgoals and compositional generalization.",
-          "llm_tldr_cn": "现有多数视觉-语言-动作模型将语言表示为单一全局指令，缺乏为各机械臂分配与组合行为的显式机制，限制了协作模式的迁移。MA-VLA将协作行为分解为中层原子提示并分配到各机械臂，实现子目标显式指定与跨任务的组合复用。实验表明该框架能提升多臂协作的组合泛化能力，为多臂VLA协作提供可复用方案。",
-          "llm_tldr": "现有多数视觉-语言-动作模型将语言表示为单一全局指令，缺乏为各机械臂分配与组合行为的显式机制，限制了协作模式的迁移。MA-VLA将协作行为分解为中层原子提示并分配到各机械臂，实现子目标显式指定与跨任务的组合复用。实验表明该框架能提升多臂协作的组合泛化能力，为多臂VLA协作提供可复用方案。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.25864v1",
-          "carry_days": 3
-        },
-        {
-          "id": "2608.27609v1",
-          "source": "arxiv",
-          "title": "PHR-VLA: Planning Horizon Reasoning for Vision-Language-Action Models",
-          "abstract": "Vision-language-action models (VLAs) have shown strong promise for general-purpose robotic manipulation by mapping language instructions and vision observations directly to actions. However, most VLAs primarily condition action prediction on current observations and lack an explicit mechanism for reasoning over future task dynamics, which is particularly important for fine-grained, contact-rich manipulation. We present PHR-VLA, a framework that enables planning-horizon reasoning in VLAs through privileged latent representations of future dynamics. PHR-VLA introduces a lightweight auxiliary future head that, during training, aligns the VLA's internal representations with latent dynamics extracted from future observations. Evaluation results demonstrate that local, contact-centric, patch-level latent dynamics supervision from the wrist camera improves success rate on LIBERO from 84.1% to 88.4% and on real-world disassembly tasks from 63.3% to 82.5%. Patch-level supervision from a third-person camera also improves performance on Meta-World from 56.70% to 57.8%. These results demonstrate that privileged latent dynamics alignment provides an effective training signal for improving anticipatory reasoning in VLA policies. Project website: \\href{https://davoodsz.github.io/PHR-VLA.github.io/}{https://davoodsz.github.io/PHR-VLA.github.io/}",
-          "authors": [
-            "Davood Soleymanzadeh",
-            "Kaidi Zhang",
-            "Zhiyuan Zhang",
-            "Bihao Zhang",
-            "Xiao Liang",
-            "Yu She",
-            "Minghui Zheng"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI"
-          ],
-          "published": "2026-08-27T18:42:35+00:00",
-          "link": "https://arxiv.org/pdf/2608.27609v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "planning-horizon reasoning in VLA for fine-grained contact-rich manipulation",
-          "llm_evidence_cn": "面向精细接触丰富操作的VLA规划时域推理",
-          "llm_evidence": "面向精细接触丰富操作的VLA规划时域推理",
-          "canonical_evidence": "面向精细接触丰富操作的VLA规划时域推理",
-          "llm_tldr_en": "PHR-VLA adds planning-horizon reasoning to vision-language-action models via a lightweight future head aligning representations with latent future dynamics for contact-rich manipulation.",
-          "llm_tldr_cn": "多数视觉-语言-动作模型仅依据当前观测预测动作，缺乏对未来任务动态的显式推理，这在精细接触丰富操作中尤为关键。PHR-VLA通过特权潜在未来动态表示实现规划时域推理，并引入轻量辅助未来头在训练中对齐内部表示。实验表明该方法在精细接触丰富操作任务上取得更好表现，为VLA增强长时程操作能力提供通用思路。",
-          "llm_tldr": "多数视觉-语言-动作模型仅依据当前观测预测动作，缺乏对未来任务动态的显式推理，这在精细接触丰富操作中尤为关键。PHR-VLA通过特权潜在未来动态表示实现规划时域推理，并引入轻量辅助未来头在训练中对齐内部表示。实验表明该方法在精细接触丰富操作任务上取得更好表现，为VLA增强长时程操作能力提供通用思路。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for visuomotor control in robotic precision manipulation",
-          "matched_requirement_id": "req-8",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.27609v1",
-          "carry_days": 3
+          "carry_days": 4
         },
         {
           "id": "2608.29828v1",
@@ -465,7 +287,7 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2608.29828v1",
-          "carry_days": 3
+          "carry_days": 4
         },
         {
           "id": "2609.01938v2",
@@ -507,24 +329,26 @@
           "matched_requirement_id": "req-5",
           "selection_source": "carryover_cache",
           "paper_id": "2609.01938v2",
-          "carry_days": 3
+          "carry_days": 4
         },
         {
-          "id": "2609.11775v1",
+          "id": "2609.11308v1",
           "source": "arxiv",
-          "title": "Rapid Learning of Dexterous In-Hand Pen Writing through Real-Time Jacobian Estimation",
-          "abstract": "Dexterous in-hand manipulation of a grasped object with an anthropomorphic hand is an unsolved frontier for robot dexterity. The contact-richness and highly dynamic nature of object-hand interactions tend to require extensive modeling or data-collection efforts for learning-based approaches. Modern simulators used for reinforcement learning (RL) cannot fully replicate the required contact complexity, while collecting dexterous demonstrations for imitation learning (IL) remains an open problem. In this research, we present an embodied control approach based on real-time task Jacobian estimation of the combined hand and object system on the physical robot. Using only the CPU on a laptop, the proposed controller begins in-hand pen writing after approximately 18 s of initialization and continues to adapt online, without an analytic hand--object kinematic/contact model, simulation training, or precollected task demonstrations. We demonstrate that the same estimator/controller formulation works on three anthropomorphic robotic hand systems (one physical, two simulated) to show human-like, in-hand articulation of a grasped pen by an embodiment-independent formulation. Sub-millimeter in-plane precision (mean 0.6 mm across runs) is achieved across letters and shapes written in the air and on paper on a physical robot. To our knowledge, this is the first demonstration of an anthropomorphic hand writing arbitrary single-stroke trajectories with a grasped pen through purely in-hand motion, and it showcases an alternative to compute- and data-heavy approaches such as RL and IL for achieving dexterous manipulation through computationally simple and data-efficient algorithms.",
+          "title": "2AM: Grounding Agent-Side Memory as Guidance for Steerable Action Models in Long-Horizon Manipulation",
+          "abstract": "Long-horizon robot manipulation requires memory, but not necessarily inside the action policy. To address such tasks, current agentic systems often combine VLAs with planners and geometric tools, sometimes using additional depth or calibrated geometry. These systems confound attribution: gains may come from richer observations or alternative motor tools, while failures may stem from either the policy or an under-specified language interface. We isolate this question through a deliberately constrained design: less tool breadth, but greater interface bandwidth. 2AM makes a multimodal Agent the sole holder of task memory and a single RGB-based, episodically stateless Action Model the sole executor of task-relevant motion. The Agent compiles interaction history into subtask language and optional 2D grasp, place, and move hints that bind its physical intention at different time scales. To teach this steerability to the VLA, we augment demonstrations with structured hint labels and train under condition dropout, spatial noise, and temporal jitter to tolerate imperfect Agent outputs. On LIBERO-Mem, without depth, online geometry, or planner-based object motion, 2AM reaches 76.3% average completion, a 61.5-point improvement over the strongest reported baseline of 14.8%, together with 63.0% relaxed and 11.8% strict success. These results show that task memory can remain Agent-side. They further show that Action Model capability depends not only on what the policy has learned, but on how precisely the Agent can steer it.",
           "authors": [
-            "Kai Stewart",
-            "Yasunori Toshimitsu",
-            "Robert K. Katzschmann"
+            "Yutong Hu",
+            "Fengjiao Chen",
+            "Xuezhi Cao",
+            "Renaud Detry"
           ],
           "primary_category": "cs.RO",
           "categories": [
-            "cs.RO"
+            "cs.RO",
+            "cs.AI"
           ],
-          "published": "2026-09-10T16:29:00+00:00",
-          "link": "https://arxiv.org/pdf/2609.11775v1",
+          "published": "2026-09-10T09:35:56+00:00",
+          "link": "https://arxiv.org/pdf/2609.11308v1",
           "tags": [
             "keyword:VLA-RL",
             "keyword:rl-vla",
@@ -532,21 +356,112 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "dexterous contact-rich in-hand manipulation",
-          "llm_evidence_cn": "接触丰富的灵巧手内操作",
-          "llm_evidence": "接触丰富的灵巧手内操作",
-          "canonical_evidence": "接触丰富的灵巧手内操作",
-          "llm_tldr_en": "Presents an embodied controller based on real-time task Jacobian estimation of the combined hand and object system, enabling rapid learning of dexterous in-hand pen writing on a physical robot using only a laptop CPU.",
-          "llm_tldr_cn": "手内灵巧操作接触丰富且高度动态，仿真器难以复现接触复杂性，灵巧示范采集也仍属难题。本文提出基于真实机器人上手与物体联合系统实时任务雅可比估计的具身控制方法。该方法仅用笔记本CPU即可快速开始手内钢笔书写，实现接触丰富的灵巧操作。该工作为灵巧手内操作提供了无需大量建模与数据的实用控制途径。",
-          "llm_tldr": "手内灵巧操作接触丰富且高度动态，仿真器难以复现接触复杂性，灵巧示范采集也仍属难题。本文提出基于真实机器人上手与物体联合系统实时任务雅可比估计的具身控制方法。该方法仅用笔记本CPU即可快速开始手内钢笔书写，实现接触丰富的灵巧操作。该工作为灵巧手内操作提供了无需大量建模与数据的实用控制途径。",
+          "llm_evidence_en": "VLA with agent-side memory and stateless action model for long-horizon robot manipulation",
+          "llm_evidence_cn": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
+          "llm_evidence": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
+          "canonical_evidence": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
+          "llm_tldr_en": "Long-horizon manipulation needs memory, but agentic VLA systems confound attribution between richer observations and policy quality. 2AM makes a multimodal Agent the sole holder of task memory and a single RGB-based, episodically stateless Action Model the sole executor, isolating how interface bandwidth affects long-horizon performance.",
+          "llm_tldr_cn": "长时程机器人操作需要记忆，但现有将VLA与规划器和几何工具组合的智能体系统难以区分性能来源。本文提出2AM，让多模态智能体成为任务记忆的唯一持有者，仅用基于RGB、回合内无状态的单一动作模型执行动作，以更窄工具宽度换取更大接口带宽。该设计在隔离变量后评估记忆与接口对长时程操作的作用，为VLA与智能体协同提供清晰归因。",
+          "llm_tldr": "长时程机器人操作需要记忆，但现有将VLA与规划器和几何工具组合的智能体系统难以区分性能来源。本文提出2AM，让多模态智能体成为任务记忆的唯一持有者，仅用基于RGB、回合内无状态的单一动作模型执行动作，以更窄工具宽度换取更大接口带宽。该设计在隔离变量后评估记忆与接口对长时程操作的作用，为VLA与智能体协同提供清晰归因。",
           "llm_tags": [
             "query:rl-vla"
           ],
           "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "dexterous robotic manipulation algorithms",
-          "matched_requirement_id": "req-15",
+          "matched_query_text": "vision language action models for robot control",
+          "matched_requirement_id": "req-12",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.11775v1",
+          "paper_id": "2609.11308v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.12245v1",
+          "source": "arxiv",
+          "title": "DIA: Denoising Intermediate Advantage for Diffusion Policy Optimization",
+          "abstract": "Diffusion-based robot policies have become widely used in robotic manipulation, where they are typically trained with behavior cloning. However, policies trained purely from demonstrations are limited by the quality and coverage of the available data. Reinforcement learning can further improve the performance of these pretrained policies through interaction. A common approach is to use policy-gradient methods that formulate diffusion-policy fine-tuning as an outer environment MDP together with an inner denoising MDP. However, existing methods typically assign the same environment-level credit to all denoising steps used to construct an action chunk, without distinguishing which intermediate decisions contributed most to the final return. We introduce Denoising Intermediate Advantage (DIA), a policy-gradient method that learns a value function over partially denoised actions and uses it to construct a denoising- level advantage for each step of the generative process. DIA com- bines this inner credit signal with the standard environment-level PPO advantage, providing state-dependent credit throughout the denoising chain. Across Robomimic, FurnitureBench, Franka Kitchen, and D3IL, DIA consistently improves final performance over existing diffusion-policy fine-tuning methods. Beyond final reward, DIA reaches successful states more efficiently and can shift farther from the pretrained behavior distribution, enabling it to discover more effective and efficient task-level strategies and subtask sequences that baseline methods fail to reach.",
+          "authors": [
+            "Arjun Sohal",
+            "Yuchi Zhao",
+            "Miroslav Bogdanovic",
+            "Alan Aspuru-Guzik"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-09-10T22:02:28+00:00",
+          "link": "https://arxiv.org/pdf/2609.12245v1",
+          "tags": [
+            "keyword:VLA-RL",
+            "keyword:rl-vla",
+            "query:VLA-RL",
+            "query:rl-vla"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "reinforcement learning fine-tuning of diffusion robot manipulation policies with advantage assignment",
+          "llm_evidence_cn": "用强化学习微调扩散机器人操作策略并分配中间优势",
+          "llm_evidence": "用强化学习微调扩散机器人操作策略并分配中间优势",
+          "canonical_evidence": "用强化学习微调扩散机器人操作策略并分配中间优势",
+          "llm_tldr_en": "DIA improves diffusion robot policies by reinforcement learning, introducing denoising intermediate advantage to assign credit to individual denoising steps rather than uniform environment-level credit for whole action chunks.",
+          "llm_tldr_cn": "扩散机器人策略多由行为克隆训练，受示教数据质量与覆盖限制，需用强化学习通过交互进一步提升。常见做法将扩散策略微调建模为外层环境MDP与内层去噪MDP，但现有方法对所有去噪步骤分配相同的环境级信用，忽视哪些中间决策对最终回报贡献最大。本文提出DIA，利用去噪中间优势进行策略优化，区分各去噪步骤贡献。结果表明该优势分配提升扩散策略微调效果，为机器人操作策略的强化学习优化提供更精细的信用分配机制。",
+          "llm_tldr": "扩散机器人策略多由行为克隆训练，受示教数据质量与覆盖限制，需用强化学习通过交互进一步提升。常见做法将扩散策略微调建模为外层环境MDP与内层去噪MDP，但现有方法对所有去噪步骤分配相同的环境级信用，忽视哪些中间决策对最终回报贡献最大。本文提出DIA，利用去噪中间优势进行策略优化，区分各去噪步骤贡献。结果表明该优势分配提升扩散策略微调效果，为机器人操作策略的强化学习优化提供更精细的信用分配机制。",
+          "llm_tags": [
+            "query:rl-vla"
+          ],
+          "matched_query_tag": "query:rl-vla",
+          "matched_query_text": "reinforcement learning for robotic manipulation tasks",
+          "matched_requirement_id": "req-11",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.12245v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.10522v1",
+          "source": "arxiv",
+          "title": "Show-Harness: Just a VLM Agent Can Play Robots",
+          "abstract": "Foundation vision-language models (VLMs) exhibit broad intelligence about the world, yet translating this intelligence into robot control remains challenging. We present Show-Harness, an Embodied Harness that enables VLMs to \"play\" robots through a compact semantic interface linking intent to action. Show-Harness exposes discrete semantic action units that VLMs can naturally reason over, while embodiment-specific interpreters deterministically ground them into local robot actions, keeping the VLM directly responsible for fine-grained physical decisions. Through the same interface, Show-Harness demonstrates the feasibility of (1) directly unlocking closed-source frontier VLMs for zero-shot robot control, and (2) adapting small-scale open-source VLMs for low-cost deployment with just a few GPU-hours of fine-tuning. We further develop GUMI (GUI Manipulation Interface), which extends the same semantic action space to GUI-based demonstration collection, allowing humans and agents to \"play\" robots across embodiments without specialized teleoperation hardware. Extensive experiments show that Show-Harness-equipped VLM agents generalize robustly across tasks, embodiments, and environments, outperforming representative agentic and VLA paradigms. These results suggest that the right interface can unlock substantial embodied capability from foundation VLMs, without requiring additional model capacity or costly embodiment-specific pretraining.",
+          "authors": [
+            "Yanzhe Chen",
+            "Zechen Bai",
+            "Zhijun Cao",
+            "Wenzheng Zeng",
+            "Kevin Qinghong Lin",
+            "Yiqi Lin",
+            "Guoqiang Liang",
+            "Kevin Yuchen Ma",
+            "Qiming Huang",
+            "Mike Zheng Shou"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO",
+            "cs.AI",
+            "cs.CV",
+            "cs.MM"
+          ],
+          "published": "2026-09-09T17:53:38+00:00",
+          "link": "https://arxiv.org/pdf/2609.10522v1",
+          "tags": [
+            "keyword:VLA-RL",
+            "keyword:rl-vla",
+            "query:VLA-RL",
+            "query:rl-vla"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "VLM agent for zero-shot robot control via semantic action interface",
+          "llm_evidence_cn": "通过语义动作接口实现VLM智能体机器人控制",
+          "llm_evidence": "通过语义动作接口实现VLM智能体机器人控制",
+          "canonical_evidence": "通过语义动作接口实现VLM智能体机器人控制",
+          "llm_tldr_en": "Show-Harness exposes discrete semantic action units to vision-language models and grounds them via embodiment-specific interpreters, enabling zero-shot and low-cost VLM robot control.",
+          "llm_tldr_cn": "基础视觉语言模型具备广泛世界知识，但将其转化为机器人控制仍具挑战。作者提出Show-Harness，一种具身化框架，通过紧凑的语义接口把意图映射到离散语义动作单元，并由具身解释器确定性地落地为机器人动作。实验表明该接口能让闭源前沿VLM实现零样本机器人控制，也能适配小型开源VLM用于低成本部署，为VLM驱动的机器人控制提供了通用方案。",
+          "llm_tldr": "基础视觉语言模型具备广泛世界知识，但将其转化为机器人控制仍具挑战。作者提出Show-Harness，一种具身化框架，通过紧凑的语义接口把意图映射到离散语义动作单元，并由具身解释器确定性地落地为机器人动作。实验表明该接口能让闭源前沿VLM实现零样本机器人控制，也能适配小型开源VLM用于低成本部署，为VLM驱动的机器人控制提供了通用方案。",
+          "llm_tags": [
+            "query:rl-vla"
+          ],
+          "matched_query_tag": "query:rl-vla",
+          "matched_query_text": "vision language action models for robot control",
+          "matched_requirement_id": "req-12",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.10522v1",
           "carry_days": 1
         }
       ]

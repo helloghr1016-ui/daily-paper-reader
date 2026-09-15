@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-14T22:30:14.335520+00:00",
-  "updated_date": "20260914",
+  "generated_at": "2026-09-15T22:36:14.182001+00:00",
+  "updated_date": "20260915",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,32 +110,33 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260914",
+      "updated_date": "20260915",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260914",
+      "updated_date": "20260915",
       "carryover_days": 9,
       "items": [
         {
-          "id": "2609.05266v1",
+          "id": "2609.14878v1",
           "source": "arxiv",
-          "title": "TacPAC: Tactile Prediction and Real-Time Action Correction in World-Action Models for Contact-Rich Manipulation",
-          "abstract": "World-action models guide action generation with predicted future observations, but vision-centric predictions miss the local contact cues that decide contact-rich manipulation. However, naively predicting future tactile observations as additional views recovers only a third of the achievable gain in our experiments. This gap reflects a timing mismatch: predictions precede execution, while tactile feedback arrives during it. We introduce TacPAC, which turns tactile prediction into real-time action correction. Once the base model has planned an action chunk, TacPAC caches the predicted contact that plan was conditioned on together with the plan's own representation, and a tactile expert reads each newly observed tactile image against that cache to correct the actions not yet executed. Feedback is thus interpreted against what the plan anticipated rather than in isolation, and one correction is a single pass over that cache, $20.7\\times$ cheaper than regenerating the chunk. On five real-robot tasks spanning precision insertion, fragile-object handling, object reorientation, and long-horizon manipulation, TacPAC leads every task and raises the average from 22% for its vision-only base model to 64%. Code is available at https://github.com/LogosRoboticsGroup/TacPAC.",
+          "title": "Real-World Reinforcement Learning with MPC Scaffolding for Dexterous Manipulation",
+          "abstract": "Real-world reinforcement learning (RL) offers a promising route to dexterous manipulation policies that can adapt directly from physical interaction, but learning is hindered by inefficient early exploration and costly failures. We propose a framework that uses sampling-based model predictive control (MPC) as scaffolding for real-world dexterous RL, providing structured prior experience and task-directed guidance during learning without human demonstrations or corrective actions. A small set of MPC trajectories is first used to populate an offline replay buffer and to pretrain the actor and critic. During online learning, MPC intermittently guides data collection while an off-policy Soft Actor-Critic learner trains from both prior MPC experience and newly collected physical interaction, with control gradually transitioning to the learned policy. On continuous in-hand rotation with a 16-DoF Allegro hand, the method reaches 100\\% success in policy-only evaluation (5/5 trials) after 7 minutes of online RL, following initialization with 20 MPC trajectories collected on hardware in 12 minutes. Online training incurs about three object drops on average. After 20 minutes of online learning, the policy achieves more than five times the rotation speed of the MPC controller. It completes 1000 consecutive rotations over more than 110 minutes without a drop. Ablations show complementary benefits from MPC-based pretraining, retained MPC experience, and online MPC guidance. We further demonstrate rapid adaptation to different object geometries and successful goal-conditioned reorientation, showing that the framework enables efficient, low-intervention, real-world dexterous RL.",
           "authors": [
-            "Zipei Ma",
-            "Xiaofei Wei",
-            "Junzhe Jiang",
-            "Shunlin Lu",
-            "Li Zhang"
+            "Emek Barış Küçüktabak",
+            "Karankumar Patel",
+            "Zhaodong Yang",
+            "Jinda Cui",
+            "Kazuhiro Sasabuchi",
+            "Jun Takamatsu"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-09-04T15:24:58+00:00",
-          "link": "https://arxiv.org/pdf/2609.05266v1",
+          "published": "2026-09-14T00:57:55+00:00",
+          "link": "https://arxiv.org/pdf/2609.14878v1",
           "tags": [
             "keyword:VLA-RL",
             "keyword:rl-vla",
@@ -143,62 +144,13 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "Tactile prediction and real-time correction in world-action models for contact-rich manipulation",
-          "llm_evidence_cn": "世界动作模型中面向接触丰富操作的触觉预测与实时动作校正",
-          "llm_evidence": "世界动作模型中面向接触丰富操作的触觉预测与实时动作校正",
-          "canonical_evidence": "世界动作模型中面向接触丰富操作的触觉预测与实时动作校正",
-          "llm_tldr_en": "Vision-centric world-action models miss local contact cues vital for contact-rich manipulation. TacPAC turns tactile prediction into real-time action correction by caching the predicted contact and using a tactile expert to adjust plans during execution.",
-          "llm_tldr_cn": "世界动作模型用预测的未来观测引导动作生成，但以视觉为中心的预测会忽略决定接触丰富操作成败的局部接触线索，且预测先于执行、触觉反馈却在执行中到达，存在时序错配。本文提出TacPAC，把触觉预测转化为实时动作校正：在规划出动作块后缓存其条件化的预测接触与计划表征，由触觉专家读取新观测并在线调整动作。实验表明该方法显著优于仅把触觉作为额外视图的朴素做法，提升了接触丰富操作的鲁棒性。",
-          "llm_tldr": "世界动作模型用预测的未来观测引导动作生成，但以视觉为中心的预测会忽略决定接触丰富操作成败的局部接触线索，且预测先于执行、触觉反馈却在执行中到达，存在时序错配。本文提出TacPAC，把触觉预测转化为实时动作校正：在规划出动作块后缓存其条件化的预测接触与计划表征，由触觉专家读取新观测并在线调整动作。实验表明该方法显著优于仅把触觉作为额外视图的朴素做法，提升了接触丰富操作的鲁棒性。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "learning based policies for contact rich robotic manipulation such as precise insertion and assembly",
-          "matched_requirement_id": "req-19",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.05266v1",
-          "carry_days": 4
-        },
-        {
-          "id": "2609.07747v2",
-          "source": "arxiv",
-          "title": "Dex-X: Learning Visual-Tactile Dexterous Manipulation From Human Videos with Simulated Interaction",
-          "abstract": "Human videos are an abundant source of dexterous manipulation behaviors, but they lack tactile information that is crucial for contact-rich interaction. This raises a fundamental question: can robots learn deployable visual-tactile dexterous manipulation policies from human video demonstrations without robot-side data collection?   We present DEX-X, a framework for learning visual-tactile dexterous manipulation from human videos through simulation. Our key insight is that simulation can serve as a tactile completion engine. Given monocular human demonstrations, DEX-X reconstructs hand-object interactions in simulation, where physically grounded contact dynamics provide tactile supervision unavailable in the original videos. Leveraging this recovered tactile information, we train visual-tactile dexterous manipulation policies and distill them into deployable policies operating on point-cloud observations and tactile sensing.   We demonstrate zero-shot sim-to-real transfer on a dexterous hand-arm platform across diverse grasping and contact-rich tool-use tasks. The teacher policy achieves 65.9% average success across six task categories in simulation, while the distilled visual-tactile policy achieves 93% success on real-world cube picking and 53% on the challenging table-cleaning task. Zero-shot generalization to unseen object geometries is also observed on object-picking tasks.   Our results suggest that simulated interaction is a key bridge between human videos and deployable dexterous manipulation policies, providing the missing physical supervision needed for scalable robot skill learning from Internet-scale human video data.",
-          "authors": [
-            "Ruoqu Chen",
-            "Feixiang Ruan",
-            "Liu Cao",
-            "Zihao Wang",
-            "Botian Xu",
-            "Shiqin Tong",
-            "Jiajun Liu",
-            "Mingzhi Pei",
-            "Chenyu Zhang",
-            "Wanli Xing",
-            "Kaifeng Zhang",
-            "Mengdi Xu"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-09-07T16:47:39+00:00",
-          "link": "https://arxiv.org/pdf/2609.07747v2",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "Visual-tactile dexterous manipulation learned from human videos",
-          "llm_evidence_cn": "从人类视频学习视觉-触觉灵巧操作",
-          "llm_evidence": "从人类视频学习视觉-触觉灵巧操作",
-          "canonical_evidence": "从人类视频学习视觉-触觉灵巧操作",
-          "llm_tldr_en": "Human videos lack tactile signals crucial for contact-rich manipulation. Dex-X uses simulation as a tactile completion engine, reconstructing hand-object interactions from monocular human demos to learn deployable visual-tactile dexterous policies.",
-          "llm_tldr_cn": "人类视频是灵巧操作行为的丰富来源，但缺乏接触丰富交互所需的触觉信息。本文提出Dex-X框架，以仿真作为触觉补全引擎，从单目人类演示重建手-物交互并获取物理接触监督，从而学习可部署的视觉-触觉灵巧操作策略。该工作展示了无需机器人侧数据即可从人类视频学习接触丰富操作。",
-          "llm_tldr": "人类视频是灵巧操作行为的丰富来源，但缺乏接触丰富交互所需的触觉信息。本文提出Dex-X框架，以仿真作为触觉补全引擎，从单目人类演示重建手-物交互并获取物理接触监督，从而学习可部署的视觉-触觉灵巧操作策略。该工作展示了无需机器人侧数据即可从人类视频学习接触丰富操作。",
+          "llm_evidence_en": "Real-world RL for dexterous manipulation using MPC scaffolding",
+          "llm_evidence_cn": "用MPC支架进行真实世界灵巧操作强化学习",
+          "llm_evidence": "用MPC支架进行真实世界灵巧操作强化学习",
+          "canonical_evidence": "用MPC支架进行真实世界灵巧操作强化学习",
+          "llm_tldr_en": "Real-world RL for dexterous manipulation suffers from inefficient exploration and costly failures; this work uses sampling-based MPC as scaffolding to pretrain actor-critic and guide online off-policy SAC learning without human demos.",
+          "llm_tldr_cn": "真实世界强化学习有望直接从物理交互中学习灵巧操作策略，但早期探索低效且失败代价高昂。本文提出以采样式模型预测控制（MPC）作为支架，先填充离线回放缓冲并预训练演员与评论家，再在在线阶段间歇引导数据采集。实验表明该方法无需人类示范即可提升学习效率与稳定性，为真实机器人灵巧操作提供了可扩展的强化学习范式。",
+          "llm_tldr": "真实世界强化学习有望直接从物理交互中学习灵巧操作策略，但早期探索低效且失败代价高昂。本文提出以采样式模型预测控制（MPC）作为支架，先填充离线回放缓冲并预训练演员与评论家，再在在线阶段间歇引导数据采集。实验表明该方法无需人类示范即可提升学习效率与稳定性，为真实机器人灵巧操作提供了可扩展的强化学习范式。",
           "llm_tags": [
             "query:rl-vla"
           ],
@@ -206,262 +158,50 @@
           "matched_query_text": "dexterous robotic manipulation algorithms",
           "matched_requirement_id": "req-15",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.07747v2",
+          "paper_id": "2609.14878v1",
           "carry_days": 1
         },
         {
-          "id": "2609.00906v1",
+          "id": "2609.13761v1",
           "source": "arxiv",
-          "title": "Peg-in-Bench: A Modular Benchmark for High-Precision Robotic Insertion",
-          "abstract": "High-precision insertion remains a fundamental challenge in robotic manipulation due to the strict alignment requirements and contact-rich interactions involved. Although peg-in-hole tasks are widely used for evaluation, existing bench- marks often rely on fixed task configurations, limiting their ability to assess robustness and generalization across different insertion scenarios. This paper introduces a reconfigurable peg-in-hole benchmark designed to evaluate task generalization in high-precision insertion. The benchmark consists of a set of fully 3D-printable modular components, including multiple peg geometries, tolerance levels, and configurable base structures that can be combined to generate a large variety of insertion and assembly tasks. By varying object layouts, orientations, and task structures while maintaining controlled physical conditions, the benchmark enables systematic evaluation of adaptation to unseen scenarios. To support reproducibility, we additionally provide a scenario generation tool capable of producing standardized task configurations and machine-readable task descriptions. The scenario generation tool and the STL files of the benchmark pieces are available through the project repository: https://github.com/aistairc/peg-in-bench.",
+          "title": "Learning In-Hand Object Reaching to General 6D Poses",
+          "abstract": "In-hand manipulation allows multi-fingered dexterous hands to reconfigure grasped objects without releasing and regrasping them. This improves manipulation efficiency by reducing repeated grasp acquisition and large arm motions. However, most learning-based methods focus on reorientation, continuous rotation, or translation, whereas many tasks require joint control of object position and orientation. We formulate this capability as in-hand 6D object pose reaching: starting from an existing grasp, coordinated finger motions move the object to a palm-relative target pose. We present POISE (Palm-relative Object reaching In SE(3)), a sim-to-real reinforcement learning framework for this task. POISE combines diverse stable-grasp initialization, goal- and geometry-conditioned control, an adaptive 6D goal curriculum, and a compact reward scheme for pose reaching and grasp preservation. In simulation, diverse initialization raises held-out-grasp success from 40.1% to 51.5% and post-drop recovery from 33.8% to 72.9%; the curriculum raises full-range success from 6.2% to 59.5%. On hardware, the grasp-maintenance reward improves three-target sequence success from 20% to 80%. In real-world experiments, POISE reaches successive 6D targets without manual reset across multiple object geometries and wrist orientations, and recovers from external disturbances. To support further research in dexterous manipulation, we will release our code at https://junxiaolin.github.io/poise-website/.",
           "authors": [
-            "Yosel Delgado",
-            "José G. Buenaventura-Carreón",
-            "Floris Erich",
-            "Roman Mykhailyshyn",
-            "Tomohiro Motoda",
-            "Koshi Makihara",
-            "Yukiyasu Domae"
+            "Junxiao Lin",
+            "Tianyue Wu",
+            "Jie Yin",
+            "Jia Pan",
+            "Kaifeng Zhang",
+            "Weiming Zhi"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-09-01T08:37:31+00:00",
-          "link": "https://arxiv.org/pdf/2609.00906v1",
+          "published": "2026-09-12T07:11:37+00:00",
+          "link": "https://arxiv.org/pdf/2609.13761v1",
           "tags": [
+            "keyword:VLA-RL",
             "keyword:rl-vla",
+            "query:VLA-RL",
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "modular benchmark for high-precision peg-in-hole insertion",
-          "llm_evidence_cn": "面向高精度轴孔插入的模块化基准",
-          "llm_evidence": "面向高精度轴孔插入的模块化基准",
-          "canonical_evidence": "面向高精度轴孔插入的模块化基准",
-          "llm_tldr_en": "High-precision insertion suffers from strict alignment and contact-rich interaction, yet existing benchmarks use fixed configurations. Peg-in-Bench provides a reconfigurable, 3D-printable modular peg-in-hole benchmark for evaluating generalization.",
-          "llm_tldr_cn": "高精度插入因严格对齐与接触丰富交互而极具挑战，现有轴孔基准多采用固定任务配置，难以评估鲁棒性与泛化。本文提出Peg-in-Bench，一个可重构的模块化轴孔插入基准，包含可3D打印的多种销钉几何、公差等级与可配置底座结构。该基准能组合生成大量插入与装配任务，为高精度操作提供系统化评测手段。",
-          "llm_tldr": "高精度插入因严格对齐与接触丰富交互而极具挑战，现有轴孔基准多采用固定任务配置，难以评估鲁棒性与泛化。本文提出Peg-in-Bench，一个可重构的模块化轴孔插入基准，包含可3D打印的多种销钉几何、公差等级与可配置底座结构。该基准能组合生成大量插入与装配任务，为高精度操作提供系统化评测手段。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "peg insertion robot learning methods",
-          "matched_requirement_id": "req-6",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.00906v1",
-          "carry_days": 4
-        },
-        {
-          "id": "2608.29828v1",
-          "source": "arxiv",
-          "title": "SymVD: Symmetric Vision Language Action Distillation for Robot Manipulation",
-          "abstract": "While pretrained Vision-Language-Action (VLA) models offer broad generalization capabilities in robotic manipulation tasks, adapting them to real-world environments or handling task shifts often requires substantial additional data and retraining. To address this, we propose Symmetric VLA Distillation (SymVD), a distillation framework that transfers knowledge from a large VLA teacher to a compact student policy by explicitly exploiting geometric symmetries in manipulation tasks, such as rotational and reflectional invariance. SymVD employs an equivariant actor-critic architecture and trains the student using a symmetry-aware objective that aligns with teacher actions under group-invariant properties. We demonstrate that by enforcing the policy to respect equivariance, SymVD reduces redundant exploration across configurations related by group transformations and improves sample efficiency during distillation. To further stabilize and improve distillation, SymVD introduces an adaptive weighting scheme that dynamically balances the distillation objective and reinforcement learning updates based on training progress, enabling robust transfer even when the teacher signal is imperfect or misaligned. Experimental results on robotic manipulation tasks demonstrate that SymVD consistently improves over standard distillation and also outperforms SAC in terms of sample efficiency and generalization to previously unseen symmetric transformations of the environment.",
-          "authors": [
-            "Hyewon Choi",
-            "Donggyu Kim",
-            "Soojean Han"
-          ],
-          "primary_category": "eess.SY",
-          "categories": [
-            "eess.SY"
-          ],
-          "published": "2026-08-30T14:50:35+00:00",
-          "link": "https://arxiv.org/pdf/2608.29828v1",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "VLA distillation with equivariant actor-critic for robot manipulation",
-          "llm_evidence_cn": "面向机器人操作的等变actor-critic VLA蒸馏",
-          "llm_evidence": "面向机器人操作的等变actor-critic VLA蒸馏",
-          "canonical_evidence": "面向机器人操作的等变actor-critic VLA蒸馏",
-          "llm_tldr_en": "Pretrained VLA models generalize broadly but need costly retraining for real-world shifts; SymVD distills a large VLA teacher into a compact student by exploiting rotational and reflectional symmetries, using an equivariant actor-critic and symmetry-aware objective that aligns student actions with the teacher.",
-          "llm_tldr_cn": "预训练视觉-语言-动作模型泛化性强，但适配真实环境或任务偏移往往需要大量额外数据与重训练。本文提出对称VLA蒸馏SymVD，利用操作任务中的旋转与反射等几何对称性，将大型VLA教师的知识迁移到紧凑学生策略，并采用等变actor-critic架构与对称感知目标对齐教师动作。该框架在保持泛化的同时降低部署成本。",
-          "llm_tldr": "预训练视觉-语言-动作模型泛化性强，但适配真实环境或任务偏移往往需要大量额外数据与重训练。本文提出对称VLA蒸馏SymVD，利用操作任务中的旋转与反射等几何对称性，将大型VLA教师的知识迁移到紧凑学生策略，并采用等变actor-critic架构与对称感知目标对齐教师动作。该框架在保持泛化的同时降低部署成本。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-2",
-          "selection_source": "carryover_cache",
-          "paper_id": "2608.29828v1",
-          "carry_days": 4
-        },
-        {
-          "id": "2609.01938v2",
-          "source": "arxiv",
-          "title": "One Demonstration, Many Objects: Generalizing Manipulation via Local Contact Geometry",
-          "abstract": "Dexterous manipulation with multi-fingered robot hands promises human-level dexterity, but collecting large-scale dexterous robot hand data remains difficult. Learning from human demonstrations has emerged as a scalable alternative to robot teleoperation, providing strong priors on object interaction and contact strategies. Recent sim-to-real RL methods incorporate such priors, but often (i) omit rewards that explicitly incentivize precise contact, yielding weak real-world performance, and/or (ii) generalize poorly to unseen object instances. We propose DemoMimic (Dexterous Motion Mimic), a policy that manipulates objects by focusing on their geometry local to the contact points. Its contact-centric rewards encourage precise contact and improve sim-to-real consistency, yielding a single real-world policy that transfers across objects of varying shape, scale, mass, and friction wherever local contact structure is preserved. Real-world ablations show that DemoMimic achieves 71% success across 16 objects, four tasks, and two robot-hand embodiments, with the smallest sim-to-real drop compared to baselines.",
-          "authors": [
-            "Satvik Sharma",
-            "Samrat Sahoo",
-            "Huang Huang",
-            "Fei-Fei Li",
-            "Jiajun Wu",
-            "Dorsa Sadigh",
-            "Jeannette Bohg"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-09-01T23:04:35+00:00",
-          "link": "https://arxiv.org/pdf/2609.01938v2",
-          "tags": [
-            "keyword:rl-vla",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "contact-centric rewards for sim-to-real dexterous manipulation RL",
-          "llm_evidence_cn": "面向灵巧操作的接触中心奖励与sim-to-real强化学习",
-          "llm_evidence": "面向灵巧操作的接触中心奖励与sim-to-real强化学习",
-          "canonical_evidence": "面向灵巧操作的接触中心奖励与sim-to-real强化学习",
-          "llm_tldr_en": "Dexterous multi-fingered manipulation suffers from scarce robot data; DemoMimic learns from human demonstrations with contact-centric rewards that focus on object geometry local to contact points, improving precise contact and generalization to unseen objects in sim-to-real RL.",
-          "llm_tldr_cn": "多指机器人手的灵巧操作潜力巨大，但大规模数据采集困难，从人类演示学习成为可扩展替代。近期sim-to-real强化学习方法虽引入先验，却常缺少激励精确接触的奖励且对未见物体泛化差。本文提出DemoMimic策略，聚焦接触点局部几何，以接触中心奖励鼓励精确接触，从而提升真实世界性能与对新物体的泛化。",
-          "llm_tldr": "多指机器人手的灵巧操作潜力巨大，但大规模数据采集困难，从人类演示学习成为可扩展替代。近期sim-to-real强化学习方法虽引入先验，却常缺少激励精确接触的奖励且对未见物体泛化差。本文提出DemoMimic策略，聚焦接触点局部几何，以接触中心奖励鼓励精确接触，从而提升真实世界性能与对新物体的泛化。",
+          "llm_evidence_en": "sim-to-real reinforcement learning for dexterous in-hand 6D pose reaching",
+          "llm_evidence_cn": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
+          "llm_evidence": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
+          "canonical_evidence": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
+          "llm_tldr_en": "POISE formulates in-hand 6D object pose reaching and trains a sim-to-real reinforcement learning framework with diverse grasp initialization and goal-geometry conditioning for multi-fingered dexterous hands.",
+          "llm_tldr_cn": "灵巧手的在手指间操作可减少重复抓取与大幅手臂运动，但现有学习方法多局限于旋转或平移，难以同时控制物体位置与姿态。本文将能力形式化为手中6D位姿到达，并提出POISE——基于SE(3)掌心相对目标的仿真到现实强化学习框架，结合多样化稳定抓取初始化与目标几何条件。该工作拓展了多指灵巧手对物体六自由度位姿的连续调控能力。",
+          "llm_tldr": "灵巧手的在手指间操作可减少重复抓取与大幅手臂运动，但现有学习方法多局限于旋转或平移，难以同时控制物体位置与姿态。本文将能力形式化为手中6D位姿到达，并提出POISE——基于SE(3)掌心相对目标的仿真到现实强化学习框架，结合多样化稳定抓取初始化与目标几何条件。该工作拓展了多指灵巧手对物体六自由度位姿的连续调控能力。",
           "llm_tags": [
             "query:rl-vla"
           ],
           "matched_query_tag": "query:rl-vla",
           "matched_query_text": "dexterous robotic manipulation algorithms",
-          "matched_requirement_id": "req-5",
+          "matched_requirement_id": "req-15",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.01938v2",
-          "carry_days": 4
-        },
-        {
-          "id": "2609.11308v1",
-          "source": "arxiv",
-          "title": "2AM: Grounding Agent-Side Memory as Guidance for Steerable Action Models in Long-Horizon Manipulation",
-          "abstract": "Long-horizon robot manipulation requires memory, but not necessarily inside the action policy. To address such tasks, current agentic systems often combine VLAs with planners and geometric tools, sometimes using additional depth or calibrated geometry. These systems confound attribution: gains may come from richer observations or alternative motor tools, while failures may stem from either the policy or an under-specified language interface. We isolate this question through a deliberately constrained design: less tool breadth, but greater interface bandwidth. 2AM makes a multimodal Agent the sole holder of task memory and a single RGB-based, episodically stateless Action Model the sole executor of task-relevant motion. The Agent compiles interaction history into subtask language and optional 2D grasp, place, and move hints that bind its physical intention at different time scales. To teach this steerability to the VLA, we augment demonstrations with structured hint labels and train under condition dropout, spatial noise, and temporal jitter to tolerate imperfect Agent outputs. On LIBERO-Mem, without depth, online geometry, or planner-based object motion, 2AM reaches 76.3% average completion, a 61.5-point improvement over the strongest reported baseline of 14.8%, together with 63.0% relaxed and 11.8% strict success. These results show that task memory can remain Agent-side. They further show that Action Model capability depends not only on what the policy has learned, but on how precisely the Agent can steer it.",
-          "authors": [
-            "Yutong Hu",
-            "Fengjiao Chen",
-            "Xuezhi Cao",
-            "Renaud Detry"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI"
-          ],
-          "published": "2026-09-10T09:35:56+00:00",
-          "link": "https://arxiv.org/pdf/2609.11308v1",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "VLA with agent-side memory and stateless action model for long-horizon robot manipulation",
-          "llm_evidence_cn": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
-          "llm_evidence": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
-          "canonical_evidence": "VLA结合智能体侧记忆与无状态动作模型用于长时程操作",
-          "llm_tldr_en": "Long-horizon manipulation needs memory, but agentic VLA systems confound attribution between richer observations and policy quality. 2AM makes a multimodal Agent the sole holder of task memory and a single RGB-based, episodically stateless Action Model the sole executor, isolating how interface bandwidth affects long-horizon performance.",
-          "llm_tldr_cn": "长时程机器人操作需要记忆，但现有将VLA与规划器和几何工具组合的智能体系统难以区分性能来源。本文提出2AM，让多模态智能体成为任务记忆的唯一持有者，仅用基于RGB、回合内无状态的单一动作模型执行动作，以更窄工具宽度换取更大接口带宽。该设计在隔离变量后评估记忆与接口对长时程操作的作用，为VLA与智能体协同提供清晰归因。",
-          "llm_tldr": "长时程机器人操作需要记忆，但现有将VLA与规划器和几何工具组合的智能体系统难以区分性能来源。本文提出2AM，让多模态智能体成为任务记忆的唯一持有者，仅用基于RGB、回合内无状态的单一动作模型执行动作，以更窄工具宽度换取更大接口带宽。该设计在隔离变量后评估记忆与接口对长时程操作的作用，为VLA与智能体协同提供清晰归因。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-12",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.11308v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2609.12245v1",
-          "source": "arxiv",
-          "title": "DIA: Denoising Intermediate Advantage for Diffusion Policy Optimization",
-          "abstract": "Diffusion-based robot policies have become widely used in robotic manipulation, where they are typically trained with behavior cloning. However, policies trained purely from demonstrations are limited by the quality and coverage of the available data. Reinforcement learning can further improve the performance of these pretrained policies through interaction. A common approach is to use policy-gradient methods that formulate diffusion-policy fine-tuning as an outer environment MDP together with an inner denoising MDP. However, existing methods typically assign the same environment-level credit to all denoising steps used to construct an action chunk, without distinguishing which intermediate decisions contributed most to the final return. We introduce Denoising Intermediate Advantage (DIA), a policy-gradient method that learns a value function over partially denoised actions and uses it to construct a denoising- level advantage for each step of the generative process. DIA com- bines this inner credit signal with the standard environment-level PPO advantage, providing state-dependent credit throughout the denoising chain. Across Robomimic, FurnitureBench, Franka Kitchen, and D3IL, DIA consistently improves final performance over existing diffusion-policy fine-tuning methods. Beyond final reward, DIA reaches successful states more efficiently and can shift farther from the pretrained behavior distribution, enabling it to discover more effective and efficient task-level strategies and subtask sequences that baseline methods fail to reach.",
-          "authors": [
-            "Arjun Sohal",
-            "Yuchi Zhao",
-            "Miroslav Bogdanovic",
-            "Alan Aspuru-Guzik"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-09-10T22:02:28+00:00",
-          "link": "https://arxiv.org/pdf/2609.12245v1",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "reinforcement learning fine-tuning of diffusion robot manipulation policies with advantage assignment",
-          "llm_evidence_cn": "用强化学习微调扩散机器人操作策略并分配中间优势",
-          "llm_evidence": "用强化学习微调扩散机器人操作策略并分配中间优势",
-          "canonical_evidence": "用强化学习微调扩散机器人操作策略并分配中间优势",
-          "llm_tldr_en": "DIA improves diffusion robot policies by reinforcement learning, introducing denoising intermediate advantage to assign credit to individual denoising steps rather than uniform environment-level credit for whole action chunks.",
-          "llm_tldr_cn": "扩散机器人策略多由行为克隆训练，受示教数据质量与覆盖限制，需用强化学习通过交互进一步提升。常见做法将扩散策略微调建模为外层环境MDP与内层去噪MDP，但现有方法对所有去噪步骤分配相同的环境级信用，忽视哪些中间决策对最终回报贡献最大。本文提出DIA，利用去噪中间优势进行策略优化，区分各去噪步骤贡献。结果表明该优势分配提升扩散策略微调效果，为机器人操作策略的强化学习优化提供更精细的信用分配机制。",
-          "llm_tldr": "扩散机器人策略多由行为克隆训练，受示教数据质量与覆盖限制，需用强化学习通过交互进一步提升。常见做法将扩散策略微调建模为外层环境MDP与内层去噪MDP，但现有方法对所有去噪步骤分配相同的环境级信用，忽视哪些中间决策对最终回报贡献最大。本文提出DIA，利用去噪中间优势进行策略优化，区分各去噪步骤贡献。结果表明该优势分配提升扩散策略微调效果，为机器人操作策略的强化学习优化提供更精细的信用分配机制。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "reinforcement learning for robotic manipulation tasks",
-          "matched_requirement_id": "req-11",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.12245v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2609.10522v1",
-          "source": "arxiv",
-          "title": "Show-Harness: Just a VLM Agent Can Play Robots",
-          "abstract": "Foundation vision-language models (VLMs) exhibit broad intelligence about the world, yet translating this intelligence into robot control remains challenging. We present Show-Harness, an Embodied Harness that enables VLMs to \"play\" robots through a compact semantic interface linking intent to action. Show-Harness exposes discrete semantic action units that VLMs can naturally reason over, while embodiment-specific interpreters deterministically ground them into local robot actions, keeping the VLM directly responsible for fine-grained physical decisions. Through the same interface, Show-Harness demonstrates the feasibility of (1) directly unlocking closed-source frontier VLMs for zero-shot robot control, and (2) adapting small-scale open-source VLMs for low-cost deployment with just a few GPU-hours of fine-tuning. We further develop GUMI (GUI Manipulation Interface), which extends the same semantic action space to GUI-based demonstration collection, allowing humans and agents to \"play\" robots across embodiments without specialized teleoperation hardware. Extensive experiments show that Show-Harness-equipped VLM agents generalize robustly across tasks, embodiments, and environments, outperforming representative agentic and VLA paradigms. These results suggest that the right interface can unlock substantial embodied capability from foundation VLMs, without requiring additional model capacity or costly embodiment-specific pretraining.",
-          "authors": [
-            "Yanzhe Chen",
-            "Zechen Bai",
-            "Zhijun Cao",
-            "Wenzheng Zeng",
-            "Kevin Qinghong Lin",
-            "Yiqi Lin",
-            "Guoqiang Liang",
-            "Kevin Yuchen Ma",
-            "Qiming Huang",
-            "Mike Zheng Shou"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO",
-            "cs.AI",
-            "cs.CV",
-            "cs.MM"
-          ],
-          "published": "2026-09-09T17:53:38+00:00",
-          "link": "https://arxiv.org/pdf/2609.10522v1",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "VLM agent for zero-shot robot control via semantic action interface",
-          "llm_evidence_cn": "通过语义动作接口实现VLM智能体机器人控制",
-          "llm_evidence": "通过语义动作接口实现VLM智能体机器人控制",
-          "canonical_evidence": "通过语义动作接口实现VLM智能体机器人控制",
-          "llm_tldr_en": "Show-Harness exposes discrete semantic action units to vision-language models and grounds them via embodiment-specific interpreters, enabling zero-shot and low-cost VLM robot control.",
-          "llm_tldr_cn": "基础视觉语言模型具备广泛世界知识，但将其转化为机器人控制仍具挑战。作者提出Show-Harness，一种具身化框架，通过紧凑的语义接口把意图映射到离散语义动作单元，并由具身解释器确定性地落地为机器人动作。实验表明该接口能让闭源前沿VLM实现零样本机器人控制，也能适配小型开源VLM用于低成本部署，为VLM驱动的机器人控制提供了通用方案。",
-          "llm_tldr": "基础视觉语言模型具备广泛世界知识，但将其转化为机器人控制仍具挑战。作者提出Show-Harness，一种具身化框架，通过紧凑的语义接口把意图映射到离散语义动作单元，并由具身解释器确定性地落地为机器人动作。实验表明该接口能让闭源前沿VLM实现零样本机器人控制，也能适配小型开源VLM用于低成本部署，为VLM驱动的机器人控制提供了通用方案。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-12",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.10522v1",
+          "paper_id": "2609.13761v1",
           "carry_days": 1
         }
       ]

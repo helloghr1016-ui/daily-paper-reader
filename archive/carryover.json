@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-15T22:36:14.182001+00:00",
-  "updated_date": "20260915",
+  "generated_at": "2026-09-16T22:32:39.830301+00:00",
+  "updated_date": "20260916",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,12 +110,12 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260915",
+      "updated_date": "20260916",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260915",
+      "updated_date": "20260916",
       "carryover_days": 9,
       "items": [
         {
@@ -144,13 +144,13 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "Real-world RL for dexterous manipulation using MPC scaffolding",
-          "llm_evidence_cn": "用MPC支架进行真实世界灵巧操作强化学习",
-          "llm_evidence": "用MPC支架进行真实世界灵巧操作强化学习",
-          "canonical_evidence": "用MPC支架进行真实世界灵巧操作强化学习",
-          "llm_tldr_en": "Real-world RL for dexterous manipulation suffers from inefficient exploration and costly failures; this work uses sampling-based MPC as scaffolding to pretrain actor-critic and guide online off-policy SAC learning without human demos.",
-          "llm_tldr_cn": "真实世界强化学习有望直接从物理交互中学习灵巧操作策略，但早期探索低效且失败代价高昂。本文提出以采样式模型预测控制（MPC）作为支架，先填充离线回放缓冲并预训练演员与评论家，再在在线阶段间歇引导数据采集。实验表明该方法无需人类示范即可提升学习效率与稳定性，为真实机器人灵巧操作提供了可扩展的强化学习范式。",
-          "llm_tldr": "真实世界强化学习有望直接从物理交互中学习灵巧操作策略，但早期探索低效且失败代价高昂。本文提出以采样式模型预测控制（MPC）作为支架，先填充离线回放缓冲并预训练演员与评论家，再在在线阶段间歇引导数据采集。实验表明该方法无需人类示范即可提升学习效率与稳定性，为真实机器人灵巧操作提供了可扩展的强化学习范式。",
+          "llm_evidence_en": "real-world RL with MPC scaffolding for dexterous manipulation policies",
+          "llm_evidence_cn": "以MPC为脚手架的真实世界强化学习灵巧操作策略",
+          "llm_evidence": "以MPC为脚手架的真实世界强化学习灵巧操作策略",
+          "canonical_evidence": "以MPC为脚手架的真实世界强化学习灵巧操作策略",
+          "llm_tldr_en": "Real-world RL for dexterous manipulation is hindered by inefficient exploration and costly failures. This framework uses sampling-based MPC as scaffolding, pretraining actor and critic on MPC trajectories and intermittently guiding data collection for an off-policy SAC learner, without human demonstrations.",
+          "llm_tldr_cn": "真实世界强化学习可直接从物理交互中学习灵巧操作策略，但早期探索效率低且失败代价高昂，限制了实际应用。本文提出以采样型模型预测控制作为脚手架，先用少量MPC轨迹填充离线回放缓冲并预训练演员与评论家，再在在线学习中由MPC间歇引导数据采集，供离策略Soft Actor-Critic学习。该方法无需人类演示即可获得结构化先验，提升了真实世界灵巧操作强化学习的效率与安全性。",
+          "llm_tldr": "真实世界强化学习可直接从物理交互中学习灵巧操作策略，但早期探索效率低且失败代价高昂，限制了实际应用。本文提出以采样型模型预测控制作为脚手架，先用少量MPC轨迹填充离线回放缓冲并预训练演员与评论家，再在在线学习中由MPC间歇引导数据采集，供离策略Soft Actor-Critic学习。该方法无需人类演示即可获得结构化先验，提升了真实世界灵巧操作强化学习的效率与安全性。",
           "llm_tags": [
             "query:rl-vla"
           ],
@@ -162,24 +162,20 @@
           "carry_days": 1
         },
         {
-          "id": "2609.13761v1",
+          "id": "2609.15198v1",
           "source": "arxiv",
-          "title": "Learning In-Hand Object Reaching to General 6D Poses",
-          "abstract": "In-hand manipulation allows multi-fingered dexterous hands to reconfigure grasped objects without releasing and regrasping them. This improves manipulation efficiency by reducing repeated grasp acquisition and large arm motions. However, most learning-based methods focus on reorientation, continuous rotation, or translation, whereas many tasks require joint control of object position and orientation. We formulate this capability as in-hand 6D object pose reaching: starting from an existing grasp, coordinated finger motions move the object to a palm-relative target pose. We present POISE (Palm-relative Object reaching In SE(3)), a sim-to-real reinforcement learning framework for this task. POISE combines diverse stable-grasp initialization, goal- and geometry-conditioned control, an adaptive 6D goal curriculum, and a compact reward scheme for pose reaching and grasp preservation. In simulation, diverse initialization raises held-out-grasp success from 40.1% to 51.5% and post-drop recovery from 33.8% to 72.9%; the curriculum raises full-range success from 6.2% to 59.5%. On hardware, the grasp-maintenance reward improves three-target sequence success from 20% to 80%. In real-world experiments, POISE reaches successive 6D targets without manual reset across multiple object geometries and wrist orientations, and recovers from external disturbances. To support further research in dexterous manipulation, we will release our code at https://junxiaolin.github.io/poise-website/.",
+          "title": "PredTac: Learning Contact-Rich Manipulation with Predicted Touch",
+          "abstract": "Contact-rich manipulation benefits from tactile feedback, yet physical tactile sensors introduce hardware, calibration, synchronization, and maintenance costs that complicate policy learning and deployment. We formulate predicted touch as an alternative to measured tactile input and present PredTac, a framework that learns to infer tactile states from causal visual observations and robot states and uses the predicted touch as an explicit interface for policy learning and execution. A tactile predictor is first trained with tactile supervision and then used to provide contact information without requiring measured tactile input during downstream policy training or execution. We evaluate PredTac across three contact-rich manipulation tasks in simulation and on a real robot, and further examine how policy performance depends on the predicted contact content. In simulation goal-offset evaluations, predicted-touch policies achieve 27.0%, 52.0%, and 44.7% success on USB, Barbed-spike, and Valve, respectively, improving over the visual baseline by 8.0-13.7 percentage points. On the real robot, predicted-touch ACT achieves 70.0%, 50.0%, and 90.0% success on USB insertion, Barbed extraction, and Valve rotation, respectively, with a three-task mean of 70.0%, approaching measured-touch ACT at 72.2% and substantially outperforming visual ACT at 21.1%. Fixed-policy interventions further show that performance is sensitive to the spatial structure of predicted contact, with spatial rearrangement at fixed value distributions reducing Valve success by 10.7 percentage points. These results demonstrate that predicted touch can provide useful contact information for contact-rich manipulation without requiring tactile sensing as a policy input.",
           "authors": [
-            "Junxiao Lin",
-            "Tianyue Wu",
-            "Jie Yin",
-            "Jia Pan",
-            "Kaifeng Zhang",
-            "Weiming Zhi"
+            "Weijia Fan",
+            "Daqiang Guo"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-09-12T07:11:37+00:00",
-          "link": "https://arxiv.org/pdf/2609.13761v1",
+          "published": "2026-09-14T08:19:55+00:00",
+          "link": "https://arxiv.org/pdf/2609.15198v1",
           "tags": [
             "keyword:VLA-RL",
             "keyword:rl-vla",
@@ -187,21 +183,21 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "sim-to-real reinforcement learning for dexterous in-hand 6D pose reaching",
-          "llm_evidence_cn": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
-          "llm_evidence": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
-          "canonical_evidence": "面向灵巧手手中6D位姿到达的仿真到现实强化学习",
-          "llm_tldr_en": "POISE formulates in-hand 6D object pose reaching and trains a sim-to-real reinforcement learning framework with diverse grasp initialization and goal-geometry conditioning for multi-fingered dexterous hands.",
-          "llm_tldr_cn": "灵巧手的在手指间操作可减少重复抓取与大幅手臂运动，但现有学习方法多局限于旋转或平移，难以同时控制物体位置与姿态。本文将能力形式化为手中6D位姿到达，并提出POISE——基于SE(3)掌心相对目标的仿真到现实强化学习框架，结合多样化稳定抓取初始化与目标几何条件。该工作拓展了多指灵巧手对物体六自由度位姿的连续调控能力。",
-          "llm_tldr": "灵巧手的在手指间操作可减少重复抓取与大幅手臂运动，但现有学习方法多局限于旋转或平移，难以同时控制物体位置与姿态。本文将能力形式化为手中6D位姿到达，并提出POISE——基于SE(3)掌心相对目标的仿真到现实强化学习框架，结合多样化稳定抓取初始化与目标几何条件。该工作拓展了多指灵巧手对物体六自由度位姿的连续调控能力。",
+          "llm_evidence_en": "Learning contact-rich manipulation policies using predicted touch",
+          "llm_evidence_cn": "利用预测触觉学习接触丰富操作策略",
+          "llm_evidence": "利用预测触觉学习接触丰富操作策略",
+          "canonical_evidence": "利用预测触觉学习接触丰富操作策略",
+          "llm_tldr_en": "PredTac replaces costly measured tactile input with predicted touch inferred from visual observations and robot states, using it as an explicit interface for learning and executing contact-rich manipulation policies.",
+          "llm_tldr_cn": "接触丰富操作受益于触觉反馈，但物理触觉传感器带来硬件、标定、同步与维护成本，增加策略学习与部署难度。作者提出PredTac框架，从因果视觉观测与机器人状态推断触觉状态，并将预测触觉作为策略学习与执行的显式接口。在仿真与真实环境的三项接触丰富任务上验证了有效性。该工作无需实测触觉即可实现接触丰富操作，降低了成本并提升了可部署性。",
+          "llm_tldr": "接触丰富操作受益于触觉反馈，但物理触觉传感器带来硬件、标定、同步与维护成本，增加策略学习与部署难度。作者提出PredTac框架，从因果视觉观测与机器人状态推断触觉状态，并将预测触觉作为策略学习与执行的显式接口。在仿真与真实环境的三项接触丰富任务上验证了有效性。该工作无需实测触觉即可实现接触丰富操作，降低了成本并提升了可部署性。",
           "llm_tags": [
             "query:rl-vla"
           ],
           "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "dexterous robotic manipulation algorithms",
-          "matched_requirement_id": "req-15",
+          "matched_query_text": "learning based policies for contact rich robotic manipulation such as precise insertion and assembly",
+          "matched_requirement_id": "req-19",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.13761v1",
+          "paper_id": "2609.15198v1",
           "carry_days": 1
         }
       ]

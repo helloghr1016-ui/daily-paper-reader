@@ -6,79 +6,83 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-16
-- 运行时间：2026-09-16 22:43:20 UTC
+- 最新运行日期：2026-09-17
+- 运行时间：2026-09-17 22:28:21 UTC
 - 运行状态：成功
-- 本次总论文数：19
-- 精读区：7
+- 本次总论文数：21
+- 精读区：9
 - 速读区：12
 
 ### 今日简报（AI）
-今天从19篇推荐中筛出7篇精读、12篇速读，重点落在扩散策略优化与机器人多模态模型。
-最值得看的是两篇9.0精读《DIA》和《Dynin-Robotics》，前者聚焦扩散策略优化，后者是统一扩散VLA模型；速读中《DUET-DINO》《2AM》《Memory as Plans》均8.0，围绕跨视角世界建模与记忆规划。
-普通读者可先看两篇9.0精读，再按机器人操作兴趣挑一篇8.0速读即可。
-- 详情：[/202609/16/README](/202609/16/README)
+今日精读 9 篇、速读 12 篇共 21 篇论文，灵巧操作与机器人策略学习是主战场。最值得看的是获 9.0 分的《Real-World Reinforcement Learning with MPC Scaffolding for Dexterous Manipulation》，用 MPC 为真实世界强化学习搭脚手架；速读中 SCQ、VGFM、VLBiMan++ 也都在 8.0 分，聚焦稳定训练、策略表达力与双臂泛化。普通读者可优先从 MPC+强化学习的真实机器人落地思路入手，再顺着策略学习这条线延伸阅读。
+- 详情：[/202609/17/README](/202609/17/README)
 
 ### 精读区论文标签
-1. [DIA: Denoising Intermediate Advantage for Diffusion Policy Optimization](/202609/16/2609.12245v2-dia-denoising-intermediate-advantage-for-diffusion-policy-optimization)  
+1. [Real-World Reinforcement Learning with MPC Scaffolding for Dexterous Manipulation](/202609/17/2609.14878v1-real-world-reinforcement-learning-with-mpc-scaffolding-for-dexterous-manipulation)  
+   标签：评分：9.0/10、query:rl-vla
+   evidence：以MPC为脚手架的真实世界灵巧操作强化学习
+2. [Real-World Reinforcement Learning with MPC Scaffolding for Dexterous Manipulation](/202609/17/2609.14878v2-real-world-reinforcement-learning-with-mpc-scaffolding-for-dexterous-manipulation)  
+   标签：评分：9.0/10、query:rl-vla
+   evidence：面向灵巧操作的真实世界强化学习
+3. [World-Action Models for Robot Learning and Control: A Survey](/202609/17/2609.16074v1-world-action-models-for-robot-learning-and-control-a-survey)  
    标签：评分：9.0/10、query:vla-rl
-   evidence：以中间优势进行信用分配的扩散机器人策略强化学习微调
-2. [Dynin-Robotics: Omnimodal Unified Diffusion Vision-Language-Action Model](/202609/16/2609.13053v1-dynin-robotics-omnimodal-unified-diffusion-vision-language-action-model)  
+   evidence：综述连接世界模型、基于模型强化学习与VLA策略
+4. [XPACE: Joint World and Action Modeling from Heterogeneous Experience](/202609/17/2609.17372v1-xpace-joint-world-and-action-modeling-from-heterogeneous-experience)  
    标签：评分：9.0/10、query:vla-rl
-   evidence：面向机器人策略的统一扩散视觉-语言-动作模型
-3. [GeomVLA: Unifying Scene, Motion, and Action in 3D](/202609/16/2609.13812v1-geomvla-unifying-scene-motion-and-action-in-3d)  
+   evidence：统一具身世界模型，联合预测动作与未来视频
+5. [Reinforcement Learning for Real-Time Vision-Language-Action Policies](/202609/17/2609.18207v1-reinforcement-learning-for-real-time-vision-language-action-policies)  
    标签：评分：9.0/10、query:vla-rl
-   evidence：在三维场景框架下用于机器人控制的视觉-语言-动作模型
-4. [Compact Visuotactile World Models for Lifting: Prediction, Reward Alignment, and Force Constraints](/202609/16/2609.09597v2-compact-visuotactile-world-models-for-lifting-prediction-reward-alignment-and-force-constraints)  
-   标签：评分：8.0/10、query:vla-rl
-   evidence：动作条件视觉触觉世界模型，用于想象中策略学习与力约束控制
-5. [RoboDrop: Curating VLA Post-Training Data via Local Gradient Compatibility](/202609/16/2609.10021v1-robodrop-curating-vla-post-training-data-via-local-gradient-compatibility)  
-   标签：评分：8.0/10、query:vla-rl
-   evidence：基于梯度兼容性的视觉-语言-动作模型后训练数据筛选
-6. [How to Better Train VLAs: Lessons Learned From the REAL-I Challenge at ICRA 2026](/202609/16/2609.13679v1-how-to-better-train-vlas-lessons-learned-from-the-real-i-challenge-at-icra-2026)  
-   标签：评分：8.0/10、query:rl-vla
-   evidence：比较预训练视觉-语言-动作模型与模仿策略的机器人控制挑战报告
-7. [Learning In-Hand Object Reaching to General 6D Poses](/202609/16/2609.13761v1-learning-in-hand-object-reaching-to-general-6d-poses)  
-   标签：评分：8.0/10、query:rl-vla
-   evidence：面向6D位姿的灵巧手内操作仿真到现实强化学习
+   evidence：面向实时控制的VLA策略强化学习微调
+6. [ForceDelta-VLA: Distilling Force-Conditioned ActionCorrections for Contact-Rich Manipulation](/202609/17/2609.18242v1-forcedelta-vla-distilling-force-conditioned-actioncorrections-for-contact-rich-manipulation)  
+   标签：评分：9.0/10、query:rl-vla
+   evidence：面向接触丰富操作的力感知VLA蒸馏
+7. [Acting in Meters: Learning Metric Interactions for Precise Robotic Manipulation](/202609/17/2609.18243v1-acting-in-meters-learning-metric-interactions-for-precise-robotic-manipulation)  
+   标签：评分：9.0/10、query:rl-vla
+   evidence：面向VLA精密操作的度量交互框架
+8. [DistAL: Distance-based Advantage Learning for VLA Fine-Tuning](/202609/17/2609.18392v1-distal-distance-based-advantage-learning-for-vla-fine-tuning)  
+   标签：评分：9.0/10、query:vla-rl
+   evidence：用优势学习微调VLA策略
+9. [TAO-Force: Unifying Force-Aware Perception and Fast-Slow Control for Contact-Rich Manipulation](/202609/17/2609.18497v1-tao-force-unifying-force-aware-perception-and-fast-slow-control-for-contact-rich-manipulation)  
+   标签：评分：9.0/10、query:rl-vla
+   evidence：面向接触丰富操作的力条件VLA
 
 ### 速读区论文标签
-1. [DUET-DINO: Simultaneous Cross-View World Modeling for Latent Planning in Robot Manipulation](/202609/16/2609.10506v1-duet-dino-simultaneous-cross-view-world-modeling-for-latent-planning-in-robot-manipulation)  
+1. [SCQ: Stabilizing Conservative Q-Learning with Sigmoid-Bounded Entropy](/202609/17/2609.12749v1-scq-stabilizing-conservative-q-learning-with-sigmoid-bounded-entropy)  
    标签：评分：8.0/10、query:vla-rl
-   evidence：用于零样本机器人规划与控制的动作条件潜在世界模型
-2. [2AM: Grounding Agent-Side Memory as Guidance for Steerable Action Models in Long-Horizon Manipulation](/202609/16/2609.11308v1-2am-grounding-agent-side-memory-as-guidance-for-steerable-action-models-in-long-horizon-manipulation)  
+   evidence：稳定离线到在线强化学习的保守Q学习
+2. [VGFM: Expressive Robot Policies via Dense Value Guidance in Flow Matching](/202609/17/2609.14261v1-vgfm-expressive-robot-policies-via-dense-value-guidance-in-flow-matching)  
    标签：评分：8.0/10、query:vla-rl
-   evidence：结合智能体记忆与VLA动作模型的长时程操作
-3. [Memory as Plans: World-Action Modeling with Memory-Grounded Planning](/202609/16/2609.11561v1-memory-as-plans-world-action-modeling-with-memory-grounded-planning)  
+   evidence：面向生成式机器人策略的密集价值引导离线强化学习
+3. [VLBiMan++: Expanding the Generalization Boundary of Vision-Language Anchored One-Shot Bimanual Manipulation](/202609/17/2609.14310v1-vlbiman-expanding-the-generalization-boundary-of-vision-language-anchored-one-shot-bimanual-manipulation)  
+   标签：评分：8.0/10、query:rl-vla
+   evidence：视觉语言锚定的单样本双臂操作
+4. [PhysBrain 1.5: From Vision-Language Models to Physical Foundation Models](/202609/17/2609.14973v1-physbrain-15-from-vision-language-models-to-physical-foundation-models)  
    标签：评分：8.0/10、query:vla-rl
-   evidence：面向非马尔可夫操作的世界-动作建模与记忆锚定规划
-4. [ActSafeGuard: Differentiable and Training-Aligned Constraint Enforcement for Flow-Matching Policies](/202609/16/2609.11697v1-actsafeguard-differentiable-and-training-aligned-constraint-enforcement-for-flow-matching-policies)  
-   标签：评分：8.0/10、query:vla-rl
-   evidence：视觉-语言-动作策略的约束强制执行
-5. [Proxy Policy Steering](/202609/16/2609.09148v3-proxy-policy-steering)  
+   evidence：统一物理基础模型，生成动作并预测未来状态
+5. [Show-Harness: Just a VLM Agent Can Play Robots](/202609/17/2609.10522v1-show-harness-just-a-vlm-agent-can-play-robots)  
    标签：评分：7.0/10、query:vla-rl
-   evidence：通用机器人策略的推理时任务特化
-6. [TANGO: Humanoid Navigation in Cluttered Environments with a Whole-Body Vision-Language-Action Model](/202609/16/2609.09158v1-tango-humanoid-navigation-in-cluttered-environments-with-a-whole-body-vision-language-action-model)  
+   evidence：视觉语言模型智能体通过语义接口把意图连接到动作以控制机器人
+6. [ActSafeGuard: Differentiable and Training-Aligned Constraint Enforcement for Flow-Matching Policies](/202609/17/2609.11697v2-actsafeguard-differentiable-and-training-aligned-constraint-enforcement-for-flow-matching-policies)  
+   标签：评分：7.0/10、query:rl-vla
+   evidence：面向VLA流匹配策略的安全约束执行
+7. [DATAFARM: Distribution-Aligned Task and Motion Planning for Fine-Tuning Vision-Language-Action Models](/202609/17/2609.12316v1-datafarm-distribution-aligned-task-and-motion-planning-for-fine-tuning-vision-language-action-models)  
    标签：评分：7.0/10、query:vla-rl
-   evidence：面向人形机器人导航与控制的全身体视觉语言动作模型
-7. [JEPA Policy: Diffusion-Free Imitation Learning via Paired Action and Future Representation Prediction](/202609/16/2609.09630v1-jepa-policy-diffusion-free-imitation-learning-via-paired-action-and-future-representation-prediction)  
+   evidence：面向VLA微调的分布对齐任务与运动规划
+8. [Agent as Policy for Robotic Manipulation](/202609/17/2609.12541v2-agent-as-policy-for-robotic-manipulation)  
    标签：评分：7.0/10、query:vla-rl
-   evidence：结合动作块与未来表征预测的模仿学习
-8. [FolDeX: A Physical-World Benchmark for Long-Horizon Robotic Manipulation of Deformable Objects](/202609/16/2609.10243v1-foldex-a-physical-world-benchmark-for-long-horizon-robotic-manipulation-of-deformable-objects)  
-   标签：评分：7.0/10、query:vla-rl
-   evidence：面向VLA与世界动作模型长程操作的真实机器人基准
-9. [Monkey See, Can Monkey Do? A Benchmark for Evaluating Robot Skill Learning by Observation](/202609/16/2609.08209v1-monkey-see-can-monkey-do-a-benchmark-for-evaluating-robot-skill-learning-by-observation)  
+   evidence：以通用智能体作为策略驱动机器人操作
+9. [ObstaDiff: Generalizable Diffusion Policy Learning via Obstacle-aware Representations](/202609/17/2609.10918v1-obstadiff-generalizable-diffusion-policy-learning-via-obstacle-aware-representations)  
    标签：评分：6.0/10、query:vla-rl
-   evidence：面向观察/模仿学习操作策略的基准
-10. [CLAMP: Constrained Decoding for Vision-Language Embodied Planning](/202609/16/2609.08602v1-clamp-constrained-decoding-for-vision-language-embodied-planning)  
-   标签：评分：6.0/10、query:vla-rl
-   evidence：面向视觉-语言具身规划的约束解码
-11. [CASD: Chunk-Aligned Semantic Distillation for Multi-StageRobot Manipulation](/202609/16/2609.08638v1-casd-chunk-aligned-semantic-distillation-for-multi-stagerobot-manipulation)  
+   evidence：面向避障机器人操作的模仿学习扩散策略
+10. [LTLDiff: Finite Linear Temporal Logic-Guided Data Generation and Diffusion Policies for Multi-agent Robotic Manipulation](/202609/17/2609.11043v1-ltldiff-finite-linear-temporal-logic-guided-data-generation-and-diffusion-policies-for-multi-agent-robotic-manipulation)  
    标签：评分：6.0/10、query:rl-vla
-   evidence：面向多阶段机器人操作的分块对齐语义蒸馏
-12. [FOCI Policy: Focus on Object-Centric Interactions for Relational Manipulation Policies](/202609/16/2609.08743v1-foci-policy-focus-on-object-centric-interactions-for-relational-manipulation-policies)  
-   标签：评分：6.0/10、query:vla-rl
-   evidence：面向关系型操作的以物体为中心交互聚焦策略学习
+   evidence：面向多智能体机器人操作的LTL引导扩散策略
+11. [Safety-aware Skill Adaptation for Reinforcement Learning in Dynamic Environments](/202609/17/2609.11433v1-safety-aware-skill-adaptation-for-reinforcement-learning-in-dynamic-environments)  
+   标签：评分：6.0/10、query:rl-vla
+   evidence：面向机器人技能自适应的安全引导强化学习框架
+12. [Rapid Learning of Dexterous In-Hand Pen Writing through Real-Time Jacobian Estimation](/202609/17/2609.11775v1-rapid-learning-of-dexterous-in-hand-pen-writing-through-real-time-jacobian-estimation)  
+   标签：评分：6.0/10、query:rl-vla
+   evidence：物理机器人上的灵巧手内操作控制
 
 
 <div class="dpr-home-promo-card">

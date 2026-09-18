@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-17T22:15:45.743943+00:00",
-  "updated_date": "20260917",
+  "generated_at": "2026-09-18T21:14:15.370316+00:00",
+  "updated_date": "20260918",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,29 +110,37 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260917",
+      "updated_date": "20260918",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260917",
+      "updated_date": "20260918",
       "carryover_days": 9,
       "items": [
         {
-          "id": "2609.15198v1",
+          "id": "2609.18685v1",
           "source": "arxiv",
-          "title": "PredTac: Learning Contact-Rich Manipulation with Predicted Touch",
-          "abstract": "Contact-rich manipulation benefits from tactile feedback, yet physical tactile sensors introduce hardware, calibration, synchronization, and maintenance costs that complicate policy learning and deployment. We formulate predicted touch as an alternative to measured tactile input and present PredTac, a framework that learns to infer tactile states from causal visual observations and robot states and uses the predicted touch as an explicit interface for policy learning and execution. A tactile predictor is first trained with tactile supervision and then used to provide contact information without requiring measured tactile input during downstream policy training or execution. We evaluate PredTac across three contact-rich manipulation tasks in simulation and on a real robot, and further examine how policy performance depends on the predicted contact content. In simulation goal-offset evaluations, predicted-touch policies achieve 27.0%, 52.0%, and 44.7% success on USB, Barbed-spike, and Valve, respectively, improving over the visual baseline by 8.0-13.7 percentage points. On the real robot, predicted-touch ACT achieves 70.0%, 50.0%, and 90.0% success on USB insertion, Barbed extraction, and Valve rotation, respectively, with a three-task mean of 70.0%, approaching measured-touch ACT at 72.2% and substantially outperforming visual ACT at 21.1%. Fixed-policy interventions further show that performance is sensitive to the spatial structure of predicted contact, with spatial rearrangement at fixed value distributions reducing Valve success by 10.7 percentage points. These results demonstrate that predicted touch can provide useful contact information for contact-rich manipulation without requiring tactile sensing as a policy input.",
+          "title": "WeaveRL: Weaving Reconstruction into Scene-Aware Fabrics for Perceptive Reinforcement Learning",
+          "abstract": "Reinforcement learning allows robots to acquire complex skills, but producing policies for geometrically complex manipulation remains difficult. A promising approach is to learn on top of collision-avoidant controllers, such as geometric fabrics. However, these approaches have relied on static, hand-specified representations of the scene. Integrating active, online 3D perception into massively parallel RL training has so far been inaccessible. We introduce a GPU-accelerated method that reconstructs the scene as a collection of surfels across thousands of parallel simulation instances during active rollouts. This lets policies operate over sensor-derived, rather than hand-specified, geometry. On a suite of collision-dense manipulation tasks, our surfel fabrics enable policies to tackle geometrically complex scenes where primitive-based baselines fail, while maintaining sim-to-real transfer. Furthermore, policies learned with a scene-aware fabric are more robust to the introduction of novel geometry at test time, improving collision-free task completion under unseen obstacles from 35% to 61%. We release our reconstruction system, training code and test dataset to spur research in this direction.",
           "authors": [
-            "Weijia Fan",
-            "Daqiang Guo"
+            "Remo Steiner",
+            "Vikram Ramasamy",
+            "David Tingdahl",
+            "Sam Mady",
+            "Karl Van Wyk",
+            "Nathan Ratliff",
+            "David Recasens Lafuente",
+            "Soha Pouya",
+            "Tuur Stuyck",
+            "Alex Millane"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-09-14T08:19:55+00:00",
-          "link": "https://arxiv.org/pdf/2609.15198v1",
+          "published": "2026-09-16T14:00:37+00:00",
+          "link": "https://arxiv.org/pdf/2609.18685v1",
           "tags": [
             "keyword:VLA-RL",
             "keyword:rl-vla",
@@ -140,39 +148,44 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "Learning contact-rich manipulation policies using predicted touch",
-          "llm_evidence_cn": "利用预测触觉学习接触丰富操作策略",
-          "llm_evidence": "利用预测触觉学习接触丰富操作策略",
-          "canonical_evidence": "利用预测触觉学习接触丰富操作策略",
-          "llm_tldr_en": "PredTac replaces costly measured tactile input with predicted touch inferred from visual observations and robot states, using it as an explicit interface for learning and executing contact-rich manipulation policies.",
-          "llm_tldr_cn": "接触丰富操作受益于触觉反馈，但物理触觉传感器带来硬件、标定、同步与维护成本，增加策略学习与部署难度。作者提出PredTac框架，从因果视觉观测与机器人状态推断触觉状态，并将预测触觉作为策略学习与执行的显式接口。在仿真与真实环境的三项接触丰富任务上验证了有效性。该工作无需实测触觉即可实现接触丰富操作，降低了成本并提升了可部署性。",
-          "llm_tldr": "接触丰富操作受益于触觉反馈，但物理触觉传感器带来硬件、标定、同步与维护成本，增加策略学习与部署难度。作者提出PredTac框架，从因果视觉观测与机器人状态推断触觉状态，并将预测触觉作为策略学习与执行的显式接口。在仿真与真实环境的三项接触丰富任务上验证了有效性。该工作无需实测触觉即可实现接触丰富操作，降低了成本并提升了可部署性。",
+          "llm_evidence_en": "perceptive reinforcement learning for complex robotic manipulation",
+          "llm_evidence_cn": "面向复杂机器人操作的感知强化学习",
+          "llm_evidence": "面向复杂机器人操作的感知强化学习",
+          "canonical_evidence": "面向复杂机器人操作的感知强化学习",
+          "llm_tldr_en": "RL for geometrically complex manipulation relies on static hand-specified scene representations. WeaveRL uses a GPU-accelerated method to reconstruct scenes as surfels across thousands of parallel instances, letting policies use sensor-derived geometry.",
+          "llm_tldr_cn": "强化学习能让机器人获得复杂技能，但几何复杂操作策略的生成仍很困难。基于几何织物等避碰控制器的方法依赖静态、手工指定的场景表示，难以把主动在线3D感知接入大规模并行RL训练。本文提出GPU加速方法，在主动rollout中把场景重建为成千上万个并行仿真实例上的surfel集合，使策略基于传感器几何而非手工几何，并在碰撞密集的操作任务套件上验证了感知强化学习的效果。",
+          "llm_tldr": "强化学习能让机器人获得复杂技能，但几何复杂操作策略的生成仍很困难。基于几何织物等避碰控制器的方法依赖静态、手工指定的场景表示，难以把主动在线3D感知接入大规模并行RL训练。本文提出GPU加速方法，在主动rollout中把场景重建为成千上万个并行仿真实例上的surfel集合，使策略基于传感器几何而非手工几何，并在碰撞密集的操作任务套件上验证了感知强化学习的效果。",
           "llm_tags": [
             "query:rl-vla"
           ],
           "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "learning based policies for contact rich robotic manipulation such as precise insertion and assembly",
-          "matched_requirement_id": "req-19",
+          "matched_query_text": "reinforcement learning for robotic manipulation tasks",
+          "matched_requirement_id": "req-11",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.15198v1",
-          "carry_days": 2
+          "paper_id": "2609.18685v1",
+          "carry_days": 1
         },
         {
-          "id": "2609.16504v1",
+          "id": "2609.18374v1",
           "source": "arxiv",
-          "title": "UniDex-ViTac: Learning Unified Visuo-Tactile Dexterous Manipulation Policy from Human Video Data",
-          "abstract": "Human videos provide demonstrations of dexterous manipulation but lack robot-executable actions and tactile measurements. We present UniDex-ViTac, a framework that uses human-video-guided simulation to generate robot demonstrations paired with fingertip contact observations for training a deployable visuo-tactile policy. Object-specific residual reinforcement learning specialists adapt annotated human-object interaction references to a robotic arm-hand system. Their successful rollouts pair final robot action targets with robot-side fingertip contact observations. From 50 human demonstrations across ten objects, we collect 10,000 simulated trajectories to train a single Action Chunking with Transformers (ACT) based generalist. The policy combines point clouds, proprioception, and four binary contact signals encoded through fingertip labels and a separate token, without requiring human references or privileged object identity and pose at deployment. The contact-augmented configuration achieves 68.3% macro-average success in simulation, compared with 55.5% for the point-cloud-only baseline. Without real-robot demonstrations or policy fine-tuning, it succeeds in 73/110 physical trials (66.4%) across six seen and five unseen objects, compared with 60/110 (54.5%) for the baseline, an increase of 11.8 percentage points. These results support the feasibility of learning a unified visuo-tactile dexterous manipulation policy from video-guided simulated interactions. Project page: https://unidex-vitac.github.io/",
+          "title": "Decoupling Vision, Language, and Action for Efficient Multi-Task Robot Policies",
+          "abstract": "Vision-Language-Action (VLA) models attach an action module to a Vision-Language Model (VLM) with billions of parameters and pay for that backbone at every control step. For a low-level manipulation policy, this cost may be unnecessary: the VLM supplies vision and language embeddings, and recent standalone vision encoders and encoder-only language models now match or exceed large VLMs on visual embedding and language understanding benchmarks. We study this question with a controlled experiment. Holding the demonstrations, the training budget, the tasks, and the measurement platform fixed, we vary the vision encoder, the language encoder, and the action head of a decoupled policy and compare against seven VLA baselines. The study yields the Decoupled Embodiment Model (DEM), which pairs a fine-tuned DINOv3 encoder and a frozen NeoBERT encoder with a MeanFlow head that generates each action chunk in a single forward pass. On 18 simulated manipulation tasks with held-out language paraphrases and randomized scenes, and on three real-robot tasks, DEM achieves observed success comparable to state-of-the-art VLM-backbone policies under our evaluation protocol, while running at eight to seventeen times their inference frequency and drawing six to fifteen times less energy per inference. Within this task scope, modern decoupled components offer a better success--latency--energy trade-off.",
           "authors": [
-            "Hyesung Lee",
-            "Si-Hwan Heo",
-            "Sungwook Yang"
+            "Xiatao Sun",
+            "Chen Liang",
+            "Ziyao Zeng",
+            "Qian Wang",
+            "Haoyang Zhang",
+            "Yue Sun",
+            "Qiucheng Li",
+            "Daniel Rakita"
           ],
           "primary_category": "cs.RO",
           "categories": [
             "cs.RO"
           ],
-          "published": "2026-09-15T01:52:33+00:00",
-          "link": "https://arxiv.org/pdf/2609.16504v1",
+          "published": "2026-09-16T09:28:34+00:00",
+          "link": "https://arxiv.org/pdf/2609.18374v1",
           "tags": [
             "keyword:VLA-RL",
             "keyword:rl-vla",
@@ -180,21 +193,21 @@
             "query:rl-vla"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "residual RL and ACT for dexterous visuo-tactile manipulation",
-          "llm_evidence_cn": "残差强化学习与ACT实现灵巧视触觉操作",
-          "llm_evidence": "残差强化学习与ACT实现灵巧视触觉操作",
-          "canonical_evidence": "残差强化学习与ACT实现灵巧视触觉操作",
-          "llm_tldr_en": "UniDex-ViTac converts human videos into simulated robot demonstrations with fingertip contact observations and uses object-specific residual reinforcement learning to train a single ACT-based generalist visuo-tactile dexterous manipulation policy.",
-          "llm_tldr_cn": "人类视频能提供灵巧操作示范，但缺少机器人可执行动作和触觉信息，难以直接训练策略。本文提出UniDex-ViTac框架，利用人类视频引导仿真生成配对指尖接触观测的机器人示范，并用物体特定的残差强化学习专家将人类-物体交互参考适配到机械臂手系统。作者从十类物体的50条人类示范中收集一万条仿真轨迹，训练出单一基于ACT的通用策略。结果说明该流程能把人类视频转化为可部署的视触觉灵巧操作策略，拓展了数据来源。",
-          "llm_tldr": "人类视频能提供灵巧操作示范，但缺少机器人可执行动作和触觉信息，难以直接训练策略。本文提出UniDex-ViTac框架，利用人类视频引导仿真生成配对指尖接触观测的机器人示范，并用物体特定的残差强化学习专家将人类-物体交互参考适配到机械臂手系统。作者从十类物体的50条人类示范中收集一万条仿真轨迹，训练出单一基于ACT的通用策略。结果说明该流程能把人类视频转化为可部署的视触觉灵巧操作策略，拓展了数据来源。",
+          "llm_evidence_en": "decoupled vision language action policy for efficient multi-task robot control",
+          "llm_evidence_cn": "解耦视觉语言动作的高效多任务机器人控制",
+          "llm_evidence": "解耦视觉语言动作的高效多任务机器人控制",
+          "canonical_evidence": "解耦视觉语言动作的高效多任务机器人控制",
+          "llm_tldr_en": "This work decouples vision, language, and action heads in VLA policies, showing standalone encoders can match large VLM backbones at lower cost for manipulation.",
+          "llm_tldr_cn": "针对VLA模型在每个控制步都调用数十亿参数VLM骨干、开销过大的问题，本文研究解耦式策略，将视觉编码器、语言编码器与动作头分离。在固定演示、训练预算与任务的受控实验中，方法对比七个VLA基线，发现独立编码器可在视觉与语言任务上匹敌大模型。该研究为高效多任务机器人操作策略的设计提供了实证依据。",
+          "llm_tldr": "针对VLA模型在每个控制步都调用数十亿参数VLM骨干、开销过大的问题，本文研究解耦式策略，将视觉编码器、语言编码器与动作头分离。在固定演示、训练预算与任务的受控实验中，方法对比七个VLA基线，发现独立编码器可在视觉与语言任务上匹敌大模型。该研究为高效多任务机器人操作策略的设计提供了实证依据。",
           "llm_tags": [
             "query:rl-vla"
           ],
           "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "dexterous robotic manipulation algorithms",
-          "matched_requirement_id": "req-15",
+          "matched_query_text": "vision language action models for robot control",
+          "matched_requirement_id": "req-12",
           "selection_source": "carryover_cache",
-          "paper_id": "2609.16504v1",
+          "paper_id": "2609.18374v1",
           "carry_days": 1
         }
       ]

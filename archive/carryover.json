@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-18T21:14:15.370316+00:00",
-  "updated_date": "20260918",
+  "generated_at": "2026-09-19T21:23:46.038520+00:00",
+  "updated_date": "20260919",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,107 +110,14 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20260918",
+      "updated_date": "20260919",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20260918",
+      "updated_date": "20260919",
       "carryover_days": 9,
-      "items": [
-        {
-          "id": "2609.18685v1",
-          "source": "arxiv",
-          "title": "WeaveRL: Weaving Reconstruction into Scene-Aware Fabrics for Perceptive Reinforcement Learning",
-          "abstract": "Reinforcement learning allows robots to acquire complex skills, but producing policies for geometrically complex manipulation remains difficult. A promising approach is to learn on top of collision-avoidant controllers, such as geometric fabrics. However, these approaches have relied on static, hand-specified representations of the scene. Integrating active, online 3D perception into massively parallel RL training has so far been inaccessible. We introduce a GPU-accelerated method that reconstructs the scene as a collection of surfels across thousands of parallel simulation instances during active rollouts. This lets policies operate over sensor-derived, rather than hand-specified, geometry. On a suite of collision-dense manipulation tasks, our surfel fabrics enable policies to tackle geometrically complex scenes where primitive-based baselines fail, while maintaining sim-to-real transfer. Furthermore, policies learned with a scene-aware fabric are more robust to the introduction of novel geometry at test time, improving collision-free task completion under unseen obstacles from 35% to 61%. We release our reconstruction system, training code and test dataset to spur research in this direction.",
-          "authors": [
-            "Remo Steiner",
-            "Vikram Ramasamy",
-            "David Tingdahl",
-            "Sam Mady",
-            "Karl Van Wyk",
-            "Nathan Ratliff",
-            "David Recasens Lafuente",
-            "Soha Pouya",
-            "Tuur Stuyck",
-            "Alex Millane"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-09-16T14:00:37+00:00",
-          "link": "https://arxiv.org/pdf/2609.18685v1",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "perceptive reinforcement learning for complex robotic manipulation",
-          "llm_evidence_cn": "面向复杂机器人操作的感知强化学习",
-          "llm_evidence": "面向复杂机器人操作的感知强化学习",
-          "canonical_evidence": "面向复杂机器人操作的感知强化学习",
-          "llm_tldr_en": "RL for geometrically complex manipulation relies on static hand-specified scene representations. WeaveRL uses a GPU-accelerated method to reconstruct scenes as surfels across thousands of parallel instances, letting policies use sensor-derived geometry.",
-          "llm_tldr_cn": "强化学习能让机器人获得复杂技能，但几何复杂操作策略的生成仍很困难。基于几何织物等避碰控制器的方法依赖静态、手工指定的场景表示，难以把主动在线3D感知接入大规模并行RL训练。本文提出GPU加速方法，在主动rollout中把场景重建为成千上万个并行仿真实例上的surfel集合，使策略基于传感器几何而非手工几何，并在碰撞密集的操作任务套件上验证了感知强化学习的效果。",
-          "llm_tldr": "强化学习能让机器人获得复杂技能，但几何复杂操作策略的生成仍很困难。基于几何织物等避碰控制器的方法依赖静态、手工指定的场景表示，难以把主动在线3D感知接入大规模并行RL训练。本文提出GPU加速方法，在主动rollout中把场景重建为成千上万个并行仿真实例上的surfel集合，使策略基于传感器几何而非手工几何，并在碰撞密集的操作任务套件上验证了感知强化学习的效果。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "reinforcement learning for robotic manipulation tasks",
-          "matched_requirement_id": "req-11",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.18685v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2609.18374v1",
-          "source": "arxiv",
-          "title": "Decoupling Vision, Language, and Action for Efficient Multi-Task Robot Policies",
-          "abstract": "Vision-Language-Action (VLA) models attach an action module to a Vision-Language Model (VLM) with billions of parameters and pay for that backbone at every control step. For a low-level manipulation policy, this cost may be unnecessary: the VLM supplies vision and language embeddings, and recent standalone vision encoders and encoder-only language models now match or exceed large VLMs on visual embedding and language understanding benchmarks. We study this question with a controlled experiment. Holding the demonstrations, the training budget, the tasks, and the measurement platform fixed, we vary the vision encoder, the language encoder, and the action head of a decoupled policy and compare against seven VLA baselines. The study yields the Decoupled Embodiment Model (DEM), which pairs a fine-tuned DINOv3 encoder and a frozen NeoBERT encoder with a MeanFlow head that generates each action chunk in a single forward pass. On 18 simulated manipulation tasks with held-out language paraphrases and randomized scenes, and on three real-robot tasks, DEM achieves observed success comparable to state-of-the-art VLM-backbone policies under our evaluation protocol, while running at eight to seventeen times their inference frequency and drawing six to fifteen times less energy per inference. Within this task scope, modern decoupled components offer a better success--latency--energy trade-off.",
-          "authors": [
-            "Xiatao Sun",
-            "Chen Liang",
-            "Ziyao Zeng",
-            "Qian Wang",
-            "Haoyang Zhang",
-            "Yue Sun",
-            "Qiucheng Li",
-            "Daniel Rakita"
-          ],
-          "primary_category": "cs.RO",
-          "categories": [
-            "cs.RO"
-          ],
-          "published": "2026-09-16T09:28:34+00:00",
-          "link": "https://arxiv.org/pdf/2609.18374v1",
-          "tags": [
-            "keyword:VLA-RL",
-            "keyword:rl-vla",
-            "query:VLA-RL",
-            "query:rl-vla"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "decoupled vision language action policy for efficient multi-task robot control",
-          "llm_evidence_cn": "解耦视觉语言动作的高效多任务机器人控制",
-          "llm_evidence": "解耦视觉语言动作的高效多任务机器人控制",
-          "canonical_evidence": "解耦视觉语言动作的高效多任务机器人控制",
-          "llm_tldr_en": "This work decouples vision, language, and action heads in VLA policies, showing standalone encoders can match large VLM backbones at lower cost for manipulation.",
-          "llm_tldr_cn": "针对VLA模型在每个控制步都调用数十亿参数VLM骨干、开销过大的问题，本文研究解耦式策略，将视觉编码器、语言编码器与动作头分离。在固定演示、训练预算与任务的受控实验中，方法对比七个VLA基线，发现独立编码器可在视觉与语言任务上匹敌大模型。该研究为高效多任务机器人操作策略的设计提供了实证依据。",
-          "llm_tldr": "针对VLA模型在每个控制步都调用数十亿参数VLM骨干、开销过大的问题，本文研究解耦式策略，将视觉编码器、语言编码器与动作头分离。在固定演示、训练预算与任务的受控实验中，方法对比七个VLA基线，发现独立编码器可在视觉与语言任务上匹敌大模型。该研究为高效多任务机器人操作策略的设计提供了实证依据。",
-          "llm_tags": [
-            "query:rl-vla"
-          ],
-          "matched_query_tag": "query:rl-vla",
-          "matched_query_text": "vision language action models for robot control",
-          "matched_requirement_id": "req-12",
-          "selection_source": "carryover_cache",
-          "paper_id": "2609.18374v1",
-          "carry_days": 1
-        }
-      ]
+      "items": []
     }
   }
 }

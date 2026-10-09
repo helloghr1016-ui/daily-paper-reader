@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-07T23:56:56.150674+00:00",
-  "updated_date": "20261007",
+  "generated_at": "2026-10-09T00:08:33.481784+00:00",
+  "updated_date": "20261008",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -110,12 +110,12 @@
       "items": []
     },
     "VLA-RL": {
-      "updated_date": "20261007",
+      "updated_date": "20261008",
       "carryover_days": 9,
       "items": []
     },
     "rl-vla": {
-      "updated_date": "20261007",
+      "updated_date": "20261008",
       "carryover_days": 9,
       "items": []
     }

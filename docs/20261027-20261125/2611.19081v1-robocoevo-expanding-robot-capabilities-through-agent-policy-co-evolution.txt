@@ -1,0 +1,1654 @@
+RoboCoEvo: Expanding Robot Capabilities through Agent–Policy
+Co-Evolution
+Ran Qi1,∗,‡
+Yixin Xiao2,∗
+Dawei Wang2
+Zhiyuan Li1,‡
+Jinbang Huang2
+Xuan Zhao2
+Yintao Ma2
+Yangzheng Wu2
+Tongtong Cao3
+Yingxue Zhang2,†
+1University of Toronto
+2Huawei Noah’s Ark Lab
+3Department of Foundation Model, 2012 Labs
+Abstract
+Integrating MLLM-based agents with robotic foundation models has attracted increasing attention
+as a means of enhancing robotic capabilities. However, the improvement of such integrated systems
+remains largely decoupled across their agent and model components, with advances in one component
+not necessarily benefiting the other, substantially limiting the capabilities of the combined system. As
+both MLLMs and robotic foundation models become increasingly capable, fully realizing their combined
+potential calls for co-evolution, an iterative process in which improvements in agents and robotic foundation
+models reinforce one another. We propose RoboCoEvo, a failure-guided co-evolution framework that
+couples the refinement of the agent’s explicit and reusable executable knowledge with parameter learning
+in robotic foundation models, such as vision-language-action (VLA) models. Through a code-as-policy
+formulation, the agent develops and refines executable failure-detection and recovery programs, generating
+targeted corrective experience. Post-training consolidates the resulting corrective behaviors into the
+robotic model’s end-to-end policy, improving autonomous task execution.
+Changes in the updated
+policy’s failure distribution, in turn, guide subsequent revisions to the agent’s programs. Experiments on
+BEHAVIOR-1K, RoboCasa, and RoboTwin demonstrate sustained improvements in autonomous VLA
+task performance across successive co-evolution rounds.
+1
+Introduction
+Recent work has shown that MLLM-based agentic harnesses can enhance the capabilities of robotic foundation
+models [Huang et al., 2026, Zhang et al., 2026b]. In these works, robotic foundation models provide visuomotor
+skills acquired from large-scale demonstrations [Kim et al., 2024, Black et al., 2024, Physical Intelligence et al.,
+2025b], while agents support their policy execution through failure diagnosis, recovery, and coordination [Liu
+et al., 2023, Lin et al., 2025]. This complementary division of roles enables the combined system to address
+limitations of the robotic foundation models. However, the improvement processes of the agent and the
+robotic foundation model in the combined system typically remain separate or only loosely coupled [Zhang
+et al., 2026a, Yu et al., 2026a], with advances in one component not necessarily benefiting the other. Without
+learning from corrective experience, the policy may remain dependent on agent assistance in similar situations.
+Meanwhile, an agent whose knowledge is not refined as the policy is updated may continue to target weaknesses
+that no longer constrain performance. Sustained improvement therefore requires a co-evolution mechanism
+that connects policy learning with the adaptation of agent assistance.
+For corrective interventions to yield lasting policy improvements, the policy must incorporate the demon-
+strated behaviors into its own capabilities. Agent interventions provide training experience at states where
+execution fails, including states induced by accumulated errors and underrepresented in the training distribu-
+tion [Ross et al., 2011]. Interactive imitation learning obtains such corrections from human supervisors [Kelly
+et al., 2018, Liu et al., 2022], while recent approaches automate recovery and generate corrective data for
+∗Equal contribution.
+†Correspondence to: yingxue.zhang@huawei.com.
+‡Work done during an internship at Huawei Noah’s Ark Lab.
+1
+arXiv:2611.19081v1  [cs.RO]  14 Nov 2026
+
+
+RoboCoEvo
+rollouts:
+execution results
+corrective
+experience
+Agent–Policy
+co-evolution
+R1
+R2
+(a) Policy-Guided Agent Evolution
+FMs found in round 1
+FM1
+FM2
+FM3
+…
+new FMs in round 2
+FM4
+…
+Example: FM1 and FM4
+Failure detection
+Failure recovery
+Round 1
+base policy
+Round 2
+improved policy
+FM1
+jar grasping failure
+writes FM1 detector
+FM1
+jar grasped
+writes FM1 program
+FM4
+new
+sausage picking stall
+writes FM4 detector
+improves FM1 detector
+(more accurate)
+FM4
+sausage picked up
+writes FM4 program
+improves FM1 program
+(higher success)
+(b) Agent-Guided Policy
+Capability Expansion
+Policy
+fine-tuned on
+corrective data
+BEHAVIOR-1K
++0.16
+Q-score
+0.40 →
+0.56
+RoboTwin
++0.14
+success
+0.79 →
+0.93
+RoboCasa
++0.12
+success
+0.79 →
+0.91
+Figure 1: Overview of RoboCoEvo. The co-evolution framework of agent and policy improving each
+other over successive rounds. (a) Policy-Guided Agent Evolution: the agent locates failures in the policy’s
+failed rollouts and groups recurring failures into failure modes (FMs), shown at the top for each round. For
+each FM, it writes a detector that identifies the failure state in a rollout (red) and a recovery program that
+completes the failed subtask from this state in simulation (green). As the policy improves, its rollouts expose
+FMs that did not occur in earlier rounds. In each subsequent round, the agent writes detectors and recovery
+programs for the newly identified FMs and refines those of persisting FMs to improve detection accuracy and
+recovery success. (b) Agent-Guided Policy Capability Expansion: the policy is fine-tuned on the corrective
+experience together with the original demonstrations, which enables the policy itself to avoid or recover from
+the targeted failures. The rollouts of the updated policy initiate the next round, and its task success increases
+over successive rounds. The scores compare the base policy with the policy after RoboCoEvo.
+policy training [Zhang et al., 2026c, Liao et al., 2026, Lang et al., 2026]. Training on this experience allows
+the policy to internalize behaviors previously supplied by the agent. As these failures are resolved, however,
+the policy’s need for assistance changes, and further improvement requires corrective experience tailored to
+its remaining limitations.
+On the other hand, acquiring this experience requires the agent to adapt alongside the policy. It must
+reassess the updated policy’s failures, determine where intervention is still needed, and revise its recovery
+strategies accordingly. Automated failure analysis can support this reassessment [Duan et al., 2025, Yu et al.,
+2026b], while a coding agent can use execution feedback to refine the corresponding detectors and recovery
+programs. These revisions improve the agent’s assistance and provide relevant corrections for the next policy
+update. However, applying conventional code-as-policy approaches without accounting for task-specific failure
+characteristics may compromise the accuracy of failure diagnosis and the efficiency of recovery, thereby
+limiting subsequent policy improvement. The two directions of improvement therefore form a continuous
+feedback loop: the robotic foundation model learns from the agent’s interventions, and its remaining failures
+guide what the agent must diagnose and resolve next.
+We present RoboCoEvo (Figure 1), a co-evolution framework that couples Policy-Guided Agent
+Evolution with Agent-Guided Policy Capability Expansion. The agent evolves through revisions
+to executable failure-detection and recovery programs. Guided by policy rollouts and execution feedback,
+2
+
+
+it identifies recurring failure modes, develops and evaluates recovery strategies, and generates corrective
+demonstrations across varied task configurations using a code-as-policy formulation [Liang et al., 2022]. The
+robotic foundation model then incorporates these corrective behaviors into its end-to-end policy through
+post-training. Subsequent evaluation of the updated model identifies residual capability gaps and directs
+the next round of program refinement. This iterative exchange improves the agent’s diagnosis and recovery
+strategies while expanding the policy’s capacity for independent execution. We instantiate and evaluate
+RoboCoEvo with vision-language-action (VLA) models on BEHAVIOR-1K, RoboCasa, and RoboTwin.
+Experiments demonstrate sustained improvement across successive cycles, with higher autonomous task
+success and stronger generalization to unseen configurations. In summary, our contributions are:
+1. Failure-Mode-Centric Agent–Policy Co-Evolution: We introduce RoboCoEvo, a failure-guided
+co-evolution framework that couples the refinement of executable agent knowledge with learning-based
+policy post-training. Through a recursive feedback loop, the general agent generates corrective experience
+to improve the policy, while the evolving policy reveals new capability gaps that guide further agent
+adaptation.
+2. Policy-Guided Agent Evolution: We develop a failure-mode-centric approach that organizes
+recurring policy failures into reusable executable detectors and recovery programs. As the policy evolves,
+the agent continuously refines programs for persistent failure modes and develops new ones for emerging
+failures, enabling its corrective skills to evolve alongside the policy.
+3. Agent-Guided Policy Capability Expansion: We introduce failure-conditioned augmentation
+to scale the corrective experience generated by reusable recovery programs. By learning from these
+targeted demonstrations, the policy progressively internalizes agent-generated recovery behaviors and
+expands its capabilities.
+4. Significant Policy Improvement and Data Efficiency: Experiments across BEHAVIOR-1K,
+RoboTwin, and RoboCasa demonstrate consistent policy improvements over successive co-evolution
+iterations. Extensive analyses further highlight the effectiveness of reusable failure-mode programs and
+targeted data augmentation in improving task performance and data-acquisition efficiency.
+2
+Related Work
+Agent-assisted robotic execution.
+LLM- and MLLM-based agents have been widely employed to
+enhance robotic execution without modifying the parameters of the underlying policies. Such agents have
+been applied to the detection and explanation of execution failures [Liu et al., 2023, Duan et al., 2025, Yu
+et al., 2026b, Zhou et al., 2025] and to intervention for failure recovery [Lin et al., 2025, Wang et al., 2026a],
+while hierarchical frameworks rely on them to orchestrate low-level policies and skills [Shi et al., 2025, Gemini
+Robotics Team et al., 2025, Huang et al., 2026, Zhang et al., 2026b]. As execution failures are difficult to
+anticipate, several systems further refine the agent’s knowledge based on execution feedback, for instance
+by revising orchestration code [Huang et al., 2026], by accumulating executable skills [Wang et al., 2024,
+Wen et al., 2026], or by updating failure checks and recovery routines for failures grouped according to their
+underlying causes [Ding et al., 2026, Sun et al., 2026]. In these systems, however, the acquired improvements
+reside in the agent or its programs, whereas any learned policy responsible for low-level control retains fixed
+parameters. The capabilities of such a policy therefore remain unchanged, and the agent or its programs
+must compensate for its recurring failures at execution time.
+Learning from corrective experience.
+Policies trained through imitation are prone to compounding
+errors that lead them to states underrepresented in their demonstrations [Ross et al., 2011]. Interactive
+imitation learning mitigates this distribution shift by training on corrections collected at the states visited by
+the policy [Ross et al., 2011, Kelly et al., 2018, Liu et al., 2022, Hu et al., 2025], and RECAP incorporates
+such corrections into multi-round training with a learned value function [Physical Intelligence et al., 2025a].
+Because these corrections are typically provided by human supervisors, whose effort scales with the number
+of failures, recent methods have sought to generate corrective data automatically. IntervenGen and FLARE
+extend a small number of human recovery demonstrations to new scene configurations and to new or perturbed
+3
+
+
+failure states [Hoque et al., 2024, Zhao et al., 2026], CARE uses a motion-planning oracle to annotate failure
+states sampled from a distribution fitted to failed rollouts [Xiao et al., 2026a], and other approaches derive
+corrections from fixed language-model prompts, pretrained experts, privileged continuations, or residual
+reinforcement-learning specialists [Bernat et al., 2026, Li et al., 2024b, Snegirev et al., 2026, Xiao et al.,
+2025]. These studies demonstrate that training on failure-targeted corrections can improve the policy itself.
+Nevertheless, approaches that extend human demonstrations still rely on a supervisor to demonstrate each
+new recovery skill, while automatic generators are constructed once and are not refined from the failures they
+correct.
+Coupled improvement of agents and policies.
+The works most closely related to ours couple an
+agent with policy training. LRS, VLAMotor, and EmbodiRSI use an MLLM agent or a motion planner to
+generate corrections from the failure states of a policy, on which the policy is subsequently fine-tuned [Zhang
+et al., 2026c, Liao et al., 2026, Lang et al., 2026]. In these frameworks, however, each failure is corrected in
+isolation, so that the knowledge acquired in correcting one failure is neither retained nor refined for similar or
+subsequently emerging failures. Other frameworks improve the policy over multiple rounds but differ in how
+its corrective behaviors are acquired. Recova learns recovery behaviors with a separate recovery policy rather
+than with the task policy [Liu et al., 2026], and RoboClaw retrains its policies on their own rollouts and
+on human interventions under a fixed VLM controller [Li et al., 2026]. Robo-COP co-evolves the textual
+memory of an orchestrator with a policy but trains this policy exclusively on successful segments of its own
+executions, which restricts the learnable behaviors to those that its policy or scripted tools already partially
+exhibit [Zhang et al., 2026a]. CoDA co-evolves a data engine with a policy by adapting its scene-generation
+and reward-shaping programs to the learning progress of this policy [Yu et al., 2026a], and ENPIRE enables
+an agent to revise training recipes [Xiao et al., 2026b]. In both cases, the corrective behavior is still obtained
+through the policy’s own exploration or from demonstrations that do not originate at its failure states. SEAR
+outlines a comparable agent–policy loop as future work [Wang et al., 2026b]. These frameworks represent
+early efforts toward bidirectional improvement between agents and policies. Each, however, realizes only part
+of it. In some, the agent corrects failures one at a time without accumulating reusable knowledge of how
+to correct them, so that it adapts to individual failures but does not itself improve. In others, the agent
+and the policy are both updated, but the policy still learns mainly from its own executions or exploration,
+which can limit the recovery behaviors it acquires at the states where it fails. Effective co-evolution therefore
+requires that the agent accumulate and refine its knowledge against the policy’s evolving failures, and that
+this knowledge be translated into targeted corrective demonstrations for the policy itself at the states where
+it fails.
+3
+RoboCoEvo: Failure-Guided Agent–Policy Co-Evolution
+3.1
+Problem Setup and Overview
+As shown in Figure 2, RoboCoEvo formulates the co-evolution of an agent and a policy as an iterative
+process. The base policy π0 is a robotic foundation model trained on reference demonstrations D0. In round i,
+Policy-Guided Agent Evolution (Section 3.2) collects rollouts of the current policy πi in a set of scenarios
+S. An MLLM-based agent groups the recurring failures into failure modes (FMs) and writes or revises a
+detector dm and a recovery program ρm for each FM. Agent-Guided Policy Capability Expansion
+(Section 3.3) then applies these programs to the detected failure states and to perturbed copies of them,
+which yields the corrective experience
+Ri = f(πi, S).
+The policy is then post-trained on D0 and the corrective experience accumulated up to round i to obtain
+πi+1, whose rollouts are used in the next round. RoboCoEvo observes the scene primarily through a scene
+state st = (qt, {pk
+t }k∈O, Ft, It), where It denotes the camera images. Here, qt is the robot state, including the
+base pose and joint configuration, O is the set of task-relevant objects, and pk
+t is the pose of object k. The
+symbolic state Ft is the set of facts that hold at step t, such as open(k), on(k, k′), and held(k). The agent
+derives and reconstructs these facts from the simulator state.
+4
+
+
+Agent-Guided Policy Capability Expansion
+Policy-Guided Agent Evolution
+Policy Rollouts
+×N
+N episodes of πi
+Failure Mode 
+Identification
+FM1 FM2
+grouped by pattern
+Detector 
+Generation
+FM1
+d1
+FM2
+d2
+one detector per FM
+Failure State 
+Localization
+rollout 1 FM1
+FM2
+rollout 2
+FM2
+rollout 3
+FM1
+all failed rollouts
+Recovery Program
+Generation
+s
+s
+s
+ρm
+one program per FM
+Failure-Conditioned
+Augmentation
+s̃1
+s̃2
+s̃J
+⋯
+s
+perturb, keep the FM
+Experience
+Acquisition
+subtask
+done
+s
+s̃1
+s̃J
+recovery program ρm
+Policy
+Post-Training
+D0
+Ri
++
+πi+1
+fine-tune πi
+next
+round
+K
+failures
+FMs
+dm
+states
+s, ρm
+s + s̃j
+Ri
+Figure 2: The RoboCoEvo pipeline. Each round proceeds clockwise, starting with rollouts of the current
+policy πi. Policy-Guided Agent Evolution (right): the agent identifies failure modes (FMs) from K sampled
+failures and writes a detector dm for each FM. The detectors localize failure states in all failed rollouts, from
+which the agent writes a recovery program ρm for each FM. Agent-Guided Policy Capability Expansion (left):
+failure-conditioned augmentation perturbs each localized state s into J states ˜sj of the same FM, and ρm
+completes the failed subtask from both the original and the perturbed states, which yields the corrective
+experience Ri. The policy is then post-trained on D0 and the accumulated corrective experience to obtain
+πi+1, whose rollouts start the next round. Steps marked with circular arrows are updated in every round.
+3.2
+Policy-Guided Agent Evolution
+In each round, the agent adapts its detectors and recovery programs to the failures of the current policy
+πi. If the agent instead diagnosed and recovered each failed rollout separately, its cost would grow with the
+number of failures, and independent recoveries of similar failures could follow different strategies, leading to
+inconsistent demonstrations. RoboCoEvo therefore groups recurring failures into FMs and writes one detector
+and one recovery program per FM. The cost of diagnosis and program writing is shared by all failures of an
+FM, and all recoveries of an FM follow the same strategy (Section 4.3).
+Failure mode identification.
+To define a failure mode, we first define the failure pattern Pm as a recurring
+pattern in sequences of scene states (stf −h, . . . , stf +ℓ) around the failure time tf, where h and ℓdenote the
+numbers of steps before and after the failure, respectively. Similar failure patterns are usually caused by
+similar root causes. For example, if a dual-arm robot is holding objects in both hands simultaneously, it
+cannot proceed to perform other manipulation tasks. Such cases can recur across different scenarios.
+We further define subtasks as successive stages of a task, each with a completion condition expressed in
+terms of symbolic facts. For example, a picking subtask is complete when held(k) holds, while a placement
+subtask is complete when on(k, k′) holds. A long-horizon task can thus be divided into several subtasks, each
+of which can be treated as an independent capability to exercise or goal to achieve.
+Hence, a failure mode m is defined as a group of failures that stall at the same subtask and exhibit the
+same failure pattern Pm. The failure pattern describes the root cause of the FM and the conditions under
+which the policy fails, primarily in terms of facts in Ft and their changes over time.
+Detector generation and failure state localization.
+The FM detector identifies occurrences of an FM
+5
+
+
+in rollouts. In each round, the agent reviews a sampled subset of failed rollouts to identify recurring failure
+modes and writes a detector for each mode. The generated detectors are then applied to all failed rollouts
+to locate matching instances. For each failure occurrence, the agent identifies a corrective state, where the
+failure pattern first appears, and a preventive state, an earlier state selected for demonstrating how to avoid
+the failure. The FM detector returns variable-size sets of preventive and corrective states:
+dm(τ) =
+ Sm
+pre(τ), Sm
+corr(τ)
+
+,
+where Sm
+pre(τ) and Sm
+corr(τ) contain the preventive and corrective states identified for failure mode m in rollout
+τ, respectively. Each set may be empty or contain one or more states. The detector is implemented as a
+finite-state machine that identifies the failure pattern Pm offline from the recorded scene states of a rollout τ.
+Within a round, the detectors are applied to all failed rollouts without further revision by the agent. In the
+next round, the agent revises them according to the failure modes of the updated policy.
+Recovery program generation.
+For each FM, its detected preventive and corrective states are partitioned
+into development and held-out validation sets. The agent develops a shared failure recovery program ρm using
+simulator states restored from the development set. Following a code-as-policy approach, ρm is implemented as
+a finite-state machine over st that composes navigation and manipulation skills with planned motions [Garrett
+et al., 2025, Sahoo et al., 2026]. Recovery success is defined as completion of the subtask at which the
+original execution failed. The program undergoes iterative refinement and is accepted only when its recovery
+success rate reaches at least 70% on the held-out validation set. The recovery programs evolve alongside the
+policy. In each subsequent round, the agent develops new programs for newly identified FMs and refines
+existing programs for FMs that persist. These refinements aim to broaden the range of failure states that
+the programs can address, improve their recovery success rates, and more precisely target the weaknesses
+revealed by the current policy.
+3.3
+Agent-Guided Policy Capability Expansion
+The detectors and recovery programs of Section 3.2 are then used to generate corrective experience, on which
+the policy is post-trained.
+Failure-conditioned augmentation and experience acquisition.
+To efficiently generate additional
+corrective experience covering the targeted failure mode, we introduce failure-conditioned augmentation,
+which creates new failure states by perturbing observed ones in the simulator. This procedure is motivated by
+the cost of collecting additional failure instances through rollouts, as each rollout yields only a few instances
+of each FM.
+For each FM, the agent identifies perturbable components of the scene state, including the robot state
+qt, which encompasses the base pose, joint configuration, and end-effector poses, as well as the pose pk
+t and
+symbolic facts in Ft associated with each task-relevant object k, regardless of whether the object is held.
+Additional failure scenes are then generated by perturbing these components while preserving the same failure
+mode. Figure 3 shows perturbed failure states on two BEHAVIOR-1K tasks. Perturbed preventive states
+must retain the conditions for demonstrating how to avoid the target failure, rather than already exhibit it.
+The accepted recovery program ρm is then executed from the detected failure states and from their
+perturbed copies without further agent intervention. Only successful recoveries are retained, and together
+they constitute the corrective experience Ri of round i. Augmentation thus yields additional corrective
+experience from a limited number of observed failures, which reduces the number of rollouts required.
+Policy post-training.
+The corrective experience Ri is added to the training data together with the reference
+demonstrations, and the policy learns the corrective behaviors through DAgger-style post-training [Ross
+et al., 2011]:
+Di+1 = D0 ∪
+i[
+j=0
+Rj,
+πi+1 = FineTune
+ πi, Di+1
+
+.
+(1)
+During fine-tuning, we enforce a 1 : 1 sampling ratio between the original reference demonstrations D0 and the
+accumulated corrective experience to mitigate catastrophic forgetting. Because Di+1 contains the corrective
+6
+
+
+Observed failure
+Perturbed failure states with the same FM
+Picking up trash     FM: grasp misses a lying can
+s
+agent edits
+the scene
+keeps the FM
+s̃1
+s̃2
+s̃3
+⋯
+Cleaning up plates and food     FM: pizza slides off the plate
+s
+agent edits
+the scene
+keeps the FM
+s̃1
+s̃2
+s̃3
+⋯
+Figure 3: Failure-conditioned augmentation on two BEHAVIOR-1K tasks. From an observed failure
+state s (left), the agent edits the robot and object states in the simulator to obtain perturbed states ˜s1, ˜s2, . . .
+(right) that preserve the same FM. Each perturbed state serves as an additional initial state for the recovery
+program, so a single observed failure yields multiple recovery runs.
+experience of all previous rounds, behaviors learned in earlier rounds remain represented in the training data,
+and each new round adds experience for the remaining failures. The updated policy πi+1 is deployed without
+the agent, and its rollouts are used in the next round of agent evolution.
+4
+Experiments
+We evaluate RoboCoEvo on three well-known testbeds: BEHAVIOR-1K [Li et al., 2024a], RoboTwin 2.0 [Chen
+et al., 2026], and RoboCasa [Nasiriany et al., 2024]. In this section, we first describe our experimental setup,
+including benchmark selection, metrics, and training details, in Section 4.1. We then present the main results
+of our method to demonstrate its efficiency and performance relative to the base policies. Finally, we conduct
+ablation studies to assess the effectiveness of each component of our method.
+4.1
+Experimental Setup
+To comprehensively evaluate our method, we select three well-known simulation-based benchmarks:
+• BEHAVIOR-1K [Li et al., 2024a] contains long-horizon, bimanual mobile manipulation tasks in household
+scenes and is one of the most challenging benchmarks for robotic manipulation. We use its first six
+tasks, covering the most common household activities.
+• RoboTwin 2.0 [Chen et al., 2026] covers bimanual tabletop manipulation with diverse coordination
+requirements. We evaluate on all 50 tasks.
+• RoboCasa [Nasiriany et al., 2024] provides everyday manipulation tasks in realistic and diverse kitchen
+environments, using a single-arm mobile manipulator. We select ten tasks from different task categories,
+covering the benchmark’s most representative task types. The selected tasks are listed in Appendix A.
+7
+
+
+Table 1: Policy performance and failure-mode analysis before and after RoboCoEvo. The first row
+of each benchmark is its starting policy. Bold marks the best Q-score and success rate per benchmark. The
+failure-mode columns are obtained by applying the failure-mode detectors to every test episode (Section 4.2
+and Appendix D).
+Targeted failure modes
+Failed episodes
+Benchmark
+Policy
+Q-score Succ. FM occurs Self-recovered Fail | FM Targeted FM Unexplained
+BEHAVIOR-1K
+RLC
+0.40
+0.23
+0.73
+0.28
+0.87
+0.629
+0.142
+Round 1
+0.49
+0.29
+0.69
+0.44
+0.78
+0.542
+0.167
+Round 2
+0.56
+0.34
+0.82
+0.56
+0.65
+0.538
+0.121
+RoboTwin
+π0.5
+–
+0.79
+0.29
+0.18
+0.65
+0.188
+0.021
+Round 1
+–
+0.90
+0.16
+0.54
+0.38
+0.060
+0.040
+Round 2
+–
+0.93
+0.19
+0.54
+0.31
+0.058
+0.017
+RoboCasa
+XR-1
+–
+0.79
+0.30
+0.35
+0.59
+0.176
+0.028
+Round 1
+–
+0.88
+0.22
+0.46
+0.45
+0.099
+0.014
+Round 2
+–
+0.91
+0.24
+0.62
+0.31
+0.077
+0.014
+For each benchmark, we adopt a state-of-the-art policy as the starting point for self-improvement to
+demonstrate the effectiveness of our method in further advancing policy performance. For BEHAVIOR-
+1K, we use Robot Learning Collective (RLC) [Larchenko et al., 2025], the first-place solution in the 2025
+BEHAVIOR Challenge. For RoboTwin 2.0, we use π0.5 [Physical Intelligence et al., 2025b] trained on both
+clean and randomized demonstrations, which serves as a strong VLA baseline on this benchmark with strong
+generalization capabilities. For RoboCasa, we use XR-1 [Fan et al., 2026], the top-ranked method as of
+September 2026. We use official checkpoints when available; otherwise, we use our reproduced models.
+We report the task success rates on all benchmarks and, on BEHAVIOR-1K, also the challenge Q-
+score [BEHAVIOR Challenge Organizers, 2025], the fraction of goal predicates satisfied at the end of an
+episode. All policies are evaluated on the official test instances, with 50 instances per task on RoboTwin and
+RoboCasa. On BEHAVIOR-1K, we run each of the 20 test instances per task twice. RoboCoEvo improves a
+VLA that executes tasks on its own, so we compare each updated policy with its base policy under the same
+evaluation protocol.
+Data generation and training.
+In each round, we collect rollouts with the current policy using seeds
+distinct from those used for training and official testing. On BEHAVIOR-1K, we collect 50 rollouts per
+task and sample 20 failures. On RoboCasa and RoboTwin 2.0, we collect 200 rollouts per task to obtain
+a sufficient number of failures, as the base policies achieve higher success rates on these benchmarks than
+on BEHAVIOR-1K. For each FM, the agent writes a detector and a recovery program (Section 3.2). The
+execution framework described in Section 3 then applies the detectors to all failed rollouts, runs the recovery
+programs on the detected failure states, and uses the agent to perturb these states for failure-conditioned
+augmentation (Section 3.3). We use GPT-6 Astra with high reasoning effort as the agent. During fine-tuning
+of the VLA, we sample the original demonstrations and the accumulated failure experience at a 1:1 ratio to
+mitigate catastrophic forgetting. The training hyperparameters are provided in Appendix B.
+4.2
+Main Results
+Overall, RoboCoEvo improves the base policies across all three benchmarks, as shown in Table 1. After two
+rounds, the average success rate rises from 79% to 93% on RoboTwin and from 79% to 91% on RoboCasa, and
+the mean Q-score on BEHAVIOR-1K increases from 0.40 to 0.56. These results show that failure-targeted
+experience can translate into improved full-task performance across different manipulation settings.
+The gains develop over successive rounds of experience acquisition and policy updates. Both rounds
+improve the policy on every benchmark, and the first round yields the larger gain in success rate. These
+multi-round gains demonstrate RoboCoEvo’s ability to improve through successive policy updates. As the
+policy becomes more capable, continued trial and error reveals remaining weaknesses and provides new targets
+8
+
+
+Table 2: Per-task results on BEHAVIOR-1K. Q-score and success rate of the base policy and after each
+round of RoboCoEvo. For each task and metric, the best result is in bold and the second best underlined.
+Base
+Round 1
+Round 2
+Task
+Q
+Succ.
+Q
+Succ.
+Q
+Succ.
+0 Turning on a radio
+0.45
+0.45
+0.48
+0.48
+0.70
+0.70
+1 Picking up trash
+0.63
+0.43
+0.84
+0.58
+0.82
+0.65
+2 Putting away Halloween decorations
+0.36
+0.08
+0.47
+0.13
+0.60
+0.18
+3 Cleaning up plates and food
+0.40
+0.23
+0.47
+0.33
+0.52
+0.35
+4 Canning meat
+0.02
+0.00
+0.03
+0.00
+0.09
+0.00
+5 Setting mousetraps
+0.54
+0.20
+0.63
+0.25
+0.66
+0.18
+for learning, suggesting a path toward a recursive improvement cycle of experience acquisition and capability
+growth.
+We also report per-task results on BEHAVIOR-1K to illustrate our method’s performance across different
+tasks in Table 2. The results show steady Q-score improvements across both rounds on most tasks. On
+picking up trash, the Q-score rises from 0.63 to 0.84 after the first round, then decreases slightly to 0.82 in
+the second round. The strong first-round performance and limited subsequent gains suggest that learning
+on this task may be approaching saturation. Canning meat, by contrast, starts with a Q-score of 0.02 and
+gradually improves to 0.03 and then to 0.09. These small gains understate the progress: as the policy takes
+the jar out of the cabinet more reliably, more rollouts reach the later subtasks of opening the jar and fetching
+the sausage, where new failure modes are exposed (Appendix E). Overall, these results support RoboCoEvo’s
+ability to improve policies over multiple rounds, with the pace and extent of improvement varying according
+to the task and the policy’s existing capabilities.
+To understand these gains, we apply the failure-mode detectors to every test episode of each policy
+(Table 1). The base and first-round policies are evaluated using first-round detectors, and the second-round
+policy using second-round detectors. For each policy, we report the fraction of episodes in which a targeted
+failure mode occurs (FM occurs), the fraction of occurrences from which the policy recovers and completes
+the step without assistance (Self-recovered), and the fraction of episodes with an occurrence in which the
+failure mode is never recovered and the episode fails (Fail | FM ). Failed episodes are further divided into
+those that fail with an unrecovered targeted failure mode (Targeted FM ) and those that fail without one
+(Unexplained). Following the first round, the targeted failure modes occur less frequently, and the updated
+policy is more likely to recover autonomously when failures arise. On RoboTwin, the share of occurrences the
+policy recovers from rises from 0.18 to 0.54, and the fraction of episodes that fail by a targeted failure mode
+drops from 0.19 to 0.06. The policy has therefore learned to get out of these failures, not only to avoid them.
+Figure 4 shows one example per benchmark: the base policy stays in its failure, while the first-round policy
+enters the same kind of failure and recovers on its own. A per-failure-mode breakdown of these results is
+provided in Appendix E.
+The second-round experiment further highlights the importance of adapting detectors and recovery
+programs to each new policy (Table 3). When the first-round programs are applied without modification
+to the failed rollouts of the first-round policy, the detection success rate falls from at least 94% to between
+54% and 72%, and fewer than half of the failure states are detected and recovered. After the agent revises
+the programs using these rollouts, detection success returns to its first-round level, while recovery success
+increases to 71%–83%. The revised detectors also account for more of the failures of the second-round policy
+on the test episodes. On RoboTwin, for instance, the fraction of episodes that fail without an unrecovered
+targeted failure mode decreases from 0.040 for the first-round policy to 0.017 for the second-round policy.
+These results indicate that the policy’s failure distribution shifts as it improves, such that programs developed
+for an earlier version no longer cover its current failures. Revising these programs in each round keeps the
+corrective experience targeted at the current policy’s failures.
+9
+
+
+Base policy π0
+After RoboCoEvo, π1
+BEHAVIOR-1K
+put away decorations
+FM: both hands full, 
+drawer closed
+second item
+hands full
+still stuck
+hands full
+sets candle 
+down
+opens drawer
+RoboTwin
+open microwave
+FM: grip slips, door 
+half open
+handle slips
+no re-grasp
+half open
+slips again
+grasps top 
+edge
+door open
+RoboCasa
+wash fruit
+FM: water on, spout 
+not moved
+spout not 
+moved
+stalls at lever water misses
+moves spout
+water on
+fruit washed
+Figure 4: Qualitative comparison of the base policy and RoboCoEvo on targeted failure modes.
+Each row shows one failure mode on one benchmark. Left: the base policy π0 enters the failure mode and
+fails to recover. Right: after RoboCoEvo, π1 enters the same failure mode and recovers without the agent.
+Frames are aligned by stage.
+4.3
+Ablations
+We ablate the components of RoboCoEvo on the task picking up trash in BEHAVIOR-1K (Table 4). This
+task is selected as a representative task that consists of long-horizon, repeated skills and in which multiple
+failure modes occur. As illustrated in Table 4, we compare variants trained from the same RLC checkpoint
+using different training data compositions. The variants differ in whether all failures of an FM share one
+detector and one recovery program (FMs) and in whether failure states are multiplied by failure-conditioned
+augmentation (Aug.). Success-only data, which consists of successful demonstrations that do not target
+failures, serves as an untargeted control. All variants generate recovery data with the same agent and with
+approximately the same total length of 9 to 10 h, matching the total length of the original training data
+at a 1:1 ratio. Each fine-tuned policy is then evaluated on 40 test episodes. Appendix C describes the
+implementation of the variants and the cost accounting.
+Targeted versus untargeted data.
+Full RoboCoEvo increases the Q-score of the base policy from
+0.633 to 0.84, whereas Success-only data only reach a Q-score of 0.642 while requiring 72.4 GPU hours and
+approximately 16 hours of human work. Recovery data targeted at the failures of the policy are therefore
+more effective than a comparable amount of untargeted demonstrations, and they require half the GPU hours
+and no human effort. The importance of data thus comes not only from diversity but, most importantly,
+from distributions focusing on the weaknesses where the policies are likely to fail.
+Shared failure-mode programs.
+Per-failure recovery, in which a separate agent localizes and recovers
+each failed rollout with its own program, reduces the Q-score of the base policy to 0.267. We attribute this
+degradation to the inconsistency of the resulting demonstrations, which motivates the shared FM programs
+of RoboCoEvo (Section 3.2). BEHAVIOR-1K tasks require high-dimensional mobile manipulation, in which
+a 6-D end-effector pose can be reached by many configurations of the 7-DoF arm, the 4-DoF trunk and the
+mobile base. Independent agents relying on motion planners therefore admit many different solutions for
+10
+
+
+Table 3: Detectors and recovery programs on the first-round policy’s failures. Detection: fraction of
+failed rollouts attributed to the correct failure mode. Recovery: fraction of failure states restored from failed
+rollouts that are detected and then recovered by the recovery program. Round 1: the first-round detectors
+and programs on the base policy’s rollouts. Reused: the same detectors and programs, unchanged, on the
+first-round policy’s rollouts. Revised: the detectors and programs after the agent’s second-round revision, on
+the same rollouts.
+Detection success
+Recovery success
+Benchmark
+Round 1
+Reused
+Revised
+Round 1
+Reused
+Revised
+BEHAVIOR-1K
+0.97
+0.54
+0.96
+0.85
+0.27
+0.78
+RoboTwin
+0.94
+0.60
+0.93
+0.94
+0.33
+0.83
+RoboCasa
+0.94
+0.72
+0.94
+0.67
+0.47
+0.71
+Table 4: Ablations on picking up trash (BEHAVIOR-1K). Rec.: recovery data. FMs: shared failure-
+mode programs. Aug.: failure-conditioned augmentation. Tokens are given in millions (M), including cached
+input, over all agent sessions and the orchestrating session. GPU h: GPU hours of the base-policy rollouts
+used to obtain the failure states (for success-only data, the successful rollouts) and of recording the data,
+excluding development and testing. Performance is measured on 40 evaluation episodes.
+Components
+Performance
+Cost
+Variant
+Rec. FMs Aug. Q-score Succ.
+Tokens
+GPU h Human h
+RLC (no added data)
+–
+–
+–
+0.633
+0.425
+–
+–
+–
+Success-only data
+✗
+✗
+✗
+0.642
+0.350
+–
+72.4
+16
+Per-failure recovery
+✓
+✗
+✗
+0.267
+0.20
+3,366M
+158
+0
+Per-failure recovery + aug.
+✓
+✗
+✓
+0.483
+0.375
+528M
+44
+0
+FMs without augmentation
+✓
+✓
+✗
+0.758
+0.50
+206M
+147
+0
+Full RoboCoEvo
+✓
+✓
+✓
+0.84
+0.58
+261M
+36
+0
+recovering similar failure modes, and the resulting data exhibit few recurring patterns. Such high-entropy
+demonstrations have been shown to be unfavorable for policy learning [Zhu et al., 2025]. In FMs without
+augmentation, with one detector and one consistent recovery program per FM, the Q-score rises from 0.267
+to 0.758, approaching the 0.84 of full RoboCoEvo. Sharing the programs also reduces agent token usage by a
+factor of 16. The cost of per-failure recovery grows with the number of failures because each failure requires
+its own agent session, whereas the FM programs are written once from a small sample of rollouts and then
+executed on all detected failure states without the agent.
+Failure-conditioned augmentation.
+The main benefit of augmentation is a lower simulation cost. In
+per-failure recovery with augmentation, the agent adapts the program written for each failure to several
+perturbed copies of its failure state, which requires fewer tokens than solving a new failure from scratch.
+The same amount of data then requires far fewer failures and thus fewer rollouts, which reduces agent token
+usage by a factor of six and simulation by a factor of 3.6. The saved time comes from the fact that, without
+augmentation, the FM detectors must process a much larger set of rollouts to collect enough failure states,
+whereas full RoboCoEvo obtains its failure states from 50 rollouts and perturbs them, reducing simulation
+time from 147 to 36 GPU hours. Augmentation also improves the resulting policies, raising the Q-score from
+0.267 to 0.483 for per-failure recovery and from 0.758 to 0.84 with FM programs. Since the perturbed states
+of a failure are recovered by the same program or an adaptation of it, their recoveries remain similar and the
+data become more consistent. These results indicate that, on a high-dimensional mobile manipulator, such
+consistent data facilitate the learning of complex skills.
+11
+
+
+5
+Conclusion and Future Work
+In this paper, we presented RoboCoEvo, a failure-guided co-evolution framework that couples the refinement
+of an agent’s executable knowledge with the post-training of robotic foundation models. In each round,
+the agent identifies the recurring failure modes of the current policy and develops or refines a reusable
+detector and recovery program for each mode. By combining these detectors and recovery programs with
+failure-conditioned augmentation, RoboCoEvo generates corrective experience targeted at the current policy’s
+weaknesses. Post-training on this experience expands the capabilities of the policy, and the failures of the
+updated policy in turn guide the next round of agent refinement. Experiments on BEHAVIOR-1K, RoboTwin,
+and RoboCasa show that RoboCoEvo improves task performance over successive co-evolution rounds starting
+from strong initial policies and reduces the frequency of failures caused by targeted failure modes. Ablation
+studies further evaluate the contributions of individual components to policy performance and data acquisition
+efficiency.
+Limitation.
+Currently, RoboCoEvo learns only from successful recovery demonstrations, while the
+VLA’s own successful and failed rollouts are not used for training. Future work could combine RoboCoEvo
+with reinforcement learning to leverage these rollouts, improving data utilization through outcome-based
+credit assignment.
+References
+BEHAVIOR Challenge Organizers.
+2025 BEHAVIOR Challenge.
+https://behavior.stanford.edu/
+challenge/archive/2025/index.html, 2025.
+Foundation Models Meet Embodied Agents Challenge
+@ NeurIPS 2025.
+Loan Bernat, Matthieu Grard, Ariane Herbulot, and Florent Lamiraux. MAGMA-GEN: Validated recovery
+supervision from ambiguous failures via counterfactual re-execution. arXiv preprint arXiv:2609.20056,
+2026.
+Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy
+Groom, Karol Hausman, Brian Ichter, et al. π0: A vision-language-action flow model for general robot
+control. arXiv preprint arXiv:2410.24164, 2024.
+Tianxing Chen, Zanxin Chen, Baijun Chen, Zijian Cai, Yibin Liu, Zixuan Li, Qiwei Liang, Xianliang Lin,
+Yiheng Ge, Zhenyu Gu, Weiliang Deng, Yubin Guo, Tian Nian, Xuanbing Xie, Qiangyu Chen, Kailun
+Su, Tianling Xu, Guodong Liu, Mengkang Hu, Huan-Ang Gao, Kaixuan Wang, Zhixuan Liang, Yusen
+Qin, Xiaokang Yang, Ping Luo, and Yao Mu. RoboTwin 2.0: A scalable data generator and benchmark
+with strong domain randomization for robust bimanual robotic manipulation. In Proceedings of the 43rd
+International Conference on Machine Learning (ICML), volume 306 of Proceedings of Machine Learning
+Research, pages 13673–13699, 2026.
+Xin Ding, Liang Mi, Mingzhe Huang, Zixuan Wang, Chao Zhang, Zixu Hao, Fu Chen, Xiangyu Li, Yikai
+Zheng, Yaoyu Guo, Weijun Wang, Kun Li, Hao Wu, Yunxin Liu, and Ting Cao. Zetta ζ: An efficient
+closed-loop embodied harness for self-evolving physical intelligence. arXiv preprint arXiv:2608.16590, 2026.
+Jiafei Duan, Wilbert Pumacay, Nishanth Kumar, Yi Ru Wang, Shulin Tian, Wentao Yuan, Ranjay Krishna,
+Dieter Fox, Ajay Mandlekar, and Yijie Guo. AHA: A vision-language-model for detecting and reasoning
+over failures in robotic manipulation. In International Conference on Learning Representations (ICLR),
+2025.
+Shichao Fan, Kun Wu, Zhengping Che, Xinhua Wang, Di Wu, Fei Liao, Ning Liu, Yixue Zhang, Zhen Zhao,
+Zhiyuan Xu, Meng Li, Qingjie Liu, Shanghang Zhang, Min Wan, and Jian Tang. XR-1: Towards versatile
+vision-language-action models via learning unified vision-motion representations. In Proceedings of the 43rd
+International Conference on Machine Learning (ICML), volume 306 of Proceedings of Machine Learning
+Research, pages 28838–28882, 2026.
+12
+
+
+Caelan Reed Garrett, Ajay Mandlekar, Bowen Wen, and Dieter Fox. SkillMimicGen: Automated demonstration
+generation for efficient skill learning and deployment. In Proceedings of The 8th Conference on Robot
+Learning (CoRL), volume 270 of Proceedings of Machine Learning Research, pages 2750–2790, 2025.
+Gemini Robotics Team et al. Gemini Robotics 1.5: Pushing the frontier of generalist robots with advanced
+embodied reasoning, thinking, and motion transfer. arXiv preprint arXiv:2510.03342, 2025.
+Ryan Hoque, Ajay Mandlekar, Caelan Garrett, Ken Goldberg, and Dieter Fox. IntervenGen: Interventional
+data generation for robust and data-efficient robot imitation learning. arXiv preprint arXiv:2405.01472,
+2024.
+Zheyuan Hu, Robyn Wu, Naveen Enock, Jasmine Li, Riya Kadakia, Zackory Erickson, and Aviral Kumar. RaC:
+Robot learning for long-horizon tasks by scaling recovery and correction. arXiv preprint arXiv:2509.07953,
+2025.
+Jinbang Huang, Zhiyuan Li, Yuanzhao Hu, Ran Qi, Yixin Xiao, Mark Coates, Tongtong Cao, Zhanguang
+Zhang, and Yingxue Zhang. RoboHarness: Memory-driven orchestration of heterogeneous robot policies
+for long-horizon planning. arXiv preprint arXiv:2607.18060, 2026.
+Michael Kelly, Chelsea Sidrane, Katherine Driggs-Campbell, and Mykel J. Kochenderfer. HG-DAgger:
+Interactive imitation learning with human experts. arXiv preprint arXiv:1810.02890, 2018.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael
+Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, Quan Vuong, Thomas Kollar, Benjamin Burchfiel,
+Russ Tedrake, Dorsa Sadigh, Sergey Levine, Percy Liang, and Chelsea Finn. OpenVLA: An open-source
+vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+Haoran Lang, Haotao Lu, Shiyu Sang, Haoyang Luo, Guo Chen, Qun Li, Jingyi Yu, Ye Shi, and Jingya
+Wang.
+EmbodiRSI: Recursive self-improvement for data-efficient robot adaptation.
+arXiv preprint
+arXiv:2609.38905, 2026.
+Ilia Larchenko, Gleb Zarin, and Akash Karnatak. Task adaptation of vision-language-action model: 1st place
+solution for the 2025 BEHAVIOR Challenge. arXiv preprint arXiv:2512.06951, 2025.
+Chengshu Li, Ruohan Zhang, Josiah Wong, Cem Gokmen, Sanjana Srivastava, Roberto Martín-Martín, Chen
+Wang, Gabrael Levine, Wensi Ai, Benjamin Martinez, et al. BEHAVIOR-1K: A human-centered, embodied
+AI benchmark with 1,000 everyday activities and realistic simulation. arXiv preprint arXiv:2403.09227,
+2024a.
+Chenxuan Li, Jiaming Liu, Guanqun Wang, Xiaoqi Li, Sixiang Chen, Liang Heng, Chuyan Xiong, Jiaxin Ge,
+Renrui Zhang, Kaichen Zhou, and Shanghang Zhang. A self-correcting vision-language-action model for
+fast and slow system manipulation. arXiv preprint arXiv:2405.17418, 2024b.
+Ruiying Li, Yunlang Zhou, YuYao Zhu, Kylin Chen, Jingyuan Wang, Sukai Wang, Kongtao Hu, Minhui Yu,
+Bowen Jiang, Zhan Su, Jiayao Ma, Xin He, Yongjian Shen, Yang Yang, Guanghui Ren, Maoqing Yao,
+Wenhao Wang, and Yao Mu. RoboClaw: An agentic framework for scalable long-horizon robotic tasks.
+arXiv preprint arXiv:2603.11558, 2026.
+Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and Andy
+Zeng. Code as policies: Language model programs for embodied control. arXiv preprint arXiv:2209.07753,
+2022.
+Zeqin Liao, Peifan Ren, Zixu Gao, Hongyu Gong, Lianyu Hu, Wenbing Tang, Yuhong Nan, Zibin Zheng, and
+Yang Liu. VLAMotor: Test-guided enhancement of vision-language-action models via agent-based data
+synthesis. arXiv preprint arXiv:2606.00053, 2026.
+Zijun Lin, Jiafei Duan, Haoquan Fang, Dieter Fox, Ranjay Krishna, Cheston Tan, and Bihan Wen. FailSafe:
+Reasoning and recovery from failures in vision-language-action models. arXiv preprint arXiv:2510.01642,
+2025.
+13
+
+
+Huihan Liu, Soroush Nasiriany, Lance Zhang, Zhiyao Bao, and Yuke Zhu. Robot learning on the job:
+Human-in-the-loop autonomy and learning during deployment. arXiv preprint arXiv:2211.08416, 2022.
+Isabella Liu, An-Chieh Cheng, Johan Bjorck, Zhiding Yu, Hongxu Yin, Jan Kautz, Linxi Fan, Yuke Zhu,
+and Sifei Liu. Recova: Agent-guided failure recovery for autonomous robotic manipulation. arXiv preprint
+arXiv:2610.01178, 2026.
+Zeyi Liu, Arpit Bahety, and Shuran Song. REFLECT: Summarizing robot experiences for failure explanation
+and correction. In Proceedings of The 7th Conference on Robot Learning (CoRL), volume 229 of Proceedings
+of Machine Learning Research, pages 3468–3484, 2023.
+Soroush Nasiriany, Abhiram Maddukuri, Lance Zhang, Adeet Parikh, Aaron Lo, Abhishek Joshi, Ajay
+Mandlekar, and Yuke Zhu. RoboCasa: Large-scale simulation of household tasks for generalist robots. In
+Robotics: Science and Systems (RSS), 2024. doi: 10.15607/RSS.2024.XX.050.
+Physical Intelligence, Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Kevin Black, Ken Conley, Grace
+Connors, James Darpinian, Karan Dhabalia, Jared DiCarlo, Danny Driess, et al. π∗
+0.6: A VLA that learns
+from experience. arXiv preprint arXiv:2511.14759, 2025a.
+Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Ad-
+nan Esmail, Michael Equi, Chelsea Finn, et al. π0.5: A vision-language-action model with open-world
+generalization. arXiv preprint arXiv:2504.16054, 2025b.
+Stéphane Ross, Geoffrey Gordon, and Drew Bagnell. A reduction of imitation learning and structured
+prediction to no-regret online learning. In Proceedings of the Fourteenth International Conference on
+Artificial Intelligence and Statistics (AISTATS), volume 15 of Proceedings of Machine Learning Research,
+pages 627–635, 2011.
+Samrat Sahoo, Yixuan Huang, and Tom Silver. DATAFARM: Distribution-aligned task and motion planning
+for fine-tuning vision-language-action models. arXiv preprint arXiv:2609.12316, 2026.
+Lucy Xiaoyang Shi, Brian Ichter, Michael Robert Equi, Liyiming Ke, Karl Pertsch, Quan Vuong, James
+Tanner, Anna Walling, Haohuan Wang, Niccolo Fusai, Adrian Li-Bell, Danny Driess, Lachy Groom, Sergey
+Levine, and Chelsea Finn. Hi Robot: Open-ended instruction following with hierarchical vision-language-
+action models. In Proceedings of the 42nd International Conference on Machine Learning (ICML), volume
+267 of Proceedings of Machine Learning Research, pages 54919–54933, 2025.
+Ivan Snegirev, Elizaveta Semenyakina, Dmitrii Maliukov, Miguel Altamirano Cabrera, and Dzmitry Tset-
+serukou. Kintsugi-VLA: Turning failed robot rollouts into recovery data through interventional recoverability.
+arXiv preprint arXiv:2609.31048, 2026.
+Zheng Sun, Zhihao Li, Zhuo Li, Wenrui Liu, Xin Wang, and Fei Chen. ReSkill: Selective self-improvement
+for robot manipulation. arXiv preprint arXiv:2611.10510, 2026.
+Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima
+Anandkumar. Voyager: An open-ended embodied agent with large language models. Transactions on
+Machine Learning Research, 2024.
+Jie Wang, Bo Zhang, Renzhi Lu, and Jianyu Chen. RoboDuo: Attempt, check and atomic recovery through
+code for vision-language-action models. arXiv preprint arXiv:2610.34108, 2026a.
+Xinyi Wang, Bangzheng Li, Hanyu Wang, Lin Zhang, Andrea Yaoyun Cui, Zhenggang Tang, Shyamal Buch,
+and Dejia Xu. SEAR: Self-evolving agentic robotics. arXiv preprint arXiv:2610.18792, 2026b.
+Zimo Wen, Yijin Chen, Yuxuan Cao, Wendi Chen, Yanwen Zou, Wenye Yu, Fuhang Kuang, Han Xue, Jun
+Lv, Chuan Wen, and Cewu Lu. RoboRSI: Stable, efficient, and reusable robot self-evolution in complex
+real-world environments. arXiv preprint arXiv:2610.12424, 2026.
+14
+
+
+Junlan Xiao, Junwei Jiang, Zaibin Zhang, Yifan Wang, Zhongbo Zhang, Huchuan Lu, and Lijun Wang.
+CARE: Experience-guided atomic corrective execution for vision-language-action policies. arXiv preprint
+arXiv:2609.24118, 2026a.
+Wenli Xiao, Haotian Lin, Andy Peng, Haoru Xue, Tairan He, Yuqi Xie, Fengyuan Hu, Jimmy Wu, Zhengyi
+Luo, Linxi Fan, Guanya Shi, and Yuke Zhu. Self-improving vision-language-action models with data
+generation via residual RL. arXiv preprint arXiv:2511.00091, 2025.
+Wenli Xiao, Jia Xie, Tonghe Zhang, Haotian Lin, Letian Fu, Haoru Xue, Jalen Lu, Yi Yang, Cunxi Dai,
+Zi Wang, Jimmy Wu, Guanzhi Wang, S. Shankar Sastry, Ken Goldberg, Linxi Fan, Yuke Zhu, and Guanya
+Shi. ENPIRE: Agentic robot policy self-improvement in the real world. arXiv preprint arXiv:2606.19980,
+2026b.
+Tianjiao Yu, Zhilin Ou, Yifan Shen, Xinzhuo Li, Yuanzhe Liu, Onkar Kishor Susladkar, Fan Wang, and Ismini
+Lourentzou. CoDA: Co-evolution of data engines and action policies. arXiv preprint arXiv:2610.22362,
+2026a.
+Yue Yu, Bin Zhu, Junhui Li, Jiayu Wang, Shijie Zhou, and Jingjing Chen. ReTrace: Cross-stage failure
+attribution for self-improving robotic manipulation. arXiv preprint arXiv:2610.15814, 2026b.
+Xilun Zhang, Maggie Wang, Erik Bauer, Hong-Xing Yu, Huang Huang, Jiajun Wu, and Marco Pavone.
+Co-evolving robot orchestrators and policies through deployment. arXiv preprint arXiv:2610.09228, 2026a.
+Yixian Zhang, Huanming Zhang, Feng Gao, Xiao Li, Zhihao Liu, Yi Nie, Chunyang Zhu, Jiaxing Qiu, Yuchen
+Yan, Jiyuan Liu, Wenhao Tang, Jiaji Rao, Zhengru Fang, Changxu Wei, Yu Wang, Wenbo Ding, and Chao
+Yu. Harness VLA: Steering frozen VLAs into reliable manipulation primitives via memory-guided agents.
+arXiv preprint arXiv:2607.08448, 2026b.
+Yuzhi Zhang, Xinyu Liu, and Yu Zhang. Recursive self-improvement of visuomotor policies through local
+recovery supervision. arXiv preprint arXiv:2610.05151, 2026c.
+Ganlong Zhao, Zijia Tang, Xingping Chen, Zhanghui Kuang, Ye Tian, and Guanbin Li. FLARE: A failure-
+aware framework for autonomous correction and recovery in visual-language robotic manipulation. In
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages
+22391–22401, 2026.
+Enshen Zhou, Qi Su, Cheng Chi, Zhizheng Zhang, Zhongyuan Wang, Tiejun Huang, Lu Sheng, and He Wang.
+Code-as-Monitor: Constraint-aware visual programming for reactive and proactive robotic failure detection.
+In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages
+6919–6929, 2025.
+Huaijiang Zhu, Tong Zhao, Xinpei Ni, Jiuguang Wang, Kuan Fang, Ludovic Righetti, and Tao Pang. Should
+we learn contact-rich manipulation policies from sampling-based planners? IEEE Robotics and Automation
+Letters, 10(6):6248–6255, 2025. doi: 10.1109/LRA.2025.3564701.
+15
+
+
+A
+RoboCasa Tasks
+Table 5 lists the ten RoboCasa tasks used in our experiments: four atomic tasks and six composite tasks
+from different activities.
+Table 5: RoboCasa tasks used in our experiments. Instructions are the default language instructions of
+each task; terms in angle brackets are sampled per episode.
+Task
+Type (activity)
+Instruction
+TurnOnSinkFaucet
+Atomic
+Turn on the sink faucet.
+TurnOffStove
+Atomic
+Turn off the ⟨knob⟩burner of the stove.
+CoffeeSetupMug
+Atomic
+Pick the mug from the counter and place it under the
+coffee machine dispenser.
+NavigateKitchen
+Atomic
+Navigate to the ⟨fixture⟩.
+KettleBoiling
+Composite (brewing)
+Pick the kettle from the counter and place it on a stove
+burner. Then turn the burner on.
+ArrangeTea
+Composite (brewing)
+Pick the kettle from the counter and place it on the tray.
+Then pick the mug from the cabinet and place it on the
+tray. Then close the cabinet doors.
+LoadDishwasher
+Composite (washing
+dishes)
+Pick up the ⟨dish⟩and ⟨dish⟩from the counter, place them
+in the dishwasher, and close the dishwasher door.
+SteamInMicrowave
+Composite (steaming
+food)
+Pick the ⟨vegetable⟩from the sink and place it in the bowl.
+Then pick the bowl and place it in the microwave. Then
+close the microwave door and press the start button.
+WashFruitColander
+Composite (washing
+produce)
+Put the colander in the sink, put the ⟨fruits⟩in the
+colander, and turn on the sink faucet and pour water over
+the colander.
+MakeIceLemonade
+Composite (adding ice
+to beverages)
+Grab a lemon wedge from the fridge and one ice cube from
+the ice bowl, and put them in the glass of lemonade.
+B
+Training Parameters
+BEHAVIOR-1K.
+We initialize each task from the released per-task checkpoint of Robot Learning Collective,
+the first-place solution of the 2025 BEHAVIOR Challenge, and each round fine-tunes all parameters of the
+previous round’s policy. Each round trains for two epochs or 30,000 steps, whichever is shorter, with a global
+batch size of 128, sampling the task’s 200 human demonstrations and the accumulated recovery data at a 1:1
+ratio. We use AdamW with β = (0.9, 0.95), a weight decay of 10−10 and gradient clipping at 1.0, with an
+EMA decay of 0.99. The learning rate is warmed up linearly over 1,000 steps to a peak of 5 × 10−5, followed
+by cosine decay to 10−6. Action targets are normalized with the base checkpoint’s statistics and clipped to
+±10.
+RoboTwin.
+We initialize π0.5 from the checkpoint trained on both clean and randomized RoboTwin
+demonstrations for round 1 and from round 1’s final EMA checkpoint for round 2, resetting the optimizer.
+Each round fine-tunes all parameters for 40,000 optimizer updates with a global batch size of 128, sampling
+original demonstrations and accumulated recovery data at a 1:1 ratio. We use AdamW with β = (0.9, 0.95), a
+weight decay of 10−10, and an EMA decay of 0.9. The learning rate is warmed up linearly over 500 steps to a
+peak of 2 × 10−5, followed by cosine decay to 2 × 10−6.
+RoboCasa.
+We initialize XR-1 from the released Xiaomi-Robotics-1-RoboCasa365 checkpoint. Each
+fine-tuning stage consists of 30,000 optimizer updates with a global batch size of 192. We use AdamW with a
+weight decay coefficient of 0.1 and a peak learning rate of 2 × 10−5, with 500 linear warmup steps followed
+16
+
+
+by cosine decay to 5 × 10−6. Within each run, we select the checkpoint with the highest success rate on a
+200-episode development set and evaluate it on a 500-episode test set.
+C
+Ablation Details
+Data budget and variants.
+We use picking up trash (BEHAVIOR-1K task 1), in which the robot must
+place three soda cans into a trash can. All variants start from the RLC checkpoint and draw their failures
+from its rollouts on this task, excluding the 20 public test instances. Each variant uses only as many of these
+rollouts as it needs to generate its data, and its GPU cost is computed from the rollouts it actually uses.
+Each variant generates an amount of new data comparable to the original demonstrations (9.76 h), and these
+data are sampled 1:1 with the original demonstrations during fine-tuning. Apart from the ablated component,
+the pipeline is identical to that of the main experiments. Failure states are restored from the simulator states
+recorded in the rollouts, and recovery programs act through the action space of the robot using classical
+methods, namely inverse kinematics, interpolation, navigation and closed-loop correction. The variants are as
+follows (FMs: shared failure-mode programs, Aug.: failure-conditioned augmentation).
+• Success-only data. Approximately 5 h of successful rollouts of the base policy and 5 h of demonstrations
+collected by human teleoperation, which cost 72.4 GPU hours and approximately 16 hours of human
+work, respectively. These data follow the original data distribution and do not target failures.
+• Per-failure recovery. Each failed rollout is handled by a separate agent, which identifies the failed
+subtask, restores start states shortly before or after the error, and writes a program that completes
+this subtask. A recovery succeeds when the goal condition of the subtask is satisfied. Neither FMs nor
+augmentation are used.
+• Per-failure recovery with augmentation (Aug.). Per-failure recovery on 50 randomly chosen
+failures, whose failure states are multiplied by failure-conditioned augmentation. The agent adapts the
+program of each failure to its perturbed states, which requires fewer tokens than solving a new failure
+from scratch.
+• FMs without augmentation (FMs). The five FMs of full RoboCoEvo on this task and their recovery
+programs, with detectors implemented from the same FM specifications. The detectors locate the
+preventive and corrective states of each FM in the failed rollouts, and the recovery program of the FM
+is executed on these states without augmentation.
+• Full RoboCoEvo (FMs + Aug.). The first round of the main experiments on this task (Section 3):
+five FMs discovered from 50 rollouts, their detectors and recovery programs, and failure-conditioned
+augmentation of the detected states.
+Cost accounting.
+Tokens are the sum of input, cache-write, cache-read and output tokens over all agent
+sessions of a variant and over the orchestrating session that launched and monitored them. A variant that
+reuses programs of full RoboCoEvo also includes the tokens of the agents that wrote them. GPU hours
+include only the simulation that produces data,
+G = Groll + Grec,
+Groll = Nroll ¯t,
+where Groll is the cost of the base-policy rollouts that a variant uses to find its failure states, Nroll is the
+number of these rollouts, ¯t = 0.25 is the average number of GPU hours per rollout, and Grec is the cost of
+recording the recovery data (Table 6). Runs for development, debugging and testing are excluded for all
+variants. Since recording requires approximately the same time for the same amount of data, the differences
+in GPU hours between variants arise mainly from the number of rollouts each variant needs to obtain enough
+failure states. All costs are reported for the same amount of data, namely the 9.06 h of recovery data of full
+RoboCoEvo. Costs that increase with the amount of data, such as the per-failure agent sessions, the rollouts
+and the recording, are rescaled to this amount, whereas one-time costs, such as the orchestrating sessions and
+the programs reused from full RoboCoEvo, are counted once. Recording time is additionally converted to the
+simulator throughput of full RoboCoEvo, so that all variants are compared on the same hardware.
+17
+
+
+Table 6: Composition of the GPU hours in Table 4, for 9.06 h of recovery data. Nroll: number of
+base-policy rollouts used to find the failure states. Groll = Nroll¯t, with an average of ¯t = 0.25 GPU hours per
+rollout. Grec: GPU hours for recording the recovery data at the simulator throughput of full RoboCoEvo.
+Variant
+Nroll
+Groll
+Grec
+Total
+Per-failure recovery
+545
+136.3
+21.5
+158
+Per-failure recovery + aug.
+87
+21.8
+22.3
+44
+FMs without augmentation
+499
+124.8
+22.3
+147
+Full RoboCoEvo
+50
+12.5
+23.3
+36
+D
+Failure-Mode Metrics
+The failure-mode columns of Table 1 are computed over the test episodes E of a policy on a benchmark, of
+which F ⊆E fail. Occurrences and recoveries are determined by the agent-written detectors on the recorded
+scene states: an occurrence counts as recovered if the policy, without assistance, later completes the subtask
+in which it occurred, i.e., the subtask’s completion condition (Section 3.2) holds before the episode ends. A
+failure mode is unrecovered in an episode if it occurs and the policy never recovers from it. The base and
+first-round policies are evaluated using first-round detectors, with targeted FMs defined as those that received
+recovery data in that round. The second-round policy is evaluated using revised and new detectors, alongside
+first-round detectors for unchanged FMs. We report the following failure analysis metrics:
+• FM occurs = |Eocc|/|E|, where Eocc is the set of episodes in which at least one targeted FM occurs.
+• Self-recovered = R/N, where N is the number of occurrences of targeted FMs over all episodes and R
+the number of those the policy recovers from on its own.
+• Fail | FM = |Ftgt|/|Eocc|, where Ftgt ⊆F is the set of failed episodes with an unrecovered targeted FM.
+• Targeted FM = |Ftgt|/|E|.
+• Unexplained = |Fnone|/|E|, where Fnone = F \ Ftgt is the set of failed episodes with no unrecovered
+targeted FM.
+E
+Per-Failure-Mode Analysis
+Table 1 aggregates the targeted failure modes (FMs) of each benchmark. Figures 5–8 break this aggregate
+down by FM, using the same detectors and counting rule. We compare the policies before and after each
+round of co-evolution. For example, after the first round of co-evolution, we compare the base policy with the
+first-round policy under the detectors written in the first round. For each FM, we report the fraction of its
+task’s test episodes that fail with this FM never recovered from. This rate falls when the policy avoids the
+FM and also when it recovers after the FM occurs. FMs that cause no failure under either policy are omitted.
+In the first round, failure rates decrease for 84 of the 98 FMs on RoboTwin, 29 of the 48 on RoboCasa,
+and 14 of the 22 on BEHAVIOR-1K. Among the FMs that cause at least 5% of their task’s episodes to fail
+under the base policy, the corresponding counts are 61 of 66, 16 of 20, and 13 of 20, respectively. The largest
+reductions occur for the FMs that dominate the base policy’s failures: “hovering over the bell without pressing
+it” in click bell on RoboTwin (69% to 0%), “stall at the faucet lever” in WashFruitColander on RoboCasa
+(14% to 0%), and “holding the traps without releasing them” in setting mousetraps on BEHAVIOR-1K (22.5%
+to 2.5%).
+In the second round, failure rates decrease for 50 of the 86 FMs on RoboTwin and 19 of the 29 on
+RoboCasa. Among FMs meeting the same 5% threshold under the first-round policy, the corresponding
+counts are 20 of 27 and 8 of 9, respectively. The largest reductions occur for “hanging the mug with its
+handle up” in hanging mug on RoboTwin (37% to 22%), “knob slipping during turning” in TurnOffStove on
+RoboCasa (17% to 6%), and both “wandering instead of picking the ice” and “dropping the ice cube off the
+glass” in MakeIceLemonade (each 6% to 0%). On BEHAVIOR-1K, the largest second-round reductions occur
+18
+
+
+for “stalling with full hands at the shut drawers” in putting away Halloween decorations (60% to 30%) and
+“pressing the button while it faces away” in turning on a radio (30% to 15%).
+In Figure 8, the FMs of canning meat remain frequent after both rounds, but the FMs of the earlier
+subtasks decline in each round, namely the jar-grasping failures in the first round and the lid-opening failure
+in the second, while the failures of the subsequent subtasks become more frequent. Canning meat shows how
+failures move to later subtasks in a long-horizon task. Its subtasks follow a fixed order: open the cabinet,
+take the jar out, open the jar’s lid, fetch the sausage, and put it into the jar. Table 7 groups the episodes by
+the furthest subtask they reach. Under the base policy, 51% of episodes never get the jar out of the cabinet.
+After Round 1, this falls to 12%, and opening the lid, which more episodes now reach, is exposed as the main
+bottleneck: 40% of episodes get the jar out but never open the lid, up from 24%. After Round 2, only 3%
+of episodes stay at the jar and 18% at the lid, while 79% open the lid and reach the sausage, up from 24%
+under the base policy; fetching the sausage becomes the next bottleneck. Each round thus moves the policy
+one subtask further. Because the Q-score credits only goal conditions satisfied at the end of an episode, it
+reflects this stage-wise progress only partially (0.02 to 0.09).
+Table 7: Progress through canning meat. Fraction of episodes by the furthest subtask they reach.
+Base
+Round 1
+Round 2
+Jar not taken out of the cabinet
+0.51
+0.12
+0.03
+Jar taken out, lid not opened
+0.24
+0.40
+0.18
+Lid opened, sausage reached
+0.24
+0.48
+0.79
+Q-score
+0.02
+0.03
+0.09
+19
+
+
+off target rest
+Red is pending (first block)
+blue grasp miss
+Red is placed, green pending
+wrong block medium
+large in medium slot
+block knocked
+large grasp fail
+small grasp slip
+hover no press
+off button press
+hover no press
+pinned garbage
+spill outside
+knock over
+tilt at handover
+tilt at place
+dropped mic
+pushed out of reach
+fingertip slip
+thread miss up
+thread miss side
+handle down grip
+grasp no lift
+grasp misaligned
+off centre grasp
+perched pinch
+knock offcentre
+yaw residual
+off center
+pull lost ajar
+pull lost half open
+finger tips bottle
+spawn tipped bottle
+closed short
+left knock
+grasp slip
+place off line
+missed grasp
+box tipped
+off centre grasp
+second bread same side
+bun grasp
+grasp lost
+tipped in grip
+pan low
+hamburg on table
+fries on table
+fries lying
+release loss
+grasp offcentre
+offcentre grasp
+can lying
+tilted in grip
+cup knocked on approach
+cup tips at release
+wrong turn
+grasp slip
+knocked over
+hung
+off yaw on pad
+tilted grasp
+facing away on pad
+off center place
+off point grasp
+lost grasp
+release lost
+cards wedged
+grasp miss
+grasp offcenter
+offcentre pinch
+rotated grasp
+off slot release
+stand strike
+The pressing arm settles 7
+knock target
+knock other
+drop
+distractor
+pinch slip
+approach knock
+stall short
+off box landing
+Sign model 3 only
+approach knock
+transit slip
+box not grasped
+scan stall
+green dragged off
+green offcentre topple
+blue edge release
+green grasp short
+blowup on stack
+off centre top
+off target place
+below
+beside
+on top
+Base
+Round 1
+Figure 5: Per-FM failure rates on RoboTwin, first round. Base vs. first-round policy, first-round
+detectors. Each spoke is a targeted FM, and shaded sectors group the FMs by task. Bars give the fraction
+of the task’s test episodes that fail with the FM never recovered from, before (yellow) and after (blue) the
+round; gray marks their overlap.
+20
+
+
+hammer lands 3cm+ off block top
+blue place blocked by idle arm
+green place blocked by idle arm
+blue block grasp miss
+green block grasp miss
+red block grasp miss
+arm re-grasps placed medium
+medium set down off row
+large set down off row
+large block grasp fails
+reach knocks block away
+large set in medium slot
+arm re-grasps placed small
+medium step picks large block
+left approach knocks box over
+box released off the pad
+box tilted at place release
+dropped mic re-grasp fails
+handover approach shoves giver
+mug hang misses peg, handle up
+mug hang misses peg, side grip
+mug grasp misses or slips
+left place misses middle box
+right grasp holds handle down
+handle grasp closes off point
+right reach props pot handle up
+can grasp closes off-axis
+bottle grasp off-centre pinch
+card grasp perched top pinch
+stapler placed off pad centre
+stapler placed with yaw off
+bottle grasp fingertip knock
+spawn-tipped bottle regrasp miss
+bottle grasp closing off-axis
+left bottle grasp off-centre tip
+object place on wrong side
+bread lifted but not carried
+off-centre bread grasp miss
+bread released short of pan
+bread grasp or carry slip
+skillet placed too low
+fries grasp squeezes, no lift
+can release misses basket
+shoe release hangs on fingers
+shoe wrist turn goes wrong way
+shoe grasp slips on lift
+fan grasp pivots fan in fingers
+mouse placing off pad centre
+mouse grasp behind its centre
+object release misses basket
+object grasp closes off-centre
+object placing off scale point
+phone carry strikes stand base
+shoe release: re-lifts, no open
+shoe turn in carry: misrotated
+press aim behind stapler head
+bottle dropped in transfer
+bottle grasp tips target over
+reach tips other bottle over
+arms idle with bottle pending
+carry blocked by cabinet side
+place releases off drawer box
+approach knocks object away
+sign tips over in grip
+approach knocks sign over
+wound wrist sets sign askew
+wrist turn overshoots goal
+scanner approach stops short
+box grasp knock or miss
+green place blocked by idle arm
+green grasp closes short
+blue place blocked by idle arm
+green release drags block off
+green placed off-centre, topples
+blue released on stack edge
+green place: stops short of red
+bowl lowering blows up stack
+bowl placed off-centre on stack
+bowl2 place: opens before seated
+idle gripper: closes after stack
+bowl2 seated release: blow-up
+switch press lands too low
+switch press stops short
+switch press stalls part-turned
+switch press lands on top
+switch press lands beside
+Round 1
+Round 2
+Figure 6: Per-FM failure rates on RoboTwin, second round. First-round vs. second-round policy,
+detectors after the second round of co-evolution. Same format as Figure 5.
+21
+
+
+freezes at lever
+hand slides off lever
+blocked by spout
+lever lift stalls halfway
+grip slips off knob early
+grasps wrong knob / control
+grip slips near wrist limit
+never grips a knob
+mug on tray, short of spout
+mug set down off the spout
+holds mug in front of tray
+hooked
+mug swings in grasp
+mug falls after release
+mug falls off, lands upright
+mug falls off tray, toppled
+grasp misses mug
+knob in front
+never reaches the knob
+grasp misses kettle handle
+no withdraw
+hand stops short of knob
+grasp misses kettle handle
+turns oven / other control
+cup stacked on bowl
+top rack pushed in early
+vegetable slips back into sink
+grasp misses vegetable
+grasp misses bowl
+stalls at faucet lever
+spout knocked aside
+fruit left on counter
+fruit dropped in sink
+colander off water stream
+mug left on tray rim
+kettle set onto the mug
+cabinet door not fully closed
+cabinet left open
+kettle skipped, cabinet closed
+reach to mug stalls
+ice released off glass
+wrist tilted, ice not picked
+wanders instead of picking ice
+ice dropped outside glass
+lemon dropped outside glass
+lemon released off glass
+returns to fridge after lemon
+grasp misses ice cube
+Base
+Round 1
+(a) Round 1: base vs. first-round policy.
+faucet lever push slipping off
+lever reach blocked by spout
+faucet lever lift stall
+knob slip during turning
+knob turning wrist-limit stall
+knob turning stall
+knob grasping miss
+wrong knob grasping
+mug placing off target
+mug carrying swing in grasp
+mug release tip-over
+never reaches the knob
+knob turning wrong-dial reach
+dish placing past rack front
+cup placing onto bowl
+bowl picking miss
+vegetable picking miss
+vegetable placing short of bowl
+remaining fruit pick skipped
+colander placing off the stream
+lever reach knocks spout away
+fruit placing miss
+faucet lever lift stall
+mug placing off tray center
+kettle pick skipped
+cabinet door closing stops short
+ice cube picking wander
+ice cube placing off-centre drop
+ice cube grasping miss
+Round 1
+Round 2
+(b) Round 2: first-round vs. second-round policy.
+Figure 7: Per-FM failure rates on RoboCasa (XR-1). Same format as Figure 5. Round 1 uses the
+first-round detectors and Round 2 the detectors after the second round.
+22
+
+
+button press, button faces away
+radio pickup knocks it over
+last can search skipped
+can drop misses ashcan
+can grasped before ashcan pickup
+lying can grasp miss
+held item loading stall
+far item fetch stall
+drawer closing skipped
+plate carry drops pizza
+bowl pick before plates
+plate grasp before fridge open
+second bowl pick skipped
+fridge closing skipped
+jar lid opening failure
+lower-shelf jar grasp miss
+upper-shelf jar grasp failure
+sausage picking stall
+cabinet door opening failure
+stall after toilet pair
+trap release stall
+sink placement falls short
+Base
+Round 1
+(a) Round 1: base vs. first-round policy.
+button press, button faces away
+radio handle grasp stall
+radio approach parks too far
+radio pickup knocks it over
+under-table can never reached
+can grasped before ashcan pickup
+can drop misses ashcan
+ashcan grasp with wrong hand
+held item loading stall
+far item fetch stall
+drawer closing skipped
+plate grasp before fridge open
+plate carry drops pizza
+second bowl pick skipped
+bowl pick before plates
+fridge closing skipped
+jar lid opening failure
+sausage picking stall
+lower-shelf jar grasp miss
+cabinet door opening failure
+upper-shelf jar grasp failure
+second trap grasp hover
+second pair carried to toilet
+second pair carried to sink
+stall after toilet pair
+trap picking stall
+trap release stall
+Round 1
+Round 2
+(b) Round 2: first-round vs. second-round policy.
+Figure 8: Per-FM failure rates on BEHAVIOR-1K, tasks 0 to 5. Same format as Figure 5. Round 1
+uses the first-round detectors and Round 2 the detectors after the second round.
+23

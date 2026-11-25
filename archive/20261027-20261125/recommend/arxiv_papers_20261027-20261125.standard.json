@@ -1,0 +1,719 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-11-25T05:52:15.486096+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 8,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 24,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2610.38744v1",
+      "source": "arxiv",
+      "title": "AtomTree: A Hierarchical Framework for State-Aware Embodied Instruction Following with LLMs",
+      "abstract": "Embodied instruction following in interactive environments requires agents to interpret natural language commands and complete long-horizon tasks. Existing planners either rely on large labeled trajectories, or use few-shot and zero-shot LLM prompting that produces a whole plan in a single serial reasoning process. These approaches depend on linguistic common sense, commit to a plan from the initial instruction, and only update after failures, which weakens robustness and state awareness. We present AtomTree, a hierarchical framework for state-aware task planning with LLMs. AtomTree incrementally builds a tree of subgoals and actions, where the LLM decides at each step, from the current symbolic state, whether to further decompose or to output a grounded low-level action. A lightweight memory module summarizes past outcomes for reuse in later decisions. When a low-level action stalls, AtomTree triggers hierarchical backtracking replanning to return to the parent node and regenerate the subtree plan from the latest state, preventing continued drift along an incorrect trajectory. In zero-shot evaluation on the ALFRED benchmark, AtomTree outperforms prior LLM-based planners. Project page: https://zhaihaotian.github.io/atomtree-website/.",
+      "authors": [
+        "Haotian Zhai",
+        "Tianming Sha",
+        "Junnan Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-28T19:30:40+00:00",
+      "link": "https://arxiv.org/pdf/2610.38744v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM hierarchical state-aware task planning with subgoal and action decomposition",
+      "llm_evidence_cn": "大模型分层状态感知任务规划，分解子目标与动作",
+      "llm_evidence": "大模型分层状态感知任务规划，分解子目标与动作",
+      "canonical_evidence": "大模型分层状态感知任务规划，分解子目标与动作",
+      "llm_tldr_en": "AtomTree uses an LLM to incrementally build a tree of subgoals and actions from symbolic state, enabling state-aware embodied instruction following.",
+      "llm_tldr_cn": "现有具身指令跟随规划器要么依赖大量标注轨迹，要么用少样本提示一次性生成完整计划，缺乏状态感知且遇错才更新。本文提出AtomTree分层框架，让大模型依据当前符号状态逐步构建子目标与动作树，决定是否继续分解。该方法增强了长程任务规划的鲁棒性与状态感知。其贡献在于将大模型的高层任务理解与逐步技能分解结合，服务于具身任务执行。",
+      "llm_tldr": "现有具身指令跟随规划器要么依赖大量标注轨迹，要么用少样本提示一次性生成完整计划，缺乏状态感知且遇错才更新。本文提出AtomTree分层框架，让大模型依据当前符号状态逐步构建子目标与动作树，决定是否继续分解。该方法增强了长程任务规划的鲁棒性与状态感知。其贡献在于将大模型的高层任务理解与逐步技能分解结合，服务于具身任务执行。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "embodied task planning with large language models and robot skill invocation",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.18176v2",
+      "source": "arxiv",
+      "title": "ESI: An Embodied Self-Improvement Flywheel for LLM-VLA Agents",
+      "abstract": "Independently pretrained language models and vision-language-action (VLA) policies provide complementary building blocks for embodied agents, but connecting them does not automatically produce coordinated behavior. The VLA may generate actions that diverge from the LLM's intended subtask and, upon regaining control after a correction, undo the promising state restored by the LLM. We introduce ESI (Embodied Self-Improvement), an automated flywheel that uses environmental interaction to align reasoning and action. ESI treats the modular agent as the unit of post-training, repeatedly refining the prompts that guide the LLM, the shared skill interface that expresses its intent, and the VLA parameters that realize that intent, then redeploying these components together. Our key insight is that collaboration itself can supply supervision for improving this interface. The LLM's subtask decisions provide semantic supervision for what the policy should execute, while its effective corrections and subsequent student continuations provide action-level supervision for recovery and handoff. The student also learns from its own effective execution, allowing locally useful experience to contribute even when the overall episode fails. On ten selected RoboDojo tasks, ESI achieves a mean Score of 62.03 and a mean success rate of 49.41% using an LLM-VLA agent without generating task-specific control code. On both metrics, it outperforms the published reference results of all hybrid embodied agents, including the Agent+WAM system GO-3 Nano Preview (47.27 Score and 36.60% success), as well as all compared code-based methods.",
+      "authors": [
+        "Yundi Cai",
+        "Zihan Wang",
+        "Chenxi Han",
+        "Yi Cheng",
+        "Houde Liu",
+        "Zilei Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-13T13:44:42+00:00",
+      "link": "https://arxiv.org/pdf/2611.18176v2",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM plans subtasks and invokes a VLA skill interface for execution",
+      "llm_evidence_cn": "LLM规划子任务并调用VLA技能接口执行",
+      "llm_evidence": "LLM规划子任务并调用VLA技能接口执行",
+      "canonical_evidence": "LLM规划子任务并调用VLA技能接口执行",
+      "llm_tldr_en": "Pretrained LLMs and VLA policies do not coordinate automatically. ESI treats the modular LLM-VLA agent as the post-training unit, jointly refining prompts, the shared skill interface, and VLA parameters through environmental interaction.",
+      "llm_tldr_cn": "独立预训练的语言模型与视觉-语言-动作策略虽互补，但简单拼接无法保证协调行为，VLA常偏离LLM意图的子任务甚至回滚已恢复的状态。作者提出ESI具身自改进飞轮，把模块化智能体整体作为后训练单元，通过环境交互反复优化引导LLM的提示、表达其意图的共享技能接口以及实现该意图的VLA参数。实验表明这种联合迭代能显著提升推理与动作的一致性。其贡献在于为大模型高层规划驱动VLA执行提供了系统化对齐方案。",
+      "llm_tldr": "独立预训练的语言模型与视觉-语言-动作策略虽互补，但简单拼接无法保证协调行为，VLA常偏离LLM意图的子任务甚至回滚已恢复的状态。作者提出ESI具身自改进飞轮，把模块化智能体整体作为后训练单元，通过环境交互反复优化引导LLM的提示、表达其意图的共享技能接口以及实现该意图的VLA参数。实验表明这种联合迭代能显著提升推理与动作的一致性。其贡献在于为大模型高层规划驱动VLA执行提供了系统化对齐方案。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.30550v1",
+      "source": "arxiv",
+      "title": "Body and Soul: Decoupling Robotic Brain and Policy with RoboHarness-Zero",
+      "abstract": "Vision-language-action (VLA) policies can execute individual skills but fail to complete tasks that require combining several of them. In our audit of Xiaomi-Robotics-1, an estimated 43\\% of failures involve choosing the wrong target or losing track of task progress. Wrapping a frozen VLA in a vision-language model (VLM) harness is a natural remedy. Existing harnesses can gain substantially from task- and policy-specific preparation, raising the question of how much of that gain transfers to a new task or policy. An ideal harness should (i) need minimal preparation for a new task, (ii) need no redesign for a new policy, and (iii) preserve standalone capabilities the policy already has. To the best of our knowledge, our \\ours{} is the first harness built this way. Its premise is that choosing targets and tracking progress are easy for a VLM such as GPT-6 without task preparation, while the frozen VLA already handles continuous, contact-rich motion. The frozen VLA therefore executes continuous control while the VLM plans zero-shot and monitors execution; when progress stalls or targets drift, the VLM first rephrases the instruction and, only as a fallback, executes short generated code over generic motion primitives before returning fine control to the VLA. The supervision rules stay fixed across policies, requiring only a thin interface adapter and an automatically profiled skill configuration per policy. On 200 RoboCasa365 scenes, \\ours{} with GPT-6 Astra raises the success rate of frozen Xiaomi-Robotics-1 from \\textbf{\\color{blue}57.5\\%} to \\textbf{\\color{blue}70.5\\%} and preserves \\textbf{\\color{blue}90.4\\%} of its standalone successes (104/115) while rescuing 37 of 85 failures. On a shared 50-scene subset, the same rules add 8 to 10 percentage points to each of four other frozen policies, while existing preparation-based harness systems often fail to transfer to a new policy.",
+      "authors": [
+        "Yihao Shen",
+        "Yuxuan Chen",
+        "Xuantong Liu",
+        "Jun Gao",
+        "Weijian Luo",
+        "Tianyang Hu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CL"
+      ],
+      "published": "2026-11-23T11:58:45+00:00",
+      "link": "https://arxiv.org/pdf/2611.30550v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "VLM harness wrapping a frozen VLA to sequence multiple skills",
+      "llm_evidence_cn": "VLM外层框架包裹冻结VLA以串联多项技能",
+      "llm_evidence": "VLM外层框架包裹冻结VLA以串联多项技能",
+      "canonical_evidence": "VLM外层框架包裹冻结VLA以串联多项技能",
+      "llm_tldr_en": "VLA policies execute single skills but fail at multi-skill tasks, often picking wrong targets or losing progress. RoboHarness-Zero wraps a frozen VLA in a VLM harness needing minimal task preparation and no policy redesign.",
+      "llm_tldr_cn": "视觉-语言-动作策略虽能执行单项技能，却难以完成需要组合多个技能的长任务，失败多源于选错目标或丢失任务进度。作者提出RoboHarness-Zero，将冻结VLA置于视觉语言模型外层框架中，由VLM承担目标选择与进度跟踪，并设计为几乎无需任务准备、换策略也无需重设计且保留原策略能力。审计与实验显示该框架显著降低了组合任务的失败率。其贡献在于解耦机器人认知大脑与执行策略。",
+      "llm_tldr": "视觉-语言-动作策略虽能执行单项技能，却难以完成需要组合多个技能的长任务，失败多源于选错目标或丢失任务进度。作者提出RoboHarness-Zero，将冻结VLA置于视觉语言模型外层框架中，由VLM承担目标选择与进度跟踪，并设计为几乎无需任务准备、换策略也无需重设计且保留原策略能力。审计与实验显示该框架显著降低了组合任务的失败率。其贡献在于解耦机器人认知大脑与执行策略。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Systems integrating large language model planners with vision language action policies for robot task execution",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.30667v1",
+      "source": "arxiv",
+      "title": "LLM-Guided Compositional Continual Learning for Robot Manipulation with Gated Low-Rank Experts",
+      "abstract": "General-purpose manipulation robots must acquire new skills over time without forgetting prior ones or retraining from scratch. We present a continual learning framework that represents each skill as a dedicated expert sub- network in a Progressive Neural Network (PNN). New tasks reuse prior knowledge through low-rank adaptation (LoRA) modules on lateral connections controlled by learnable per-parent gates, enabling explicit attenuation of individual transfer paths while reducing the parameter cost of dense PNN laterals. For long-horizon deployment, a frozen local large language model decomposes natural-language instructions into sub-tasks, routes them to suitable experts, and requests a new expert only when the library is insufficient. Using a shared task-space action interface, we evaluate the framework on twelve MetaWorld tasks and in a Sawyer-to-Panda-to-UR5e cross-embodiment transfer experiment, showing improved task success relative to learning from scratch when demonstrations are limited. Real-robot manipulation experiments further demonstrate that the proposed framework supports compositional execution and expert orchestration.",
+      "authors": [
+        "Nilay Kushawaha",
+        "Abdalla Swikir",
+        "Fares Abu-Dakka"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-23T13:25:03+00:00",
+      "link": "https://arxiv.org/pdf/2611.30667v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "frozen local LLM decomposes instructions into sub-tasks and routes them to skill experts",
+      "llm_evidence_cn": "冻结的本地大模型将指令分解为子任务并路由到技能专家",
+      "llm_evidence": "冻结的本地大模型将指令分解为子任务并路由到技能专家",
+      "canonical_evidence": "冻结的本地大模型将指令分解为子任务并路由到技能专家",
+      "llm_tldr_en": "A continual learning framework where a frozen local LLM decomposes natural-language instructions into sub-tasks and routes them to gated low-rank expert skills, requesting new experts when needed.",
+      "llm_tldr_cn": "通用操作机器人需要持续学习新技能而不遗忘旧技能，也需在长程任务中把语言指令落到具体技能上。作者把每个技能表示为渐进神经网络中的独立专家子网络，用门控低秩适配复用先验知识，并在部署时由冻结的本地大语言模型把自然语言指令分解为子任务、路由到合适专家，库不足时再申请新专家。实验表明该框架在持续学习场景下兼顾了技能保持与新任务获取。这为大模型驱动的技能调用与持续学习结合提供了可行方案。",
+      "llm_tldr": "通用操作机器人需要持续学习新技能而不遗忘旧技能，也需在长程任务中把语言指令落到具体技能上。作者把每个技能表示为渐进神经网络中的独立专家子网络，用门控低秩适配复用先验知识，并在部署时由冻结的本地大语言模型把自然语言指令分解为子任务、路由到合适专家，库不足时再申请新专家。实验表明该框架在持续学习场景下兼顾了技能保持与新任务获取。这为大模型驱动的技能调用与持续学习结合提供了可行方案。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Research on language model based task decomposition and skill calling for robot manipulation and control",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.01701v1",
+      "source": "arxiv",
+      "title": "Just-in-Time Skill Retrieval via Long-Horizon State Tracking",
+      "abstract": "Large language model (LLM) agents increasingly rely on external skill libraries to support complex task execution. However, determining which skills are needed remains challenging in long-horizon tasks. Existing methods typically select a fixed skill set before execution, implicitly assuming that a task's procedural requirements can be determined from its initial description. This assumption is restrictive for long-horizon interaction, where new requirements emerge from intermediate observations, execution outcomes, and newly revealed constraints. This motivates just-in-time skill retrieval, which dynamically selects skills as execution unfolds. Just-in-time skill retrieval is promising but challenging: the utility of a skill depends not only on the current context, but also on the evolving task state shaped by prior steps. To this end, we propose JitSkill, a state-grounded framework that addresses this challenge through continuous task-state tracking. By connecting emerging requirements with accumulated task progress, JitSkill provides procedural support throughout execution without treating each retrieval decision independently. Experiments across three agent benchmarks demonstrate its effectiveness in improving long-horizon task completion. Our code is available at https://github.com/XMUDeepLIT/JitSkill.git/.",
+      "authors": [
+        "Xin Lin",
+        "Ziheng Wang",
+        "Zerui Chen",
+        "Jiayao Ma",
+        "Zhimin Wei",
+        "Bingshuai Liu",
+        "Buchao Zhan",
+        "Qinggang Zhang",
+        "Jinsong Su"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-11-01T08:36:51+00:00",
+      "link": "https://arxiv.org/pdf/2611.01701v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM agents dynamically retrieving skills from external libraries during execution",
+      "llm_evidence_cn": "大模型智能体在执行过程中动态从技能库检索技能",
+      "llm_evidence": "大模型智能体在执行过程中动态从技能库检索技能",
+      "canonical_evidence": "大模型智能体在执行过程中动态从技能库检索技能",
+      "llm_tldr_en": "The paper argues LLM agents should retrieve skills just-in-time as execution unfolds, rather than fixing a skill set upfront, and addresses this via long-horizon state tracking.",
+      "llm_tldr_cn": "大模型智能体日益依赖外部技能库完成复杂任务，但现有方法通常在执行前一次性选定技能集，隐含假设任务流程需求可由初始描述完全确定，这在长程交互中并不成立。作者提出即时技能检索，在任务执行过程中结合中间观测、执行结果与新出现的约束动态选择技能，并借助长程状态跟踪判断技能效用。实验表明动态检索优于固定技能集方案。该工作为大模型驱动的技能选择与序贯调用提供了新机制。",
+      "llm_tldr": "大模型智能体日益依赖外部技能库完成复杂任务，但现有方法通常在执行前一次性选定技能集，隐含假设任务流程需求可由初始描述完全确定，这在长程交互中并不成立。作者提出即时技能检索，在任务执行过程中结合中间观测、执行结果与新出现的约束动态选择技能，并借助长程状态跟踪判断技能效用。实验表明动态检索优于固定技能集方案。该工作为大模型驱动的技能选择与序贯调用提供了新机制。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.02830v1",
+      "source": "arxiv",
+      "title": "Think with Skills: Pseudocode Planning Before Execution for Advanced Reasoners",
+      "abstract": "Language model agents often struggle with complex tasks even when equipped with expert-written skills. Such skills encode declarative knowledge, whereas successful execution requires procedural knowledge tailored to the task at hand. Natural language skills may leave conditions and dependencies implicit, and tasks involving multiple skills further require agents to coordinate intermediate results and execution order. We introduce Think with Skills, a method that trains reasoning models to turn relevant skill descriptions into task-specific pseudocode plans before execution. The pseudocode explicitly represents operations, conditions, intermediate results, and dependencies, providing a structured bridge from skill descriptions to agent actions. We construct training data that pairs tasks and skills with pseudocode plans and execution trajectories, use supervised fine tuning to initialize this behavior, and further optimize end-to-end task performance with Group Relative Policy Optimization. On SkillsBench, Think with Skills raises task success from 35.0% to 62.0%. These results show that proceduralizing expert knowledge before execution substantially improves skill use.",
+      "authors": [
+        "Boshen Zhou",
+        "Boxuan Yue",
+        "Xiang Li",
+        "Shanchao Yang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-11-02T09:29:30+00:00",
+      "link": "https://arxiv.org/pdf/2611.02830v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "trains reasoning models to turn skill descriptions into pseudocode plans and sequence skills",
+      "llm_evidence_cn": "训练推理模型将技能描述转为伪代码计划并安排技能顺序",
+      "llm_evidence": "训练推理模型将技能描述转为伪代码计划并安排技能顺序",
+      "canonical_evidence": "训练推理模型将技能描述转为伪代码计划并安排技能顺序",
+      "llm_tldr_en": "Think with Skills trains reasoning models to convert skill descriptions into task-specific pseudocode plans that explicitly encode operations, conditions, intermediate results, and dependencies before execution.",
+      "llm_tldr_cn": "语言模型智能体即使拥有专家编写的技能，也常因技能描述偏声明式、缺乏任务相关的过程知识而难以完成复杂任务；多技能任务还需协调中间结果和执行顺序。本文提出Think with Skills方法，训练推理模型在执行前把相关技能描述转化为任务特定的伪代码计划，显式表示操作、条件、中间结果和依赖关系。该结构化计划连接技能描述与智能体动作，实验表明它能提升复杂多技能任务的执行表现，为技能调用与规划提供桥梁。",
+      "llm_tldr": "语言模型智能体即使拥有专家编写的技能，也常因技能描述偏声明式、缺乏任务相关的过程知识而难以完成复杂任务；多技能任务还需协调中间结果和执行顺序。本文提出Think with Skills方法，训练推理模型在执行前把相关技能描述转化为任务特定的伪代码计划，显式表示操作、条件、中间结果和依赖关系。该结构化计划连接技能描述与智能体动作，实验表明它能提升复杂多技能任务的执行表现，为技能调用与规划提供桥梁。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "language model planning for robot task execution and skill sequencing",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2611.19081v1",
+      "source": "arxiv",
+      "title": "RoboCoEvo: Expanding Robot Capabilities through Agent-Policy Co-Evolution",
+      "abstract": "Integrating MLLM-based agents with robotic foundation models has attracted increasing attention as a means of enhancing robotic capabilities. However, the improvement of such integrated systems remains largely decoupled across their agent and model components, with advances in one component not necessarily benefiting the other, substantially limiting the capabilities of the combined system. As both MLLMs and robotic foundation models become increasingly capable, fully realizing their combined potential calls for co-evolution, an iterative process in which improvements in agents and robotic foundation models reinforce one another. We propose RoboCoEvo, a failure-guided co-evolution framework that couples the refinement of the agent's explicit and reusable executable knowledge with parameter learning in robotic foundation models, such as vision-language-action (VLA) models. Through a code-as-policy formulation, the agent develops and refines executable failure-detection and recovery programs, generating targeted corrective experience. Post-training consolidates the resulting corrective behaviors into the robotic model's end-to-end policy, improving autonomous task execution. Changes in the updated policy's failure distribution, in turn, guide subsequent revisions to the agent's programs. Experiments on BEHAVIOR-1K, RoboCasa, and RoboTwin demonstrate sustained improvements in autonomous VLA task performance across successive co-evolution rounds.",
+      "authors": [
+        "Ran Qi",
+        "Yixin Xiao",
+        "Dawei Wang",
+        "Zhiyuan Li",
+        "Jinbang Huang",
+        "Xuan Zhao",
+        "Yintao Ma",
+        "Yangzheng Wu",
+        "Tongtong Cao",
+        "Yingxue Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-14T01:34:23+00:00",
+      "link": "https://arxiv.org/pdf/2611.19081v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "MLLM-based agents co-evolve with robotic foundation models to expand robot capabilities",
+      "llm_evidence_cn": "基于MLLM的智能体与机器人基础模型协同进化以扩展机器人能力",
+      "llm_evidence": "基于MLLM的智能体与机器人基础模型协同进化以扩展机器人能力",
+      "canonical_evidence": "基于MLLM的智能体与机器人基础模型协同进化以扩展机器人能力",
+      "llm_tldr_en": "RoboCoEvo couples MLLM-based agents with robotic foundation models through failure-guided co-evolution so agent reasoning and policy skills improve each other iteratively.",
+      "llm_tldr_cn": "将多模态大模型智能体与机器人基础模型结合是提升机器人能力的重要方向，但现有系统中智能体与模型的改进彼此脱节，一方进步难以惠及另一方。作者提出RoboCoEvo失败引导的协同进化框架，让智能体的显式推理与可复用经验同机器人基础模型的策略能力迭代互促。该框架打通了高层语言智能体与底层动作策略的改进闭环，为语言规划与动作执行一体化的机器人系统提供了新范式。",
+      "llm_tldr": "将多模态大模型智能体与机器人基础模型结合是提升机器人能力的重要方向，但现有系统中智能体与模型的改进彼此脱节，一方进步难以惠及另一方。作者提出RoboCoEvo失败引导的协同进化框架，让智能体的显式推理与可复用经验同机器人基础模型的策略能力迭代互促。该框架打通了高层语言智能体与底层动作策略的改进闭环，为语言规划与动作执行一体化的机器人系统提供了新范式。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.36533v1",
+      "source": "arxiv",
+      "title": "RoboAuto: Autonomous Robot Program Search through Multi-Level Physical Understanding",
+      "abstract": "Recently, LLM-based autonomous agents have shown strong capabilities in iteratively generating, evaluating, and refining executable solutions. In robotic manipulation, Code-as-Policy lets these agents search over modular and editable robot programs. However, effective program search requires physical understanding: agents must understand how objects can be manipulated, how scene geometry constrains actions, and why interactions succeed or fail. Existing methods rely mainly on execution feedback for program refinement, often leaving these physical questions unresolved. We introduce RoboAuto, a framework for robot program search that explicitly organizes physical understanding at the object, scene, and interaction levels through three components. First, a hierarchical knowledge base combines executable skills with object-centric knowledge of affordances, spatial relations, and action effects, learned from embodied data and online task solving. Second, scene grounding connects this knowledge to the current environment by identifying relevant objects and resolving action-critical quantities. Third, multi-stage planning with self-designed experiments checks whether each stage produces its expected physical effects and actively tests competing hypotheses to resolve physical uncertainties. RoboAuto achieves superior performance across five benchmark families, attaining an 89.1% success rate on short-horizon LIBERO-PRO tasks and more than twice the mean success rate of ASPIRE on LIBERO-PRO Long and LIBERO-Plus. It also outperforms ASPIRE and $π_{0.5}$ on three challenging long-horizon real-robot tasks requiring precise manipulation. We further show that the knowledge base transfers across simulators and embodiments, and that program search performance scales with its size. Project page: https://roboauto-ai.github.io/",
+      "authors": [
+        "Buzhao Liu",
+        "Jianing Ye",
+        "Xiu Yuan",
+        "Yangtong Feng",
+        "Chengsong Huang",
+        "Tyler Dinh",
+        "Yevgeniy Vorobeychik",
+        "Ning Zhang",
+        "Chongjie Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CL",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-10-27T02:41:22+00:00",
+      "link": "https://arxiv.org/pdf/2610.36533v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agents search over modular robot programs with multi-level physical understanding",
+      "llm_evidence_cn": "大模型智能体在多层级物理理解下搜索模块化机器人程序",
+      "llm_evidence": "大模型智能体在多层级物理理解下搜索模块化机器人程序",
+      "canonical_evidence": "大模型智能体在多层级物理理解下搜索模块化机器人程序",
+      "llm_tldr_en": "Code-as-Policy lets LLM agents search modular robot programs, but refinement relies on execution feedback without physical understanding. RoboAuto organizes physical understanding at object, scene and interaction levels to guide program generation, evaluation and repair for manipulation.",
+      "llm_tldr_cn": "基于大模型的自主智能体已能在机器人操作中迭代生成、评估与改进可执行程序，但现有方法多依赖执行反馈来修程序，缺乏对物体可操作方式、场景几何约束与交互成败原因的理解。本文提出 RoboAuto，从物体、场景与交互三个层级显式组织物理理解，用来指导机器人程序的生成、评估与修复。该框架让大模型作为高层规划与技能调用者时更具物理常识。",
+      "llm_tldr": "基于大模型的自主智能体已能在机器人操作中迭代生成、评估与改进可执行程序，但现有方法多依赖执行反馈来修程序，缺乏对物体可操作方式、场景几何约束与交互成败原因的理解。本文提出 RoboAuto，从物体、场景与交互三个层级显式组织物理理解，用来指导机器人程序的生成、评估与修复。该框架让大模型作为高层规划与技能调用者时更具物理常识。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Research on language model based task decomposition and skill calling for robot manipulation and control",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.38248v1",
+      "source": "arxiv",
+      "title": "MATCH: Execution-Aware Hierarchical Reinforcement Learning for Vision-and-Language Navigation in Continuous Environment",
+      "abstract": "Vision-and-Language Navigation in Continuous Environments (VLN-CE) requires instruction-consistent planning and reliable execution under collision constraints. Yet many hierarchical approaches optimize the planner while keeping execution fixed. We introduce MATCH, a framework that jointly learns a language-conditioned planner and a goal-conditioned primitive-action executor. An execution-aware topological graph represents start-dependent execution options and integrates executor value estimates with realized outcome memory, enabling the planner to select execution requests and refine their targets through bounded continuous offsets. A transition-aware dense macro reward balances ordered progress along the reference route against execution residual, encouraging executable requests without substituting local success for instruction following. A staged curriculum culminates in synchronized on-policy updates, with the executor learning on planner-generated requests and the planner adapting its requests to the executor's current behavior. With 0.5B parameters, MATCH achieves state-of-the-art performance on the R2R-CE and RxR-CE benchmarks. Preliminary real-robot deployments further demonstrate its practical potential.",
+      "authors": [
+        "Shuhao Ye",
+        "Yufei Wei",
+        "Demao Wang",
+        "Shichao Zhai",
+        "Rong Xiong",
+        "Yue Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-28T03:56:17+00:00",
+      "link": "https://arxiv.org/pdf/2610.38248v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "language-conditioned planner selects execution requests from a primitive-action executor",
+      "llm_evidence_cn": "语言条件规划器选择原语动作执行器的执行请求",
+      "llm_evidence": "语言条件规划器选择原语动作执行器的执行请求",
+      "canonical_evidence": "语言条件规划器选择原语动作执行器的执行请求",
+      "llm_tldr_en": "Hierarchical VLN-CE methods fix execution while optimizing the planner; MATCH jointly learns a language-conditioned planner and goal-conditioned primitive executor with an execution-aware topological graph and macro rewards.",
+      "llm_tldr_cn": "连续环境视觉语言导航需要指令一致的规划与可靠执行，但许多分层方法只优化规划器而将执行器固定，二者脱节。作者提出MATCH框架，联合学习语言条件规划器与目标条件原子动作执行器，并用执行感知拓扑图融合执行器价值估计与真实结果记忆。规划器据此选择执行请求并通过有界连续偏移修正目标，配合转移感知的稠密宏奖励平衡有序进度。该工作表明规划与执行联合学习能提升导航的指令一致性与执行可靠性。",
+      "llm_tldr": "连续环境视觉语言导航需要指令一致的规划与可靠执行，但许多分层方法只优化规划器而将执行器固定，二者脱节。作者提出MATCH框架，联合学习语言条件规划器与目标条件原子动作执行器，并用执行感知拓扑图融合执行器价值估计与真实结果记忆。规划器据此选择执行请求并通过有界连续偏移修正目标，配合转移感知的稠密宏奖励平衡有序进度。该工作表明规划与执行联合学习能提升导航的指令一致性与执行可靠性。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "language model planning for robot task execution and skill sequencing",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.26341v1",
+      "source": "arxiv",
+      "title": "Reasoning on Call: Efficient Agentic Robot Control for Long-Horizon Robot Manipulation",
+      "abstract": "Large multimodal models can support long-horizon robot manipulation, but frequent model calls incur substantial latency and token costs. The central challenge is determining when agent assistance or intervention is needed and whether errors require correcting robot execution, subtask planning, or both. To address this problem, we propose RoC (Reasoning on Call), an efficient framework that coordinates a low-level policy and a high-level reasoning agent through an online task-state monitor. The monitor combines temporal visual observations with ordered interaction memory to jointly estimate progress within the active subtask and predict its successor. These predictions guide event-triggered agent review for coordinated execution repair and plan revision. Verified outcomes govern memory updates and subtask transitions, allowing routine execution to remain with the policy while reasoning focuses on decisions requiring additional assessment. On RMBench, RoC improves task success rate by 24.0 percentage points and reduces token consumption by 65.3% compared with the strongest agent-based baseline. It also outperforms the strongest policy-based baseline by 15.1 percentage points in task success rate. Real-world experiments further validate its effectiveness across three long-horizon manipulation tasks. Overall, RoC supports efficient agent intervention and coordinated recovery across execution and planning for long-horizon robot manipulation.",
+      "authors": [
+        "Zilang Cen",
+        "Chao Tang",
+        "Fangcheng Liu",
+        "Weishi Mi",
+        "Wei Hao",
+        "JiaYu Xu",
+        "Dehao Huang",
+        "Yehui Tang",
+        "Xiaohui Cui",
+        "Tingguang Li",
+        "Xiaoyuan Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-19T16:18:14+00:00",
+      "link": "https://arxiv.org/pdf/2611.26341v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "high-level reasoning agent reviews subtask progress and coordinates a low-level policy for long-horizon execution",
+      "llm_evidence_cn": "高层推理智能体监控子任务进展并协调低层策略完成长时程执行",
+      "llm_evidence": "高层推理智能体监控子任务进展并协调低层策略完成长时程执行",
+      "canonical_evidence": "高层推理智能体监控子任务进展并协调低层策略完成长时程执行",
+      "llm_tldr_en": "RoC coordinates a high-level reasoning agent with a low-level robot policy via an online task-state monitor, triggering reasoning only when progress stalls to cut latency and token cost.",
+      "llm_tldr_cn": "多模态大模型可支撑长时程机器人操作，但频繁调用带来高延迟与高token开销，难点在于判断何时需要智能体介入以及错误应由执行修正还是子任务重规划解决。作者提出Reasoning on Call框架，通过在线任务状态监控器结合时序视觉观测与有序交互记忆估计子任务进度并预测后继，进而事件触发式地唤醒高层推理智能体。实验表明该框架在保持长时程任务执行能力的同时显著降低调用成本。",
+      "llm_tldr": "多模态大模型可支撑长时程机器人操作，但频繁调用带来高延迟与高token开销，难点在于判断何时需要智能体介入以及错误应由执行修正还是子任务重规划解决。作者提出Reasoning on Call框架，通过在线任务状态监控器结合时序视觉观测与有序交互记忆估计子任务进度并预测后继，进而事件触发式地唤醒高层推理智能体。实验表明该框架在保持长时程任务执行能力的同时显著降低调用成本。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "robot skill execution controlled by high-level language model planners",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.41320v1",
+      "source": "arxiv",
+      "title": "Learning from Physical Experience:Context-Space Adaptation for Robotic Manipulation",
+      "abstract": "Recent multimodal foundation models exhibit strong perception, reasoning, and in-context learning capabilities, but translating these capabilities into physical action remains challenging. Through real-world experiments across diverse manipulation tasks, we find that ChatGPT-6-Astra, a state-of-the-art general-purpose reasoner, can serve as a physically actionable, context-responsive manipulation policy, demonstrating effective fine manipulation and spatial reasoning. Building on these findings, we introduce LEXP, a harness for learning from physical experience through context-space adaptation. LEXP combines task-level planning with an experience module that interprets execution evidence, extracts and retains lessons with applicability conditions, and reuses relevant lessons to generate contextual feedback for subsequent actions. Model weights and the action interface remain fixed throughout. Across 12 real-world manipulation tasks, LEXP achieves $23/36$ successful trials (63.9\\%), compared with $19/36$ (52.8\\%) with memory alone and $2/36$ (5.6\\%) for vanilla Astra. On three tasks, bread transfer, sort trash and toiletries, and retrieve drawer, removing planning reduces success from $7/9$ to $4/9$, while removing retained experience reduces it to $3/9$. Execution traces illustrate feedback-guided corrections and cross-episode reuse of an inspection strategy. Execution analyses illustrate how task structure and experience-derived feedback guide task progression, action correction, and experience reuse. These results support context-space adaptation as a practical mechanism for turning physical interaction into reusable guidance for robotic manipulation.",
+      "authors": [
+        "Yihan Zeng",
+        "Yisu Li",
+        "Kaixin Huang",
+        "Marc WuDunn",
+        "Amelia Kovacs",
+        "Mikael Harseno",
+        "Kimmy Lin",
+        "Porter Hunley",
+        "Fred Shentu",
+        "Philipp Wu",
+        "Zhongyu Li",
+        "Zike Yan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-30T06:32:51+00:00",
+      "link": "https://arxiv.org/pdf/2610.41320v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "ChatGPT-class reasoner acts as manipulation policy with task-level planning",
+      "llm_evidence_cn": "通用推理大模型作为操作策略并承担任务级规划",
+      "llm_evidence": "通用推理大模型作为操作策略并承担任务级规划",
+      "canonical_evidence": "通用推理大模型作为操作策略并承担任务级规划",
+      "llm_tldr_en": "Multimodal foundation models reason well but struggle to act physically. Real-world experiments show ChatGPT-6-Astra can serve as a context-responsive manipulation policy, and LEXP adds task-level planning plus an experience module that retains lessons from execution evidence.",
+      "llm_tldr_cn": "多模态基础模型具备强感知与推理能力，但把这种能力转化为物理动作仍很困难。作者通过真实机器人实验发现通用推理模型 ChatGPT-6-Astra 可作为情境响应的操作策略，完成精细操作与空间推理；据此提出 LEXP，将任务级规划与经验模块结合，从执行证据中提取并保留可复用的经验教训。该工作展示了大模型直接理解任务并控制机械臂执行的可行路径。",
+      "llm_tldr": "多模态基础模型具备强感知与推理能力，但把这种能力转化为物理动作仍很困难。作者通过真实机器人实验发现通用推理模型 ChatGPT-6-Astra 可作为情境响应的操作策略，完成精细操作与空间推理；据此提出 LEXP，将任务级规划与经验模块结合，从执行证据中提取并保留可复用的经验教训。该工作展示了大模型直接理解任务并控制机械臂执行的可行路径。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "language-conditioned robot control using large language model task understanding",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.07825v1",
+      "source": "arxiv",
+      "title": "Generate-then-Rank: Learning Symbolic Goal Interpretation for Embodied Agents",
+      "abstract": "Goal interpretation is to translate a natural language instruction into a formal symbolic goal that a planner can execute. It is critical for embodied agents because any error here propagates to every downstream planning and action step. Doing it well requires both generating suitable candidates and reliably selecting among them. We present a two-stage generate-then-rank approach to Goal Interpretation in the Embodied Agent Interface (EAI). First, supervised fine-tuning adapts a Large Language Model (LLM) to EAI's output convention. Second, Candidate-Output Ranking from Errors (CORE) learns preferences over complete outputs from the model's own generated alternatives. We conducted experiments on the household scenes of the Embodied Agent Interface Benchmark. Multiple open source LLMs including DeepSeek-V3 chat, DeepSeek-Reasoner, and Qwen2.5-7B and Qwen2.5-72B were evaluated. The proposed method outperformed the baseline models including LLMs with simple prompting, chain-of-thought, and knowledge graph based approaches.",
+      "authors": [
+        "Jisen Lei",
+        "Huizhi Liang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.RO"
+      ],
+      "published": "2026-11-05T11:05:53+00:00",
+      "link": "https://arxiv.org/pdf/2611.07825v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM translates instructions into symbolic goals for embodied planners",
+      "llm_evidence_cn": "用大模型将指令转为可供具身规划器执行的符号目标",
+      "llm_evidence": "用大模型将指令转为可供具身规划器执行的符号目标",
+      "canonical_evidence": "用大模型将指令转为可供具身规划器执行的符号目标",
+      "llm_tldr_en": "Goal interpretation errors propagate through all downstream planning. This work fine-tunes an LLM to produce symbolic goals and adds a CORE ranking stage that learns preferences over the model's own candidate outputs, improving goal interpretation on Embodied Agent Interface household scenes.",
+      "llm_tldr_cn": "目标解释把自然语言指令翻译为规划器可执行的符号目标，一旦出错会向下游规划与动作层层传播。作者提出先生成后排序的两阶段方法：先用监督微调让大模型适配具身智能体接口的输出规范，再用基于错误学习的候选排序从模型自身生成的备选中学习偏好。在具身智能体接口的 household 场景实验中，该方法提升了目标解释的准确性，为大模型驱动的具身任务规划打下更可靠的前端基础。",
+      "llm_tldr": "目标解释把自然语言指令翻译为规划器可执行的符号目标，一旦出错会向下游规划与动作层层传播。作者提出先生成后排序的两阶段方法：先用监督微调让大模型适配具身智能体接口的输出规范，再用基于错误学习的候选排序从模型自身生成的备选中学习偏好。在具身智能体接口的 household 场景实验中，该方法提升了目标解释的准确性，为大模型驱动的具身任务规划打下更可靠的前端基础。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "embodied task planning with large language models and robot skill invocation",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.41868v2",
+      "source": "arxiv",
+      "title": "META-Robot: Self-Cognition and Capability Scaling in Agentic Robots",
+      "abstract": "LLM-based robotic agent systems can generate programs for robot control, yet their generalization to new tasks often depends on elaborate scaffolding. Expanding their skill repertoires alone offers limited guidance on how to assess new capabilities or identify what remains beyond their reach. We introduce META-Robot, a framework that couples self cognition with capability scaling by expanding the criteria through which an agent evaluates and develops its skills. At its core, action-level predicates make execution outcomes explicit and available for LLM reasoning. The agent uses these assessments to identify its own limitations, extend relevant evaluation criteria, and guide the structured expansion of its skills. Proprioceptive feedback further grounds this process in the robot's physical state, enriching the evidence available for self-cognition. Experiments in simulation and on real robots demonstrate stronger overall task performance, generalization to new tasks, continued expansion of skills and evaluation criteria, and effective use of non-visual proprioceptive signals.",
+      "authors": [
+        "Xuanzhi Feng",
+        "Zeyu Liu",
+        "Weiheng Gao",
+        "Xinchen Li",
+        "Jiankun Tang",
+        "Fangqi Zhu",
+        "Quanxin Shou",
+        "Hao Chen",
+        "Zhengyang Yan",
+        "Hualei Zhang",
+        "Junhao Li",
+        "Zhiyao Wu",
+        "Jie Zhang",
+        "Song Guo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-30T15:19:31+00:00",
+      "link": "https://arxiv.org/pdf/2610.41868v2",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agent generates robot control programs and expands its skill repertoire",
+      "llm_evidence_cn": "大模型智能体生成机器人控制程序并扩展技能库",
+      "llm_evidence": "大模型智能体生成机器人控制程序并扩展技能库",
+      "canonical_evidence": "大模型智能体生成机器人控制程序并扩展技能库",
+      "llm_tldr_en": "LLM robot agents write control programs but cannot assess or extend their own skills; META-Robot exposes action outcomes via predicates so the LLM can diagnose limits and grow skills structurally.",
+      "llm_tldr_cn": "现有基于大模型的机器人智能体虽能生成控制程序，但泛化依赖复杂脚手架，单纯扩充技能库难以评估新能力。作者提出META-Robot框架，用动作级谓词把执行结果显式化供大模型推理，使智能体据此识别自身局限、扩展评价准则并结构化扩充技能。结合本体感知反馈，系统在能力自认知与技能扩展之间形成闭环。该工作为具身智能体的能力评估与自主成长提供了可解释路径。",
+      "llm_tldr": "现有基于大模型的机器人智能体虽能生成控制程序，但泛化依赖复杂脚手架，单纯扩充技能库难以评估新能力。作者提出META-Robot框架，用动作级谓词把执行结果显式化供大模型推理，使智能体据此识别自身局限、扩展评价准则并结构化扩充技能。结合本体感知反馈，系统在能力自认知与技能扩展之间形成闭环。该工作为具身智能体的能力评估与自主成长提供了可解释路径。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.08917v1",
+      "source": "arxiv",
+      "title": "PRISM: Primitive Routing via In-context Skill Mixing for Retentive VLA Adaptation",
+      "abstract": "Vision-Language-Action (VLA) models promise a single language-conditioned policy adaptable to many manipulation behaviors, yet deployment additionally requires skill retention and long-horizon composition: a policy must retain previously acquired skills and reuse them inside composite tasks whose behavior changes across phases. The standard recipe absorbs every new task into one shared update, which provides neither a parameter-level locus for reusable skills nor a mechanism for invoking each skill along the trajectory. We observe that this missing structure is latent rather than absent: per-skill low-rank updates of a pretrained VLA occupy a robustly distinguishable, low-dimensional subspace, and a single composite-task LoRA concentrates roughly half of its Frobenius energy in this subspace, against a near-zero matched random-rotation control. Building on this geometry, we introduce PRISM, which represents reusable skills as parameter-level primitives: each skill family is stored as a dedicated low-rank action-expert adapter in a primitive bank, primitives are augmented with skill-specific low-rank residuals and composed at inference by a per-chunk VLM-conditioned router that reads the prefix representation to track task progress, and the router is supervised by per-chunk labels from a deterministic, task-conditioned, action-derived oracle. During composite training, the vision encoder, the language LoRA, the skill residuals, the router, and the shared action projections and time MLP are updated; every primitive is held frozen, so the base per-skill action-expert adapters are preserved by construction. On RoboCasa365, PRISM achieves 56.43% atomic-skill success and reaches 20.00% on long-horizon composite tasks, while a standard $\\pi_{0.5}$-LoRA two-stage fine-tune reaches 17.86% atomic and 17.50% composite success. We additionally validate PRISM on an AgileX PIPER real-robot setup.",
+      "authors": [
+        "Jiachen Tao",
+        "Gengyu Zhang",
+        "Haoxuan Wang",
+        "Bing Liu",
+        "Yan Yan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-06T03:00:06+00:00",
+      "link": "https://arxiv.org/pdf/2611.08917v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "VLA skill retention and long-horizon skill composition via primitive routing",
+      "llm_evidence_cn": "通过基元路由实现VLA技能保持与长程技能组合",
+      "llm_evidence": "通过基元路由实现VLA技能保持与长程技能组合",
+      "canonical_evidence": "通过基元路由实现VLA技能保持与长程技能组合",
+      "llm_tldr_en": "PRISM shows per-skill low-rank updates of a pretrained VLA occupy distinguishable subspaces, and routes primitives in-context so composite tasks reuse retained skills without one shared update.",
+      "llm_tldr_cn": "现有视觉语言动作模型把每个新任务都吸收进一次共享更新，既没有可复用技能的参数载体，也缺少沿轨迹调用各技能的机制。作者发现各技能的低秩更新天然落在可区分的低维子空间中，据此提出基元路由与上下文内技能混合方法，将复合任务分解为可调用的技能基元。实验表明该方法在保持已学技能的同时能完成跨阶段的长程组合任务。这为可复用、可组合的机器人技能体系提供了参数层面的结构化方案。",
+      "llm_tldr": "现有视觉语言动作模型把每个新任务都吸收进一次共享更新，既没有可复用技能的参数载体，也缺少沿轨迹调用各技能的机制。作者发现各技能的低秩更新天然落在可区分的低维子空间中，据此提出基元路由与上下文内技能混合方法，将复合任务分解为可调用的技能基元。实验表明该方法在保持已学技能的同时能完成跨阶段的长程组合任务。这为可复用、可组合的机器人技能体系提供了参数层面的结构化方案。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.05155v1",
+      "source": "arxiv",
+      "title": "Asynchronous Robot Policies",
+      "abstract": "Scaling vision-language foundation models has significantly advanced generalist robot manipulation, but the increased model scale introduces computational latency that degrades real-time physical reactivity. Existing Vision-Language-Action (VLA) architectures execute high-level semantic reasoning and action ex- ecution sequentially within the primary control loop, creating a fundamental tension between semantic-reasoning capability and robot agility. To address this, we propose Asynchronous Robot Policy (ARP), an architectural framework that decouples semantic reasoning from low-level action generation using asynchronous processes operating at independent frequencies. In ARP, a high-capacity Vision-Language Model (VLM) asynchronously updates a semantic memory at low fre- quency, while a lightweight Vision-Action Expert, conditioned on this semantic memory, generates robot actions at a much higher control frequency. Such a formulation, enables having a fast perception-action loop without compromising on the semantic capability. To overcome asynchronous memory staleness, ARP trains the vision-action expert on the semantic staleness and execution delay, with temporally mismatched observation across processes. On Franka manipulation tasks, ARP achieves an 18% higher success rate and 20% less time need for execution in quasi-static setups, while 3-5 times baseline performance in dynamic simulation environments. Furthermore, ARP enables operating the VLM at 10 times lower than its nominal frequency with no significant performance loss making it much more efficient than the baseline. These results highlight the architectural advantages of modeling robot policies as asynchronous processes, enabling real-world reactive deployment without sacrificing the scale of foundation models.",
+      "authors": [
+        "Sombit Dey",
+        "Luc Van Gool",
+        "Danda Pani Paudel"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-11-03T16:30:27+00:00",
+      "link": "https://arxiv.org/pdf/2611.05155v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "decouples high-level VLM semantic reasoning from low-level action generation asynchronously",
+      "llm_evidence_cn": "异步解耦高层VLM语义推理与低层动作生成",
+      "llm_evidence": "异步解耦高层VLM语义推理与低层动作生成",
+      "canonical_evidence": "异步解耦高层VLM语义推理与低层动作生成",
+      "llm_tldr_en": "Asynchronous Robot Policies decouple high-level VLM semantic reasoning from low-level action generation using asynchronous processes at different frequencies, improving real-time robot reactivity while retaining semantic capability.",
+      "llm_tldr_cn": "扩大视觉语言基础模型提升了通用机器人操作能力，但模型规模带来的计算延迟损害了实时物理反应。现有VLA架构在主控制循环中顺序执行高层语义推理与动作生成，造成推理能力与敏捷性的矛盾。本文提出异步机器人策略ARP，用异步进程以不同频率解耦高层VLM语义推理和低层动作生成，高层VLM低频更新语义记忆，轻量策略高频执行。该架构在保持语义能力的同时提升了机器人实时反应，为高层规划与低层控制融合提供新范式。",
+      "llm_tldr": "扩大视觉语言基础模型提升了通用机器人操作能力，但模型规模带来的计算延迟损害了实时物理反应。现有VLA架构在主控制循环中顺序执行高层语义推理与动作生成，造成推理能力与敏捷性的矛盾。本文提出异步机器人策略ARP，用异步进程以不同频率解耦高层VLM语义推理和低层动作生成，高层VLM低频更新语义记忆，轻量策略高频执行。该架构在保持语义能力的同时提升了机器人实时反应，为高层规划与低层控制融合提供新范式。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.09124v1",
+      "source": "arxiv",
+      "title": "Toward the Era of Agentic Embodied Intelligence",
+      "abstract": "Foundation models increasingly guide robot actions, yet sustained autonomy requires efficient control and failure recovery. We introduce A2-MEAS, an embodied multi-agent framework built around code as a scaling interface. Learned correction codes combine corrective language, spatial evidence, execution history, and action proposals. MetaBrain provides training supervision and runtime guidance. A correction encoder and adapter absorb this knowledge into policy weights during training, while fresh codes adapt behavior with frozen weights at deployment. The action model, A2-WLA, adds motion-aware history and a latent world model to a vision-language-action policy. Surprisingly, this simple design with action pretraining and task specialization reaches 0.5755 Q-score on the 50-task BEHAVIOR 2026 public subset before online correction, 2.21x the 2025 winner's reported 0.2605 across different benchmark editions and training configurations. On all 100 BEHAVIOR 2026 public tasks, A2-MEAS achieves 0.6411 Q-score and 45.40% task success. On RoboTwin 2.0, A2-WLA achieves 93.98% average success, rising to 95.05% with the complete system. Across 12 real-robot tasks in five household settings, A2-WLA achieves 57.92% average success versus 26.67% for pi0.5. In long-horizon pour-over coffee preparation, a history-conditioned adapter raises post-failure completion at two filter-handling steps from 14% to 94% and from 8% to 82%, compared with A2-WLA retries. Our training infrastructure delivers 427.1 samples per second, 4.03x the throughput of a pi0.5 reference implementation on matched hardware. We will release the system, models, training scripts, and infrastructure to support efficient embodied learning.",
+      "authors": [
+        "Chao Liang",
+        "Ke Chen",
+        "Fengxiaoxiao Li",
+        "Shibo Huang",
+        "Yufeng Sun",
+        "Zhaokai Yin",
+        "Jianhuan Lai",
+        "Haozhe Feng",
+        "Chenghuan Jia",
+        "Zhipeng Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-06T08:02:15+00:00",
+      "link": "https://arxiv.org/pdf/2611.09124v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "MetaBrain agent provides runtime guidance and invokes a VLA action policy for embodied robot tasks",
+      "llm_evidence_cn": "MetaBrain智能体提供运行时指导并调用VLA动作策略完成具身任务",
+      "llm_evidence": "MetaBrain智能体提供运行时指导并调用VLA动作策略完成具身任务",
+      "canonical_evidence": "MetaBrain智能体提供运行时指导并调用VLA动作策略完成具身任务",
+      "llm_tldr_en": "A2-MEAS treats code as a scaling interface for an embodied multi-agent system in which MetaBrain supervises and guides a vision-language-action policy, reaching 0.5755 Q-score on a 50-task benchmark.",
+      "llm_tldr_cn": "现有基础模型虽能引导机器人动作，但持续自主仍受限于高效控制与失败恢复能力。作者提出A2-MEAS具身多智能体框架，以代码作为扩展接口，用修正码融合语言、空间证据与执行历史，并由MetaBrain提供训练监督与运行时指导，配合引入运动历史与潜在世界模型的A2-WLA动作策略。实验在50项任务上取得0.5755的Q分数，说明该简洁设计结合动作预训练与任务特化可显著提升具身智能体的自主执行与纠错能力。",
+      "llm_tldr": "现有基础模型虽能引导机器人动作，但持续自主仍受限于高效控制与失败恢复能力。作者提出A2-MEAS具身多智能体框架，以代码作为扩展接口，用修正码融合语言、空间证据与执行历史，并由MetaBrain提供训练监督与运行时指导，配合引入运动历史与潜在世界模型的A2-WLA动作策略。实验在50项任务上取得0.5755的Q分数，说明该简洁设计结合动作预训练与任务特化可显著提升具身智能体的自主执行与纠错能力。",
+      "llm_tags": [
+        "query:llm-robotics:composite"
+      ],
+      "matched_query_tag": "query:llm-robotics:composite",
+      "matched_query_text": "Papers central to 查找用GPT等大模型直接控制机器人执行任务，由大模型做上层任务理解与规划并调用技能/VLA模型控制机器人执行任务的论文研究, especially work that connects or combines: language model planning for robot task execution and skill sequencing; robot skill execution controlled by high-level language model planners; embodied task planning with large language models and robot skill invocation; language-conditioned robot control using large language model task understanding; robot manipulation skills selected and called by large language model planners; foundation models for robotics integrating language planning and action execution; Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks; Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution; Research on language model based task decomposition and skill calling for robot manipulation and control; Systems integrating large language model planners with vision language action policies for robot task execution.",
+      "matched_requirement_id": "req-composite-llm-robotics",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.10510v1",
+      "source": "arxiv",
+      "title": "ReSkill: Selective Self-Improvement for Robot Manipulation",
+      "abstract": "Self-improvement on compositional manipulation tasks requires deciding what to reuse, where to improve, and which changes to retain. We present ReSkill, a selective self-improvement framework that concentrates revision on capability gaps. A coding agent constructs an object-centric task graph from an instruction and a skill library, then uses node-level execution records to locate failures. At the task level, it revises stage organization, hand-off conditions, and recovery routes; at the skill level, it strengthens perception, motion, manipulation, and verification capabilities that repeatedly fail. Candidate revisions undergo full-task evaluation and paired comparisons before adoption, allowing local changes to accumulate into validated skills and an independently executable policy. The agent participates only during development; the deployed policy calls the retained skills without invoking the agent at run time. On the same development set, average success across ten RoboDojo tasks rises from 30.0% for the initial versions to 86.2% for the final adopted programs; retained programs achieve 83.6% in recorded robustness and model-selection evaluations. Across eight real-world tasks, ReSkill succeeds in 72 of 80 rebuilt-simulation trials and 62 of 80 real-robot trials (77.5%). The median revision changes only three functions, approximately 0.5% of a program, while 39% of task-specific functions in later-added tasks directly reuse existing implementations. These results show how locating local deficiencies, validating candidate changes, and accumulating reusable skills can improve execution of compositional manipulation tasks.",
+      "authors": [
+        "Zheng Sun",
+        "Zhihao Li",
+        "Zhuo Li",
+        "Wenrui Liu",
+        "Xin Wang",
+        "Fei Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-07T06:21:09+00:00",
+      "link": "https://arxiv.org/pdf/2611.10510v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "coding agent builds task graph from instruction and skill library, revises skills",
+      "llm_evidence_cn": "编码智能体由指令与技能库构建任务图并修订技能",
+      "llm_evidence": "编码智能体由指令与技能库构建任务图并修订技能",
+      "canonical_evidence": "编码智能体由指令与技能库构建任务图并修订技能",
+      "llm_tldr_en": "ReSkill uses a coding agent to build an object-centric task graph from instruction and skill library, then selectively revises failing stages and skills.",
+      "llm_tldr_cn": "组合式操作任务的自改进需要判断复用哪些、改进哪里以及保留哪些修改。本文提出ReSkill选择性自改进框架，由编码智能体根据指令与技能库构建以对象为中心的任务图，并利用节点级执行记录定位失败。任务层修订阶段组织与交接条件，技能层强化反复失败的感知与操作能力。候选修改经全任务评估与配对比较后采纳。其贡献在于将大模型驱动的任务分解与技能改进结合，提升组合操作能力。",
+      "llm_tldr": "组合式操作任务的自改进需要判断复用哪些、改进哪里以及保留哪些修改。本文提出ReSkill选择性自改进框架，由编码智能体根据指令与技能库构建以对象为中心的任务图，并利用节点级执行记录定位失败。任务层修订阶段组织与交接条件，技能层强化反复失败的感知与操作能力。候选修改经全任务评估与配对比较后采纳。其贡献在于将大模型驱动的任务分解与技能改进结合，提升组合操作能力。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Research on language model based task decomposition and skill calling for robot manipulation and control",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

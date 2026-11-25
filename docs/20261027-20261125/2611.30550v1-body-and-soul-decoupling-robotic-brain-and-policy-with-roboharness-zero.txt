@@ -1,0 +1,1416 @@
+Body and Soul: Decoupling Robotic Brain and
+Policy with RoboHarness-Zero
+Yihao Shen1,2, Yuxuan Chen1,3, Xuantong Liu1,3, Jun Gao4, Weijian Luo∗5 and Tianyang Hu†1,2
+1Polyadic Research Group
+2SAGA Lab, The Chinese University of Hong Kong, Shenzhen
+3The Hong Kong University of Science and Technology
+4NVIDIA
+5Dots Studio, Xiaohongshu
+Abstract
+Vision-language-action (VLA) policies can execute individual skills but fail to com-
+plete tasks that require combining several of them. In our audit of Xiaomi-Robotics-1,
+an estimated 43% of failures involve choosing the wrong target or losing track of
+task progress. Wrapping a frozen VLA in a vision-language model (VLM) harness is
+a natural remedy. Existing harnesses can gain substantially from task- and policy-
+specific preparation, raising the question of how much of that gain transfers to a new
+task or policy. An ideal harness should (i) need minimal preparation for a new task,
+(ii) need no redesign for a new policy, and (iii) preserve standalone capabilities the
+policy already has. To the best of our knowledge, our RoboHarness-Zero is the first
+harness built this way. Its premise is that choosing targets and tracking progress
+are easy for a VLM such as GPT-6 without task preparation, while the frozen VLA
+already handles continuous, contact-rich motion. The frozen VLA therefore executes
+continuous control while the VLM plans zero-shot and monitors execution; when
+progress stalls or targets drift, the VLM first rephrases the instruction and, only
+as a fallback, executes short generated code over generic motion primitives before
+returning fine control to the VLA. The supervision rules stay fixed across policies,
+requiring only a thin interface adapter and an automatically profiled skill config-
+uration per policy. On 200 RoboCasa365 scenes, RoboHarness-Zero with GPT-6
+Astra raises the success rate of frozen Xiaomi-Robotics-1 from 57.5% to 70.5% and
+preserves 90.4% of its standalone successes (104/115) while rescuing 37 of 85
+failures. On a shared 50-scene subset, the same rules add 8 to 10 percentage points
+to each of four other frozen policies, while existing preparation-based harness
+systems often fail to transfer to a new policy.
+§ Code: github.com/polyadic-research/roboharness0
+ Project page: odessey159.github.io/roboharness-zero/
+² Team page: home.polyadiclabs.com/
+1. Introduction
+A vision-language-action (VLA) policy can have the motor skills a task requires and still fail to finish
+it (Hu et al., 2026). In some RoboCasa365 (Nasiriany et al., 2026) episodes, a robot acted on the
+∗Corresponding author: pkulwj1994@icloud.com
+†Corresponding author: hutianyang@cuhk.edu.cn
+1
+arXiv:2611.30550v1  [cs.RO]  23 Nov 2026
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+2
+Embodied robotics
+VLM brain
+VLM
++
+Harness
+ours
++
+VLA
+frozen policy, swappable
++
+Embodiment
+robot
+0
+20
+40
+60
+80
+100
+success rate (%)
+One harness, many policies
+policy alone
+gain with the harness
+Xiaomi-Robotics-1
+200 scenes
+57.5 →70.5 +13.0
+RLDX-1
+50 scenes
+40.0 →50.0 +10.0
+WorldDreamer
+50 scenes
+36.0 →44.0 +8.0
+GR00T N1.5
+50 scenes
+26.0 →34.0 +8.0
+π0.5
+50 scenes
+16.0 →24.0 +8.0
+Figure 1 | Left: RoboHarness-Zero uses a VLM to supervise a frozen VLA that controls the robot.
+Right: Success rates on RoboCasa365 with and without the harness. Xiaomi-Robotics-1 is evaluated
+on 200 scenes. The other four policies share a 50-scene subset with one scene per task. Gold bars
+show the net gain in percentage points.
+wrong object, turning the wrong burner knob or taking the wrong item from a drawer (Figure 2a,b).
+Even when it chose the right item, it could move on too soon. Asked to put two pieces of broccoli in a
+pot and stir them, it added one and began stirring while the other was still on the counter. Across
+failed RoboCasa365 episodes with Xiaomi-Robotics-1 (Xiaomi Robotics Team, 2026b), we estimate
+that 43% of failures arise from choosing the wrong target or losing track of which steps remained
+(§3.1, Table A.2).
+A natural response to these decision errors is to put a vision-language model (VLM) in charge of
+tracking the task while the VLA executes it. Existing harnesses improve performance by learning
+how to guide the robot in a particular setting. In its few-shot RoboCasa365 evaluation, Harness
+VLA (Zhang et al., 2026b) finds a successful sequence of subtask instructions on one reference scene
+per task and reuses it in new scenes. EmbodiedRSI (Song et al., 2026) runs robot trials to decide
+which changes to its code and skills to keep, while AdaHVLA (Tang et al., 2026) revises its prompting
+and recovery code separately for each robot and policy. How much of the resulting gain survives when
+the task set or the policy changes? Although Harness VLA gains 29.2 percentage points on RLDX-1,
+transferring its released task memories to Xiaomi-Robotics-1 on our 50-scene benchmark solves 29
+scenes, compared with 30 for Xiaomi alone (−2.0 percentage points).
+We argue that an ideal harness should (i) need minimal preparation for a new task, (ii) need no redesign
+for a new policy, and (iii) avoid breaking what the policy already solves. We introduce RoboHarness-
+Zero, a VLM harness that gives a frozen VLA the full task and monitors progress within each substage
+during execution, without interfering while the policy advances. When progress stalls or the robot
+acts on the wrong target, RoboHarness-Zero first revises the instruction and, if needed, briefly takes
+over the arm via VLM-generated code over generic motion primitives before handing control back.
+Our core insight is that the instruction and the scene alone determine which object the robot should
+act on, what must happen next, and whether the current step is complete, so a VLM can judge them
+zero-shot and identically across policies. This allows RoboHarness-Zero to supervise different tasks
+and frozen VLA backbones during execution with a single fixed set of rules; onboarding a new policy
+requires no task-specific demonstrations or scripts—only a thin interface adapter and a one-time
+automatic calibration (§3).
+Our method builds on the premise that a VLM can interpret an instruction, plan its steps, and detect
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+3
+(a) Wrong burner
+Front-left knob
+Rear-left knob
+(b) Wrong tool
+Knife
+Peeler
+(c) Premature stirring
+Pot and spatula
+Second broccoli
+Figure 2 | Target selection and sequencing errors by Xiaomi-Robotics-1 in RoboCasa365. (a) Asked to
+turn on the rear-left burner, the robot turns the front-left knob. (b) Asked to place a tool for peeling
+a cucumber on the cutting board, the robot lifts a knife while the peeler remains in the drawer. The
+harness later guides the gripper to the peeler, and the policy completes the task. (c) Asked to put two
+pieces of broccoli in a pot and then stir, the robot begins stirring while the second piece is still on
+the counter. The standalone runs in (a) and (c) both ended in failure; with the harness, both scenes
+succeeded. Solid outlines mark the objects involved in the observed action. Dashed outlines mark the
+intended target at that step. Panels (a) and (b) show external replay views unavailable to the policy.
+Panel (c) shows a cropped view from the policy’s left camera.
+execution drift zero-shot, while the frozen VLA provides reactive, contact-rich motor control without
+needing task-specific scripts or skills. When asked to place a suitable tool for peeling a cucumber on
+a cutting board (Figure 2b), RoboHarness-Zero gives the frozen VLA the full instruction while the
+VLM forms its own step-by-step plan from the robot’s camera views. Judging progress against the
+active step, the VLM sees that reaching the drawer completes the approach, but the grasp stalls while
+the peeler remains inside. It first intervenes through language—“Place the green-handled peeler on
+the cutting board”—and only when the VLA grasps and delivers the knife instead does the harness
+invoke generic motion primitives via generated code on the fly to position the gripper at the peeler,
+before returning control to the VLA to finish (§3.5–3.6).
+Task-level completion criteria can be shared across policies, whereas execution reliability and timing
+vary. For example, if a task requires two pieces of broccoli in a pot, placing only one leaves the
+goal incomplete regardless of the policy (Figure 2c). Automatic profiling estimates each policy’s skill
+success rates and completion times, allowing the same supervision rules to accommodate different
+execution speeds.
+Across 200 RoboCasa365 evaluation scenes spanning 50 tasks, RoboHarness-Zero with GPT-6 Astra
+raises the success rate of frozen Xiaomi-Robotics-1 from 57.5% to 70.5% (Figure 1). It preserves 104
+of the 115 episodes the policy solves on its own (90.4%) and rescues 37 of its 85 failures, for a net
+gain of +26 episodes; multi-step tasks account for +23 of this net gain, including +13 on previously
+unseen task compositions. On a shared 50-scene subset, the same rules add 8 to 10 percentage points
+to each of four other frozen policies, from 𝜋0.5 (16% to 24%) to RLDX-1 (40% to 50%). Recovery
+remains a bottleneck: in a separate trajectory audit, 22 of 35 failed skill attempts still do not reach
+their goal after the harness intervenes (§4.7).
+In summary, our core contributions are:
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+4
+• RoboHarness-Zero, a VLM harness that supervises a frozen VLA during execution; its rules need
+no task-specific demonstrations or scripts and are calibrated to a new policy automatically (§3).
+• A paired evaluation protocol, with a no-VLM control, that separates the successes a harness
+preserves from the failures it rescues (§4.1).
+• Evidence that the same rules improve five frozen policies (Xiaomi-Robotics-1, RLDX-1, World-
+Dreamer, GR00T N1.5, and 𝜋0.5) on the same scenes, while retaining 90.4% of Xiaomi-Robotics-
+1’s standalone successes (§4.2–4.3).
+2. Related Work
+2.1. VLM harnesses for robot manipulation
+Language models can guide manipulation through a learned hierarchy, as in Steerable VLA (Chen
+et al., 2026a), Hi Robot (Shi et al., 2025), and 𝜋0.5 (Black et al., 2025), or by calling robot skills and
+motion primitives directly, as in SayCan (Ichter et al., 2023), Code as Policies (Liang et al., 2022),
+Show-Harness (Chen et al., 2026b), Robo-Harness K1 (Li et al., 2026), and HexaShell (Gao et al.,
+2026). A third approach places a harness around a frozen action policy. We relate these harnesses to
+the three properties of an ideal harness (§1).
+Most harnesses need preparation before they can be used on a task, contrary to property (i). On
+RoboCasa365, Harness VLA (Zhang et al., 2026b) explores one reference scene per task and stores a
+successful sequence of primitives that its planner can reuse, calling the VLA for contact-rich steps.
+HarnessPAI (Wang et al., 2026a) instead uses a coding agent to revise a separate control program for
+each task between trials. SERA (Du et al., 2026) evaluates harness revisions through environment
+rollouts, while EmbodiedRSI (Song et al., 2026) uses robot trials to select changes to code and skills.
+Cracking Mobile Manipulation (Wang et al., 2026b) uses demonstrations to guide planning and uses
+separate interventions to correct base positioning and local manipulation. Preparation also underlies
+the top RoboCasa365 leaderboard entry, HexaShell (Gao et al., 2026), which represents a separate,
+policy-free line of work where a VLM controls the robot directly by writing code over motion and
+perception tools. Drafting a one-page skill from earlier runs for each of the 50 tasks—recording
+judging criteria, step flow, and measured parameters—lifts HexaShell from 59.3% with no task-specific
+input to 85.6%; by contrast, our work focuses on harnessing existing frozen VLAs without per-task
+preparation.
+Few harnesses carry one design across policies, as property (ii) requires. AdaHVLA (Tang et al., 2026)
+specializes its coordination rules to each robot–executor pair. On RoboCasa365, PhyAgentOS (Liu
+et al., 2026a) applies a common verifier to three frozen policies after the initial rollout fails, at which
+point it can issue a recovery instruction from the robot’s current state. Because it waits for the episode
+to fail, it does not put the policy’s existing successes at risk, but it also cannot act while an error is
+still reversible.
+Our harness gives the frozen policy the full task instruction and leaves it in control by default, while
+the VLM monitors each substage during execution. If progress stalls or the robot selects the wrong
+target (Figure 2), the VLM can intervene while the error is still reversible. A one-time calibration lets
+the same supervision rules transfer to a new policy without retraining, per-task demonstrations, or
+exploratory rollouts on the evaluation tasks. To our knowledge, none of the harnesses above separates,
+on paired runs, the successes it preserves from the failures it rescues; we report both (§4.1).
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+5
+2.2. When and how to intervene
+When should a harness intervene, and what should it change? Building on earlier work on language
+feedback (Huang et al., 2022; Guo et al., 2024), Mostly Harmless (Jeong et al., 2026) learns to
+rewrite instructions and retains the original when a calibrated predictor finds little evidence that
+rewriting will help.
+Many recovery methods act directly on motion. ForkCast (Wen et al., 2026) selects among continuing,
+changing viewpoint, and replanning the arm trajectory. CheckVLA (Liu et al., 2026b) verifies actions
+with a trained world model, while IDR (Zhang et al., 2026a) refines actions across several frozen
+policies without training. IDR adjusts every action the policy produces; our harness leaves the policy’s
+actions untouched unless a substage stalls or the target is wrong, and gives an off-the-shelf VLM
+responsibility for deciding when and how to intervene. Tracking the current substage against the
+full instruction lets it recognize a precise grasp of the wrong object, revise the instruction first, and
+escalate to a bounded takeover when needed.
+RESCUE (Ahmedt-Aristizabal et al., 2026) compares alternatives from the same checkpoint and
+shows how unnecessary intervention can disrupt success. Hi-VLA (Hu et al., 2026) finds that reliable
+controllers still benefit from orchestration. StageCraft (Pangaonkar et al., 2026) finds that stronger
+policies need fewer scene adjustments. These findings are compatible: selective intervention can
+preserve existing successes while timely correction can rescue failures. Our evaluation measures both
+effects separately, as retention and rescue (§4.1).
+2.3. Failure detection
+SAFE (Gu et al., 2025) predicts failure on unseen tasks from a VLA’s internal features, while external
+monitors judge success from images or learn from teleoperator interventions to flag mistakes (Du et al.,
+2023; Sa et al., 2026). A detector can flag repeated unsuccessful grasps as they occur, but the alarm
+alone leaves open how to recover (Ma et al., 2026). RESCUE (Ahmedt-Aristizabal et al., 2026) shows
+that alarms can arrive too late or prompt unnecessary intervention, and Soddy et al. (2026) predict
+MemoryVLA failures early yet find that none of four interventions reliably improves success. Our VLM
+judges progress on the current substage from images and robot state without per-policy detector
+training, and our analysis of what follows an alert likewise identifies recovery as the bottleneck.
+3. RoboHarness-Zero: A Fixed Harness for Any Frozen Policy
+3.1. VLAs fail on decisions, not only motions
+We audited 193 of the 893 failed rollouts from an earlier RoboCasa365 evaluation of Xiaomi-Robotics-1
+running without a harness, sampled across five task groups (Appendix B.4).
+After weighting by the number of failures in each task group, we estimate that 43% of failures involve
+a decision error. The robot chooses the wrong target in 24% of failures and loses track of task order or
+progress in 19% (an order or progress error). The remaining 57% comprise physical execution failures
+(53% of all failures), episodes that exhaust their step budget while still making progress (3.7%), and
+violations of a task constraint (0.3%). We distinguish two types of execution failure according to
+whether the policy has ever completed the same task in another trial: inconsistent execution when it
+has, and execution with no observed task success when it has not. Table A.2 in the appendix gives the
+definition and an example of each category.
+These findings motivate our focus: using a VLM to ground the policy’s decisions in the instruction
+and the current scene. The VLM does so both when selecting the intended target and when judging
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+6
+whether the robot is ready to move on to the next step.
+3.2. Overview and design principles
+Figure 3 illustrates how RoboHarness-Zero divides control between a frozen VLA and a supervising
+VLM. The VLA receives the task instruction and generates robot actions in short sequences. At
+checkpoints, the VLM sees the left, right, and wrist camera views, the poses of the base and end
+effector, and the gripper positions. It interprets these observations in light of the original instruction,
+its current plan, and the commands executed since its last review. When the environment detects that
+the whole task has succeeded, the harness ends the episode at once and records a success. Before
+that, it receives no success signal. Intermediate judgments, such as whether the robot has grasped
+the intended object, must be made from the available observations. The robot interface supplies no
+ground-truth object poses, hidden fixture states, substage completion labels, or expert trajectory.
+When the evidence is ambiguous, the VLM can call perception tools—or short generated code—to
+inspect a fresh view, zoom in, or back-project depth at a visible pixel into 3D. If the policy is making
+progress, it continues under the same instruction. If the VLM identifies a wrong target or a stalled step,
+it first revises the instruction and observes how the policy responds. When a takeover is warranted,
+the harness authorizes a limited sequence of base, torso, arm, or gripper motions, which consume the
+same episode budget as policy actions; the VLM then checks the result in a fresh observation and
+returns control to the VLA.
+RoboHarness-Zero is designed around the three properties of an ideal harness (§1). For property (i),
+minimal preparation for a new task, the VLM forms its own plan from the instruction and the scene in
+each episode, so the harness uses no task-specific demonstrations or scripts (§3.3). For property (ii),
+no redesign for a new policy, the supervision rules stay fixed and a new policy brings only a native
+adapter and a skill profile (§3.7). Property (iii), breaking nothing the policy already solves, depends
+on when and how the VLM intervenes.
+The choice of when to intervene matters because supervision can change outcomes in either direction.
+On paired episodes, let 𝑏denote the success rate of the standalone policy. Retention 𝑟is the fraction of
+its successes retained with the harness, and the rescue rate 𝑠is the fraction of its failures that succeed
+with the harness. The harness succeeds at rate 𝑆𝐻= 𝑏𝑟+ (1−𝑏)𝑠. For 0 < 𝑏< 1, matching or exceeding
+the standalone policy requires
+𝑆𝐻≥𝑏
+⇐⇒
+𝑏(1 −𝑟) ≤(1 −𝑏)𝑠
+⇐⇒
+𝑟≥1 −1 −𝑏
+𝑏
+𝑠.
+(1)
+The left side of the middle inequality counts, as a fraction of all episodes, the successes lost under
+supervision. The right side counts the new successes. For a given rescue rate 𝑠, a stronger policy can
+therefore tolerate fewer losses among the episodes it already solves.
+This trade-off motivates three design choices for property (iii). First, we give the VLA the full
+instruction by default and use its measured skill success rates and execution times to set the initial
+level of supervision, giving familiar behavior time to succeed (§3.3). Second, we judge progress
+within the current substage, so a successful approach cannot mask a stalled grasp (§3.4). Third, we
+ordinarily revise the instruction before authorizing a bounded takeover, and we hand execution back
+after the correction (§3.5–3.6). This lets the VLM redirect a failing step while leaving the rest of the
+task to the policy.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+7
+Calibration
+once per policy
+VLM supervisor
+fixed across policies
+Execution loop
+Success rate, duration
+Run the policy alone
+Stall window, takeover budget
+Substage plan
+Progress check
+Continue
+default
+Reword
+language only
+Bounded takeover
+then hand back
+progress
+stalled
+2 physical failures
+Task instruction
+Frozen VLA
+Robot and
+environment
+swapped per policy
+full instruction
+actions
+observations
+revised instruction
+direct motions
+observations at checkpoints
+Figure 3 | How RoboHarness-Zero divides control between a frozen VLA and a supervising VLM.
+Execution loop: the VLA receives the full task instruction and controls the robot by default. VLM
+supervisor: at each checkpoint, the VLM checks progress on the current substage. If the substage
+advances, the policy continues. If it stalls, the VLM rewords the instruction and the policy keeps
+control. After two verified physical failures, the VLM can take over for a bounded number of steps
+before handing control back. Calibration: a profiling run of the policy alone sets how long the VLM
+waits and how long a takeover may last. Only the VLA, its adapter, and this calibration change with
+the policy.
+3.3. Hand over the whole task, then watch
+RoboHarness-Zero needs no preparation for a new task: every episode starts from the task instruction
+alone, with no demonstrations, memories of earlier episodes, or task scripts (Appendix B.6). At the
+start of a composite task with no whole-task entry in the skill profile, RoboHarness-Zero passes the
+original instruction verbatim to the frozen VLA; most composite tasks in our evaluation fall under
+this rule, while tasks matching a profiled entry adjust only the initial check interval and takeover
+permissions according to measured reliability (Appendix B.6). The VLM uses its own plan to identify
+what would count as progress at each substage. Reaching a new substage updates what the VLM
+watches for, while the policy continues under the original instruction.
+Monitoring takes place between windows of policy execution. Xiaomi-Robotics-1 generates 16 actions
+per prediction. A default window allows ten predictions, or 160 control steps (eight seconds of
+simulated motion). At a checkpoint, the VLM can inspect fresh left, right, and wrist views alongside
+the robot state and the actions executed since its last review. Its default response is to let the policy
+continue, without sending a new instruction or motor command (Appendix B.7 gives an example).
+If the VLM issued the steps one at a time, each transition between steps would depend on its judgment.
+Keeping the substage plan on the monitoring side lets the policy carry out that transition itself while
+the VLM checks the result (Appendix B.7).
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+8
+3.4. Progress is judged at the current substage
+While the policy executes, the VLM asks one question at each checkpoint: has the robot made progress
+on the current substage? The VLM’s plan divides the task into substages and each substage into one
+or more phases, such as approaching an object and then grasping it. Each phase has a target, the
+object or location it acts on. In the peeler episode of Figure 2b, reaching the utensils completes the
+approach phase, but the grasp phase stays incomplete while the peeler remains below the counter
+edge. The harness records progress for the current phase and its target. The first 3D distance estimate
+from the end effector to the depth-localized target establishes a reference. A fresh observation earns
+progress credit when the estimated distance falls at least 2 cm below its previous minimum, or when
+the VLM first verifies that the phase is complete. Once the robot has grasped an object, seeing it still
+in the gripper confirms that the grasp is secure. Progress toward placement requires fresh evidence
+about the object’s destination. Otherwise, credit for holding the object could hide a stalled placement
+(Appendix B.7).
+The VLM can continue, advance, or review. While the current phase is underway, the policy continues
+under its existing instruction. Verified progress resets the stall counter. Otherwise, the harness adds
+to the counter the number of control steps the policy has executed since the previous checkpoint.
+When the VLM verifies phase completion, it advances to the next phase or, when the substage has
+none left, to the next unfinished substage in its plan. At any checkpoint where the counter reaches
+the policy’s stall window (§3.7), the harness raises a stall alert: the VLM reviews the remaining goal
+and may give the policy a more specific instruction, while leaving low-level motor execution with the
+policy rather than taking over. For Xiaomi-Robotics-1 the stall window is 120 steps, less than a full
+160-step window, so one full window without verified progress triggers a review. The policy retains
+motor control during this review. RoboCasa’s task-level success predicate determines when the full
+task has succeeded.
+3.5. Reword before taking over
+When a task stalls, the first intervention available to the VLM is to change the instruction. The VLM
+can narrow a multi-step request to the step where the robot is stuck, rephrase the same goal as a
+short imperative, or identify the intended object by its visible color, shape, or location. In the peeler
+episode, the VLM tells the policy, “Place the green-handled peeler on the cutting board,” which names
+the tool to pick up. The frozen VLA still chooses how to approach, grasp, and move it. This lets the
+VLM correct the policy’s interpretation of the scene through the policy’s existing language interface,
+without access to its internal state or action representation.
+Escalation depends on what happens when the robot acts. Two verified physical failures on the same
+substage, such as two missed grasps, make a bounded takeover available. The harness carries this
+count across instruction changes. Repeated rewording alone never triggers a takeover. A dropped
+object, an unsafe motion, or a confirmed conflict with the task, such as grasping the wrong object,
+can justify an earlier takeover. Section 4.5 reports which paired gains involve instruction rewriting
+alone. Section 4.6 compares the full harness with a no-VLM control that periodically reissues the
+original instruction.
+3.6. Bounded takeover and hand-back
+Once takeover is available (§3.5), the VLM can reposition the base, adjust torso height, and guide the
+gripper through waypoints identified from camera and depth observations. In the peeler episode, the
+policy delivers the knife even after the reworded instruction. The harness then guides the gripper
+to the peeler and returns control to the policy, which completes the task. For skills the policy has
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+9
+demonstrated it can perform, the VLM brings the hand into position and leaves fine contact to the
+policy. For weak or unmeasured skills, the harness also permits direct grasping, placement, and
+pouring. Closing the gripper on an object requires a fresh wrist-camera check, and the VLM must
+verify after lifting that the object moved with the hand.
+A takeover draws from the same episode budget as the policy. Its initial allowance scales with the
+skill’s measured typical duration, with a fixed default when no measurement is available. The harness
+ends the attempt when it stops making progress or upon a verified drop or unsafe motion. If the robot
+is already moving a securely held object toward placement, it can receive a short, capped extension
+(Appendix B.8). To hand control back, the VLM positions the base and hand so the target is visible
+and within reach. It preserves any held object, reissues the instruction for the current substage, and
+checks progress after a short window of fresh policy actions. Section 4.5 reports how often takeover
+is used, and Section 4.7 examines where it fails.
+3.7. Calibrating to a new policy
+Switching policies leaves the rules unchanged, as property (ii) requires. It needs only a native adapter
+and a set of measured constants (Table 1). The adapter maps camera images, robot state, and the
+active instruction into the policy’s input format and returns action chunks through a common interface.
+Profiling supplies three policy-specific quantities used by the fixed rules: per-skill success rates (which
+govern whether takeover may grasp or place directly; §3.6), typical skill durations (which scale
+takeover budgets; §3.6), and stall windows (how many steps the policy may execute without verified
+progress before triggering a review; §3.4). Xiaomi-Robotics-1 served as our development policy, for
+which we fixed a global 120-step stall window during development; all four transfer policies use stall
+windows derived automatically from profiling with zero manual tuning.
+We profile a frozen policy by running it alone on 65 atomic RoboCasa tasks on separate profiling
+seeds, with 15 episodes per task. Each episode runs until the environment reports success or the task
+horizon expires. For skill 𝑘, we estimate its success rate as the fraction of its 15 trials that succeed
+and its typical duration as the median step of first success among those trials. The 975 rollouts take
+6.16 cumulative worker-hours for GR00T N1.5, with zero VLM calls.
+To set a policy’s stall windows, we use its successful profiling trajectories to estimate how long a
+policy that eventually succeeds can appear to make no progress. For each trajectory 𝑖, let 𝑔𝑖be the
+longest interval, in control steps, during which an offline measure of end-effector motion registers no
+progress. For each skill 𝑘, we set 𝑊𝑘= max(1, ⌈1.5 𝑄0.95({𝑔𝑖: 𝑖∈𝑘})⌉), using a fixed multiplier of 1.5.
+When a substage has no matching skill, we use the same calculation across all successful trajectories.
+During execution, the VLM continues to judge progress from evidence about the current target and
+substage, as described in §3.4. Each policy uses its own measured skill success rates and durations.
+Appendix B.2 lists the stall windows used for each policy.
+The fallback matters on unfamiliar task compositions. In the Sol trajectory audit (§4.1), only 16 of
+261 distinct registered substages (6.1%) match a measured skill. The other 245 have no matching
+entry. A policy-wide stall window therefore lets the harness adapt how long it waits even when it
+cannot identify a previously measured skill.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+10
+Table 1 | What stays fixed, what is replaced, and what is measured when RoboHarness-Zero is moved
+to a new frozen policy.
+Status across policies
+Components
+Fixed
+Observation and action interface exposed to the harness, substage progress criterion,
+order of language and motor intervention, takeover guards, and hand-back rules
+Replaced
+Frozen policy and the adapter that translates between its native inputs and outputs
+and the common interface
+Measured or derived
+Per-skill success rates and typical durations. Per-skill stall windows and a pooled
+fallback, derived from the policy’s profiling or left at default values
+4. Experiments
+4.1. Setup and protocol
+We evaluate the 50 tasks of the RoboCasa365 leaderboard (18 atomic-seen, 16 composite-seen, and
+16 composite-unseen) (Nasiriany et al., 2026; RoboCasa Team, 2026b). Seen and unseen refer to
+whether a task appears in the policies’ training data. Four scenes per task (episode indices 1–4,
+environment seed 7) yield 200 episodes scored by the environment’s success predicate. Table 2 lists
+every episode set used in this paper. Our 72 development episodes cover 47 of these tasks. Ten
+evaluation scenes match development episodes on the initial simulator state and all three camera
+images. Excluding them gives 134/190 harness successes versus 108/190 standalone successes.
+Table 2 | Episode sets used in this paper. Only the main evaluation and its shared subset report
+performance. The others support failure analysis, development, and calibration. Appendix B.5 gives
+their overlap.
+Name
+Episodes
+Used for
+Failure audit
+193 of the 893 failures in an earlier evaluation
+of Xiaomi-Robotics-1 alone
+Failure categories (§3.1)
+Development episodes
+72 Xiaomi episodes covering 47 tasks
+Developing the harness
+Main evaluation
+200 scenes: 50 tasks, episode indices 1–4
+Main results (§4.2, §4.5–4.7)
+Shared 50-scene subset Episode index 1 of each main-evaluation task
+Other policies and Harness VLA
+(§4.3–4.4)
+Sol trajectory audit
+80 unseen-composition episodes supervised by
+GPT-6.1 Sol: 16 tasks, episode indices 0–4
+Skill matching and recovery
+(§3.6, §3.7, §4.7)
+Profiling rollouts
+975 per policy, run alone: 65 atomic tasks, 15
+episodes each
+Skill success rates and dura-
+tions (§3.7)
+Paired protocol. Paired rollouts share the initial simulator state, initial policy random-number state,
+and control horizon. Trajectories can diverge after intervention. Retention measures the fraction of
+standalone successes preserved with the harness. Rescue rate measures the fraction of standalone
+failures that succeed with it. Our no-VLM control, fixed reissue, reissues the original instruction every
+160 control steps. We use a two-sided exact McNemar test and a permutation test that swaps method
+labels jointly by task.
+We pair frozen Xiaomi-Robotics-1 (Xiaomi Robotics Team, 2026a) with the harness (Appendix B gives
+versions and timeouts). Xiaomi executes 16-action chunks at 20 Hz. The default monitoring interval
+is 160 steps and the stall window is 120 steps. The four other policies use their native adapters (§4.3).
+For the main Xiaomi evaluation, we queried gpt-6-astra at xhigh reasoning effort. We also evaluated
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+11
+GPT-6.1 Sol (gpt-6.1-sol) at medium reasoning effort as an alternative VLM.
+During each episode, the VLM has access to the task instruction, images from the left, right, and wrist
+cameras, the robot state, and feedback from executed commands. It can query depth at a selected
+image point to locate the corresponding point in 3D (§3.2). We provide no demonstrations, scripted
+solutions, or separate exploration episodes.
+We evaluate Harness VLA with its released per-task memories on the same 50 scenes used for policy
+transfer (§4.4). The 200 harness runs in the main result average 71 VLM requests and 1,136 control
+steps per episode. Standalone runs average 1,327 steps.
+4.2. Main results on RoboCasa365
+How many additional scenes does the harness help a strong frozen policy complete, and how many
+of its original successes does it lose? Across 200 paired RoboCasa365 scenes, Xiaomi-Robotics-1
+succeeds on 115 alone (57.5%) and on 141 with Astra (70.5%). The standalone rate is close to the
+57.4% that the RoboCasa365 leaderboard reports for this policy (RoboCasa Team, 2026b), so our
+scenes give a baseline in line with the official evaluation. The gain is 13.0 percentage points, with a
+95% paired bootstrap confidence interval of 6.5–19.5 points. With Sol supervising the same policy,
+the harness solves 126 scenes (63.0%), a gain of 5.5 points. Reissuing the original instruction every
+160 steps without a VLM yields 113/200 successes (56.5%), one percentage point below Xiaomi alone
+(Table 3; §4.6).
+Table 3 | Success by task category. Entries give successes/episodes and success rate in percent.
+Method
+Atomic-seen
+Composite-seen
+Composite-unseen
+Overall
+Xiaomi alone
+59/72, 81.9
+35/64, 54.7
+21/64, 32.8
+115/200, 57.5
+Xiaomi + fixed reissue (no
+VLM)
+56/72, 77.8
+33/64, 51.6
+24/64, 37.5
+113/200, 56.5
+Xiaomi + harness (Sol)
+59/72, 81.9
+43/64, 67.2
+24/64, 37.5
+126/200, 63.0
+Xiaomi + harness (Astra)
+62/72, 86.1
+45/64, 70.3
+34/64, 53.1
+141/200, 70.5
+With Astra, the harness preserves 104 of Xiaomi’s 115 successes (90.4% retention) and solves 37
+of the 85 scenes Xiaomi misses (43.5% rescue). The 37 gains and 11 losses yield a two-sided exact
+McNemar p-value of 0.00022. Composite tasks account for 23 of the 26 net additional successes. On
+seen compositions, the harness gains 17 scenes and loses seven. On unseen compositions, it gains
+15 and loses only two, accounting for half of the overall gain. The improvement appears in all four
+batches of 50 scenes. In episode-index order, success counts rise from 30 to 34, 29 to 36, 31 to 34,
+and 25 to 37.
+Figure 4 shows the paired gains and losses by task category. Tables 3 and A.1 report success rates and
+paired outcomes, respectively.
+Among standalone VLAs, the RoboCasa365 leaderboard reports 62.6% for minionx (RoboCasa Team,
+2026b). Among LLM–VLA systems, Harness VLA reports 59.2% with GPT-6 Astra on RLDX-1, using
+one reference scene per task (Zhang et al., 2026b, arXiv v5, Appendix H, Table 22), and EmbodiedRSI
+reports 77.0% after exploration (Song et al., 2026). OpenRUA, which uses a language model
+with inverse kinematics, reports 39.4% (Chu et al., 2026). HexaShell 1.5 reports 85.6% using
+Cartesian motion control and per-task skill notes (Gao et al., 2026). Differences in scenes, task-specific
+preparation, and access to success feedback preclude a direct ranking.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+12
+0
+20
+40
+60
+80
+100
+success rate (%)
+Success rate
+retained
+rescued
+lost
+Atomic
+72 scenes
+Composite, seen
+64 scenes
+Composite, unseen
+64 scenes
+All
+200 scenes
+81.9 −2
+86.1 +5
+policy alone
+with harness
+54.7 −7
+70.3 +17
+32.8 −2
+53.1 +15
+57.5 −11
+70.5 +37
+Figure 4 | Success rates for Xiaomi-Robotics-1 alone and with GPT-6 Astra supervision on 200 paired
+RoboCasa365 scenes. Signed counts give scenes solved only with the harness (+) or only by the policy
+alone (−).
+The harness retains nine in ten Xiaomi successes while delivering its largest gain on unseen composi-
+tions. Section 4.5 investigates the sources of the gain.
+4.3. One harness, many policies
+Can a harness developed with Xiaomi-Robotics-1 improve a weaker frozen policy while pre-
+serving the tasks it already solves? We tested four policies: RLDX-1 (Kim et al., 2026), World-
+Dreamer (WorldAgents-c, 2026), GR00T N1.5 (NVIDIA, 2025), and 𝜋0.5 (Black et al., 2025).
+GR00T N1.5 and 𝜋0.5 use the RoboCasa365 multitask checkpoints at training steps 120,000 and
+75,000, respectively (RoboCasa Team, 2026a), and RLDX-1 and WorldDreamer use their released
+RoboCasa365 checkpoints (Appendix B). All four run on the shared 50-scene subset, episode index 1
+of each task (Table 2). They solve 40%, 36%, 26%, and 16% of these scenes on their own, compared
+with 60% for Xiaomi. Each uses its native adapter, its own skill profile, and the same rules for
+monitoring progress, revising instructions, and taking over (§3.7, Table 1). GR00T N1.5 and 𝜋0.5
+share the default stall windows, while RLDX-1 and WorldDreamer use windows derived from their
+own profiling (Appendix B.2).
+With Astra supervising, RLDX-1 improves from 20 to 25 successes, WorldDreamer from 18 to 22,
+GR00T from 13 to 17, and 𝜋0.5 from 8 to 12 (Figure 1). On the same 50 scenes, Xiaomi improves
+from 30 to 34, so all five policies gain eight to ten percentage points (Table 4). The four new policies
+lose one of their 59 standalone successes: GR00T loses one of 13, while RLDX-1, WorldDreamer, and
+𝜋0.5 retain all of theirs. In 54 of the 58 retained successes, the harness keeps the original instruction
+and the policy generates every action. All 17 such episodes for GR00T and 𝜋0.5 finish on exactly the
+same control step as the standalone run, as do 24 of the 37 for RLDX-1 and WorldDreamer.
+The gains fall in different places. All five RLDX-1 rescues are unseen compositions, a category in which
+RLDX-1 alone solves no scene. WorldDreamer gains one atomic task and three seen compositions,
+and GR00T’s net gain has the same split. All four gains for 𝜋0.5 come from atomic tasks. The harness
+recovers 5 of 30 standalone failures for RLDX-1, 4 of 32 for WorldDreamer, 5 of 37 for GR00T, and 4
+of 42 for 𝜋0.5, compared with 6 of 20 for Xiaomi on the same scenes. Takeover is involved in all five
+RLDX-1 rescues, all four 𝜋0.5 rescues, three of GR00T’s five, and one of WorldDreamer’s four. Four of
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+13
+Table 4 | Paired outcomes with Astra supervision on the same 50 RoboCasa365 scenes, one per task.
+Retention and rescue are computed among standalone successes and failures, respectively.
+Frozen policy
+Both
+succeed
+Policy
+only
+Harness
+only
+Both
+fail
+Retention
+Rescue
+Xiaomi-Robotics-1
+28
+2
+6
+14
+93.3%
+30.0%
+RLDX-1
+20
+0
+5
+25
+100.0%
+16.7%
+WorldDreamer
+18
+0
+4
+28
+100.0%
+12.5%
+GR00T N1.5
+12
+1
+5
+32
+92.3%
+13.5%
+𝜋0.5
+8
+0
+4
+38
+100.0%
+9.5%
+the remaining rescues use instruction rewriting alone, including one in which the VLM asked GR00T
+to close the dishwasher door, and one WorldDreamer rescue involves no intervention. Supervision
+averages 162 VLM requests per episode for 𝜋0.5, about 115 for RLDX-1 and WorldDreamer, and 98 for
+GR00T. The rules developed with Xiaomi thus carry over: each new policy gains eight to ten points,
+and together they lose a single standalone success.
+4.4. Does a task-prepared harness transfer to a stronger policy?
+Does the gain from preparing a harness for each task carry over to a stronger policy? Harness VLA
+is the closest public comparison on RoboCasa365. It uses a reference scene for each task to build
+a memory of how to solve that task. With RLDX-1, the reported gains over the 30.0% standalone
+baseline are 27.2 percentage points with GPT-5.5 and 29.2 points with GPT-6 Astra (Zhang et al.,
+2026b, arXiv v5, Table 4 and Appendix H, Table 22).
+We ran the official Harness VLA code with Xiaomi-Robotics-1 and the released memories, without
+collecting new traces or revising the memories for Xiaomi. Both harnesses used GPT-6 Astra at xhigh
+reasoning effort on the same 50 scenes as in §4.3. Harness VLA solves 29 scenes, Xiaomi alone solves
+30, and our harness solves 34 (Table 5). The two harnesses tie on atomic tasks. Our five additional
+successes come from composite tasks, three on seen compositions and two on unseen compositions.
+Four tasks lack task-specific notes in the released memory. Harness VLA still solves three of these
+scenes, and without the four it solves 26 of the remaining 46, against 28 for Xiaomi alone and 31 for
+our harness (Appendix B.9).
+On RLDX-1, the policy it was prepared for, Harness VLA’s published gain of 29.2 points is about three
+times ours of ten (§4.3). The standalone baselines differ, 30.0% in the published evaluation and 40%
+on our 50 scenes, so we compare gains rather than absolute rates. On Xiaomi the order reverses.
+With the released memories, Harness VLA retains 26 of Xiaomi’s 30 standalone successes and rescues
+three of its 20 failures, ending one scene below the policy alone, while our harness retains 28 and
+rescues six. Harness VLA loses successes and rescues failures at similar rates, 13% and 15%, but
+Xiaomi has 30 successes to lose and only 20 failures to rescue, so the losses outweigh the rescues.
+We did not rebuild the memories for Xiaomi: that is the per-policy preparation that property (ii)
+asks a harness to do without, and this comparison measures what remains without it. The gain from
+per-task preparation therefore does not carry over to the stronger policy here, whereas our smaller
+gain holds on all five policies.
+4.5. Where the gain comes from
+Of the 37 gains and 11 losses reported in §4.2, how many involve a change of instruction or a takeover,
+and which gains show evidence that the intervention helps?
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+14
+Table 5 | Transfer of Harness VLA on RoboCasa365. Panel A reproduces the RLDX-1 baseline from
+Table 4 and the two Codex planner results from Appendix H, Table 22 of Zhang et al. (2026b) (arXiv
+v5). Panel B uses the shared 50-scene subset (Table 2); its last row repeats our main result on all 200
+scenes, where Xiaomi alone scores 57.5%. Gains are percentage-point differences from the standalone
+policy on the same scenes.
+Policy and method
+Atomic
+seen
+Composite
+seen
+Composite
+unseen
+Overall
+Gain
+(pp)
+A. Published RLDX-1 results
+RLDX-1 alone
+60.0%
+21.3%
+5.0%
+30.0%
+—
++ Harness VLA (GPT-5.5)
+92.2%
+61.3%
+13.8%
+57.2%
++27.2
++ Harness VLA (Astra)
+87.8%
+43.8%
+42.5%
+59.2%
++29.2
+B. Xiaomi on the shared 50 scenes unless noted
+Xiaomi alone
+88.9%
+50.0%
+37.5%
+60.0%
+—
++ Harness VLA (Astra)
+83.3%
+43.8%
+43.8%
+58.0%
+−2.0
++ Our harness (Astra)
+83.3%
+62.5%
+56.3%
+68.0%
++8.0
++ Our harness (Astra, 200 scenes)
+86.1%
+70.3%
+53.1%
+70.5%
++13.0
+Table 6 groups the 200 paired episodes by the highest level of intervention used in the harness run.
+Xiaomi generates every robot action in 22 of the 37 harness-only successes: ten under the original
+instruction and twelve under revised wording. Takeover occurs in the other 15 gains and in nine of
+the 11 losses. Across the 200 episodes, takeover accounts for 21,182 of 227,198 executed control
+steps (9.3%), including base and torso motion. The frozen VLA generates the remaining 90.7%. Since
+takeover generally follows a stalled or incorrect action, these counts alone do not measure its effect.
+Table 6 | Highest level of intervention used with Astra in 200 paired episodes. Percentages are
+computed within each outcome column.
+Highest intervention
+Harness only
+(𝑛= 37)
+Policy only
+(𝑛= 11)
+Both succeed
+(𝑛= 104)
+Both fail
+(𝑛= 48)
+Observation only
+27.0%
+0.0%
+88.5%
+4.2%
+Instruction rewrite only
+32.4%
+18.2%
+6.7%
+20.8%
+Any takeover
+40.5%
+81.8%
+4.8%
+75.0%
+We therefore looked for three events within each harness-only success: the policy stalled on a specific
+substage, the VLM intervened to address it, and the robot subsequently completed that same substage.
+Twenty-three episodes meet this criterion: 12 with language alone and 11 with takeover. In one,
+Xiaomi touched the faucet and withdrew with no water visible. After Astra narrowed the instruction to
+“Turn on the sink faucet,” the cameras showed running water. Ten gains keep the original instruction
+and involve no takeover. Fixed reissue, which uses no VLM, also solves nine of them (§4.6), so we
+do not credit them to the VLM’s decisions. Four remain unresolved: three use takeover before any
+policy stall, and in one the policy succeeded on a later retry after both the rewrite and the attempted
+regrasp failed.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+15
+20
+40
+60
+80
+100
+retention of the policy’s own successes (%)
+Retention: observed vs. break-even
+break-even
+observed
+Atomic
+72 scenes
+Composite, seen
+64 scenes
+Composite, unseen
+64 scenes
+All
+200 scenes
++5.1 pts
++28.6 pts
++61.9 pts
++22.6 pts
+Figure 5 | Retention of Xiaomi-Robotics-1 successes under GPT-6 Astra supervision. Dots show the
+fraction of standalone successes retained. Vertical marks show the minimum retention needed to break
+even at each group’s observed rescue rate. Labels above the lines give the difference in percentage
+points. Scene counts give the total number of pairs in each group.
+At the observed rescue rates, Eq. (1) gives a break-even retention of 91.5% on atomic tasks, against
+96.6% observed (Figure 5). Three additional losses, a drop of just over five percentage points in
+retention, would erase the atomic gain. Seen and unseen compositions have wider margins: retention
+reaches 80.0% against a 51.4% threshold on seen tasks and 90.5% against 28.6% on unseen tasks.
+Seen compositions nevertheless account for seven of the 11 losses.
+Switching from Sol to Astra raises rescue from 27.1% to 43.5%, while retention rises only from 89.6%
+to 90.4%. Fourteen of Astra’s 15 net additional successes thus come from scenes Xiaomi alone misses.
+Overall, the gain comes mainly from interventions: 27 of the 37 gains involve a rewritten instruction
+or a takeover, and 23 show evidence that the intervention helps.
+4.6. Ablations
+Does the gain come from the VLM’s decisions, or would running the same policy through the harness a
+second time yield a similar result? On the same 200 scenes, we ran the frozen Xiaomi policy through
+the same execution code and reissued the original task instruction every 160 control steps. This
+control makes no VLM calls, never rewrites the instruction, and leaves every action to the policy. Of
+the three design choices in §3.2, it keeps the default of the first, giving the policy the full instruction,
+and removes the other two: nothing judges progress and nothing intervenes.
+Fixed reissue solves 113/200 scenes (56.5%), close to the 115/200 solved by Xiaomi alone (Table 7).
+In a direct comparison, Astra solves 30 scenes that fixed reissue misses, while fixed reissue solves two
+that Astra misses. The corresponding counts are 6 to 0 on atomic tasks, 12 to 0 on seen compositions,
+and 12 to 2 on unseen compositions.
+Astra solves 22 of the 68 scenes that both Xiaomi alone and fixed reissue miss (32.4%) and retains
+all 96 that both solve. Of Astra’s 37 gains over Xiaomi alone, fixed reissue reproduces nine of ten
+observation-only gains, three of twelve gains with rewriting alone, and three of fifteen gains involving
+takeover. Fixed reissue thus fails to reproduce 22 of the 37 gains, and 21 of those 22 involve an
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+16
+Table 7 | Successes on the same 200 Xiaomi scenes, grouped by whether the standalone policy succeeds
+or fails.
+Method
+Total (/200)
+Policy succeeds
+(/115)
+Policy fails
+(/85)
+Xiaomi alone
+115
+115
+0
+Fixed reissue (no VLM)
+113
+96
+17
+Xiaomi + harness (Sol)
+126
+103
+23
+Xiaomi + harness (Astra)
+141
+104
+37
+intervention: nine rewrite the instruction and 12 involve takeover. These gains therefore depend on
+judging progress and intervening, the two design choices that the control removes. All 11 scenes that
+Xiaomi solves alone but loses with Astra also fail under fixed reissue, so the paired loss alone cannot
+establish that an intervention caused the failure.
+Fixed reissue achieves 56.5% success. The two VLM configurations achieve 63.0% with Sol and 70.5%
+with Astra. Of the 85 scenes that Xiaomi fails alone, fixed reissue solves 17, Sol 23, and Astra 37.
+We did not test a stall-triggered retry without a VLM or repeat the standalone policy run on the
+same machine as the fixed-reissue control, nor did we individually remove rewriting, takeover, or
+calibration. Within these limits, the gain needs the VLM: the same harness without one solves two
+fewer scenes than the policy alone and reproduces only 15 of the 37 gains.
+4.7. Failure analysis
+Where does supervision break down when Xiaomi loses a task it solves alone or an intervention leaves
+a substage unfinished?
+Astra intervenes in all 11 lost successes (Table A.3). Seven occur on seen compositions, including
+three in which a corrective grasp misses and the takeover tool then keeps the gripper closed, so
+no second attempt is possible. This is a limitation of the tool’s implementation rather than of the
+supervision rules. In a possible false stall alert, Astra instructed Xiaomi to retrieve a spatula the robot
+was already using to stir corn.
+We classified the 85 standalone failures using Section 3.1 before examining paired outcomes. With
+Astra, Xiaomi solves 11/29 scenes with decision failures (37.9%) and 24/50 with execution failures
+(48.0%). Rescue rates are similar for order or progress errors (55.6%) and inconsistent execution
+(55.0%), and lower for wrong targets (30.0%) and execution failures on tasks with no observed
+standalone success (20.0%). Six failures have indeterminate causes (Table 8).
+Table 8 | Paired rescue rate by the primary error in the standalone Xiaomi run. Each rate counts
+scenes completed with Astra among the standalone failures of that type.
+Standalone failure type
+Rescued / failures
+Rescue rate
+Wrong target
+6/20
+30.0%
+Order or progress error
+5/9
+55.6%
+Inconsistent execution
+22/40
+55.0%
+Execution failure on a task with no observed standalone success
+2/10
+20.0%
+Indeterminate
+2/6
+33.3%
+Overall
+37/85
+43.5%
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+17
+Of the 48 scenes neither system solves, 35 trigger a stall alert and 46 receive an intervention. An
+intervention does not require an alert: a dropped object, an unsafe motion, or a confirmed target
+conflict can trigger one earlier (§3.5). The final obstacle involves execution in 25 scenes and decisions
+in 13, with ten unresolved. This 35/48 is alert coverage, a measure of how often a warning appears.
+Estimating recall requires independent labels for all actual stalls.
+Recovery after an intervention remains a weakness. In the Sol trajectory audit (Table 2), the harness
+recovers 11 of 35 failed skill attempts after intervention, with 22 unfinished and two indeterminate.
+Of these 35, 25 involve a takeover: nine recover, 14 remain unfinished, and two are indeterminate.
+The audit was carried out on the Sol runs, which were completed before the Astra evaluation.
+In the main evaluation with Astra, 35 first interventions immediately follow a recorded error. The
+affected substage later succeeds in 20 cases, fails in 13, and remains indeterminate in two. Safety
+rules block six retries or handoffs, the policy fails to find or select the target after five handoffs, and
+two dropped objects remain unrecovered. Supervision therefore breaks down after it intervenes, not
+before: every lost success and 46 of the 48 scenes that neither run solves involve an intervention, and
+what fails is the corrective grasp, the retry, or the handoff that follows (§5).
+5. Discussion
+The paired evaluations show that the same supervision rules can improve several frozen policies while
+preserving most of their standalone successes. The practical value of this approach depends on how
+much of the benefit carries over when the policy changes, how reliably the robot recovers after an
+intervention, and when the gains justify the added latency of VLM supervision.
+What transfers across policies. On the same 50 scenes, supervision adds eight to ten percentage
+points to each of five frozen policies and preserves 58 of the 59 standalone successes across the
+four new policies. Transfer requires a native adapter and a policy skill profile. We prepared no task
+memories, exploratory rollouts, demonstrations, or scripts. What carries over less well is rescue: the
+harness recovers 18 of 141 standalone failures on the four new policies, against six of 20 for Xiaomi
+on the same scenes. The gain from per-task preparation, in our test of Harness VLA, did not carry
+over to the stronger policy (§4.4).
+Physical recovery remains difficult. The VLM can change what a frozen policy attempts and when
+it attempts it, but the policy executes each grasp or placement with the motor skills it already has.
+When the policy lacks the skill, the remaining option is takeover, and takeover generally follows a
+harder failure: across all 200 scenes, 20/65 episodes involving takeover succeed, compared with
+19/31 involving rewriting alone (Table 6). A takeover also ends with a handoff, after which the policy
+must continue from a pose chosen by the VLM; the failed recoveries in §4.7 include five in which the
+policy cannot find or select the target after the handoff. Whether future VLAs or foundation models
+learn to recover on their own remains open. For the frozen policies tested here, the VLA alone still
+leaves recoverable failures unresolved.
+When supervision is worth its cost. Xiaomi gains only four percentage points on atomic tasks. For a
+policy that already succeeds 95% of the time, even rescuing 43.5% of its failures requires retaining
+about 98% of its successes to break even. Supervision averages 71 VLM requests per episode, and
+waiting for responses consumes 87% of episode wall time. Given that most runtime goes to VLM
+requests, which decisions need the stronger model? Sol and Astra retain nearly the same number
+of standalone successes but rescue 23 and 37 failures (§4.5). This suggests a division of labor in
+which a smaller model monitors routine progress and calls a stronger model when a substage needs
+recovery. Supervision may also become more valuable on longer tasks: Xiaomi’s gains rise from four
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+18
+points on atomic tasks to 16 on seen compositions and 20 on unseen compositions, yet an episode
+averages only 57 seconds of simulated motion, and the longest lasts 3.6 minutes. Longer tasks offer
+more opportunities for a recoverable error: if each substage succeeds 90% of the time, a task of 50
+substages finishes only 0.5% of the time unless failed substages can be recovered.
+Limitations. We developed the harness with Xiaomi, so the higher rescue rate on Xiaomi could
+reflect either Xiaomi’s capabilities or design choices informed by that policy. Our transfer evidence
+covers 50 simulated scenes per new policy and one competing harness. We did not compare with
+EmbodiedRSI (Song et al., 2026), which learns skills and memory during exploration. We have yet
+to test whether a smaller model would escalate early enough to preserve Astra’s gains. The trend
+across task categories is an extrapolation because the three categories differ in familiarity as well as
+complexity; testing it calls for longer, previously unseen compositions with recovery scored separately
+at each failed substage.
+6. Conclusion
+Our harness gives a frozen VLA the full task and monitors progress at each substage, responding to
+stalls by revising the instruction and, when needed, briefly taking over. On 200 RoboCasa365 scenes,
+supervision raises Xiaomi-Robotics-1’s success rate from 57.5% to 70.5%, compared with 56.5% when
+the harness reissues the original instruction without a VLM. RoboHarness-Zero meets the first two
+properties of an ideal harness by design and comes close to the third. It needs no preparation for a
+new task: the VLM forms its plan from the instruction and the scene in each episode. It needs no
+redesign for a new policy: the same supervision rules add eight to ten percentage points to each of
+five frozen policies on the shared 50 scenes. It breaks little that a policy already solves, preserving
+104 of Xiaomi-Robotics-1’s 115 standalone successes and 58 of 59 on the four other policies. The gain
+therefore survives a change of policy, whereas a harness prepared for each task does not improve the
+stronger policy in our test (§4.4). Rescue rates vary with the capabilities of both the policy and the
+VLM, and physical recovery remains the main bottleneck. Our next steps are to improve recovery after
+failed grasps and placements, test a smaller VLM for routine monitoring, and evaluate the harness on
+longer tasks and on physical robots.
+References
+David Ahmedt-Aristizabal, Abdelwahed Khamis, Mohammad Ali Armin, and Lars Petersson. RESCUE:
+Is This Alarm Worth Acting On? Counterfactual Evaluation of VLA Runtime Monitors. arXiv preprint
+arXiv:2610.13516, 2026. URL https://arxiv.org/abs/2610.13516.
+Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail,
+Michael Robert Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Galliker, Dibya Ghosh, Lachy Groom,
+Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey
+Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang
+Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer
+Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. 𝜋0.5: a Vision-Language-Action
+Model with Open-World Generalization. In Proceedings of The 9th Conference on Robot Learn-
+ing, volume 305 of Proceedings of Machine Learning Research, pages 17–40. PMLR, 2025. URL
+https://proceedings.mlr.press/v305/black25a.html.
+William Chen, Jagdeep Singh Bhatia, Catherine Glossop, Nikhil Mathihalli, Ria Doshi, Andy Tang,
+Danny Driess, Karl Pertsch, and Sergey Levine. Steerable Vision-Language-Action Policies for
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+19
+Embodied Reasoning and Hierarchical Control. arXiv preprint arXiv:2602.13193, 2026a. URL
+https://arxiv.org/abs/2602.13193.
+Yanzhe Chen, Zechen Bai, Zhijun Cao, Wenzheng Zeng, Kevin Qinghong Lin, Yiqi Lin, Guoqiang Liang,
+Kevin Yuchen Ma, Qiming Huang, and Mike Zheng Shou. Show-Harness: Just a VLM Agent Can Play
+Robots. arXiv preprint arXiv:2609.10522, 2026b. URL https://arxiv.org/abs/2609.10522.
+Zhaoyang Chu, Earl T. Barr, Claire Le Goues, Peter O’Hearn, Mark Harman, Federica Sarro, and He Ye.
+OpenRUA: Robot-use agents are zero-shot visuomotor policies. arXiv preprint arXiv:2610.02459,
+2026. URL https://arxiv.org/abs/2610.02459v1.
+Tingwen Du, Haoyu Guo, Hanxue Zhang, Xuanxu Wang, Junting Dong, Chao Gao, Mingfei Han, Tao
+Lu, Mulin Yu, Chunhua Shen, Xiaojun Chang, and Zhihui Li. From VLM Planners to Robotic Agents:
+Self-Evolving Harnesses for History-Dependent Manipulation. arXiv preprint arXiv:2610.29560,
+2026. URL https://arxiv.org/abs/2610.29560.
+Yuqing Du, Ksenia Konyushkova, Misha Denil, Akhil Raju, Jessica Landon, Felix Hill, Nando de Freitas,
+and Serkan Cabi. Vision-Language Models as Success Detectors. In Proceedings of The 2nd Conference
+on Lifelong Learning Agents, volume 232 of Proceedings of Machine Learning Research, pages 120–136.
+PMLR, 2023. URL https://proceedings.mlr.press/v232/du23b.html.
+Hongcheng Gao, Jianshu Zeng, Alex Zhou, Shijia Ge, Xuan Shangguan, Yazhe Wang, Yexing Wan,
+Zelin Zheng, Jay Zhu, Xiping Li, Di Wu, Yongli Wang, Lingyu He, Zhiqi Jia, Sihang Wu, and Xiao
+He. HexaShell: A universal harness for robot coding agents in simulation and the real world. arXiv
+preprint arXiv:2610.23479v3, 2026. URL https://arxiv.org/abs/2610.23479v3.
+Qiao Gu, Yuanliang Ju, Shengxiang Sun, Igor Gilitschenski, Haruki Nishimura, Masha Itkina, and
+Florian Shkurti. SAFE: Multitask Failure Detection for Vision-Language-Action Models. arXiv
+preprint arXiv:2506.09937, 2025. URL https://arxiv.org/abs/2506.09937.
+Yanjiang Guo, Yen-Jen Wang, Lihan Zha, and Jianyu Chen. DoReMi: Grounding Language Model by
+Detecting and Recovering from Plan-Execution Misalignment. arXiv preprint arXiv:2307.00329,
+2024. URL https://arxiv.org/abs/2307.00329.
+Jiaheng Hu, Mohit Shridhar, Caden Lu, Dhruv Shah, Hao-Tien Lewis Chiang, Jie Tan, and Annie
+Xie. What Matters in Orchestrating Robot Policies: A Systematic Study of Hierarchical VLA Agents.
+arXiv preprint arXiv:2606.10267, 2026. URL https://arxiv.org/abs/2606.10267.
+Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, Pete Florence, Andy Zeng, Jonathan
+Tompson, Igor Mordatch, Yevgen Chebotar, Pierre Sermanet, Noah Brown, Tomas Jackson, Linda
+Luu, Sergey Levine, Karol Hausman, and Brian Ichter. Inner Monologue: Embodied Reasoning
+through Planning with Language Models. arXiv preprint arXiv:2207.05608, 2022. URL https:
+//arxiv.org/abs/2207.05608.
+Brian Ichter, Anthony Brohan, Yevgen Chebotar, Chelsea Finn, Karol Hausman, Alexander Herzog,
+Daniel Ho, Julian Ibarz, Alex Irpan, Eric Jang, Ryan Julian, Dmitry Kalashnikov, Sergey Levine, Yao
+Lu, Carolina Parada, Kanishka Rao, Pierre Sermanet, Alexander T. Toshev, Vincent Vanhoucke, Fei
+Xia, Ted Xiao, Peng Xu, Mengyuan Yan, Noah Brown, Michael Ahn, Omar Cortes, Nicolas Sievers,
+Clayton Tan, Sichun Xu, Diego Reyes, Jarek Rettinghouse, Jornell Quiambao, Peter Pastor, Linda
+Luu, Kuang-Huei Lee, Yuheng Kuang, Sally Jesmonth, Nikhil J. Joshi, Kyle Jeffrey, Rosario Jauregui
+Ruano, Jasmine Hsu, Keerthana Gopalakrishnan, Byron David, Andy Zeng, and Chuyuan Kelly
+Fu. Do As I Can, Not As I Say: Grounding Language in Robotic Affordances. In Proceedings of The
+6th Conference on Robot Learning, volume 205 of Proceedings of Machine Learning Research, pages
+287–318. PMLR, 2023. URL https://proceedings.mlr.press/v205/ichter23a.html.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+20
+Hyun Joe Jeong, Gokul Swamy, and Andrea Bajcsy. Learning What to Say to Your VLA: Mostly
+Harmless Vision Language Action Model Steering. arXiv preprint arXiv:2606.12299, 2026. URL
+https://arxiv.org/abs/2606.12299.
+Dongyoung Kim, Huiwon Jang, Myungkyu Koo, Suhyeok Jang, Taeyoung Kim, et al. Rldx-1 technical
+report. arXiv preprint arXiv:2605.03269, 2026. URL https://arxiv.org/abs/2605.03269.
+RLWRLD.
+Zexi Li, Yehang Zhang, Wenqian Li, Haojian Huang, Chenxu Wang, Shiyuan Deng, Yangkai Wei,
+Tianyi Zhang, Binghui Xie, Bohan Zhou, Yifan Chang, Kaiwen Zhou, Ying-Cong Chen, James Cheng,
+and Yinchuan Li. Robo-Harness K1: Harnessing Robot-Use Agents via Perception Augmentation.
+arXiv preprint arXiv:2609.29389, 2026. URL https://arxiv.org/abs/2609.29389.
+Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and
+Andy Zeng. Code as Policies: Language Model Programs for Embodied Control. arXiv preprint
+arXiv:2209.07753, 2022. URL https://arxiv.org/abs/2209.07753.
+Yang Liu, Weixing Chen, Xinshuai Song, Tao Pu, Siwen Mo, Yongjie Bai, Zihao Chen, Qianran
+Sun, Liruo Zhong, Ying Shen, and Liang Lin. PhyAgentOS: A Self-Evolving Operating System
+for Embodied Agents with Decoupled Cognitive Planning and Physical Execution. arXiv preprint
+arXiv:2607.16636, 2026a. URL https://arxiv.org/abs/2607.16636.
+Yushan Liu, Peibo Sun, Xintao Chao, Zhenyang Yang, Yifan Xie, Lingfeng Zhang, Shoujie Li, Chenyu
+Tang, Fang Chen, Xiao-Ping Zhang, and Wenbo Ding. CheckVLA: Execution-Time Verification
+with Action-Conditioned World Model for Long-Horizon Mobile Manipulation. arXiv preprint
+arXiv:2607.26789, 2026b. URL https://arxiv.org/abs/2607.26789.
+Jie Ma, Zongxi Liu, and Yi Zhu. FailureSpot: Label-Efficient Timestamp-Level Failure Detection for
+Vision-Language-Action Models. arXiv preprint arXiv:2609.04277, 2026. URL https://arxiv.
+org/abs/2609.04277.
+Soroush Nasiriany, Sepehr Nasiriany, Abhiram Maddukuri, and Yuke Zhu. RoboCasa365: A large-scale
+simulation framework for training and benchmarking generalist robots. In International Conference
+on Learning Representations, 2026. URL https://arxiv.org/abs/2603.04356.
+NVIDIA. GR00T N1.5: An improved open foundation model for generalist humanoid robots, June
+2025. URL https://research.nvidia.com/labs/gear/gr00t-n1_5/.
+Kartikay Milind Pangaonkar, Prabin Rath, Omkar Patil, and Nakul Gopalan. StageCraft: Execu-
+tion Aware Mitigation of Distractor and Obstruction Failures in VLA Models.
+arXiv preprint
+arXiv:2603.20659, 2026. URL https://arxiv.org/abs/2603.20659.
+RoboCasa Team. RoboCasa365 model checkpoints, 2026a. URL https://huggingface.co/rob
+ocasa/robocasa365_checkpoints. Hugging Face model repository, revision c484448a.
+RoboCasa Team. RoboCasa 365 leaderboard, 2026b. URL https://robocasa.ai/leaderboard.
+November 13, 2026 update.
+Inkyu Sa, Konstantin Stulov, and Rajat Bhageria. ValueFormer: Stage-Aware Value Labels for Online
+Failure Detection and VLA Post-Training. arXiv preprint arXiv:2608.02958, 2026. URL https:
+//arxiv.org/abs/2608.02958.
+Lucy Xiaoyang Shi, Brian Ichter, Michael Robert Equi, Liyiming Ke, Karl Pertsch, Quan Vuong, James
+Tanner, Anna Walling, Haohuan Wang, Niccolo Fusai, Adrian Li-Bell, Danny Driess, Lachy Groom,
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+21
+Sergey Levine, and Chelsea Finn. Hi Robot: Open-Ended Instruction Following with Hierarchical
+Vision-Language-Action Models. In Proceedings of the 42nd International Conference on Machine
+Learning, volume 267 of Proceedings of Machine Learning Research, pages 54919–54933. PMLR,
+2025. URL https://proceedings.mlr.press/v267/shi25d.html.
+Michael Soddy, Karthikeyan Ganesan, Roman Stemp, Ved Deo, and Nicholas Babey. Predictable Before
+Action, Resistant to Correction: Failure Signals in Vision-Language-Action Models. In RoboPAD:
+Post-Training Adaptation of Robot Foundation Models, 2026. URL https://openreview.net/f
+orum?id=YEvN8LfCTQ.
+Python Song, Zhixuan Liang, Kelsey Fu, Mengdi Wang, Junfeng Yang, and Shilong Liu. Embod-
+iedRSI: Active Continual Robot Learning Through Hypothesis-Guided Co-Evolution. arXiv preprint
+arXiv:2610.10498, 2026. URL https://arxiv.org/abs/2610.10498.
+Junyi Tang, Jie Peng, Zezhen Ding, Yuan Shen, and Tianlong Chen. AdaHVLA: Adaptive Harnesses
+for Long-Horizon Vision-Language-Action Execution. arXiv preprint arXiv:2609.29204, 2026. URL
+https://arxiv.org/abs/2609.29204.
+Xin Wang, Wenhao Wu, Menghao Zhang, Zhi Wang, Kun Shao, Jian Luan, Yang Li, Qing Li, Shangding
+Gu, Huichi Zhou, Shuqing Shi, Fei Ni, Shuo Lu, Weicheng Meng, Kang Li, Jin Wu, Kang Zhao,
+Shangmin Guo, Gen Li, Yongqiang Tang, Zhizhong Zhang, Yuan Xie, and Heng Qu. HarnessPAI:
+An Evolving Harness for Physical AI. arXiv preprint arXiv:2609.29166, 2026a. URL https:
+//arxiv.org/abs/2609.29166.
+Zixuan Wang, Jia-Ning Li, Yinzhou Tang, Yanzhao Yu, Biao Wu, Meng Fang, Xin Li, and Yiwu Zhong.
+Cracking Mobile Manipulation: From Failure Diagnosis to Agentic Robot System. arXiv preprint
+arXiv:2610.19600, 2026b. URL https://arxiv.org/abs/2610.19600.
+Chenru Wen, Huajian Zeng, Haokai Ding, Jian Kang, Anqing Duan, Dawei Zhou, Dezhen Song, and
+Xingxing Zuo. ForkCast: Predictive Recovery for Vision-Language-Action Policies via Counterfactual
+Futures. arXiv preprint arXiv:2610.18650, 2026. URL https://arxiv.org/abs/2610.18650.
+WorldAgents-c. WorldDreamer RoboCasa365 multi-task checkpoint. https://huggingface.co
+/WorldAgents-c/world_dreamer-robocasa365-multi_task, 2026. Hugging Face model
+repository, revision e570a06b07f0cbc4f6fbd2657efd56e3e9880f66.
+Xiaomi Robotics Team. Xiaomi-Robotics-1-RoboCasa365, 2026a. URL https://huggingfac
+e.co/XiaomiRobotics/Xiaomi-Robotics-1-RoboCasa365. Model checkpoint, revision
+0d1aa76d.
+Xiaomi Robotics Team. Xiaomi-Robotics-1: Scaling vision-language-action models with over 100K
+hours of real-world trajectories. arXiv preprint arXiv:2607.15330, 2026b. URL https://arxiv.
+org/abs/2607.15330v2.
+Haoyu Zhang, Yuwei Wu, Jin Chen, Gao Zhi, Zhenxin Diao, Mingyang Gao, Kun Wu, Yongchun Liu, and
+Fan Li. A Causality-aware Infer-diagnose-refine Framework for Test-time Modality Adaptation in VLA
+Models. arXiv preprint arXiv:2607.25516, 2026a. URL https://arxiv.org/abs/2607.25516.
+Yixian Zhang, Huanming Zhang, Feng Gao, Xiao Li, Zhihao Liu, Yi Nie, Chunyang Zhu, Jiaxing Qiu,
+Yuchen Yan, Jiyuan Liu, Wenhao Tang, Jiaji Rao, Zhengru Fang, Changxu Wei, Yu Wang, Wenbo
+Ding, and Chao Yu. Harness VLA: Steering Frozen VLAs into Reliable Manipulation Primitives via
+Memory-Guided Agents. arXiv preprint arXiv:2607.08448, 2026b. URL https://arxiv.org/ab
+s/2607.08448.
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+22
+A. Detailed results on RoboCasa365
+Table A.1 | Paired outcomes for Xiaomi alone and Xiaomi with Astra. Entries are percentages within
+each row.
+Task category
+Both succeed
+Only Xiaomi alone
+succeeds
+Only Xiaomi with
+Astra succeeds
+Neither succeeds
+Atomic-seen
+79.2%
+2.8%
+6.9%
+11.1%
+Composite-seen
+43.8%
+10.9%
+26.6%
+18.8%
+Composite-unseen
+29.7%
+3.1%
+23.4%
+43.8%
+Overall
+52.0%
+5.5%
+18.5%
+24.0%
+Table A.2 | Failure categories in the Xiaomi-Robotics-1 audit.
+Failure category
+Definition
+Share of
+failures
+Example
+Execution with no
+observed task
+success
+The robot attempts the required
+action on the correct target but
+fails physically. The policy records
+no successes in at least five trials
+of the task.
+15%
+The gripper repeatedly tried to lift toast
+from the toaster. Both slices remained in
+their slots. The policy completes the task in
+0 of 5 trials.
+Inconsistent
+execution
+The robot attempts the required
+action on the correct target but
+fails physically on a task it has
+completed in other trials.
+38%
+The robot placed a pitcher inside the
+cabinet, but it tipped and fell to the floor
+after release. The policy completes the task
+in 11 of 15 trials.
+Wrong target
+The robot acts on an object,
+appliance, or control other than
+the one specified by the
+instruction.
+24%
+Asked to move a chicken drumstick to the
+freezer, the robot picked up a banana. The
+drumstick remained on the refrigerator
+shelf.
+Order or progress
+error
+The robot skips a required step,
+advances before a step is complete,
+or repeats a step it has already
+completed.
+19%
+Asked to heat both bread and a kebab, the
+robot put the bread in the toaster oven and
+shut the door while the kebab was still on
+the plate.
+Table A.3 | Events observed in the 11 episodes that Xiaomi solves alone and loses with Astra. Each
+episode contributes to one row.
+Observed event
+Episodes
+Share of losses
+Observation only
+0
+0.0%
+Instruction rewritten during observable progress
+1
+9.1%
+Confirmed state damage from takeover
+0
+0.0%
+Initial takeover consumed about half the step budget
+2
+18.2%
+Plan omitted a required repair
+1
+9.1%
+Missed corrective grasp after which the takeover tool kept the gripper closed
+3
+27.3%
+Earlier policy failure or unresolved attribution
+4
+36.4%
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+23
+B. Evaluation protocol details
+B.1. Episode selection and planning timeouts
+The main evaluation used the Xiaomi-Robotics-1-RoboCasa365 checkpoint (0d1aa76d) and harness
+v1.2.3.5 (c8911c64). It ran on November 3–7, 2026, with a 330-second API timeout and a 180-
+second default planning timeout. RLDX-1 used the RLDX-1-FT-RC365 checkpoint (c53d0bc0),
+and WorldDreamer used the world_dreamer-robocasa365-multi_task checkpoint (e570a06b).
+The primary Xiaomi analysis used episode indices 1–4. After outcomes for the 50 index-0 scenes
+became available, we decided to exclude them from the primary summary. All 50 have verified
+environment scores. The harness solves 25 and Xiaomi alone solves 24.
+Ten initially unsuccessful Xiaomi–Astra runs ended early with planning timeouts. We reran those
+scenes with a 600-second planning timeout in place of the 180-second default. These were all the runs
+that ended on a planning timeout; such a run is cut short and can only be scored as a failure, so the
+reruns were not selected by outcome. Two changed from failure to success. The harness thus solves
+141/200 scenes with the reruns and 139/200 using the original scores, compared with 115/200 for
+Xiaomi alone. Including index 0 gives 166/250 versus 139/250 with the reruns, or 164/250 versus
+139/250 using the original scores. The separate 50-scene evaluations of the four other policies used a
+600-second planning timeout and a 330-second API timeout.
+B.2. Stall windows used for each policy
+RLDX-1 and WorldDreamer use stall windows derived from their own profiling rollouts (§3.7). We
+did not derive policy-specific windows for GR00T N1.5 and 𝜋0.5, which use the default windows:
+per-skill values from 62 to 476 control steps and a 299-step fallback for substages with no matching
+skill. Xiaomi-Robotics-1, the development policy, uses a single 120-step window.
+B.3. Harness VLA comparison protocol
+Table 5, Panel A, uses the success rates tabulated in arXiv v5 of Zhang et al. (2026b). Appendix C.3,
+Table 12 of that paper specifies five evaluation seeds per task (250 rollouts), and Appendix H reports
+low reasoning effort for GPT-6 Astra. The authors’ released evaluation record lists 340 rollouts (180
+atomic, 80 seen composite, and 80 unseen composite) and documents a correction of the Astra
+reasoning effort to high. Both sources report 59.2% overall for Astra.
+B.4. Failure audit
+The audited failures come from an earlier RoboCasa365 evaluation of Xiaomi-Robotics-1 running
+without a harness, which produced 2,413 valid rollouts, 893 of them failures. We sampled 193 failures
+across five task groups (the atomic-seen, composite-seen, and composite-unseen tasks evaluated
+in §4.1, all 65 atomic tasks, and tasks that appear only in the pretraining set), selecting up to 50
+episodes per group and at most three per task. For each episode, we reviewed the instruction alongside
+synchronized keyframes from three cameras and simulator records of object motion, gripper contact,
+and appliance state. We labeled the earliest observable error that diverted the robot from the task. To
+check consistency, we reannotated 45 episodes. Of the 44 episodes for which we assigned a definite
+label on the second pass, 38 received the same primary label both times (86%).
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+24
+B.5. Episode sets and their overlap
+The shared 50-scene subset is contained in the main evaluation. Of the 80 episodes in the Sol
+trajectory audit, 64 use main-evaluation scenes (episode indices 1–4 of the 16 unseen-composition
+tasks) and 16 use episode index 0. The audit reads trajectories supervised by Sol, whereas the main
+results use Astra. Of the 72 development episodes, 28 trace to failures included in the failure audit,
+and 10 match main-evaluation scenes on the task, the initial simulator state, and the starting camera
+images (§4.1).
+B.6. What the harness knows about a task
+We count as preparation anything made for one task that tells a harness how to solve it: demonstrations,
+exploration episodes on that task, stored memories, or scripts. RoboHarness-Zero uses none of these.
+Its rules and prompts contain nothing written for a particular task, and it keeps no memory between
+episodes. The only prior information is the skill profile, which records how often and how quickly
+the policy alone completes each skill and is measured without any VLM call (§3.7). The profile tells
+the harness how much to trust the policy, not how to solve the task, and a skill without an entry
+uses policy-wide defaults. This information overlaps with the evaluated tasks in three ways. The 65
+profiled atomic tasks include the 18 atomic tasks we evaluate. Five of the 32 evaluated composite
+tasks also have a whole-task entry in the profile, covering 20 of the 128 composite episodes. Finally,
+we developed the rules on 72 episodes that cover 47 of the 50 tasks (§4.1).
+B.7. Example episodes
+An episode without intervention (§3.3). In one episode, the robot was asked to add a lemon wedge
+and an ice cube to a glass of lemonade. At steps 160, 320, and 480, the VLM recorded that the gripper
+had reached the refrigerator handle, the door had opened, and the gripper held the lemon wedge. It
+continued to check every 160 steps through step 960. The policy completed the task at step 1,000
+under the same instruction it had received at the start.
+Handing over the whole task (§3.3). We adopted this rule after observing an early failure on a
+tea-serving task. An earlier version split the task into moving a kettle, placing a mug on the same
+tray, and closing the cabinet doors. It took over to move the kettle and later instructed the policy to
+close the doors while the mug was still off the tray. On the same scene, the policy completed the full
+sequence in 1,415 steps when given the original instruction from the outset.
+Judging progress at the current substage (§3.4). A matched development run illustrates why the
+scope of the progress signal matters. The robot had to place a loaf of bread in a basket and then
+carry the basket to the dining counter. The earlier version of the harness repeatedly credited the
+robot for holding the loaf as it drove through the kitchen. It was still reporting progress after the
+basket had disappeared from view. By the time it flagged a placement failure at step 832, the robot
+had released the loaf onto a bare counter. The two versions executed identical actions through step
+320. At that checkpoint, the current version found no evidence that the loaf was getting closer to
+the basket and prompted the policy to “Place the bread in the basket on the counter.” At step 512,
+the wrist camera showed the loaf inside. The harness then advanced to moving the basket, and the
+environment registered success at step 1,127.
+B.8. Takeover constants
+A takeover’s initial allowance is 1.5 times the skill’s measured typical duration, or 500 control steps
+when no measurement is available. The harness ends the attempt after 150 executed steps without
+
+
+RoboHarness-Zero: Upgrade the Policy, Keep the Harness
+25
+progress or upon a verified drop or unsafe motion. If the robot is already moving a securely held object
+toward placement, it can receive up to 50 additional steps at a time, capped at 200 per operation.
+B.9. Harness VLA transfer evaluation
+Our transfer evaluation used one scene per task and GPT-6 Astra at xhigh reasoning effort. The
+published evaluation used multiple seeds per task (Appendix B). In the released memory set, four
+of the 50 tasks (OpenCabinet, OpenDrawer, HeatKebabSandwich, and WashFruitColander) lack the
+task-specific Markdown notes but keep their other task-specific files and the global memory. We
+evaluated all four using the remaining released memory. Harness VLA and our harness each solve
+three of these four scenes, and Xiaomi alone solves two. On the remaining 46 scenes, Harness VLA
+solves 26, Xiaomi alone 28, and our harness 31.
+None of the four scenes that Xiaomi solves alone and Harness VLA loses (CoffeeSetupMug, Get-
+ToastedBread, KettleBoiling, and WaffleReheat) is among these four tasks. Both runs had the same
+control-step limit in each scene. Xiaomi alone first succeeds at steps 209, 1,885, 1,211, and 1,216,
+while the Harness VLA runs use the full limits of 600, 3,000, 1,500, and 4,050 steps without complet-
+ing the task. They stop at different points: the mug is set down outside the valid position under the
+dispenser, the toast is never taken out of the toaster, the kettle is left 0.30 m from the burner, and the
+microwave is never switched on.

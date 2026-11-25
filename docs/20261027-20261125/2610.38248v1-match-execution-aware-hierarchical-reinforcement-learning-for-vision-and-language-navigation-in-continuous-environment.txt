@@ -1,0 +1,1508 @@
+MATCH: Execution-Aware Hierarchical Reinforcement Learning for
+Vision-and-Language Navigation in Continuous Environment
+Shuhao Ye1, Yufei Wei1, Demao Wang1, Shichao Zhai1, Rong Xiong1, Yue Wang1†
+Abstract— Vision-and-Language Navigation in Continuous
+Environments (VLN-CE) requires instruction-consistent plan-
+ning and reliable execution under collision constraints. Yet
+many hierarchical approaches optimize the planner while
+keeping execution fixed. We introduce MATCH, a frame-
+work that jointly learns a language-conditioned planner and
+a goal-conditioned primitive-action executor. An execution-
+aware topological graph represents start-dependent execution
+options and integrates executor value estimates with realized
+outcome memory, enabling the planner to select execution
+requests and refine their targets through bounded continu-
+ous offsets. A transition-aware dense macro reward balances
+ordered progress along the reference route against execution
+residual, encouraging executable requests without substituting
+local success for instruction following. A staged curriculum
+culminates in synchronized on-policy updates, with the executor
+learning on planner-generated requests and the planner adapt-
+ing its requests to the executor’s current behavior. With 0.5B
+parameters, MATCH achieves state-of-the-art performance on
+the R2R-CE and RxR-CE benchmarks. Preliminary real-robot
+deployments further demonstrate its practical potential.
+I. INTRODUCTION
+Vision-and-Language Navigation in Continuous Envi-
+ronments
+(VLN-CE)
+[1]
+requires
+an
+agent
+to
+follow
+natural-language instructions through hundreds of collision-
+constrained primitive actions. Many approaches address this
+long-horizon problem by predicting intermediate navigation
+intents, such as target locations [2]–[4], or short waypoint-
+based trajectories [5], [6], which must then be translated
+into movement. We refer to intent selection as macro-level
+planning and intent realization as micro-level execution. In
+the hierarchical Markov decision process (HMDP) view [7],
+an intent is a macro action whose state transition depends
+on both environmental dynamics and the executor’s policy.
+Selecting an instruction-consistent intent therefore doesn’t
+ensure that it can be realized under collision constraints.
+Some methods bypass this execution challenge through
+teleportation [5], [6] (Fig. 1a), while some other methods rely
+on hand-designed controllers [2], [8]. Even when the planner
+is trained on actual execution outcomes [4], the execution
+policy remains fixed during that training. The planner may
+learn to avoid a difficult doorway and select an alternative
+target, but the same experience does not teach how to handle
+that doorway more reliably (Fig. 1b). Our insight is to extend
+the learning loop beyond macro-level planning to include
+micro-level execution: navigation experience should help to
+co-optimize the planner and executor, not just improve the
+planner’s ability to work within its limits.
+1Zhejiang University, Hangzhou, China
+†Corresponding author: Yue Wang (email: wangyue@iipc.zju.edu.cn)
+(b) Actual execution, fixed executor
+Planner compromises to executor limits
+Waypoint beyond left doorway.
+I fail at the doorway.
+Pass the left door
+to reach the goal.
+Waypoint beyond right doorway.
+Alright, I get there.
+(c) MATCH: joint planner-executor adaptation via HRL
+Planner adapts to executor’s rollout distribution
+Executor adapts to planner’s target distribution
+It maybe easier for me if you adjust target like …
+Pass the left door
+to reach the goal.
+Alright, is it ok?
+Successful execution!
+Great, use this experience 
+to improve yourself.
+(a) Teleport / Idealized transition
+Macro transition is always successful
+Waypoint beyond
+left doorway.
+Pass the left door 
+to reach the goal.
+Teleport
+(magical jump)
+Execution
+ignored.
+Fig. 1: Comparison of three Hierarchical paradigms in VLN-CE.
+Hierarchical reinforcement learning (HRL) [9] provides
+a natural framework for this joint adaptation. The planner
+determines the requests on which the executor learns, while
+the executor shapes the transitions those requests realize. The
+challenge is to couple these adaptations so that the executor
+learns on planner-generated requests and the planner selects
+requests that produce instruction-consistent progress under
+the current execution policy, rather than merely favoring easy
+targets. This calls for grounding macro-action learning both
+in the current executor and in the task contribution of its
+realized transitions.
+We address this challenge with MATCH (Macro-Action
+Transition Coupling for Hierarchical RL) (Fig. 1c), which
+jointly learns a language-conditioned planner and a goal-
+conditioned executor. We implement its decision interface
+within the graph-based VLN-CE architecture [2], where
+waypoint proposals define candidate frontiers for an online
+topological planner. To ground the planner’s requests in the
+executor’s evolving capabilities, we develop an execution-
+aware topological graph. In this graph, edges from different
+visited nodes to the same frontier represent distinct execution
+options, since execution outcomes depend not only on the
+destination but also on the starting location. Each edge car-
+ries the executor’s value estimates over a target neighborhood
+before execution and records the realized outcome memory
+afterward. The planner pairs edge selection with a bounded
+continuous target offset within this evaluated neighborhood,
+arXiv:2610.38248v1  [cs.RO]  28 Oct 2026
+
+
+allowing it to refine an execution request rather than merely
+accept or reject a fixed waypoint.
+To learn which execution requests are useful for the task,
+we introduce a transition-aware dense macro reward based
+on their realized transitions. Each macro action receives
+credit for the ordered progress along the reference route,
+minus the execution residual—the remaining target-reaching
+distance—with both measured in meters. The progress term
+encourages the planner to advance along the route, not just
+choose easier targets. The residual gives the planner direct
+feedback on each request’s execution difficulty, rather than
+leaving it implicit in final task outcomes. This encourages
+executable requests without making local success a substi-
+tute for instruction following. The executor is rewarded for
+progress toward assigned target. A staged curriculum fol-
+lowed by synchronized on-policy updates lets both policies
+adapt through shared navigation experience.
+Our main contributions are:
+• We propose MATCH, to our knowledge the first
+VLN-CE framework to jointly optimize a language-
+conditioned planner and a primitive-action executor
+through HRL, with both policies learning from shared
+on-policy navigation rollouts.
+• To support joint adaptation during HRL, we develop
+an execution-aware topological graph that uses executor
+value estimates and outcome memory to guide the
+planner’s selection and refinement of execution requests.
+• We introduce a transition-aware dense macro reward
+that balances ordered progress along the reference route
+against execution residual, encouraging executable re-
+quests that advance the route.
+• Using a 0.5B-parameter model, MATCH achieves state-
+of-the-art performance on R2R-CE and RxR-CE, with
+real-robot deployments further validating practicality.
+II. RELATED WORK
+A. Hierarchical Vision-and-Language Navigation
+VLN-CE
+[1]
+requires
+instruction
+following
+through
+collision-constrained primitive actions rather than assuming
+oracle transitions between predefined viewpoints. Waypoint
+prediction [10] introduces intermediate spatial goals to con-
+nect language-conditioned planning with movement, en-
+abling discrete-environment agents to transfer to continuous
+settings without predefined navigation graphs. Graph-based
+methods extend planning context: DUET [11] combines fine-
+grained local grounding with global topological reasoning,
+while BEVBert [12] integrates metric and topological maps
+for spatially grounded navigation. ETPNav [2] couples on-
+line topological mapping and cross-modal planning with
+a heuristic controller that tries alternative actions when
+execution is blocked. DualVLN [3] learns a diffusion-based
+executor conditioned on a supervised pixel-goal planner, but
+does not refine the planner through RL on executor-induced
+macro transitions. HSAN [13] combines supervised high-
+level planning with RL-based low-level control. Ye et al. [4]
+optimize topological frontier selection through closed-loop
+macro-action RL while retaining a fixed controller. MATCH
+differs by applying RL to both levels, jointly optimizing a
+language-conditioned planner and a primitive-action executor
+from shared on-policy navigation rollouts.
+B. Hierarchical Learning and Execution Feedback
+In state-based control, goal-conditioned HRL methods
+jointly learn high-level subgoals and low-level policies [14],
+[15]. HIRO [16] corrects off-policy experience to account for
+changing low-level behavior, while HAC [17] uses hindsight
+transitions to learn multiple policy levels in parallel. For
+execution grounding, SayCan [18] uses value functions of
+pretrained skills to inform language-level decisions. For
+route-aware supervision and evaluation, LAW [19] aligns
+corrective actions with the instructed path instead of only the
+destination, while nDTW [20] measures ordered path fidelity
+and can serve as an RL reward.
+MATCH couples macro-action learning to both the execu-
+tor’s evolving capabilities and the task contribution of real-
+ized transitions. Its execution-aware topological graph uses
+current executor values and outcome memory to evaluate
+source–target execution options, guiding request selection
+and bounded continuous target refinement. Its transition-
+aware macro reward credits ordered route progress while
+penalizing execution residual, providing direct feedback on
+both task contribution and execution shortfall. Together, these
+mechanisms support joint adaptation without treating local
+target completion as the navigation objective.
+III. METHOD
+A. Hierarchical Formulation with a Learned Transition
+Task. In VLN-CE an agent must follow a natural-language
+instruction I to its goal in an unseen 3D environment. At
+each step it observes a panoramic RGB-D image of 12
+egocentric views and its odometry, and issues one primitive
+action: move forward by ∆s = 0.25 m, turn left or right by
+∆θ or stop. It succeeds if it stops within 3 m of the goal,
+typically after hundreds of primitives.
+Hierarchy. Following [4], we cast the task as a hierar-
+chical MDP. A waypoint predictor [10] predicts navigable
+waypoints around the agent, and the predicted waypoints
+are accumulated online into a topological graph Gt [2]. At
+macro step t the planner acts on the macro state st = (I, Gt);
+its macro action commits the agent to one of the predicted
+waypoints or to STOP, and an executor πL realizes it with
+primitive actions before the graph is updated. The macro
+transition P πL(st+1 | st, at) is thus determined by the envi-
+ronment together with the executor. In [4] the executor is a
+fixed heuristic, so this transition is fixed and only the planner
+learns. MATCH learns both levels jointly as a hierarchical
+RL agent, so the transition itself changes during training,
+and the planner is adapted to this in three ways: it observes
+the executor’s expected performance before committing to a
+target and the actual outcome afterwards, it can adjust the
+target within the neighborhood it has evaluated (Sec. III-C),
+and its reward is designed to account for both task progress
+and execution residual. (Sec. III-D).
+
+
+Budget used
+Collision rate
+Reached
+Residual
+Outcome memory
+Low
+High
+Value field
+Visited node
+Current node
+Frontier
+Active edge
+Execution-Aware Graph
+Macro-level Planner
+Language-
+conditioned planner
+Macro
+Action
+Macro
+Value
+Active edge:
+Target offset:
+or STOP
+Target
+Environment
+Micro-level executor
+Goal-conditioned
+executor
+Micro 
+Action
+Micro 
+Value
+MOVE(m)
+or REACHED
+Execution until 
+REACHED or TIMEOUT
+You are in a bathroom.
+Turn all the way to
+your left…
+Camera view
+Language Instruction
+Odometry
+Observation
+Micro transition
+Macro transition
+Shared rollout experiences
+Macro steps
+Micro steps
+Macro samples
+Micro samples
+Rollout Loop
+Macro reward
+Micro reward
+Joint Update
+Planner adapts to 
+executor’s capability
+Executor adapts to
+planner’s distribution
+Execution-aware feedback
+Training Loop
+Fig. 2: Overview of MATCH. The language-conditioned planner issues execution requests from an execution-aware graph, while the
+goal-conditioned executor realizes them with primitive actions. Macro- and micro-level experiences from the same rollouts are used for
+synchronized updates, enabling mutual adaptation between planning and execution.
+Workflow (Fig. 2). At each macro step, the planner scores
+every active edge e = (j, c) from a visited node vj to a
+frontier c, together with STOP, and samples an edge and a
+continuous offset η; together they define a 2D target ξ near
+the location the edge points to. If the agent does not stand at
+vj, it first returns there by replaying the primitive sequences
+stored on the tree edges along the path; this needs no
+policy, so the executor is responsible only for reaching new
+targets. The executor then drives toward ξ until it declares
+REACHED or exhausts its decision budget (TIMEOUT).
+Wherever it stops, a new visited node is created, the executed
+edge stores the outcome, waypoints predicted from the new
+node extend the graph, and every new edge is annotated with
+the executor’s value estimates for targets around it.
+B. Goal-Conditioned Executor
+Interface. The executor receives no language; a sub-task
+is specified only by a 2D target ξ relative to the start node.
+The executor acts in decisions, each of which expands to
+several primitives. At decision k it observes a single forward
+depth view, the distance ρk and bearing θk of the target
+from odometry, and its previous decision. A decision is either
+REACHED, which ends the sub-task, or MOVE(m) for one
+of M (M = 360◦/∆θ) evenly spaced headings: the agent
+turns to heading m with the fewest turn primitives and then
+moves forward once. A sub-task also ends after Kmax = 16
+decisions (TIMEOUT).
+Reward. The executor is trained with privileged geometry
+that it never observes. Let ˆg be the navigable point closest to
+ξ; every target thus has a well-defined destination, as close to
+ξ as the environment permits. With dk the geodesic distance
+from the agent to ˆg before decision k, a decision receives
+rL
+k = αprog
+dk −dk+1
+d0
+−αtime
+nk
+nref
+,
+nref = d0
+∆s, (1)
+where d0 is the initial distance, nk is the number of prim-
+itives the decision used. Both terms are normalized by the
+sub-task size, so the executor’s value VL is comparable across
+targets and indicates how reachable a target is expected to
+be, which Sec. III-C hands to the planner.
+C. Execution-Aware Topological Graph and Macro Actions
+Graph. Gt has three kinds of elements. A visited node
+vj is created at the start pose and at the end of every
+execution, wherever the agent stopped; it stores the agent’s
+pose and the panorama observed there. Every visited node
+except the root has exactly one parent, the node from which
+the agent reached it, so the visited nodes form a tree; the
+tree edge from the parent stores the primitive sequence of
+that execution and its outcome memory, defined below. A
+frontier c is a predicted waypoint that has not been visited
+yet; waypoints predicted from different visited nodes that
+lie within a merging radius of each other are merged into
+one frontier. An active edge e = (j, c) connects a visited
+node vj to a frontier c that was predicted from vj. Since
+a frontier merges the predictions of several nodes, the edge
+stores where vj itself predicted it: this position ae is the
+anchor of the edge, and ˆue is the unit direction from vj
+to ae. The graph is updated whenever a new visited node
+is created, by sorting the waypoints predicted from it into
+three cases. A waypoint that lies close to a visited node is
+discarded. A waypoint that lies close to an existing frontier is
+merged into it, and a new active edge connects the new node
+to that frontier. Any other waypoint becomes a new frontier,
+connected to the new node in the same way. The executed
+edge is removed, and if the agent reached its frontier, the
+frontier is removed as well. Edges are kept specific to their
+parent node because the outcome of an execution depends
+not only on the target but also on where it starts.
+Macro action. A macro action is either STOP or an active
+edge together with a target offset:
+πH(e, η | st) = πE(e | st) πoff(η | e, st),
+ξ = ae + Be η,
+(2)
+where Be = [ˆue, ˆu⊥
+e ] is the frame of the edge and η lies in
+the disk D of radius rmax = 1 m around the anchor. πE is a
+categorical distribution over the active edges and STOP, and
+πoff is a Gaussian squashed radially onto D.
+Value field: what the planner sees before execution.
+When an active edge is created, it is annotated with the
+executor’s own value estimates for targets around its anchor:
+Fe(ηn) = VL
+ s0
+e, ae + Beηn
+
+,
+n = 1, . . . , NF ,
+(3)
+where s0
+e is the executor’s initial state for this edge, and the
+NF = 16 offsets ηn form a uniform distribution over D, with
+η1 = 0 at the anchor. VL estimates the normalized return
+for each target under the current execution policy, providing
+policy-dependent feedback for the planner’s selection and
+
+
+refinement of execution requests. Fe enters the active edge
+token of the planner network.
+Outcome memory: what the planner sees after execu-
+tion. After execution along active edge e with target ξ, the
+newly created edge between the last and current node records
+He =
+
+⊮R, kused/Kmax, ncoll/nfwd, B⊤
+e (ξ −pend)/ρ0
+
+(4)
+Its entries are, in order, whether the executor declared
+REACHED, the fraction of the decision budget used, the
+fraction of forward primitives that collided, and the horizon-
+tal displacement from the final position pend to the target,
+expressed in the edge frame and normalized by the initial
+horizontal distance ρ0. He is attached to the child node and
+enters its token of the planner network.
+D. Transition-Aware Macro Reward
+To help the planner accurately assess the difficulty of
+the requests it issues to the executor, we incorporate the
+execution residual of each request into the macro reward.
+However, it may also encourage the planner to generate
+overly simple requests, disregarding task progress. A com-
+plementary reward that measures task progress is therefore
+necessary to balance this tendency. How to quantify progress
+at each macro step is thus an important engineering problem.
+We first introduce our solution, ordered route coverage, and
+then describe how it is integrated into the macro reward.
+Ordered route coverage. The progress should measure
+motion along the reference route. Alignment-based metrics
+such as nDTW [20] may appear to be a natural choice.
+However, they measure how closely the executed trajectory
+aligns with the reference route as a whole, rather than how
+much progress has been made along that route.
+We instead propose ordered route coverage. Let the refer-
+ence route be a polyline of length L, resampled at spacing
+∆s into K cells with centers γν and unit tangents τν. The
+trajectory so far, replays included, is a sequence of forward
+primitives i = 1, . . . , n, each ending at position xi with
+heading ui. Forward primitive i may cover cell ν with weight
+κiν = (1 −ci)κ
+ ∥xi −γν∥
+
+· ⊮
+
+u⊤
+i τν ≥0
+
+,
+(5)
+where ci indicates that a collision occurs during the i-th
+forward movement, ⊮[·] is the indicator function, and κ(d)
+equals 1 for d ≤0.5 m and decays linearly to 0 at d = 2.5 m,
+so that walking beside the route still counts, while motion
+against the direction of the route does not. The coverage
+At is the total length of the cells that can be matched to
+forward primitives one-to-one and in order. The maximum-
+weight matching is found by dynamic programming,
+Giν = max{ Gi−1,ν, Gi,ν−1, Gi−1,ν−1 + κiν∆s },
+(6)
+with G0,· = G·,0 = 0 and At = Gnt,K, nt being the number
+of forward primitives executed before macro step t; the three
+terms of the maximum correspond, in order, to skipping
+primitive i, to skipping cell ν, and to matching the two. The
+coverage progress of macro step t is ∆t = At+1 −At. Since
+At can only grow, ∆t ≥0; it is a length in meters that never
+exceeds the distance walked in the step.
+Reward. The planner receives reward at macro step t
+rH
+t = ∆t −rest
+L
++ ⊮[t = T] RT ,
+(7)
+where the residual rest = Dgeo(pend
+t
+, ˆgt) is the geodesic
+distance from the agent’s final position to the reachable point
+ˆgt of the assigned target, RT = SR + SPL + nDTW is the
+terminal reward, and a STOP step has ∆t = rest = 0. The
+two dense terms pull in opposite directions and balance each
+other. The coverage term rewards targets far along the route,
+the residual penalizes targets the executor could not reach.
+Because both are in meters, one meter of route covered is
+worth exactly one meter of target left unreached: a far target
+pays off only if the executor is expected to get there, and a
+very close target is always reached but earns little coverage,
+so the planner is pushed neither to overreach nor to collapse
+to simple targets. The residual is charged even when the miss
+is due to the executor’s own randomness, since the planner is
+responsible for how its choice plays out and the value field
+lets it anticipate it; one navigation experience thus trains both
+levels, through Eq. (1) and Eq. (7).
+E. Network Architecture
+While the interfaces above fix the inputs and outputs of
+both levels we leave the details of network architecture to
+the appendix.
+IV. TRAINING
+Training the two levels of MATCH jointly from the start
+is not practical. With an untrained executor, the value fields
+carry no information and the planner’s targets are never
+reached; with an untrained planner, the executor is requested
+to arbitrary places. Neither level can learn from the other
+until both are competent, so we train in three stages as below.
+A. Stage 1: Parallel Warmup
+Planner. The planner uses the same data and methods as
+Revisiting [4] for offline pretraining. No executor is involved
+at this stage, so the value fields and outcome memories of
+all edges and nodes are filled with a learned placeholder, and
+the offset head and the value head are not trained. What the
+planner learns here is grounding: how the instruction and the
+panoramas relate to the choice of a frontier.
+Executor. The executor is pretrained on sub-tasks gen-
+erated offline. A sub-task consists of a start node sampled
+from the expert trajectories and a 2D target generated by
+the waypoint predictor [10]. Supervision comes from the
+simulator’s oracle shortest path follower with access to the
+navigable mesh. The executor is first trained by behavior
+cloning on the teacher’s decisions, then by DAgger, and
+finally by PPO [21] with the reward of Eq. (1).
+B. Stage 2: Online Imitation with a Frozen Executor
+The planner is now trained by DAgger with the same
+teacher supervision as in [2]. The frozen executor of stage 1
+realizes its macro actions, so the planner faces the states a
+real executor produces and receives value fields and outcome
+memories as inputs. These inputs are not yet clearly related
+
+
+to the decisions: the teacher has no mechanism to reflect the
+executor’s reachability in its labels, so imitation can only
+accustom the planner to the form of the execution feedback,
+while learning to use it is left to the stage 3. For the same
+reason the offset head is not trained here and starts stage 3
+from a zero offset, by initializing the last layer of the offset
+mean head to zero. After imitation, VH is fitted to the returns
+of Eq. (7) on autonomous rollouts of the frozen policy.
+C. Stage 3: Joint Hierarchical Reinforcement Learning
+Both levels are now trained by PPO on the same experi-
+ence. Each iteration collects a batch of full episodes with
+both policies sampling, uses it for one epoch of updates
+of both levels, and discards it. The episodes of this stage
+are held out from stage 2, so that the planner does not re-
+encounter episodes it imitated: 80% of the training episodes
+are used for stage 2 and the remaining 20% for stage 3.
+Planner update. The planner is updated on macro steps of
+the batch, with the importance ratio of the joint macro-action
+probability πE(e | st) πoff(η | e, st) and advantages estimated
+by GAE over macro steps from the reward of Eq. (7) with
+γH = 1. The loss is the clipped PPO surrogate with a value
+loss on VH and an entropy bonus on πE and πoff.
+Executor update. The executor is updated on the deci-
+sions of all sub-tasks in the batch, with the importance ratio
+of the decision taken under πL and advantages estimated by
+GAE within each sub-task from the reward of Eq. (1) with
+γL = 1. The loss is the clipped PPO surrogate with a value
+loss on VL and an entropy bonus. Thus, executor training
+follows the starting-state and target distribution encountered
+under the current hierarchy, rather than a separate, fixed
+distribution of execution sub-tasks.
+V. EXPERIMENTS
+A. Experimental Setup
+Benchmarks and metrics. We evaluate on the val-unseen
+splits of R2R-CE [22] and RxR-CE [23] in habitat simula-
+tor [24]. R2R-CE provides English instructions for shortest-
+path routes. RxR-CE provides multilingual instructions for
+routes that are substantially longer and possibly non-shortest
+paths. The two benchmarks also differ in their agents: R2R-
+CE has ∆θ = 15◦and allows sliding along obstacles,
+whereas RxR-CE’s ∆θ = 30◦, has a larger agent radius
+and forbids sliding. We report in the standard navigation
+metrics: navigation error (NE), oracle success rate (OS),
+success rate (SR) and success weighted by path length (SPL)
+and normalized dynamic time warping (nDTW).
+Implementation details. Architectural details are given
+in the appendix. αprog and αtime in Eq. (1) are 1.0 and
+0.1 respectively. For Training Stage 3, Each iteration of the
+joint stage collects 128 episodes with the current policies
+and performs one update of both levels. We totally run 4000
+iterations. PPO uses a clipping range of 0.2, GAE with λ =
+0.95, a value-loss coefficient of 0.5 and an entropy coefficient
+of 0.01. Training runs on 4 NVIDIA RTX 5880 GPUs and
+takes about 70 h for the planner and 100 h for the executor
+in stage 1, 90 h in stage 2 and 120 h in the joint stage.
+B. Comparison with the State of the Art
+Table I compares MATCH with previous methods on both
+benchmarks.
+The first group follows the same high-level architecture as
+MATCH: a planner selects frontiers on a topological graph,
+while low-level execution is handled by a heuristic controller.
+Revisiting is the strongest of them but MATCH improves
+over it on every metric, by 0.9 SR and 4.2 SPL on R2R-CE
+and by 5.4 SR and 3.2 nDTW on RxR-CE, at a comparable
+model size.
+The second group contains recent methods built on large
+vision-language models. VLN-R1 and StreamVLN output
+primitive actions directly from the language model. Du-
+alVLN is a dual-system method whose VLM grounds a
+pixel goal in the current image and a diffusion policy
+executes it. It is therefore the closest in spirit to MATCH,
+but its two systems are trained sequentially and the high-
+level model receives no feedback from the low-level one.
+MATCH surpasses DualVLN by 4.7 SR and 3.0 SPL on
+R2R-CE and by 6.3 SR and 2.4 SPL on RxR-CE, with
+about 1/10 of its parameters. OmniNav reports its results with
+a teleporting executor that follows the predicted trajectory
+waypoints without executing primitive actions. To compare it
+under the same conditions as every other method in the table,
+we reproduce its evaluation with the rotate-then-forward
+executor. Under this setting MATCH surpasses it by 2.9 SR
+in R2R-CE and 3.0 SR in RxR-CE.
+C. Ablation Study
+To validate our proposed framework, we conduct ablation
+studies on the RxR-CE Val-Unseen split. Table II summarizes
+the results and training cost.
+Training. The result of “w/o joint HRL” first shows the
+significant total performance gains in RxR-CE of training
+stage 3 (5.9 SR and 4.9 nDTW). Replacing the learned
+executor by the heuristic rotate-then-forward executor, while
+training the planner with the same curriculum, costs 3.4 SR
+and 3.1 nDTW. In this variant the value field are replaced by
+a learned placeholder, since a heuristic executor has no value
+function, so the row measures the executor together with
+the value feedback that only a learned executor can provide.
+Keeping the learned executor frozen after Stage 1 reduces SR
+by 2.1 and nDTW by 2.0. This supports the task-level benefit
+of continuing executor training on the requests generated by
+the evolving planner, rather than adapting the planner alone
+to a fixed execution policy. Finally, updating the two levels
+alternately, one level per round with the other frozen, reaches
+almost the same accuracy as synchronous updates. But it
+takes 200 h instead of 120 h, because the episodes collected
+while one level is trained are not used to train the other.
+Synchronous training is thus the more economical way of
+training both levels from the same experience.
+Execution-aware graph. Removing the value field costs
+1.6 SR and 1.8 nDTW, and removing the outcome memory
+costs 2.2 SR and 1.0 nDTW. The two channels play different
+roles. The value field acts before the planner’s decision: it
+helps the planner choose targets that the executor can reach
+
+
+TABLE I: Comparison on the val-unseen splits of R2R-CE and RxR-CE. ‡: reproduced with the released checkpoint the
+rotate-then-forward executor, since the original evaluation follows the predicted waypoint trajectory by teleportation.
+Method
+Params Training Planner output Executor
+Observation
+R2R-CE Val-Unseen
+RxR-CE Val-Unseen
+NE↓OS↑SR↑SPL↑NE↓SR↑SPL↑nDTW↑
+ETPNav [2]
+0.3B
+IL
+frontier
+rotate-then-fwd. pano. RGB-D+odo. 4.71 65.0 57.0
+49.0
+5.64 54.8
+44.9
+61.9
+HNR [8]
+0.3B
+IL
+frontier
+rotate-then-fwd. pano. RGB-D+odo. 4.42 67.0 61.0
+51.0
+5.51 56.4
+46.7
+63.6
+Revisiting [4]
+0.5B
+IL+RL
+frontier
+rotate-then-fwd. pano. RGB-D+odo. 3.89 72.6 68.1
+57.3
+5.07 62.3
+50.2
+66.8
+VLN-R1 [25]
+7B
+IL+RL
+primitives
+–
+mono RGB
+7.00 41.2 30.2
+21.8
+10.4 22.3
+17.5
+–
+StreamVLN [26]
+7B
+IL
+primitives
+–
+mono RGB
+4.98 64.2 56.9
+51.9
+6.22 52.9
+46.0
+61.9
+DualVLN [3]
+7B
+IL
+pixel goal
+learned policy
+mono RGB
+4.05 70.7 64.3
+58.5
+4.58 61.4
+51.8
+70.0
+OmniNav‡ [6]
+3B
+IL
+trajectory
+rotate-then-fwd. 3-view RGB
+4.06 73.1 66.1
+61.1
+4.75 64.7
+53.0
+69.6
+MATCH
+0.5B
+IL+HRL edge + offset
+learned policy
+pano. RGB-D+odo. 3.78 73.3 69.0
+61.5
+4.51 67.7
+54.2
+70.0
+TABLE II: Ablations on RxR-CE val-unseen. ∆is relative
+to MATCH; time is the wall-clock of the joint stage in hours.
+Variant
+SR↑
+nDTW↑
+∆SR
+∆nDTW
+Time
+MATCH
+67.7
+70.0
+–
+–
+∼120
+Training (Sec. III-B, IV)
+w/o joint HRL
+61.8
+65.1
+−5.9
+−4.9
+–
+heuristic executor
+64.3
+66.9
+−3.4
+−3.1
+∼50
+learned executor, frozen
+65.6
+68.0
+−2.1
+−2.0
+∼110
+alternating updates
+67.0
+69.8
+−0.7
+−0.2
+∼200
+Execution-aware graph (Sec. III-C)
+w/o value field
+66.1
+68.2
+−1.6
+−1.8
+∼120
+w/o outcome memory
+65.5
+69.0
+−2.2
+−1.0
+∼120
+one edge per frontier
+66.2
+69.3
+−1.5
+−0.7
+∼120
+Adjusting the target (Sec. III-C)
+no offset (η = 0)
+64.8
+67.9
+−2.9
+−2.1
+∼120
+Reward design (Sec. III-D)
+terminal reward only
+65.1
+68.0
+−2.6
+−2.0
+∼120
+w/o residual term
+65.5
+68.1
+−2.2
+−1.9
+∼120
+w/o coverage term
+62.2
+65.5
+−5.5
+−4.5
+∼120
+nDTW increment as progress
+66.2
+69.1
+−1.5
+−0.9
+∼120
+and that advance along the route, which shows more in route
+fidelity. The outcome memory acts after the execution: it
+tells the planner where an execution ended and whether it
+failed, which mainly keeps the planner from repeating an
+unreachable target and shows more in success. Restricting
+every frontier to a single edge from its nearest parent node
+costs 1.5 SR and 0.7 nDTW. This implies that disregarding
+the starting point of the frontier can influence the planner’s
+assessment of low-level execution capabilities.
+Adjusting the target. Fixing the target to the anchor, so
+that the planner can only choose which edge to execute, is
+the most costly single change among the graph ablations
+(2.9 SR and 2.1 nDTW). This highlights the improvements in
+instruction following and reachability of the selected requests
+achieved through offset adjustment.
+Reward design. Training the planner with the terminal
+reward alone, costs 2.6 SR and 2.0 nDTW. Adding the
+coverage term without the residual recovers only 0.4 SR
+of this loss. Because this is merely an approximation of
+distributing the terminal reward across each step. Keeping the
+residual without the coverage term is the worst variant of all,
+5.5 SR and 4.5 nDTW below MATCH. This is the collapse
+anticipated in Sec. III-D: a planner that is charged for missed
+targets learns to assign simple targets that are always reached,
+1.5
+2.0
+2.5
+planner
+(a) return & ΔSR
+0.7
+0.8
+executor
+0
+2k
+4k
+0
+2
+4
+ΔSR val-unseen
+2.00
+2.25
+2.50
+target distance ρ0
+(b) distance (m)
+0
+2k
+4k
+0.1
+0.2
+0.3
+residual rest
+0.4
+0.6
+ΣtΔt/L
+(c) macro dense reward
+0
+2k
+4k
+−0.2
+−0.1
+−Σtrest/L
+Fig. 3: Training dynamics during Stage 3 joint HRL. The
+x-axis in all panels denotes the training step. (a) Planner
+and executor returns, together with the change in success
+rate (∆SR) on RxR-CE val-unseen. (b) Planner-proposed
+target distance ρ0 and the execution residual rest after each
+macro action. (c) The two dense components of the macro
+reward: normalized ordered-route coverage increment re-
+ward, P
+t ∆t/L, and normalized execution-residual penalty,
+−P
+t rest/L. Together, these curves illustrate how the plan-
+ner gradually balances target ambition with executability as
+the planner and executor co-adapt.
+but too slowly to finish the episodes. The two terms therefore
+need each other, and their balance is what makes the dense
+reward useful. Finally, replacing ordered route coverage by
+the per-step increment of nDTW, the most natural alternative
+for a progress measure, costs 1.5 SR and 0.9 nDTW. This
+is because nDTW only measures the similarity between two
+trajectories, whereas the ordered route coverage we defined is
+explicitly designed to incorporate incremental task progress.
+D. Training Dynamics and Qualitative Analysis
+Fig. 3 shows Stage 3 training dynamics. Early in training,
+the planner increases target distance before the offset policy
+is well trained, which increases the execution residual. It then
+shortens targets and gradually increases their distance again
+as joint training stabilizes.
+Fig. 4 shows one representative episode in RxR-CE val-
+unseen. In this episode, the robot is required to navigate
+through two consecutive narrow passages; however, the en-
+vironment also features a slightly wider alternative route
+that leads to the target but contradicts the instructions.
+Revisiting [4] initially attempts the instructed path but fails
+
+
+Correct Trajectory
+Wrong Trajectory
+(a) Match
+(b) Revisiting
+You are in a bathroom. Turn all the way to your left, passing the shower and you will see a doorway where you take a step up onto the wood floor and a white bedspread on a bed. When you 
+reach the bed, go left. This will take you across the brown rug into a hall with another brown rug. Go straight down this hall,passing the large brown furniture on your left. This is also a 
+bedroom, there will two beds on your left. You want to stay on the carpet in the straight line you were taking. Continue going all the way to the wall past the second twin bed. Stop right where 
+the one piece of wood on the lower part of the wall is slanting to the left. Stop there in front of it and you are still on thebrown carpet. You have reached your destination.
+Visited Node
+Frontier
+Active Edge
+Selected Edge
+Target
+Execution End
+Agent Trajectory
+Reference Path
+Agent
+t=0
+t=1
+t=2
+t=6
+t=8
+t=11
+Fig. 4: Comparative case study on RxR-CE val-unseen.
+EP. 1
+Starting from the corner, go 
+straight and turn right into the
+narrow passageway; you will see
+a table with a tablecloth on your
+left.Turn left before the main
+entrance, then continue straight to
+the end of the corridor, where
+you will stop at a brown door.
+EP. 2
+Move forward until you reach the 
+intersection and turn right,
+keeping the robot on your left;
+then, turn right into another work
+area and stop in front of several
+boxes.
+EP. 3
+Start facing the door, pass 
+through the doorway, and turn
+left into the long corridor.
+Continue moving forward until
+you stop in front of the coffee
+machine.
+EP. 4
+Turn around from the starting 
+point, pass the staircase on your
+left, and enter the first open
+doorway ahead. Then, turn right
+and stop in front of the bookshelf
+and the photo wall.
+Fig. 5: Real robot deployment. We deployed MATCH on a robot modified from TurtleBot 4 and tested it across four episodes.
+to pass through, subsequently opting to reach the destination
+via the incorrect route. In contrast, Match leverages the
+cooperation between its planner and executor, successfully
+navigates the narrow passages and reaches the destination
+by following the correct trajectory.
+E. Real-World Deployment
+We deploy MATCH on a TurtleBot 4 equipped with an
+elevated Seeker multi-camera system that provides four-view
+panoramic RGB observations. An onboard NVIDIA Jetson
+Orin interfaces with the camera system and handles image
+processing and transmission, while model inference is per-
+formed on a remote server equipped with an NVIDIA RTX
+3090 GPU. All system components communicate through
+ROS [27]. Since MATCH additionally requires panoramic
+depth and robot pose as inputs, we use FoundationStereo [28]
+to estimate depth for the four camera views. For localization,
+we first construct a map of the environment using SLAM [29]
+and then estimate the robot pose online using Adaptive
+Monte Carlo Localization (AMCL) [30]. Importantly, the
+pre-built map is used only for localization and visualization
+and is never provided to MATCH.
+The physical sensing configuration differs from the origi-
+nal MATCH setup, which represents each graph node using
+12 visual tokens. We therefore first retrain the waypoint
+predictor using four-view observations. For the planner, we
+introduce a lightweight attention-based adapter that lifts the
+four tokens associated with each node to the original 12-
+token representation, while leaving the remainder of the
+planner architecture unchanged. We train this adapter and the
+modified planner by distilling knowledge from the original
+MATCH planner, followed by Stage 3 joint training in
+simulation using the same four-view camera configuration
+as the real robot.
+During real-world deployment, the planner operates at
+approximately 0.1 Hz, whereas the executor runs at approx-
+imately 1 Hz. We evaluate the complete system over four
+episodes in indoor environments, with results summarized
+
+
+in Fig. 5. The results indicate that MATCH transfers effec-
+tively from simulation to the physical platform and exhibits
+promising sim-to-real generalization.
+VI. CONCLUSION
+We presented MATCH, a hierarchical reinforcement learn-
+ing framework that improves VLN-CE navigation through
+joint adaptation of a language-conditioned planner and a
+goal-conditioned executor. Its execution-aware graph, contin-
+uous target refinement, and transition-aware reward connect
+the executor’s evolving capabilities to progress along the
+instructed route. Ablation studies support the benefits of
+joint adaptation and execution feedback, while highlighting
+the importance of balancing route progress with execution
+residual. Real-world deployment across four indoor real-
+robot episodes also suggests promising sim-to-real transfer.
+Together, these findings support learning what to execute
+and how to execute it through shared experience, rather than
+adapting planning alone to a fixed controller.
+REFERENCES
+[1] J. Krantz, E. Wijmans, A. Majumdar, D. Batra, and S. Lee, “Beyond
+the nav-graph: Vision-and-language navigation in continuous environ-
+ments,” in European Conference on Computer Vision, pp. 104–120,
+Springer, 2020.
+[2] D. An, H. Wang, W. Wang, Z. Wang, Y. Huang, K. He, and L. Wang,
+“Etpnav: Evolving topological planning for vision-language navigation
+in continuous environments,” IEEE Transactions on Pattern Analysis
+and Machine Intelligence, 2024.
+[3] M. Wei, C. Wan, P. Peng, X. Yu, Y. Yang, D. Feng, W. Cai, C. Zhu,
+T. Wang, J. Pang, et al., “Ground slow, move fast: A dual-system
+foundation model for generalizable vision-language navigation,” in
+International Conference on Learning Representations, vol. 2026,
+pp. 12380–12396, 2026.
+[4] S. Ye, S. Mao, Y. Cui, Y. Wei, X. Yu, S. Zhai, W. Chen, S. Zhou,
+R. Xiong, and Y. Wang, “Revisiting topological graphs for macro ac-
+tion based closed-loop reinforcement learning of vision language nav-
+igation in continuous environment,” arXiv preprint arXiv:2609.03906,
+2026.
+[5] J. Zhang, A. Li, Y. Qi, M. Li, J. Liu, S. Wang, H. Liu, G. Zhou,
+Y. Wu, X. Li, et al., “Embodied navigation foundation model,” in
+International Conference on Learning Representations, vol. 2026,
+pp. 127293–127322, 2026.
+[6] X. Xue, J. Hu, M. Luo, S. Xie, J. Chen, Z. Xie, Q. Kuichen, W. Guo,
+Z. Chu, M. Xu, et al., “Omninav: A unified framework for prospective
+exploration and visual-language navigation,” in International Confer-
+ence on Learning Representations, vol. 2026, pp. 106216–106231,
+2026.
+[7] R. E. Parr, Hierarchical control and learning for Markov decision
+processes. University of California, Berkeley, 1998.
+[8] Z. Wang, X. Li, J. Yang, Y. Liu, J. Hu, M. Jiang, and S. Jiang,
+“Lookahead exploration with neural radiance representation for con-
+tinuous vision-language navigation,” in Proceedings of the IEEE/CVF
+conference on computer vision and pattern recognition, pp. 13753–
+13762, 2024.
+[9] R. S. Sutton, D. Precup, and S. Singh, “Between mdps and semi-mdps:
+A framework for temporal abstraction in reinforcement learning,”
+Artificial intelligence, vol. 112, no. 1-2, pp. 181–211, 1999.
+[10] Y. Hong, Z. Wang, Q. Wu, and S. Gould, “Bridging the gap between
+learning in discrete and continuous environments for vision-and-
+language navigation,” in Proceedings of the IEEE/CVF conference on
+computer vision and pattern recognition, pp. 15439–15449, 2022.
+[11] S. Chen, P.-L. Guhur, M. Tapaswi, C. Schmid, and I. Laptev, “Think
+global, act local: Dual-scale graph transformer for vision-and-language
+navigation,” in 2022 IEEE/CVF Conference on Computer Vision and
+Pattern Recognition (CVPR), pp. 16516–16526, IEEE, 2022.
+[12] D. An, Y. Qi, Y. Li, Y. Huang, L. Wang, T. Tan, and J. Shao, “Bevbert:
+Multimodal map pre-training for language-guided navigation,” arXiv
+preprint arXiv:2212.04385, 2022.
+[13] X. Fang, W. Fang, and C. Wang, “Hierarchical semantic-augmented
+navigation: Optimal transport and graph-driven reasoning for vision-
+language navigation,” Advances in Neural Information Processing
+Systems, vol. 38, pp. 61926–61947, 2026.
+[14] T. Zhang, S. Guo, T. Tan, X. Hu, and F. Chen, “Generating adjacency-
+constrained subgoals in hierarchical reinforcement learning,” Advances
+in neural information processing systems, vol. 33, pp. 21579–21590,
+2020.
+[15] S. Lee, J. Kim, I. Jang, and H. J. Kim, “Dhrl: A graph-based approach
+for long-horizon and sparse hierarchical reinforcement learning,” Ad-
+vances in Neural Information Processing Systems, vol. 35, pp. 13668–
+13678, 2022.
+[16] O. Nachum, S. S. Gu, H. Lee, and S. Levine, “Data-efficient hi-
+erarchical reinforcement learning,” Advances in neural information
+processing systems, vol. 31, 2018.
+[17] A. Levy, G. Konidaris, R. Platt, and K. Saenko, “Learning multi-level
+hierarchies with hindsight,” arXiv preprint arXiv:1712.00948, 2017.
+[18] M. Ahn, A. Brohan, N. Brown, Y. Chebotar, O. Cortes, B. David,
+C. Finn, C. Fu, K. Gopalakrishnan, K. Hausman, et al., “Do as i
+can, not as i say: Grounding language in robotic affordances,” arXiv
+preprint arXiv:2204.01691, 2022.
+[19] S. Raychaudhuri, S. Wani, S. Patel, U. Jain, and A. Chang, “Language-
+aligned waypoint (law) supervision for vision-and-language navigation
+in continuous environments,” in Proceedings of the 2021 conference
+on empirical methods in natural language processing, pp. 4018–4028,
+2021.
+[20] G. Ilharco, V. Jain, A. Ku, E. Ie, and J. Baldridge, “General evaluation
+for instruction conditioned navigation using dynamic time warping,”
+arXiv preprint arXiv:1907.05446, 2019.
+[21] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+“Proximal
+policy
+optimization
+algorithms,”
+arXiv
+preprint
+arXiv:1707.06347, 2017.
+[22] P. Anderson, Q. Wu, D. Teney, J. Bruce, M. Johnson, N. S¨underhauf,
+I. Reid, S. Gould, and A. Van Den Hengel, “Vision-and-language nav-
+igation: Interpreting visually-grounded navigation instructions in real
+environments,” in Proceedings of the IEEE conference on computer
+vision and pattern recognition, pp. 3674–3683, 2018.
+[23] A. Ku, P. Anderson, R. Patel, E. Ie, and J. Baldridge, “Room-
+across-room: Multilingual vision-and-language navigation with dense
+spatiotemporal grounding,” arXiv preprint arXiv:2010.07954, 2020.
+[24] M. Savva, A. Kadian, O. Maksymets, Y. Zhao, E. Wijmans, B. Jain,
+J. Straub, J. Liu, V. Koltun, J. Malik, et al., “Habitat: A platform for
+embodied ai research,” in Proceedings of the IEEE/CVF international
+conference on computer vision, pp. 9339–9347, 2019.
+[25] Z. Qi, Z. Zhang, Y. Yu, J. Wang, and H. Zhao, “Vln-r1: Vision-
+language navigation via reinforcement fine-tuning,” arXiv preprint
+arXiv:2506.17221, 2025.
+[26] M. Wei, C. Wan, X. Yu, T. Wang, Y. Yang, X. Mao, C. Zhu,
+W. Cai, H. Wang, Y. Chen, et al., “Streamvln: Streaming vision-and-
+language navigation via slowfast context modeling,” arXiv preprint
+arXiv:2507.05240, 2025.
+[27] S. Macenski, T. Foote, B. Gerkey, C. Lalancette, and W. Woodall,
+“Robot operating system 2: Design, architecture, and uses in the wild,”
+Science robotics, vol. 7, no. 66, p. eabm6074, 2022.
+[28] B. Wen, M. Trepte, J. Aribido, J. Kautz, O. Gallo, and S. Birchfield,
+“Foundationstereo: Zero-shot stereo matching,” in 2025 IEEE/CVF
+Conference on Computer Vision and Pattern Recognition (CVPR),
+pp. 5249–5260, IEEE, 2025.
+[29] S. Macenski and I. Jambrecic, “Slam toolbox: Slam for the dynamic
+world,” Journal of Open Source Software, vol. 6, no. 61, p. 2783,
+2021.
+[30] D. Fox, W. Burgard, F. Dellaert, and S. Thrun, “Monte carlo local-
+ization: Efficient position estimation for mobile robots,” Aaai/iaai,
+vol. 1999, no. 343-349, pp. 2–2, 1999.
+
+
+Appendix: Network Architecture of MATCH
+I. NETWORK ARCHITECTURE
+This appendix specifies the networks that implement the
+two levels of MATCH. Their interfaces are fixed in the main
+paper: the planner maps the instruction and the execution-
+aware graph Gt to a distribution πE over the active edges and
+STOP, an offset distribution πoff for the selected edge, and a
+value VH; the executor maps its observation and the relative
+target to a distribution over decisions and a value VL, and this
+value, evaluated at the start of a sub-task for targets around
+an anchor, is the value field of an edge. Sections I-A–I-D
+describe the planner from the encoders to the heads, Sec. I-
+E the executor, and Table I lists all modules with their sizes,
+initialization and training status in each stage. Throughout,
+d = 768 denotes the hidden size of the planner and MLP a
+two-layer perceptron with a ReLU in between.
+A. Encoders
+RGB. Each of the 12 views of a panorama is encoded by
+the SigLIP2 ViT-B/16 image encoder [1] at a resolution of
+224 × 224; its pooled embedding is projected linearly to d.
+The encoder is frozen in all stages.
+Depth. Depth views, at 256 × 256, are encoded by the
+ResNet-50 depth encoder of the DD-PPO PointNav agent [2],
+including the output projection of that agent, which maps
+the ResNet features to a 512-dimensional vector; the planner
+projects this vector linearly to d. The same frozen encoder
+serves the executor (Sec. I-E), so a depth view is encoded
+once and used by both levels.
+Instruction. The instruction is encoded by InfoXLM-
+base [3], a 12-layer multilingual Transformer with hidden
+size 768 whose output tokens are used directly as the
+instruction tokens of the planner. InfoXLM is fine-tuned in
+every stage in which the planner is trained.
+Panorama. For each view v of a visited node j, the
+RGB feature, the depth feature and a sinusoidal encoding
+of the view’s heading relative to the node’s heading are
+concatenated and projected to d. The 12 vectors then pass
+through two Transformer encoder layers with self-attention
+over the views (12 heads, feed-forward size 4d). The outputs
+are the view tokens ˜z(j)
+v , v = 1, . . . , 12.
+B. Planner Input Tokens
+The planner’s input sequence consists of the instruction
+tokens and three kinds of graph tokens: one token per visited
+node, one per active edge, and one STOP token. Graph
+tokens carry only content, that is, what a place looks like,
+what the executor expects there and how executions there
+went. A learned type embedding enode, eedge or estop is
+added to every graph token.
+Node token. The token of visited node j is
+hj = AttnPool
+ {˜z(j)
+v }12
+v=1
+
++ MLP(Hj) + enode,
+(1)
+where AttnPool is attention pooling with a single learned
+query, which summarizes the panorama into one vector, and
+Hj ∈R5 is the outcome memory of the execution that
+created the node. The root node has no such execution and
+uses a learned placeholder, the “missing” vector below, in
+place of MLP(Hj).
+Edge token. The token of an active edge e = (j, c) with
+anchor ae describes the sub-task that the edge represents
+from the executor’s point of view:
+he = LN
+ W1˜z(j)
+v(e) + W2¯zc + W3¯fe
+
++ eedge.
+(2)
+The four terms are the following. ˜z(j)
+v(e) is the view token
+of the parent node whose heading is closest to the direction
+ˆue of the anchor; it is what the executor will face when it
+starts the sub-task. ¯zc is the mean of these anchor-facing view
+tokens over all active edges that lead to frontier c; it describes
+the frontier itself and is shared by all edges that lead to
+it, which tells the planner that edges from different parents
+point to the same place. ¯fe = MLP
+ [Fe(η1), . . . , Fe(ηNF )]
+
+encodes the value field of the edge; since the NF = 16
+samples lie on a fixed uniform distribution, their order in the
+vector identifies their positions, so no positional information
+needs to be added. W1, . . . , W3 are linear maps to d and LN
+is layer normalization.
+STOP token. The STOP token is a learned vector plus
+an MLP encoding of the episode’s progress, the fractions of
+the macro-step budget and of the primitive budget that have
+been used.
+Missing vectors. When a value field is unavailable, its
+sampled value vector [Fe(η1), . . . , Fe(ηNF )] is replaced by
+a learned placeholder shared across edges. This is the case
+during the offline pretraining of the planner, in which no
+executor is involved.
+C. Backbone with Relative-Pose Attention
+The instruction tokens and the graph tokens are concate-
+nated into one sequence and fused by a Transformer encoder
+with L = 4 layers, 12 attention heads and feed-forward size
+4d. Its self-attention is extended so that the geometric relation
+between two graph tokens enters the attention computation
+directly.
+Poses of tokens. Every graph token stands for a place with
+a pose, attached to a node of the visited tree. A node token
+has the pose of its node. An edge token has the position of
+its anchor, the approach direction ˆue as its heading and the
+
+
+height of its parent, and is attached to the parent node vj.
+The STOP token has the pose of the current node.
+Pairwise descriptor. For every ordered pair of graph
+tokens (p, q) we compute a descriptor rpq ∈R9:
+rpq =
+ dpq
+dnorm , cos βpq, sin βpq, cos ∆θpq, sin ∆θpq,
+∆hpq,
+τpq
+τnorm ,
+∆tpq
+Tmax , ⊮c(p)=c(q)
+
+,
+(3)
+where dpq and βpq are the horizontal distance and the
+bearing of q’s position in p’s frame, ∆θpq and ∆hpq are
+the differences of their headings and heights, τpq is the tree
+distance between the nodes the two tokens are attached to,
+that is, the length of the tree path the agent would have to
+replay to go from one to the other, ∆tpq is the difference of
+the macro steps at which the two elements were created, and
+the last entry indicates whether both tokens are edges that
+lead to the same frontier. A two-layer MLP maps rpq to one
+embedding epq ∈Rdh per attention head, with dh = d/12.
+The embedding is computed once per macro step and shared
+by all layers. For pairs in which at least one token is an
+instruction token, epq is a learned constant.
+Attention. Following [4], the embedding enters the keys
+and the values of every attention head:
+αpq = softmaxq
+q⊤
+p (kq + WKepq)
+√dh
+,
+op =
+X
+q αpq (vq + WV epq),
+(4)
+where qp, kq and vq are the query, key and value of
+the tokens and WK, WV are learned per layer. The same
+mechanism covers node–node, node–edge and edge–edge
+pairs. It lets the geometric relation interact with what each
+token is looking for, rather than act as a fixed bias, and it
+keeps every coordinate out of the tokens, so nothing has to
+be re-encoded as the agent moves and the graph grows.
+D. Heads
+Let ˜he, ˜hstop and ˜hj denote the fused tokens output by
+the last layer.
+Action head. A linear layer scores every fused edge
+token and the fused STOP token; πE is the softmax over
+these scores. Because the edge token contains the value-field
+encoding ¯fe, the planner sees the executor’s estimates when
+it chooses the edge.
+Offset head. For the selected edge, an MLP takes the
+fused token ˜he concatenated with the raw field values
+[Fe(η1), . . . , Fe(ηNF )] and outputs the mean µ ∈R2 and
+the log-variance of a diagonal Gaussian. A sample z of this
+Gaussian is squashed radially onto the offset disk,
+η = rmax tanh(∥z∥) z
+∥z∥,
+(5)
+and the log-density of η used by the policy-gradient loss
+includes the Jacobian of this map. The offset head is trained
+only in stage 3, by reinforcement learning; the output layer
+of µ is zero-initialized and the initial log-variance is set
+small, so that stage 3 starts from a zero offset and widens
+the distribution only where the reward favors it. The head
+sees the raw field values again so that the offset decision
+can use the shape of the field over the disk, and not only the
+summary that entered the token.
+Value head. Attention pooling with a learned query over
+all fused tokens, followed by an MLP, outputs VH. Because
+the pooled tokens include the edge tokens, the estimate is
+aware of the actions currently available, as in the action-
+aware critic of [5].
+E. Executor Network
+The executor is a recurrent point-goal policy with the
+architecture of the DD-PPO PointNav agent [2], ResNet-50
+followed by a two-layer LSTM with hidden size 512, adapted
+to the decision space of MATCH.
+Inputs. At decision k the executor receives three inputs.
+The forward depth view is encoded by the shared frozen
+depth encoder into a 512-dimensional feature. The target
+is encoded by a linear layer from [ρk/ρnorm, cos θk, sin θk],
+where ρk and θk are the distance and bearing of the target
+computed from odometry, into 32 dimensions. The previous
+decision is encoded by a learned embedding table with M+2
+entries, one per heading, one for REACHED and one start
+symbol used at the first decision, also into 32 dimensions.
+The three encodings are concatenated and fed to the LSTM.
+Outputs. Three linear heads on the LSTM state output
+the REACHED logit, whose sigmoid is pR, the M heading
+logits, whose softmax is πdir, and the value VL. At test time
+the executor acts greedily, taking REACHED if pR exceeds
+every (1 −pR) πdir(m) and the most probable heading
+otherwise.
+Initialization. The depth encoder with its output projec-
+tion, the target encoder and the LSTM are initialized from
+the released DD-PPO checkpoint (ResNet-50 + LSTM-512),
+whose point-goal input has the same distance-and-bearing
+form as our target and whose previous-action embedding
+occupies the same input slot as ours. The previous-decision
+embedding table, the two policy heads and the value head are
+new, because the decision space and the reward of MATCH
+differ from those of PointNav, and are trained from scratch.
+The depth encoder is frozen; the target encoder, the LSTM,
+the embedding table and the heads are trained in stages 1
+and 3.
+Initial state and value field. A sub-task starts with the
+LSTM state set to zero and the previous decision set to the
+start symbol. The first depth view is the view of the start
+node that faces the anchor, taken from the node’s cache, so
+no additional rendering is needed; from the second decision
+on, the executor observes the forward view rendered after
+each move. The value field of an edge is VL evaluated in
+exactly this initial state for the NF targets ae + Beηn. Since
+the depth feature and the LSTM state are shared by all NF
+targets and only the target encoding differs, the field of an
+edge costs one batched pass of the target encoder, the LSTM
+and the value head, and the fields of all new edges of a node
+are computed in a single batch.
+
+
+TABLE I
+MODULES OF MATCH AND THEIR STATUS IN THE THREE TRAINING
+STAGES: ✓TRAINED, ◦FROZEN, – NOT USED.
+Module
+Size
+Init.
+S1 S2 S3
+Shared encoders
+RGB encoder
+SigLIP2 ViT-B/16
+pretrained
+◦
+◦
+◦
+Depth encoder
+ResNet-50, 512-d
+DD-PPO
+◦
+◦
+◦
+Planner
+Instruction encoder
+InfoXLM-base
+pretrained
+✓
+✓
+✓
+Panorama encoder
+2 layers, 768
+random
+✓
+✓
+✓
+Token encoders
+MLPs, embeddings random
+✓
+✓
+✓
+Fusion Transformer
+4 layers, 768
+random
+✓
+✓
+✓
+Relative-pose MLP
+9 →64 per head
+random
+✓
+✓
+✓
+Action head
+linear
+random
+✓
+✓
+✓
+Offset head
+MLP
+zero
+–
+–
+✓
+Value head VH
+pooling + MLP
+random
+–
+✓
+✓
+Executor
+Target encoder
+linear 3 →32
+DD-PPO
+✓
+◦
+✓
+Prev. decision embedding (M+2) × 32
+random
+✓
+◦
+✓
+LSTM
+2 layers, 512
+DD-PPO
+✓
+◦
+✓
+Policy heads
+linear, 1 + M
+random
+✓
+◦
+✓
+Value head VL
+linear
+random
+✓
+◦
+✓
+F. Modules and Training Status
+Table I lists every module, its size and initialization, and
+whether it is trained in each of the three stages of the main
+paper. In total MATCH has 0.5B parameters, most of which
+are in the frozen encoders and in InfoXLM.
+REFERENCES
+[1] M. Tschannen, A. Gritsenko, X. Wang, M. F. Naeem, I. Alabdulmohsin,
+N. Parthasarathy, T. Evans, L. Beyer, Y. Xia, B. Mustafa, et al.,
+“Siglip 2: Multilingual vision-language encoders with improved se-
+mantic understanding, localization, and dense features,” arXiv preprint
+arXiv:2502.14786, 2025.
+[2] E. Wijmans, A. Kadian, A. Morcos, S. Lee, I. Essa, D. Parikh, M. Savva,
+and D. Batra, “Dd-ppo: Learning near-perfect pointgoal navigators from
+2.5 billion frames,” arXiv preprint arXiv:1911.00357, 2019.
+[3] Z. Chi, L. Dong, F. Wei, N. Yang, S. Singhal, W. Wang, X. Song,
+X.-L. Mao, H.-Y. Huang, and M. Zhou, “Infoxlm: An information-
+theoretic framework for cross-lingual language model pre-training,” in
+Proceedings of the 2021 Conference of the North American Chapter
+of the Association for Computational Linguistics: Human Language
+Technologies, pp. 3576–3588, 2021.
+[4] P. Shaw, J. Uszkoreit, and A. Vaswani, “Self-attention with relative
+position representations,” in Proceedings of the 2018 Conference of
+the North American Chapter of the Association for Computational
+Linguistics: Human Language Technologies, Volume 2 (Short Papers),
+pp. 464–468, 2018.
+[5] S. Ye, S. Mao, Y. Cui, Y. Wei, X. Yu, S. Zhai, W. Chen, S. Zhou,
+R. Xiong, and Y. Wang, “Revisiting topological graphs for macro action
+based closed-loop reinforcement learning of vision language navigation
+in continuous environment,” arXiv preprint arXiv:2609.03906, 2026.

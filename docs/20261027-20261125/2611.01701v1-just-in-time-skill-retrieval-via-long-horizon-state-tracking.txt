@@ -1,0 +1,4127 @@
+Just-in-Time Skill Retrieval via Long-Horizon State Tracking
+Xin Lin1*, Ziheng Wang1*, Zerui Chen1, Jiayao Ma1, Zhimin Wei1,
+Bingshuai Liu1, Buchao Zhan1, Qinggang Zhang2†, Jinsong Su1†
+1Xiamen University
+2Jilin University
+linxin1@stu.xmu.edu.cn
+qinggangzhang@jlu.edu.cn
+jssu@xmu.edu.cn
+Abstract
+Large language model (LLM) agents increas-
+ingly rely on external skill libraries to support
+complex task execution. However, determin-
+ing which skills are needed remains challeng-
+ing in long-horizon tasks. Existing methods
+typically select a fixed skill set before execu-
+tion, implicitly assuming that a task’s proce-
+dural requirements can be determined from
+its initial description. This assumption is re-
+strictive for long-horizon interaction, where
+new requirements emerge from intermediate
+observations, execution outcomes, and newly
+revealed constraints. This motivates just-in-
+time skill retrieval, which dynamically selects
+skills as execution unfolds. Just-in-time skill
+retrieval is promising but challenging: the util-
+ity of a skill depends not only on the current
+context, but also on the evolving task state
+shaped by prior steps. To this end, we pro-
+pose JitSkill, a state-grounded framework that
+addresses this challenge through continuous
+task-state tracking. By connecting emerging
+requirements with accumulated task progress,
+JitSkill provides procedural support throughout
+execution without treating each retrieval deci-
+sion independently. Experiments across three
+agent benchmarks demonstrate its effectiveness
+in improving long-horizon task completion.
+Our code is available at https://github.
+com/XMUDeepLIT/JitSkill.git/.
+1
+Introduction
+Large Language Model (LLM)-based agents in-
+creasingly rely on external knowledge to support
+complex reasoning, tool use, and interaction with
+their environments (Feng et al., 2026; Zhou et al.,
+2026b; Huang et al., 2026; Wu et al., 2026b; Yuan
+et al., 2026; Jang et al., 2026). Among different
+forms of external knowledge, skills provide a nat-
+ural representation of procedural experience: they
+*Equal contribution.
+†Corresponding authors.
+capture how an agent accomplishes recurring goals
+or operations by encoding successful task execu-
+tions as reusable procedures that agents can invoke
+again when similar demands arise (Xia et al., 2026;
+Wu et al., 2026b; Yu et al., 2026). As these skills
+accumulate across tasks, external skill libraries pro-
+vide agents with a growing repository of procedu-
+ral knowledge that can complement their underly-
+ing reasoning and action capabilities (Wang et al.,
+2023; Li et al., 2026d; Zhang et al., 2026).
+As skill libraries continue to grow, exposing all
+available skills to an agent becomes increasingly
+impractical: it increases the context burden and
+introduces irrelevant or only partially relevant pro-
+cedures that may interfere with subsequent reason-
+ing (Su et al., 2026; Li et al., 2025; Kang et al.,
+2026). Existing approaches therefore largely for-
+mulate skill selection as a retrieval problem, aiming
+to identify a compact subset of useful skills from
+an expanding skill library. Early retrieval-based ap-
+proaches primarily identify individual skills accord-
+ing to their relevance to the task, as exemplified by
+SkillFlow (Li et al., 2025) and SkillRouter (Zheng
+et al., 2026). More recent methods move beyond
+independent skill matching by explicitly modeling
+relationships among skills: GoS (Liu et al., 2026),
+GoSkills (Zeng et al., 2026), and CaSKG (Li et al.,
+2026f) exploit dependency, grouping, or causal re-
+lations to retrieve and organize structurally related
+skills. SkillAligner (Li et al., 2026c) further con-
+siders compatibility after retrieval, identifying mis-
+matches among retrieved skills, task requirements,
+and execution interfaces and adapting skill frag-
+ments accordingly. Together, these advances have
+progressively extended skill retrieval from individ-
+ual relevance matching to structured retrieval and
+alignment, enabling agents to access increasingly
+large and heterogeneous skill libraries.
+Despite these advances, existing retrieval meth-
+ods largely assume that the skills required for a task
+can be sufficiently determined from the information
+1
+arXiv:2611.01701v1  [cs.AI]  1 Nov 2026
+
+
+Figure 1: Comparison of pre-execution and just-in-time skill retrieval. (a) Pre-execution skill retrieval can miss
+needs revealed during execution. (b) Just-in-time retrieval acquires skills on demand as needs become observable.
+available before execution begins. This assumption
+becomes increasingly restrictive in long-horizon
+interactive tasks, where capability demands are not
+fully specified by the initial instruction but emerge
+progressively through intermediate observations,
+execution outcomes, and newly discovered con-
+straints (Yao et al., 2023; Zhou et al., 2024). A skill
+set selected at the outset may therefore provide ad-
+equate support for the initial task description while
+failing to cover procedural needs that arise later in
+the trajectory. This limitation has motivated a shift
+toward just-in-time skill retrieval, where skills are
+retrieved on demand as task execution unfolds. Re-
+cent web and computer-use agents instantiate this
+paradigm by dynamically identifying skill require-
+ments from the current observation, subgoal, or lo-
+cal execution context and retrieving corresponding
+skills when those requirements emerge (Li et al.,
+2026a; Chen et al., 2026). Rather than predicting
+all necessary skills from the initial task description,
+just-in-time retrieval allows the retrieved skill set to
+evolve with execution, retrieving skills when their
+corresponding needs actually become observable.
+Just-in-time retrieval is promising but challeng-
+ing. (i) Whether a skill is needed depends not
+only on the current context but also on prior exe-
+cution. The same observation or subgoal can call
+for different procedural support depending on what
+has already been accomplished, which resources
+have been acquired, which attempts have failed,
+and which requirements remain unresolved (Bai
+et al., 2026; Zhou et al., 2026a; Xu et al., 2026). A
+skill that is useful early in a trajectory may become
+redundant once the requirement it addresses has
+been satisfied, or even conflict with decisions estab-
+lished later in execution. Consequently, retrieving
+skills only from the current observation or local sub-
+goal can produce individually reasonable decisions
+that are inconsistent with the task’s accumulated
+progress. (ii) Maintaining a task state that reliably
+guides skill retrieval and execution is challenging.
+Simply retaining the full history can obscure the
+task-relevant consequences of prior interactions,
+causing the agent to repeat completed work, revisit
+invalidated paths, or overlook commitments that
+should constrain subsequent skill decisions. To-
+gether, these challenges create a fundamental risk
+in just-in-time retrieval: locally relevant skills can
+be repeatedly selected and successfully executed
+without forming a coherent trajectory toward the
+remaining task goals. We refer to this failure as
+execution drift, which manifests as redundant ex-
+ploration or execution-consistency deviation.
+To address these challenges, we propose JIT-
+SKILL, a state-grounded skill retrieval framework
+that couples just-in-time skill retrieval with long-
+horizon task-state tracking.
+Rather than treat-
+ing each retrieval decision as an independent re-
+sponse to the current context, JITSKILL continu-
+ously maintains a compact representation of the
+task state and uses it to guide both skill retrieval
+and subsequent execution. Specifically, it main-
+tains complementary explicit and latent represen-
+tations that together constitute the task state. The
+explicit record organizes prior operations, their out-
+comes, and failure feedback into accessible tex-
+tual evidence, while the latent representation re-
+currently summarizes historical interactions that
+cannot be fully retained in bounded explicit fields.
+At each decision point, the skill navigator grounds
+just-in-time skill retrieval in the tracked task state
+while responding to the current execution context.
+2
+
+
+(a)
+0.00
+0.25
+0.50
+0.115
+0.385
+Hit@3 ↑
+Δ +0.270
+80
+85
+90
+85.4
+88.3
+TGC D1 (%) ↑
+Δ +2.9 pp
+68
+73
+78
+69.4
+75.0
+TGC D2 (%) ↑
+Δ +5.6 pp
+50
+55
+60
+57.7
+55.6
+TGC D3 (%) ↑
+Δ -2.1 pp
+Initial
+Online
+(b)
+Redundant
+exploration
+Consistency
+deviation
+20
+40
+60
+80
+Error rate (%)
+Online
+Full history
+Structured history
+55.0
+33.3
+73.3
+44.0
+51.6
+30.2
+(c)
+Figure 2: Preliminary analysis of skill retrieval. (a)
+A travel-task example illustrating errors caused by over-
+looking prior execution progress. (b) Comparison of
+initial and online retrieval on AppWorld in terms of
+stage-specific skill coverage (Hit@3) and task goal
+completion (TGC) by difficulty. (c) Redundant explo-
+ration and execution-consistency deviation under local-
+context, full-history, and structured-history retrieval.
+The executor receives the selected skills together
+with the explicit record and latent state tokens to
+execute the next action. The resulting action and
+environment feedback subsequently update the task
+state, allowing their consequences to inform later
+retrieval decisions. In this way, task state serves
+as a persistent bridge between past execution and
+future skill decisions, allowing skill retrieval and
+execution to evolve with the trajectory without los-
+ing sight of what has already been established and
+what remains to be accomplished.
+Our contributions are as follows:
+• We identify two limitations of existing skill
+retrieval paradigms: fixed pre-execution skill
+retrieval cannot cover demands that emerge
+as a task progresses, while local online
+matching cannot determine whether selected
+skills remain consistent with accumulated task
+progress. We show why treating each retrieval
+decision as an independent response to the
+current context leaves both unresolved.
+• We introduce JITSKILL, a task-state-grounded
+framework for just-in-time skill retrieval. It
+tracks task progress through complementary
+explicit and latent states, which guide on-
+demand retrieval and are provided to the ex-
+ecutor for state-aware skill execution.
+• Across SkillsBench, ALFWorld, and τ 2-
+Bench, JITSKILL achieves the highest over-
+all task success rates, with a 20.6% relative
+improvement over the strongest baseline on
+SkillsBench. Ablation results further support
+the benefit of jointly grounding skill retrieval
+and execution in the tracked task progress.
+2
+Preliminary Study
+We examine the limitations of fixed pre-execution
+skill retrieval in long-horizon tasks, analyze how
+online retrieval based on local execution context
+affects task progress, and explore ways to capture
+task-state information from interaction trajectories
+by comparing full histories with structured history
+records. Experimental details are in Appendix D.
+Execution Requires Continually Updated Skill.
+We compare Initial and Online Retrieval at the
+same execution decision points using Hit@3,
+which measures whether the top three retrieved
+skills include a skill compatible with the stage-
+specific need. Online Retrieval raises Hit@3 from
+0.115 to 0.385.
+This gap indicates that skills
+retrieved from the initial instruction cannot ade-
+quately cover procedural needs that become appar-
+ent during execution. Intermediate observations
+and execution outcomes provide additional infor-
+mation about these needs, motivating retrieval that
+can be updated as the task unfolds.
+Skill Retrieval Based Solely on Local Context
+Can Cause Execution Drift.
+Figure 2a illus-
+trates how similar local cues can require differ-
+ent skill decisions depending on prior progress.
+A passport-lookup skill helps satisfy a prerequi-
+site before the ID is obtained, but becomes redun-
+dant once a valid ID has been saved. Likewise, a
+cheapest-fare skill may match a current offer while
+conflicting with established departure-time or re-
+fund requirements. Local relevance alone cannot
+establish whether a skill is needed or consistent
+with conditions accumulated during execution. At
+the task level, Online Retrieval improves TGC over
+Initial Retrieval by 2.9 and 5.6 percentage points
+on D1 and D2, but decreases it by 2.1 points on
+D3. Together with the coverage results, this shows
+3
+
+
+that making stage-relevant skills available does not
+consistently translate into higher task completion,
+motivating consideration of prior results and unre-
+solved requirements in subsequent skill decisions.
+Interaction Histories Require Careful Organiza-
+tion into Task States.
+We compare local-context
+retrieval with two ways of incorporating prior in-
+teractions: the full history and a short structured
+record. Simply appending the full history does not
+improve skill retrieval. Instead, it lowers Hit@3
+from 0.385 to 0.346 while substantially increas-
+ing query length, and leads to more execution-
+consistency deviations (Figure 2c). In contrast,
+a structured record that summarizes the task goal,
+previously called interfaces, and observed failures
+reduces both redundant exploration and execution-
+consistency deviation compared with local-context
+and full-history retrieval. These findings suggest
+that the value of interaction history depends not on
+how much is retained, but on how task-relevant in-
+formation is organized. This motivates an evolving
+task state that preserves prior execution outcomes
+and constraints to guide subsequent skill decisions.
+Takeaway.
+These diagnostics motivate three de-
+sign choices in JITSKILL. Skill retrieval should be
+updated as new needs emerge, interaction history
+should be organized into an evolving task state, and
+this state should guide skill acquisition and execu-
+tion. The state should identify missing procedures,
+reusable results, failure conditions that warrant
+avoiding repeated attempts, and constraints that
+subsequent local cues should respect. JITSKILL
+realizes this guidance through complementary ex-
+plicit and latent representations, and provides both
+of them to a resource-constrained executor.
+3
+The Framework of JITSKILL
+In this section, we present JITSKILL, a framework
+that grounds just-in-time skill retrieval and subse-
+quent skill execution in a continuously tracked task
+state. It maintains complementary explicit and la-
+tent representations to retain task progress across
+interactions. We first introduce the framework in
+Section 3.1, then describe task-state tracking in
+Section 3.2, and finally explain state-grounded skill
+retrieval and state-aware execution in Section 3.3.
+3.1
+Overview
+We consider long-horizon interactive tasks in which
+an agent retrieves reusable skills from an external
+library K = {k1, . . . , kN}. At decision point t,
+the current execution context consists of the task
+instruction u, the observation ot, and a bounded
+recent interaction history Ht.
+To retain task-
+relevant execution information beyond this recent
+context, JITSKILL maintains an evolving task state
+St = (Bt, Zt). The explicit state Bt records in-
+spectable task facts and execution outcomes, while
+the fixed-size latent state Zt retains historical con-
+text through recurrent updates. Together, they rep-
+resent the accumulated task progress relevant to
+subsequent skill decisions across execution steps.
+As illustrated in Figure 3, a skill navigator se-
+lects skills from the external library according to
+the tracked task state and current execution context,
+producing a skill set Kt ⊆K within the skill bud-
+get. The executor combines these skills with the
+current context, the explicit state Bt, and the pro-
+jected latent state tokens Z′
+t to generate the next ac-
+tion at. The action and resulting environment feed-
+back ot+1 inform subsequent updates to the task
+state and recent context, closing the loop between
+task-state tracking, just-in-time skill retrieval, and
+state-aware execution over successive task steps.
+3.2
+Task-State Tracking
+Task-state tracking organizes execution evidence
+into complementary representations that provide
+sufficient context for later decisions. The explicit
+record organizes discrete task facts into a form that
+can be directly inspected and updated during execu-
+tion. The latent state complements these records by
+continuously carrying forward context distributed
+across the execution process, which is difficult to
+predefine as a small set of fixed textual fields.
+Explicit task state.
+The explicit state Bt is a
+bounded structured textual summary that continu-
+ously records and updates important information
+during long-horizon interaction. It preserves in-
+spectable task facts, including key facts required
+for task completion, important subtasks and their
+progress, completed operations and their outcomes,
+and failed attempts with their associated feedback.
+To update Bt, we extract completed operations,
+their outcomes, and observed failures from the in-
+teraction history preceding the current decision,
+denoted by H<t:
+Bt = E(u, H<t),
+(1)
+where E denotes the evidence-extraction procedure.
+4
+
+
+Figure 3: Overview of JITSKILL. Explicit records and latent representations jointly track task progress, guiding
+both skill retrieval and action generation. The executor receives the retrieved skills together with the two state
+representations. Actions and feedback enter the recent context; accumulated history is organized into explicit
+records and compressed into latent representations for subsequent decisions.
+Latent task state.
+While Bt records discrete and
+inspectable task facts, Zt recurrently summarizes
+historical interactions to retain execution context
+across task steps (Zhu et al., 2026). JITSKILL main-
+tains a fixed number of latent slots for this purpose.
+After each interaction, we denote the newly ac-
+cumulated action–feedback block by Dt+1. The
+encoder integrates this block with the preceding
+latent state Zt to produce the updated state Zt+1:
+Zt+1 = fθ(Zt, Dt+1),
+Zt ∈Rm×d,
+(2)
+where m is the fixed number of latent slots and d is
+their dimension. By continually compressing new
+action–feedback evidence into the same slots, the
+encoder carries task state forward across interac-
+tions in a fixed-size form. This persistent repre-
+sentation supports long-horizon task-state tracking
+by retaining evolving execution context without
+repeatedly encoding the full history at each step.
+Learning latent representations.
+We freeze the
+base language model and adapt the encoder with
+LoRA. We first pretrain the encoder with a history-
+compression objective Lcomp that preserves task-
+relevant information across historical interactions:
+Lcomp = Ei,t
+
+ωi,tLrec + βiLalign
++ γiLdisc
+
+.
+(3)
+Reconstruction encourages recoverable historical
+content. Alignment constrains original and com-
+pressed histories to yield consistent next-token pre-
+dictions for the same subsequent context. Contrast
+matches compressed representations to their source
+histories and distinguishes them from other histo-
+ries. Here, i and t index trajectories and training
+segments. ωi,t, βi, and γi are loss weights for tra-
+jectory weighting and reconstruction modulation.
+For skill navigation, we jointly fine-tune the pre-
+trained encoder and navigator to select next-step
+skills. At each decision point of a training trajec-
+tory, the latent representation, together with the
+explicit record, should rank first the skills used to
+support the next action:
+Lnav = −Ei,t
+h X
+k∈K
+yi,t(k) log pθ,ϕ
+ k | Zi,t, Bi,t
+i
+,
+(4)
+where yi,t distributes unit mass over the skills used
+at the next step and ϕ parameterizes the naviga-
+tor. Gradients from this objective update both the
+encoder parameters θ and navigator parameters ϕ,
+refining the pretrained state for subsequent skill
+decisions. Appendix C provides training details.
+3.3
+State-Grounded Skill Decisions
+JITSKILL uses the same task state to coordinate
+skill retrieval and execution. It retrieves reusable
+procedural knowledge that can advance the remain-
+ing task requirements, and provides the same state
+to the executor so that skill execution remains
+aligned with global task progress. The following
+components formalize these coupled decisions.
+Progress-conditioned skill retrieval.
+As execu-
+tion unfolds, new skill requirements emerge from
+5
+
+
+intermediate observations and execution feedback.
+Rather than treating retrieval as an isolated match
+to local context, JitSkill retrieves skills that advance
+the remaining task requirements under the tracked
+task state. At each execution step, the navigator
+ranks candidate skills by their consistency with the
+tracked progress, then selects the currently needed
+skill subset Kt from the skill library K. This al-
+lows the retrieved skill set to evolve with newly
+emerging needs while avoiding repetition of com-
+pleted work, invalidated paths, and conflicts with
+prior execution. Appendix C provides the complete
+retrieval formulation and implementation details.
+State-Aware Skill Execution.
+Retrieval must be
+coupled with skill execution: even a skill selected
+based on the task state can be executed inconsis-
+tently if the executor does not receive the state used
+to select it. JitSkill therefore supplies the executor
+with the same two-part state used for navigation.
+We keep the executor frozen and train only the
+lightweight projection Pψ, which maps the latent
+slots to state tokens Z′
+t = Pψ(Zt) that the executor
+can read. The executor takes as input the current in-
+struction, observation, and recent context, together
+with Bt, Z′
+t, and the selected skills Kt, and gener-
+ates the next action. For decision point t of training
+trajectory i, we use the recorded next action ai,t as
+supervision and optimize the projection by:
+Lproj(ψ) = −Ei,t
+
+log pη⋆ ai,t | ui, oi,t,
+Hi,t, Bi,t, Z′
+i,t, Ki,t
+
+,
+(5)
+where η⋆denotes the fixed executor parameters,
+so gradients update only the projection parameters
+ψ. This objective increases the probability of the
+recorded action by learning state tokens that the
+frozen executor can use. The resulting action at
+and feedback ot+1 update St, so the next retrieval
+decision conditions on the observed outcome of
+skill execution and the updated task progress.
+4
+Experiments
+In this section, we conduct comprehensive experi-
+ments to answer the following research questions:
+RQ1 (Effectiveness). How effectively does JIT-
+SKILL support long-horizon task execution com-
+pared with existing skill-augmentation and agent-
+execution methods? RQ2 (Ablation). How do
+real-time skill retrieval, progress-conditioned skill
+execution, and explicit and latent representations
+contribute to task completion? RQ3 (Model Stud-
+ies). How do skill injection settings affect task
+performance, and how efficiently does JITSKILL
+complete tasks? Further analyses appear in Appen-
+dices F.5 and F.3.
+4.1
+Experimental Settings
+Datasets.
+We evaluate on SkillsBench (Li et al.,
+2026d), ALFWorld (Shridhar et al., 2021), and τ 2-
+Bench (Barres et al., 2025), covering containerized,
+interactive household, and conversational tool-use
+tasks, respectively.
+Baselines.
+We compare three groups: (i) direct
+execution without skills, including Qwen3-8B and
+Qwen3.8-27B; (ii) pre-execution skill retrieval, in-
+cluding SkillTrace (Yao et al., 2026), SoftSkill (Tao
+et al., 2026), CodeSkill (Li et al., 2026e), Skil-
+lZip (Tan et al., 2026), StructAgent (Wu et al.,
+2026a), and FlowState (Li et al., 2026b); and (iii)
+execution-time skill retrieval, including SGDR (Li
+et al., 2026a), WebXSkill (Wang et al., 2026), and
+CUA-Skill (Chen et al., 2026).
+Evaluation Metrics.
+Following the official eval-
+uators of the three benchmarks (Li et al., 2026d;
+Shridhar et al., 2021; Barres et al., 2025), we re-
+port task success rate (SR) and mean environment
+interaction steps to assess task completion and in-
+teraction efficiency.
+Implementation Details.
+Methods are evaluated
+under shared execution and skill-access settings.
+Hyperparameters are selected on training data only,
+and results are averaged over three runs. Dataset
+statistics, baseline adaptations, evaluation proto-
+cols, and implementation configurations are de-
+tailed in Appendices F.9, E.1, and E.2.
+4.2
+Main Results (RQ1)
+To address RQ1, we comprehensively evaluate JIT-
+SKILL against representative baselines across three
+long-horizon benchmarks under shared settings.
+We summarize the main observations as follows:
+Obs. 1: JITSKILL achieves the highest over-
+all success rates across three long-horizon
+benchmarks.
+Under shared settings, JITSKILL
+achieves the highest overall success rates on Skills-
+Bench (15.71%), ALFWorld (92.38%), and τ 2-
+Bench (49.17%). Notably, it improves over the
+strongest baseline on SkillsBench by 20.6% rel-
+atively.
+Compared with direct execution using
+the same executor, it increases success rates by
+9.6, 23.1, and 10.6 percentage points, respectively.
+6
+
+
+Table 1: Skill Retrieval Performance (%). We report task success rate (SR, %) across SkillsBench, ALFWorld, and
+τ 2-Bench. Bold and underlined values mark the best and second-best results. Green marks relative improvements
+in task success rate over the second-best.
+Method
+SkillsBench
+ALFWorld
+τ 2-Bench
+Core
+Extended Extreme
+SR
+Pick
+Look
+Clean
+Heat
+Cool
+Pick2
+SR
+Airline
+Retail
+Telecom
+SR
+Direct Execution (No Skills)
+Qwen3-8B
+0.00
+0.00
+3.57
+1.15
+71.43
+30.77
+29.63
+0.00
+0.00
+8.33
+27.86
+15.00
+2.50
+1.67
+6.39
+Qwen3.8-27B
+0.00
+8.18
+3.57
+6.13
+88.57
+84.62
+85.19
+6.25
+52.00
+75.00
+69.29
+38.33
+56.67
+20.83
+38.61
+Pre-Execution Skill Retrieval
+SkillTrace
+11.11
+13.84
+8.33
+11.88
+98.10
+76.92
+74.07
+58.33
+70.67
+93.06
+81.19
+48.33
+61.67
+33.33
+47.78
+SoftSkill
+16.67
+5.66
+7.14
+6.90
+89.52
+79.49
+87.65
+72.92
+54.67
+77.78
+78.10
+36.67
+50.83
+31.67
+39.72
+CodeSkill
+16.67
+15.09
+7.14
+12.64
+97.14
+97.44
+80.25
+89.58
+73.33
+86.11
+86.90
+46.67
+58.33
+32.50
+45.83
+SkillZip
+11.11
+6.29
+4.76
+6.13
+99.05
+79.49
+82.72
+87.50
+76.00
+83.33
+85.95
+51.67
+59.17
+34.17
+48.34
+StructAgent
+16.67
+10.06
+8.33
+9.96
+95.24
+53.85
+80.25
+81.25
+52.00
+87.50
+77.86
+38.33
+44.17
+4.17
+28.89
+FlowState
+5.56
+9.43
+7.14
+8.43
+98.10
+89.74
+83.95
+72.92
+69.33
+95.83
+86.19
+45.00
+57.50
+20.00
+40.83
+Execution-Time Skill Retrieval
+SGDR
+16.67
+11.95
+8.33
+11.11
+96.19
+87.18
+83.95
+83.33
+81.33
+86.11
+87.14
+38.33
+64.17
+35.00
+45.83
+WebXSkill
+16.67
+14.47
+9.52
+13.03
+99.05
+87.18
+82.72
+85.42
+76.00
+86.11
+86.90
+51.67
+61.67
+31.67
+48.33
+CUA-Skill
+16.67
+11.95
+9.52
+11.49
+97.14
+89.74
+86.42
+83.33
+86.67
+94.44
+90.48
+45.00
+57.50
+32.50
+45.00
+JITSKILL (Ours)
+16.67
+18.24
+10.71
+15.71
+(+20.6%)
+98.10
+94.87
+90.12
+83.33
+89.33
+94.44
+92.38
+(+2.1%)
+45.00
+64.17
+38.33
+49.17
+(+1.7%)
+These results demonstrate the effectiveness of JIT-
+SKILL across diverse task settings, including pro-
+grammatic operations, embodied interaction, and
+conversational tool use. With the executor held
+fixed, these improvements support the effectiveness
+of task-state tracking in jointly guiding on-demand
+skill retrieval and execution throughout the task.
+Obs. 2: State-grounded just-in-time retrieval
+improves on both pre-execution and execution-
+time retrieval baselines.
+JITSKILL exceeds the
+strongest methods from both retrieval groups in
+overall success rate on all three benchmarks. On
+SkillsBench, it raises success rate from 12.64%
+for the strongest pre-execution method and 13.03%
+for the strongest execution-time method to 15.71%.
+Its advantage also extends to the Extended and Ex-
+treme subsets, where it achieves the highest success
+rates while matching the best result on Core. This
+comparison suggests that retrieval timing alone
+does not account for the full benefit: updating skills
+during execution offers further value when skill de-
+cisions also consider prior outcomes and remaining
+requirements. The results are consistent with JIT-
+SKILL’s design, which uses an evolving task state
+to connect emerging skill needs with accumulated
+progress and to guide subsequent skill execution.
+4.3
+Ablation Studies (RQ2)
+To isolate the contribution of each component in
+JITSKILL, we ablate just-in-time skill retrieval,
+progress-conditioned skill execution, the explicit
+progress record, and the latent progress represen-
+tation on AppWorld and ALFWorld. All variants
+share the executor, skill library, training data, injec-
+tion budget, and recent interaction context; only the
+indicated mechanism is changed. w/o JIT Retrieval
+selects a fixed skill set from the initial instruction,
+whereas w/o Progress-Conditioned Execution re-
+tains online retrieval but withholds both progress
+representations from the executor. The two repre-
+sentation variants remove the corresponding state
+from both retrieval and execution.
+Full
+w/o Prog. Exec.
+w/o Latent
+w/o Explicit
+w/o JIT Retrieval
+65
+80
+70
+85
+75
+90
+80
+95
+AppWorld
+TGC (%)
+ALFWorld
+SR (%)
+77.6
+92.4
+72.1
+87.5
+71.8
+86.5
+71.0
+86.1
+68.7
+81.7
+Figure 6: Module ablation of JITSKILL.
+Obs. 3: Just-in-time retrieval and progress-
+conditioned execution are both necessary.
+Fig-
+ure 6 shows that fixing the initial skill set causes
+the largest decline: 8.9 TGC points on AppWorld
+and 10.7 SR points on ALFWorld. Withholding
+progress from the executor also lowers completion
+on both benchmarks despite retaining online re-
+trieval. These results indicate that skill retrieval
+must respond to emerging needs, while execution
+must use accumulated progress to apply the re-
+trieved skills under the current task conditions.
+7
+
+
+1
+3
+5
+k (skills per step)
+85
+90
+95
+SR (%)
+89.05
+92.38
+89.76
+(a) Number of skills k
+600
+1200
+2400
+CK (tokens)
+84.05
+92.38
+92.38
+(b) Injection budget CK
+Figure 4: Parameter sensitivity on ALFWorld.
+JitSkill
+SGDR
+Skill
+Trace
+No
+Skills
+SKILL.
+state
+5
+10
+15
+20
+25
+13.35
+15.03
+15.53
+17.57
+21.10
+(a) Steps ↓
+JitSkill
+SGDR
+Skill
+Trace
+No
+Skills
+SKILL.
+state
+20
+40
+60
+80
+100
+92.38
+87.14
+81.19
+70.24
+52.38
+(b) SR (%) ↑
+Figure 5: Interaction efficiency on ALFWorld.
+Obs. 4: Explicit and latent progress representa-
+tions are complementary.
+Removing either rep-
+resentation lowers completion on both benchmarks,
+with declines of 5.8–6.6 points on AppWorld and
+5.9–6.3 points on ALFWorld. The explicit record
+preserves precise execution facts, whereas the la-
+tent state captures dependencies across interactions.
+Their joint use provides evidence for skill retrieval
+and execution grounded in task progress.
+4.4
+Model Studies (RQ3)
+To answer RQ3, we study skill injection settings
+and compare the interaction efficiency of JITSKILL
+and representative baselines on ALFWorld.
+Obs. 5: Moderate skill counts and injection bud-
+gets yield the best performance.
+Figure 4 shows
+that increasing the skill count or injection budget
+does not always improve task completion. Under
+a fixed budget, injecting three skills outperforms
+injecting one or five, indicating that performance
+does not simply increase with the number of skills.
+Increasing the budget from 600 to 1,200 tokens
+improves success rate by 8.33 percentage points,
+while further increases yield no additional gains.
+Obs. 6: JITSKILL achieves higher task suc-
+cess with fewer environment interactions.
+As
+shown in Figure 5, JITSKILL achieves the highest
+success rate with the fewest mean interaction steps.
+Compared with SGDR, it reduces mean steps from
+15.03 to 13.35, indicating that its gains do not rely
+on more interaction attempts. This result is consis-
+tent with our motivation: continuously grounding
+skill acquisition and use in task progress helps ad-
+vance tasks with fewer interactions. Additional
+runtime cost analysis is provided in Appendix F.4.
+5
+Related Work
+Skill Retrieval. Early work on skill retrieval fo-
+cuses on pre-execution selection. SkillFlow (Li
+et al., 2025) employs multi-stage retrieval and fil-
+tering, and SkillRouter (Zheng et al., 2026) further
+incorporates procedural information from skill bod-
+ies. Beyond individual skill matching, GoS (Liu
+et al., 2026), GoSkills (Zeng et al., 2026), and
+CaSKG (Li et al., 2026f) model skill dependen-
+cies, groupings, and calibrated relations.
+Skil-
+lAligner (Li et al., 2026c) adapts retrieved skills
+to task requirements and interfaces. However, pre-
+execution retrieval may miss procedural needs that
+emerge during interaction. SGDR (Li et al., 2026a)
+and WebXSkill (Wang et al., 2026) dynamically re-
+trieve skills based on the current execution context.
+CUA-Skill (Chen et al., 2026) further incorporates
+execution history into skill selection and configu-
+ration. Nevertheless, local relevance alone does
+not establish whether a skill remains necessary or
+consistent with accumulated task progress.
+State Management. Task-state management pro-
+vides another line of research on long-horizon
+agent execution. Existing methods address work-
+flow control (Wu et al., 2024), progress verifi-
+cation (Wu et al., 2026a), and state-aware tool
+use (Yang et al., 2026; Guo et al., 2026). Other
+studies focus on retaining information across in-
+teractions.
+FlowState (Li et al., 2026b) pre-
+serves execution evidence for later reuse, whereas
+SKILL.state (Badhe et al., 2026) maintains struc-
+tured state to support the execution of selected
+skills. Further related work appears in Appendix B.
+6
+Conclusion
+In this paper, we formulate just-in-time skill re-
+trieval for long-horizon agents, acquiring skills on
+demand as task requirements emerge during execu-
+tion. Fixed pre-execution retrieval can miss later
+needs, while local-context retrieval can overlook
+accumulated task progress and lead to execution
+drift. We propose JITSKILL, which maintains com-
+plementary explicit and latent task states to make
+skill selection task-progress-aware rather than an
+independent local match, jointly guiding skill re-
+8
+
+
+trieval and the subsequent use of retrieved skills.
+Experiments across three long-horizon benchmarks
+show JITSKILL consistently outperforms baselines,
+with a 20.6% relative improvement over WebX-
+Skill on SkillsBench. These results underscore the
+value of tracking evolving task progress for coher-
+ent long-horizon skill retrieval and use.
+Limitations
+JITSKILL assumes an execution interface that ex-
+poses step-wise observations and supports repeated
+skill retrieval during task execution. Its effective-
+ness may be limited when feedback is sparse or
+delayed, when the available skill library does not
+contain the capabilities required by the task, or
+when the maintained execution state cannot capture
+the information needed to distinguish competing
+skills. The current evaluation focuses on API-based
+and containerized agent environments; extending
+the framework to settings with richer perceptual ob-
+servations, unreliable tools, or human-in-the-loop
+interaction remains an important direction for fu-
+ture work.
+References
+Sanket Badhe, Priyanka Tiwari, and Jonghyun Chung.
+2026.
+SKILL.state: Scalable long-horizon agent
+skills. Preprint, arXiv:2608.26263.
+Tong Bai, Zhenglin Wan, Pengfei Zhou, Xingrui Yu,
+Yang You, and Ivor W Tsang. 2026. Skilldag: Self-
+evolving typed skill graphs for llm skill selection at
+scale. arXiv preprint arXiv:2606.03056.
+Victor Barres, Honghua Dong, Soham Ray, Xujie Si,
+and Karthik Narasimhan. 2025. τ 2-Bench: Evaluat-
+ing conversational agents in a dual-control environ-
+ment. Preprint, arXiv:2506.07982.
+Tianyi Chen, Yinheng Li, Michael Solodko, Sen Wang,
+Nan Jiang, Tingyuan Cui, Junheng Hao, Jongwoo Ko,
+Sara Abdali, Leon Xu, Suzhen Zheng, Hao Fan, Pash-
+mina Cameron, Justin Wagle, and Kazuhito Koishida.
+2026. CUA-Skill: Develop skills for computer using
+agent. Preprint, arXiv:2601.21123.
+Yuyuan Feng, Zhishang Xiang, Chaobin Yang, Qichao
+Ma, Zerui Chen, Yujing Zhang, Ke Huang, Chuanjie
+Wu, Zhaoxu Liu, Yili Wang, et al. 2026.
+Graph
+engineering in the era of llm agents: From individual
+intelligence to system intelligence. arXiv preprint
+arXiv:2608.21156.
+Rongfeng Guo, Yinxuan Huang, Yusen Wu, Mao-
+qing Zhong, Yunlu Chen, Meng Tang, Teng Long,
+and Vincent Tao Hu. 2026. From state to action:
+OODA-Tool for reliable multi-turn tool use. Preprint,
+arXiv:2608.24368.
+Tenghao Huang, Kung-Hsiang Huang, Prafulla Kumar
+Choubey, Yilun Zhou, Muhao Chen, Jonathan May,
+and Chien-Sheng Wu. 2026. Gta: Generating long-
+horizon tasks for web agents at scale.
+Preprint,
+arXiv:2605.29218.
+Lawrence Keunho Jang, Jing Yu Koh, Daniel Fried,
+and Ruslan Salakhutdinov. 2026. Odysseys: Bench-
+marking web agents on realistic long horizon tasks.
+Preprint, arXiv:2604.24964.
+Ryangkyung Kang, Hongcheol Cho, and Youngeun Kim.
+2026. Skillret: A large-scale benchmark for skill
+retrieval in llm agents. Preprint, arXiv:2605.05726.
+Fangzhou Li,
+Pagkratios Tagkopoulos,
+and Ilias
+Tagkopoulos. 2025.
+Skillflow: Scalable and ef-
+ficient agent skill retrieval system.
+Preprint,
+arXiv:2504.06188.
+Jiaxi Li, Ke Deng, Yun Wang, Jingyuan Huang,
+Yucheng Shi, Qiaoyu Tan, Jin Lu, and Ninghao
+Liu. 2026a. Online skill learning for web agents
+via state-grounded dynamic retrieval.
+Preprint,
+arXiv:2606.04391.
+Minghao Li, Bangyan Li, Zifan Wang, Yulong Li,
+Hu Xu, Gan Zhang, Jingtong Wu, and Wen-
+qiang Xu. 2026b.
+FlowState: Execution state as
+memory for long-horizon LLM agents.
+Preprint,
+arXiv:2609.34565.
+Qinfeng Li, Dalin He, Yuntai Bao, Ying Yang, Ruoxi
+Chen, Xinyan Yu, Lizhou Liang, Ge Su, Wenqi
+Zhang, and Xuhong Zhang. 2026c.
+Skillaligner:
+Treating retrieved skills as adaptable drafts at exe-
+cution time. Preprint, arXiv:2608.06880.
+Xiangyi Li, Yimin Liu, Wenbo Chen, Bingran You,
+Zonglin Di, Yifeng He, Shenghan Zheng, et al.
+2026d.
+Skillsbench:
+Benchmarking how well
+agent skills work across diverse tasks.
+Preprint,
+arXiv:2602.12670.
+Yanzhou Li, Yiran Zhang, Xiaoyu Zhang, Xiaoxia
+Liu, and Yang Liu. 2026e.
+CodeSkill: Learning
+self-evolving skills for coding agents.
+Preprint,
+arXiv:2605.25430.
+Zhiyuan Li, Linyuan Gao, Xuechun Ding, Hongwei
+Chen, Yuan Wu, and Yi Chang. 2026f.
+Caskg:
+Counterfactual-causal skill graphs for scalable agent
+skill retrieval. Preprint, arXiv:2608.25500.
+Dawei Liu, Zongxia Li, Hongyang Du, Xiyang Wu,
+Shihang Gui, Yongbei Kuang, and Lichao Sun.
+2026.
+Graph-of-skills: Dependency-aware struc-
+tural retrieval for massive agent skills.
+Preprint,
+arXiv:2604.05333.
+Mohit Shridhar, Xingdi Yuan, Marc-Alexandre Côté,
+Yonatan Bisk,
+Adam Trischler,
+and Matthew
+Hausknecht. 2021. ALFWorld: Aligning text and
+embodied environments for interactive learning. In
+International Conference on Learning Representa-
+tions (ICLR).
+9
+
+
+Weihang Su, Jianming Long, Qingyao Ai, Qiaozhi He,
+Yichen Tang, Changyue Wang, Yiteng Tu, Yingbo
+Wang, and Yiqun Liu. 2026. Skill retrieval augmen-
+tation for agentic ai. Preprint, arXiv:2604.24594.
+Xingyu Tan, Xiaoyang Wang, Qing Liu, Xiwei
+Xu, Xin Yuan, Liming Zhu, and Wenjie Zhang.
+2026.
+SkillZip: Contract-preserving graph com-
+pression for scalable agent skill libraries. Preprint,
+arXiv:2608.05604.
+Xijia Tao, Yihua Teng, Xinyu Fu, Ziru Liu, Kecheng
+Chen, Yuzhi Zhao, Suiyun Zhang, Rui Liu, and
+Lingpeng Kong. 2026.
+SoftSkill:
+Behavioral
+compression for contextual adaptation.
+Preprint,
+arXiv:2606.20333.
+Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Man-
+dlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and
+Anima Anandkumar. 2023.
+Voyager: An open-
+ended embodied agent with large language models.
+Preprint, arXiv:2305.16291.
+Zhaoyang Wang, Qianhui Wu, Xuchao Zhang, et al.
+2026. WebXSkill: Skill learning for autonomous
+web agents. Preprint, arXiv:2604.13318.
+Wenyi Wu, Sibo Zhu, Kun Zhou, Aayush Salvi, Zixuan
+Song, and Biwei Huang. 2026a. StructAgent: Har-
+ness long-horizon digital agents with unified causal
+structure. Preprint, arXiv:2607.11388.
+Xiyang Wu, Zongxia Li, Guangyao Shi, Alexander
+Duffy, Tyler Marques, Matthew Lyle Olson, Tianyi
+Zhou, and Dinesh Manocha. 2026b. Co-evolving llm
+decision and skill bank agents for long-horizon tasks.
+Preprint, arXiv:2604.20987.
+Yiran Wu, Tianwei Yue, Shaokun Zhang, Chi Wang,
+and Qingyun Wu. 2024.
+StateFlow: Enhancing
+LLM task-solving through state-driven workflows.
+Preprint, arXiv:2403.11322.
+Peng Xia, Jianwen Chen, Hanyang Wang, Jiaqi Liu,
+Kaide Zeng, Yu Wang, Siwei Han, Yiyang Zhou,
+Xujiang Zhao, Haifeng Chen, Zeyu Zheng, Cihang
+Xie, and Huaxiu Yao. 2026. Skillrl: Evolving agents
+via recursive skill-augmented reinforcement learning.
+Preprint, arXiv:2602.08234.
+Zhishang Xiang, Chengyi Yang, Zerui Chen, Zhimin
+Wei, Yunbo Tang, Zongpei Teng, Zexi Peng, Zongxia
+Li, Chengsong Huang, Yicheng He, et al. 2026. A
+systematic survey of self-evolving agents: From
+model-centric to environment-driven co-evolution.
+Available at SSRN 6626878.
+Ruiyao Xu, Tiankai Yang, and Wei-Chieh Huang.
+2026.
+Hyperskill: Self-evolving llm agents via
+hypergraph-structured skill memory. arXiv preprint
+arXiv:2608.16114.
+Zixu Yang, Hang Zheng, Nan Jiang, Zhiyang Tang,
+Situo Zhang, Xiaobao Wu, Lu Chen, and Kai Yu.
+2026. No action without a NOD: A heterogeneous
+multi-agent architecture for reliable service agents.
+Preprint, arXiv:2605.12240.
+Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak
+Shafran, Karthik Narasimhan, and Yuan Cao. 2023.
+React: Synergizing reasoning and acting in language
+models. In International Conference on Learning
+Representations (ICLR).
+Yue Yao, Shengyuan Wang, Xin Chen, Minke Zhang, Jia
+He, Bingjun Luo, and Tom Gedeon. 2026. Skilltrace:
+Traversing a query-skill graph for composable llm
+agents. Preprint, arXiv:2608.02356.
+Jianxiang Yu, Jiapeng Zhu, Bochen Lin, Qier Cui,
+Zichen Ding, and Xiang Li. 2026. Skill is not one-
+size-fits-all: Model-aware skill alignment for llm
+agents. Preprint, arXiv:2605.30723.
+Mengqi Yuan, Zilong Zhou, Xinzhuang Xiong, Weim-
+ing Wu, Jiayang Sun, Jiamin Song, Kaiqian Cui,
+Bowen Wang, Haoyuan Wu, Yitong Li, Dunjie Lu,
+Haikong Lu, Qi Zhen, et al. 2026. Osworld 2.0:
+Benchmarking computer use agents on long-horizon
+real-world tasks. Preprint, arXiv:2606.29537.
+Kun Zeng, Yu Huo, Siyu Zhang, Zi Ye, Yuecheng Zhuo,
+Haoyue Liu, Yuquan Lu, Junhao Wen, and Xiaoy-
+ing Tang. 2026. Group of skills: Group-structured
+skill retrieval for agent skill libraries.
+Preprint,
+arXiv:2605.06978.
+Lizhi Zhang, Xin He, Dianxuan Fu, Yuyuan Feng,
+Jiatong Li, Qi Wang, Xin Wang, and Qinggang
+Zhang. 2026.
+Skillpoison: Progressive skill poi-
+soning via successful experiences. arXiv preprint
+arXiv:2610.07645.
+YanZhao Zheng, ZhenTao Zhang, Chao Ma, YuanQiang
+Yu, JiHuai Zhu, Yong Wu, Tianze Xu, Baohua Dong,
+Hangcheng Zhu, Ruohui Huang, and Gang Yu. 2026.
+Skillrouter: Skill routing for llm agents at scale.
+Preprint, arXiv:2603.22455.
+Huichi Zhou, Siyuan Guo, Anjie Liu, Zhongwei Yu,
+Ziqin Gong, Bowen Zhao, Zhixun Chen, Meng-
+long Zhang, Yihang Chen, Jinsong Li, et al. 2026a.
+Memento-skills: Let agents design agents. arXiv
+preprint arXiv:2603.18743.
+Shuyan Zhou, Frank F. Xu, Hao Zhu, Xuhui Zhou,
+Robert Lo, Abishek Sridhar, Xianyi Cheng, Tianyue
+Ou, Yonatan Bisk, Daniel Fried, Uri Alon, and Gra-
+ham Neubig. 2024. Webarena: A realistic web en-
+vironment for building autonomous agents. In In-
+ternational Conference on Learning Representations
+(ICLR).
+Yan Zhou, Yili Wang, Yiwei Dai, Qinggang Zhang,
+and Xin Wang. 2026b. Eviskill: Grounding skill
+evolution in replayable evidence.
+arXiv preprint
+arXiv:2610.05030.
+Yuxuan Zhu, Mohammad Mohammadi Amiri, Pin-Yu
+Chen, and Keerthiram Murugesan. 2026. Skillmem:
+Compact external skill memory for latent multi-agent
+reasoning. Preprint, arXiv:2610.37935.
+10
+
+
+Appendix Contents
+A Frequently Asked Questions
+12
+A.1 What are the advantages of JITSKILL? . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+A.2 Why maintain both an explicit record and a latent state? . . . . . . . . . . . . . . . . . .
+12
+A.3
+Does JITSKILL benefit from a larger context than the baselines?
+. . . . . . . . . . . . .
+12
+A.4
+How are the baselines made comparable?
+. . . . . . . . . . . . . . . . . . . . . . . . .
+12
+A.5
+How sensitive is JITSKILL to its hyper-parameters? . . . . . . . . . . . . . . . . . . . .
+12
+A.6
+Does JITSKILL generalize beyond the evaluation setting? . . . . . . . . . . . . . . . . .
+12
+B
+Related Work
+12
+B.1
+Pre-Execution Skill Preparation
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+B.2
+Skill Acquisition and Use During Execution . . . . . . . . . . . . . . . . . . . . . . . .
+13
+B.3
+Execution Management for Long-Horizon Task . . . . . . . . . . . . . . . . . . . . . .
+13
+C Method Details
+14
+C.1
+Recurrent Encoder
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+C.2
+History-Compression Pretraining . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+C.3
+Navigation Objective and Skill Scoring
+. . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+C.4
+Executor Interface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+C.5
+Algorithms
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+C.6
+Model Selection and Training Configuration . . . . . . . . . . . . . . . . . . . . . . . .
+16
+D Preliminary Study Details
+17
+D.1
+Comparison Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+17
+D.2
+Metrics and Annotation Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+18
+D.3
+Full Preliminary Results
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+18
+E
+Experimental Setup Details
+19
+E.1
+Baselines
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+19
+E.2
+Implementation Details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+20
+F
+Additional Results
+22
+F.1
+Dynamic Execution-State Maintenance on ALFWorld . . . . . . . . . . . . . . . . . . .
+22
+F.2
+Performance by Task Difficulty . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+22
+F.3
+Sensitivity to the Number of Skills and the Injection Budget
+. . . . . . . . . . . . . . .
+22
+F.4
+Efficiency on ALFWorld . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+22
+F.5
+Training Objectives and Curves . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+23
+F.6
+Generalization to a Different Executor . . . . . . . . . . . . . . . . . . . . . . . . . . .
+24
+F.7
+Generalization to Unseen ALFWorld Environments . . . . . . . . . . . . . . . . . . . .
+25
+F.8
+Trajectory-level Diagnostics
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+25
+F.9
+Benchmark and Skill-Library Statistics . . . . . . . . . . . . . . . . . . . . . . . . . . .
+26
+F.10 Run-to-Run Variability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+26
+F.11 How the Skill Library Is Used
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+26
+F.12 Where the Gains Come From . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+27
+G Case Study: Progress-Aware Skill Selection in an Unseen Environment
+27
+H Prompts
+29
+11
+
+
+A
+Frequently Asked Questions
+A.1
+What are the advantages of JITSKILL?
+Existing skill-augmented agents either fix the skill
+set before execution or retrieve skills from the cur-
+rent local signal, such as the latest observation or
+a summary of the current state. Neither tells the
+agent whether a seemingly relevant skill fills an un-
+met requirement, repeats completed work, or con-
+flicts with earlier execution. JITSKILL maintains
+an evolving task-progress state, consisting of an ex-
+plicit progress record and a latent state, and uses the
+same state both to select skills and to condition the
+executor that applies them. As a result, the selected
+skills follow the stage of the task (Appendix F.11
+and Appendix G), and JITSKILL achieves the best
+success rate on SkillsBench and ALFWorld under
+the same executor and skill budget (Table 1).
+A.2
+Why maintain both an explicit record and
+a latent state?
+The two representations carry complementary in-
+formation. The explicit record keeps discrete, in-
+spectable facts such as completed operations and
+failed attempts, whereas the latent state carries
+cross-step context that is difficult to enumerate as
+fixed textual fields. Removing either one lowers
+performance on both ALFWorld and AppWorld
+(Figure 6), so the full state is needed for the best
+result.
+A.3
+Does JITSKILL benefit from a larger
+context than the baselines?
+No.
+All skill-augmented methods deliver their
+skills at the same prompt location under the same
+per-step budget, and the explicit record of JIT-
+SKILL is counted within this budget. JITSKILL
+changes which skills are delivered, not how much
+text is delivered: it switches skills more often than
+step-wise retrieval while every injected block stays
+within the budget (Appendix F.11), and it com-
+pletes ALFWorld games in fewer steps than the
+no-skill agent and SGDR (Appendix F.4).
+A.4
+How are the baselines made comparable?
+Each baseline is re-implemented under one shared
+protocol: the same frozen executor, skill library, re-
+trieval backbone, injection location, and skill bud-
+get. Each method follows the default configura-
+tion of its paper, any extra model call it requires
+is issued to the same executor, and every hyper-
+parameter is selected on official training data only
+(Appendix E.1).
+A.5
+How sensitive is JITSKILL to its
+hyper-parameters?
+JITSKILL stays above 89% on ALFWorld for every
+number of injected skills from 1 to 5, and a mod-
+erate skill budget already reaches the best success
+rate (Appendix F.3). The weights of the training
+objective lie on a flat optimum (Appendix F.5).
+A.6
+Does JITSKILL generalize beyond the
+evaluation setting?
+Yes. Without re-tuning, JITSKILL matches the
+highest success rate on unseen ALFWorld envi-
+ronments (Appendix F.7). With a weaker Llama-
+3.1-8B-Instruct executor, it achieves the highest
+success rate, whereas step-wise retrieval falls below
+the no-skill agent; the navigator remains unchanged
+and any executor-side interface is trained on official
+training trajectories only (Appendix F.6).
+B
+Related Work
+B.1
+Pre-Execution Skill Preparation
+Some studies treat skill augmentation as prepara-
+tion before execution, acquiring relevant skills from
+an external library based on initial task require-
+ments to provide procedural support for subsequent
+execution. SkillFlow (Li et al., 2025) uses multi-
+stage retrieval and filtering to obtain a compact skill
+set from a large library. SkillRouter (Zheng et al.,
+2026) further incorporates procedural information
+from skill bodies, addressing the limitations of as-
+sessing relevance from names and short descrip-
+tions alone. Since the relevance of individual skills
+does not guarantee that the resulting set supports
+complete execution, Graph-of-Skills (GoS) (Liu
+et al., 2026) incorporates skill dependencies into
+retrieval to recover prerequisites that might other-
+wise be missed. GoSkills (Zeng et al., 2026) ex-
+tends the retrieval unit to role-labeled skill groups
+and presents the selected skills through Start, Sup-
+port, Check, and Avoid fields, helping the executor
+understand how they work together. CaSKG (Li
+et al., 2026f) calibrates skill relations through coun-
+terfactual probes, allowing graph-based retrieval
+to expand the retrieved skill set along more reli-
+able procedural relations. Beyond improving the
+acquired skill set, SkillAligner (Li et al., 2026c)
+jointly adapts retrieved skills before execution, spe-
+cializing skill fragments to task requirements and
+available interfaces, resolving dependencies, con-
+12
+
+
+flicts, and redundancy, and producing a guide for
+subsequent execution. Starting from initial require-
+ments, these methods improve the relevance, com-
+pleteness, and applicability of the skills available
+when execution begins. However, the capability
+demands of long-horizon tasks often emerge grad-
+ually through environmental feedback, while ac-
+quired resources and newly discovered constraints
+change the procedural support needed later. Our
+work focuses on these changes during execution,
+continuously maintaining task progress so that skill
+acquisition and execution can adapt together to the
+remaining requirements.
+B.2
+Skill Acquisition and Use During
+Execution
+As interaction environments and capability de-
+mands change during execution, some web and
+computer-use agents dynamically acquire skills
+and execute them while a task is in progress (Xi-
+ang et al., 2026). SGDR (Li et al., 2026a) extracts
+reusable subprocedures of intermediate granular-
+ity from completed trajectories, representing their
+purpose in natural language and providing oper-
+ational support through code.
+It combines the
+task goal with the current webpage state to re-
+trieve skills at each step, rather than restricting
+skill execution to a fixed set selected at the start
+of the task. WebXSkill (Wang et al., 2026) iden-
+tifies currently available skills from URL patterns
+and page elements, uses task and page context for
+semantic matching across websites, and provides
+both callable action sequences and step-level guid-
+ance to support direct execution or agent-controlled
+actions. These mechanisms emphasize matching
+skills to the current environment. However, lo-
+cal page conditions or semantic similarity do not
+fully capture previously completed work and es-
+tablished constraints, and the same page may call
+for different operations at different stages of a task.
+Consequently, locally relevant skills may still lead
+an agent to repeat completed exploration or pro-
+ceed before prerequisites have been satisfied. CUA-
+Skill (Chen et al., 2026) represents computer oper-
+ations as parameterized skills and execution graphs.
+It reinitializes memory for each task and uses this
+memory to provide execution history for skill se-
+lection and argument configuration, helping the
+agent determine how to complete the current oper-
+ation successfully in the current interface. Within
+skill configuration and execution, the emphasis is
+on reliably carrying out an already selected oper-
+ational skill. Our work instead examines whether
+that skill still contributes to task progress, continu-
+ously maintaining task progress to jointly condition
+subsequent skill acquisition and execution.
+B.3
+Execution Management for Long-Horizon
+Task
+Maintaining completed work, unmet requirements,
+and existing constraints can help agents reduce er-
+rors in assessing task progress and improve the
+consistency of subsequent decisions during long-
+horizon interaction. To improve execution con-
+trollability, StateFlow (Wu et al., 2024) organizes
+complex tasks into states and transitions, distin-
+guishing workflow progression from task solving
+within each stage so that operations follow explicit
+execution stages. Rather than primarily control-
+ling workflow progression, StructAgent (Wu et al.,
+2026a) focuses on whether an agent has sufficient
+evidence to conclude that a task has made progress.
+It confirms state changes through verification, pre-
+venting attempted operations from being treated as
+completed work and supporting task-completion
+judgments and failure recovery. It also introduces
+relevant operational experience at subgoal transi-
+tions, while emphasizing verifiable progress, error
+localization, and recovery. To address failures to
+carry historical information into subsequent opera-
+tions, NOD (Yang et al., 2026) combines explicit
+task state with critical-action review, while OODA-
+Tool (Guo et al., 2026) separates state reconstruc-
+tion from action generation through staged process-
+ing. Both aim to reduce the neglect of existing
+requirements and constraints in tool calls, focusing
+on operation correctness and consistency with task
+state during multi-turn interaction. Considering the
+reuse of historical information in later interactions,
+FlowState (Li et al., 2026b) observes that some
+information becomes relevant only when subse-
+quent subtasks or requests arise, whereas repeated
+context compression can discard it prematurely. It
+therefore preserves execution states and associated
+evidence as memory reusable across requests and
+revisits them when new decisions require them, ad-
+dressing the trade-off between persistent informa-
+tion retention and working-context cost. Compared
+with these approaches to general agent execution,
+SKILL.state (Badhe et al., 2026) directly addresses
+long-horizon execution after a skill has already
+been selected. To mitigate growing interaction his-
+tories and interference from obsolete information,
+it replaces accumulated conversation records with
+13
+
+
+(a) Fixed pre-execution skill retrieval
+initial 
+task
+Selected once
+Skill A
+Skill B
+Skill C
+Unable to cover 
+later procedural 
+needs
+Fiexed support misses evolving needs
+(b) Local-context-based just-in-time skill retrieval
+Current cue
+Matching skill
+Execute
+(c) Task-state-tracked just-in-time
+skill retrieval (JitSkill)
+Earlier execution
+Completed work
+Reusable results
+Failed attemps
+Remaining requirements
+Latent context
+Aquire skills
+Use skills
+State + Context 
+guide execution
+Update with 
+progress
+Initail instruction
+New observations
+Execution outcomes
+New constraints
+Task demands evolve during execution
+Additional 
+skills 
+required
+Local matching can cost execution drift
+Locally relevant, but may lead to execution drift
+Redundant 
+exploration
+Diagnose 
+issue
+Explore
+already 
+explored
+Re-selects skills for 
+completed work
+Repeat failed 
+attempt
+Reuses a previously 
+invalidated skill
+Miss emerging 
+constraints
+Ignores newly 
+discovered 
+requirements
+Skill A
+Skill A
+try 
+again
+Skill B
+Conflict with new 
+requirement
+New
+constraint
+Task state guides skill retrieval and use
+Progress-aware and consistent skill use
+Leverage 
+reuseable results
+Avoid invalid 
+skills
+Incoperate new 
+constraints
+Figure 7: Different skill retrieval modes. (a) Fixed pre-execution retrieval can miss emerging procedural needs.
+(b) Local-context-based just-in-time retrieval can overlook accumulated progress, resulting in execution drift. (c)
+JITSKILL maintains task-progress representations to jointly guide skill retrieval and execution.
+an updatable structured state, allowing agents to
+execute the selected skill effectively in the execu-
+tion environment based on the current state and
+latest observation. Our work focuses on how task
+progress changes the need for skill retrieval. Be-
+yond improving operation reliability or assessing
+execution outcomes, task state serves as a shared
+basis for skill acquisition and execution, allowing
+completed work, remaining requirements, and ex-
+isting constraints to jointly determine which skills
+are needed next and how the same skill should be
+executed at different stages of task progress.
+From
+Retrieval
+Timing
+to
+Task-Progress
+Grounding.
+The preceding discussion distin-
+guishes when skills are retrieved from how skill
+retrieval and execution account for task progress.
+Figure 7 illustrates this distinction.
+Fixed pre-
+execution retrieval can miss procedural needs re-
+vealed by later interaction. Just-in-time retrieval
+responds to these emerging needs, but decisions
+based on local context can still overlook completed
+work, failure conditions, and newly established
+constraints. JITSKILL addresses this gap by main-
+taining an evolving task-progress state that jointly
+informs skill retrieval and execution.
+A detailed organization of the related work is
+provided in Table 2.
+C
+Method Details
+This appendix details the recurrent encoder, its
+history-compression pretraining objective, the nav-
+igation fine-tuning objective and skill scoring used
+in our experiments, and the training configuration.
+C.1
+Recurrent Encoder
+The latent representation uses m = 16 slots. The
+encoder fθ is a frozen base language model adapted
+with LoRA: at each step it reads the previous rep-
+resentation Zt, the token embeddings of the newly
+accumulated interaction Dt+1, and m learnable
+slots, and the outputs at the slot positions form
+Zt+1. The initial representation and the learnable
+slots are trained together with the LoRA weights.
+Each update reads only the previous representation
+and the new block, so the per-step cost does not
+grow with trajectory length.
+To match history integration at inference, train-
+ing constructs successive history blocks along each
+trajectory and passes the representation from one
+step to the next. Forward computation preserves
+this recurrent dependency, while gradients are trun-
+cated across steps, which keeps the memory cost
+of training independent of trajectory length.
+C.2
+History-Compression Pretraining
+The first training stage pretrains the encoder to re-
+tain historical content, support its subsequent use,
+and keep different histories distinguishable. We
+constrain content recovery through reconstruction,
+subsequent prediction through distribution align-
+ment, and distinctions between histories through
+representation contrast.
+History reconstruction.
+This objective con-
+strains retained information by reconstructing his-
+torical fragments. Given a target fragment y =
+(y1, . . . , yn), a frozen decoder predicts each token
+conditioned on the compressed representation Z
+14
+
+
+Table 2: Representative methods related to JITSKILL. Methods are grouped by when and how they construct,
+retrieve, or maintain the skill set used during execution.
+Method
+Method description
+Differences from ours
+▶Pre-execution fixed skill retrieval
+SkillFlow (Li et al., 2025);
+SkillRouter (Zheng et al., 2026)
+Retrieve skills from initial task requirements;
+SkillRouter additionally uses procedural
+information in skill bodies.
+Determine the retrieved skill set before
+execution, without updating it as task
+progress changes.
+Graph-of-Skills (GoS) (Liu
+et al., 2026); GoSkills (Zeng
+et al., 2026); CaSKG (Li et al.,
+2026f)
+Expand the retrieved skill set through
+dependencies, role-labeled groups, or
+calibrated skill relations.
+Improve the initial support set, but do not
+condition retrieval on evolving task state.
+SkillAligner (Li et al., 2026c)
+Adapt retrieved skill fragments to task
+requirements and interfaces, resolving
+conflicts before execution.
+Improves pre-execution compatibility; later
+feedback does not trigger renewed support
+selection.
+SkillTrace (Yao et al., 2026)
+Decompose a task into subqueries, match
+them to skills, and add dependency-based
+supporting skills.
+A static skill-context baseline: it fixes the
+retrieved skill set before execution rather than
+revising it from interaction feedback.
+▶Execution-time local-signal skill retrieval
+SGDR (Li et al., 2026a)
+Retrieve reusable subprocedures from
+task-goal similarity and a summary of the
+current environment state.
+Uses current local state, but does not
+maintain a persistent representation of
+completed work or remaining constraints.
+WebXSkill (Wang et al., 2026)
+Retrieve skills using URL patterns, page
+elements, and task–page semantic matching.
+Relies on static graph organization plus
+current-page grounding; the same page
+cannot be interpreted differently from task
+progress.
+CUA-Skill (Chen et al., 2026)
+Retrieve, rerank, and configure
+parameterized skills from UI context,
+execution history, and outcome records.
+Focuses on executing a selected operation
+successfully; our method also decides
+whether the retrieved skill remains useful for
+the task.
+▶Cross-step task-state maintenance
+SKILL.STATE (Badhe et al.,
+2026)
+Replace accumulated history with a
+structured state, procedural specification,
+and latest observation.
+Maintains state for executing an already
+selected skill, rather than selecting the next
+skill.
+StructAgent (Wu et al., 2026a)
+Verify progress using explicit evidence and
+support error localization and recovery.
+Focuses on reliable progress assessment, not
+on jointly governing skill acquisition and
+execution.
+FlowState (Li et al., 2026b)
+Preserve execution states and evidence for
+reuse when later subtasks require them.
+Revisits retained information when needed,
+but does not use progress state to control the
+skill lifecycle.
+Table 3: Training configuration of the trainable components of JITSKILL.
+Setting
+Value
+Setting
+Value
+Encoder base model
+Qwen3-8B (frozen)
+Tokens per update (new block / encoder window)
+1,536 / 4,096
+Executor
+Qwen3.8-27B (frozen)
+Skill and record embedder
+all-MiniLM-L6-v2
+LoRA rank / α / dropout
+32 / 64 / 0.05
+Epochs
+3
+LoRA target modules
+q, k, v, o projections
+Learning rate (encoder / navigator)
+5 × 10−5 / 10−3
+Latent slots m
+16
+Held-out validation scenarios
+5
+and the ground-truth prefix y<j:
+Lrec = −1
+n
+n
+X
+j=1
+log p0(yj | Z, y<j).
+(6)
+Distribution alignment.
+This objective con-
+strains compressed and original histories to yield
+consistent prediction distributions for the same sub-
+sequent context. Let h be the history to compress
+and r the subsequent text. The frozen teacher reads
+15
+
+
+[h; r], while the student reads [Z; r]. Their next-
+token distributions at the final position, pT and pS,
+are aligned using Jensen–Shannon divergence:
+Lalign = JSD(pT ∥pS)/ ln 2.
+(7)
+Representation contrast.
+This objective pre-
+serves distinctions between histories by matching
+compressed representations to their source histo-
+ries. Averaging Z across slots and normalizing
+yields v. The positive q+ is the centered mean
+hidden representation of the corresponding his-
+tory from a frozen model; negatives come from
+a history-representation queue Q−:
+Ldisc = −log
+exp(v⊤q+/τ)
+exp(v⊤q+/τ)
++
+X
+q−∈Q−
+exp(v⊤q−/τ)
+.
+(8)
+Here, τ is the temperature. Positive and negative
+history anchors are normalized and receive no gra-
+dients.
+Joint weighting.
+With trajectory weighting and
+segment-specific reconstruction modulation, the
+compression objective is
+Lcomp = Ei,t
+h
+wi
+
+(λrec + λprobesi,t)Lrec
++ λalignLalign + λdiscLdisc
+i
+.
+(9)
+Here, wi is the trajectory weight, the coefficients
+λrec, λalign, and λdisc control the three losses, and
+the probe weight si,t modulates reconstruction
+through λprobe. The effective weights in Equa-
+tion 3 are
+ωi,t = wi(λrec + λprobesi,t),
+βi = wiλalign,
+γi = wiλdisc.
+(10)
+C.3
+Navigation Objective and Skill Scoring
+The navigator gϕ maps the slot-averaged latent rep-
+resentation and a sentence embedding of the ex-
+plicit record Bt to a query vector qt. Each skill
+k ∈K is scored by the similarity between qt and
+the embedding of its description, which defines
+pθ,ϕ(k | Zt, Bt) through a softmax over the library.
+At inference, this learned score is combined with
+the relevance of each skill to the current step, and
+the top-ranked skills are injected within the skill-
+injection budget CK.
+The second training stage initializes the encoder
+with the pretraining checkpoint and jointly fine-
+tunes it with the navigator on execution trajectories
+from the official training split. For each decision
+point, the supervision target is the set of skills that
+support the next action, determined from the opera-
+tions the trajectory executes at that step. The target
+yi,t in Equation 4 spreads unit mass uniformly over
+this set, and decision points with no supporting
+skill are skipped. This objective jointly updates
+the encoder and navigator in all experiments. For
+benchmarks whose skill library differs from the
+training library, we use a scoring head that reads
+skill descriptions directly; it is trained on the same
+AppWorld training trajectories and applies to a new
+library without retraining.
+C.4
+Executor Interface
+The 27B executor remains frozen. When the en-
+coder’s latent space differs from the executor’s in-
+put embedding space, the latent slots Zt ∈Rm×d
+are mapped to executor-space state tokens through
+a learned projection,
+Z′
+t = Pψ(Zt) ∈Rm×dexec,
+(11)
+where dexec is the executor’s token dimension. At
+each decision point, the executor receives the ex-
+plicit record Bt, Z′
+t, and the selected skills Kt, in
+addition to the current instruction, observation, and
+recent history. We optimize only Pψ with the next-
+action likelihood in Equation 5; the executor pa-
+rameters remain fixed. This aligns the state-token
+interface with the same two-part task-progress state
+used for navigation.
+C.5
+Algorithms
+Algorithm 1 summarizes how JITSKILL tracks task
+progress and uses it for skill acquisition and skill
+use at every decision point, and Algorithm 2 sum-
+marizes how its trainable components are learned.
+Both follow the notation of Section 3.
+C.6
+Model Selection and Training
+Configuration
+To select a checkpoint that generalizes across task
+scenarios, we hold out scenario-disjoint validation
+trajectories from the training split and use them
+only for checkpoint selection. Table 3 lists the
+configuration.
+16
+
+
+Algorithm 1: Progress-grounded skill re-
+trieval and use
+Require :instruction u, skill library K, encoder fθ,
+navigator gϕ, projection Pψ, frozen
+executor πη⋆, skill budget CK, step limit T
+Ensure :trajectory τ
+1 o0 ←initial observation; H0 ←∅; Z0 ←Zinit;
+B0 ←E(u, ∅);
+2 for t = 0, 1, . . . , T −1 do
+▷progress-conditioned skill acquisition
+3
+qt ←gϕ(Zt, Bt);
+4
+rank k ∈K by pθ,ϕ(k | Zt, Bt) and the current
+step;
+5
+Kt ←top-ranked skills that fit CK together with
+Bt;
+▷progress-conditioned skill use
+6
+Z′
+t ←Pψ(Zt);
+7
+at ∼πη⋆(· | u, ot, Ht, Bt, Z′
+t, Kt);
+8
+ot+1 ←execute at in the environment;
+9
+if the task is completed then break;
+▷task-progress tracking
+10
+Dt+1 ←(at, ot+1);
+11
+Zt+1 ←fθ(Zt, Dt+1);
+12
+Bt+1 ←E(u, H<t+1);
+13
+Ht+1 ←recent interactions up to step t;
+14 return τ = (o0, a0, o1, . . .)
+Algorithm 2: Training the trainable com-
+ponents
+Require :training trajectories {τi}, skill library K,
+frozen base model, frozen executor πη⋆
+Ensure :encoder fθ, navigator gϕ, projection Pψ
+▷stage 1: history-compression pretraining
+1 for each epoch and each trajectory τi do
+2
+Zi,0 ←Zinit;
+3
+for each decision point t of τi do
+4
+Zi,t+1 ←fθ(Zi,t, Di,t+1) ;
+▷gradients
+truncated across steps
+5
+accumulate Lcomp (Eq. 3);
+6
+update θ with ∇Lcomp;
+7 save the pretrained encoder checkpoint;
+▷stage 2: state-grounded navigation fine-tuning
+8 for each epoch and each trajectory τi do
+9
+Zi,0 ←Zinit;
+10
+for each decision point t of τi do
+11
+Zi,t+1 ←fθ(Zi,t, Di,t+1) ;
+▷gradients
+truncated across steps
+12
+yi,t ←uniform mass over the skills
+supporting the next action;
+13
+accumulate Lnav (Eq. 4);
+14
+update θ, ϕ with ∇Lnav;
+15 select the checkpoint on held-out training scenarios;
+▷stage 3: executor interface
+16 for each decision point (i, t) do
+17
+compute Bi,t, Zi,t, and Ki,t with the trained
+fθ, gϕ;
+18
+update ψ with ∇Lproj (Eq. 5); η⋆stays fixed;
+D
+Preliminary Study Details
+This section supplements Section 2 with the com-
+parison setup, metric definitions, and complete re-
+sults behind Figure 2.
+D.1
+Comparison Setup
+The preliminary comparison holds the skill library,
+base retriever, executor, skill-injection budget CK,
+and interaction limit fixed. It varies when skills
+are acquired and which execution evidence is in-
+cluded in the retrieval query. The task-level results
+are reported on AppWorld, following the shared
+evaluation setting in Section 4.
+Retrieval conditions.
+Initial Retrieval retrieves
+skills from the initial task instruction before ex-
+ecution and retains that initial selection. Online
+Retrieval updates its retrieved skill set at every
+decision point using the task instruction together
+with the local execution context: the preceding
+thought and the most recent 1,200 characters of
+the current observation. Online Retrieval + Full
+History additionally supplies the complete preced-
+ing interaction history to the online query. Online
+Retrieval + Structured History instead prepends
+a short record of the task goal, the interfaces al-
+ready called, and the failures observed so far. The
+structured-history condition tests the organization
+of textual history; it is not the full explicit–latent
+state mechanism of JITSKILL.
+Difficulty groups.
+D1, D2, and D3 correspond
+to values 1, 2, and 3 of AppWorld’s task-metadata
+difficulty field. They are benchmark-defined diffi-
+culty groups, not bins obtained from the number of
+execution steps or observed trajectory lengths.
+Configuration.
+All conditions share the App-
+World skill library built from the official training
+split, the same base retriever, which fuses BM25
+with all-MiniLM-L6-v2 dense scores by recipro-
+cal rank fusion, and the same frozen executor,
+Qwen3.8-27B. Each decision point receives at most
+k = 3 skills within a skill-injection budget of
+CK = 1,200 tokens, and an episode runs for at
+most 50 interaction steps. The full-history query is
+capped at CQ = 4,096 tokens, keeping the most re-
+cent part when the history is longer. Query lengths
+are counted in the retriever’s WordPiece tokens.
+Retrieval-side and task-level measurements.
+Coverage, query cost, and the trace-level rates are
+measured by replaying every condition’s retrieval
+on the same execution trajectories of the official
+test split, so all conditions are compared at identical
+decision points. Task goal completion is measured
+end-to-end by deploying each condition as the skill
+17
+
+
+Table 4: Preliminary comparison of retrieval timing and query content on AppWorld. The skill library, base
+retriever, executor, skill-injection budget CK, and interaction limit are fixed. Hit@3 measures stage-specific skill
+coverage at online decision points; TGC is reported in percent, and D1/D2/D3 denote the AppWorld metadata
+difficulty levels.
+Method
+Hit@3 ↑
+TGCD1 ↑
+TGCD2 ↑
+TGCD3 ↑
+Avg. query tokens ↓
+Initial Retrieval
+0.115
+85.4
+69.4
+57.7
+81
+Online Retrieval
+0.385
+88.3
+75.0
+55.6
+328
+Online Retrieval + Full History
+0.346
+87.7
+65.3
+56.1
+2,924
+provider of the executor and running the official
+test split three times.
+D.2
+Metrics and Annotation Scope
+Stage-specific skill coverage (Hit@3).
+Hit@3
+targets skill needs that emerge during execution.
+An evaluation event is the first step at which a
+skill becomes needed whose application the task
+request does not name, so no query formed before
+execution can be expected to anticipate it. Let E
+denote these events, Ge the set of skills compatible
+with the need at event e, and K(3)
+e
+the top-three
+skills supplied by the condition being evaluated.
+Then
+Hit@3 = 1
+|E|
+X
+e∈E
+1
+h
+K(3)
+e
+∩Ge̸ = ∅
+i
+.
+(12)
+For Initial Retrieval, coverage is assessed using
+the initial selection rather than a new query at that
+event. Hit@3 is an event-level coverage measure:
+it is not the fraction of correct skills among the top
+three, nor the probability of eventual task success.
+Need annotation.
+The skills needed at a step are
+derived deterministically from the trajectory: a skill
+is needed when the interfaces it covers include an
+interface the step actually calls, excluding ubiq-
+uitous calls for documentation lookup, account-
+password lookup, and task completion. Each need
+is counted once, at the step where it first appears, so
+a need that spans several steps does not contribute
+repeated events. Because the labels follow from
+executed calls, the annotation requires no human
+judgment and is identical across conditions.
+Task outcomes and query cost.
+Task goal com-
+pletion (TGC) reports task-level completion, ex-
+pressed as a percentage. TGCD1, TGCD2, and
+TGCD3 report this outcome within the three meta-
+data difficulty groups. Average query tokens mea-
+sure the length of the retrieval query, not the skill-
+injection payload or the executor’s total token con-
+sumption.
+Trace-level error rates.
+The diagnosis exam-
+ines the top-ranked retrieved skill at every decision
+event that has at least one needed skill. Redun-
+dant exploration marks an event whose top-ranked
+skill was already retrieved earlier in the episode
+by the same condition and whose covered outcome
+has already been produced, that is, at least one of
+its interfaces has already been called; retrieving
+the same skill again is not sufficient on its own.
+Execution-consistency deviation marks an event
+whose top-ranked skill is needed neither at the cur-
+rent step nor at any later step of the episode, so it
+cannot advance any remaining requirement. These
+are event-level error rates, not task success rates
+conditioned on having retrieved a correct skill. All
+conditions are evaluated on the same 954 decision
+events, derived with the same need annotation.
+D.3
+Full Preliminary Results
+Coverage, task completion, and query cost.
+Ta-
+ble 4 provides the full comparison underlying Fig-
+ure 2b, including the full-history condition and
+query cost. Online Retrieval raises Hit@3 from
+0.115 to 0.385 relative to Initial Retrieval. Its TGC
+improves by 2.9 and 5.6 percentage points on D1
+and D2, but decreases by 2.1 points on D3. Adding
+full history yields 0.346 Hit@3 at an average query
+length of 2,924 tokens, compared with 328 tokens
+for Online Retrieval.
+Error diagnosis.
+Figure 8 reports the aggregate-
+event diagnosis over 954 decision events, a differ-
+ent scope from the matched long-horizon compari-
+son in Figure 2c. Adding full history increases re-
+dundant exploration by 14.8 percentage points and
+execution-consistency deviation by 11.6 points.
+Structured-history comparison.
+Online Re-
+trieval + Structured History raises Hit@3 to 0.415
+with 423 query tokens, compared with 0.385 and
+328 tokens for Online Retrieval and 0.346 and
+2,924 tokens for Online Retrieval + Full History.
+However, its execution-consistency deviation rises
+18
+
+
+Redundant
+exploration
+Execution-consistency
+deviation
+0.0
+0.2
+0.4
+0.6
+0.8
+Error rate ↓
+0.500
+0.648
+0.274
+0.390
+Online Retrieval
+Online Retrieval + Full History
+Figure 8: Trace-level diagnosis of online retrieval.
+Error rates of the top-ranked retrieved skill over the
+same 954 annotated decision events. Repeated retrieval
+counts as redundant only when earlier retrieval has al-
+ready produced the same task-relevant outcome.
+to 45.7%, exceeding both Online Retrieval (27.4%)
+and Online Retrieval + Full History (39.0%). This
+aggregate-event result differs from the matched
+long-horizon comparison below; conclusions about
+the two scopes should be distinguished.
+Matched long-horizon diagnosis.
+Figure 2c re-
+ports a matched long-horizon comparison across
+the three online query conditions. Redundant explo-
+ration is 55.0%, 73.3%, and 51.6% for Online Re-
+trieval, Full History, and Structured History, respec-
+tively; execution-consistency deviation is 33.3%,
+44.0%, and 30.2%. Thus, full history increases
+the two rates by 18.3 and 10.7 percentage points
+relative to local-context retrieval, whereas struc-
+tured history reduces them by 3.4 and 3.1 points.
+Within this comparison, organizing history reduces
+observed errors, although substantial errors remain.
+These rates should not be attributed to the separate
+954-event aggregate diagnosis.
+E
+Experimental Setup Details
+E.1
+Baselines
+Each external method is re-implemented under the
+shared protocol of Section 4: the same skill library,
+retrieval backbone, executor, injection location, and
+per-step skill budget. Published end-to-end scores
+from web or desktop environments are therefore
+not transferred; the comparison isolates the deci-
+sion rule that determines when and which skills
+reach the executor. Table 2 groups the baselines
+by this decision rule: pre-execution retrieval, re-
+trieval from the current local signal, and retrieval
+conditioned on a maintained execution state.
+E.1.1
+CUA-Skill
+CUA-Skill (Chen et al., 2026) is a computer-use
+skill framework that represents reusable desktop op-
+erations as parameterized execution graphs. During
+execution, its planner generates retrieval queries
+from the user instruction, the current user-interface
+state, and an execution-memory buffer; it retrieves
+and re-ranks candidate skills, instantiates the argu-
+ments of the selected skill, and executes the result-
+ing operation. Its memory buffer is initialized from
+the task instruction and then appends a concise
+summary of each executed skill and its observed
+outcome. The buffer therefore exposes prior suc-
+cesses, failures, and their contexts to later retrieval,
+re-ranking, and argument-instantiation decisions.
+CUA-Skill addresses a complementary but dif-
+ferent problem from JITSKILL. Its parameteriza-
+tion and execution graphs aim to make a selected
+computer-use operation executable in the current
+interface. For example, argument instantiation fills
+operation-level slots such as a target UI element
+or coordinate, input text, file path, or application-
+specific option; the memory buffer helps the plan-
+ner avoid repeating unsuccessful operations and re-
+cover from execution failures. These mechanisms
+improve how an already selected skill is instanti-
+ated and executed under local interface conditions.
+In contrast, JITSKILL addresses whether a skill
+should remain part of the task-level decision pro-
+cess as execution progresses. It maintains task-
+progress state that distinguishes unresolved require-
+ments, satisfied conditions, reusable resources,
+failed routes, and active commitments. This state
+determines whether external support should be
+newly retrieved, whether previously available sup-
+port should be reused or skipped, and whether a
+locally executable skill is compatible with the re-
+maining task constraints. Thus, successful oper-
+ation execution alone is insufficient: a skill can
+be correctly configured and executed while being
+redundant after a requirement has been satisfied,
+or inconsistent with a commitment established ear-
+lier in the trajectory. We include CUA-Skill as a
+strong execution-time retrieval baseline to distin-
+guish operation-level execution support from task-
+progress-grounded skill lifecycle control.
+E.1.2
+Reproduced Baselines
+All reproduced baselines run under the shared pro-
+tocol: the same frozen executor, the same skill
+library, the same injection location, k = 3 skills
+per step, and the same skill-injection budget CK.
+Each follows the default configuration of its paper,
+and any extra model call a method requires is is-
+sued to the same executor. To keep the retrieval
+19
+
+
+backbone identical across methods, every method
+embeds skills with all-MiniLM-L6-v2.
+SGDR.
+At each step, the executor writes a short
+summary of the current state. Each skill is scored
+by a weighted combination of its similarity to the
+task goal and to this state summary (weight 0.5),
+and the shortlisted skills are selected by maximal
+marginal relevance (λ = 0.7).
+SkillTrace.
+Once per task, the instruction is de-
+composed into atomic sub-queries. Sub-queries
+are matched to skills by optimal bipartite assign-
+ment, and supporting skills are added by reverse
+personalized PageRank over the skill input–output
+dependency graph (restart probability 0.2, 50 it-
+erations, 8 linking candidates, linking threshold
+0.6). Matched skills are injected first, followed by
+supporting skills in PageRank order.
+WebXSkill.
+We follow its guided mode. Candi-
+date skills are retrieved by embedding similarity in
+place of its URL-pattern graph, which has no coun-
+terpart outside web navigation, and the selected
+skill’s step-by-step guidance is injected at the fol-
+lowing decision points.
+SkillZip.
+Each skill is segmented by the executor
+into sections, each labeled with one of the nine
+execution roles. At the start of a task, sections and
+skills are seeded by reciprocal rank fusion against
+task anchors, missing core roles (intent, operation,
+verifier) are filled in, and the selection is rendered
+at the finest level of detail that fits the budget. Motif
+mining is omitted because the 37-skill ALFWorld
+library contains no repeated cross-skill motifs.
+FlowState.
+At each step, the executor emits a
+state delta (add, update, or remove) over typed
+state nodes (preferences, knowledge, attributes,
+judgments, and artifacts) following its protocol;
+validated deltas are committed to the active state,
+whose summary serves as the retrieval query. The
+injected block contains the active state and the re-
+trieved skills.
+StructAgent.
+The task is first decomposed into
+requirements, all marked pending. At each step, a
+verifier call reads the latest observation and marks
+requirements as verified or invalidated; only the
+verifier changes requirement status. The first pend-
+ing requirement serves as the current subgoal for
+skill retrieval, and the block contains the require-
+ment table, the subgoal, and the retrieved skills.
+Textual observations replace its GUI probes.
+SoftSkill.
+Each ALFWorld task type receives 32
+trainable virtual tokens, initialized from the embed-
+dings of the corresponding skill description and
+trained with next-token prediction on successful
+trajectories from the official training split, with
+the executor frozen. Trajectories from the shared
+executor replace the original teacher model. The
+checkpoint is selected by success rate on held-out
+training games, and the virtual tokens are attached
+to the task turn through the serving engine’s em-
+bedding interface.
+CodeSkill.
+The shared executor converts the skill
+library into CodeSkill’s skill format and produces
+add, merge, and drop maintenance decisions over
+training-split trajectories; a Qwen3-8B skill man-
+ager is fine-tuned on these decisions with LoRA
+(rank 16, learning rate 10−4, two epochs), rebal-
+ancing non-empty decisions so that the manager
+does not default to no-op. At evaluation time, the
+manager maintains the library online after each
+game, and skills are retrieved through task-level
+and event-level queries. We use the supervised
+stage of CodeSkill.
+All reproduced methods share the same per-step
+skill budget CK, so every injected block has the
+same size limit.
+SKILL.state.
+The append-only history is re-
+placed by the triple of a procedural specification,
+a structured execution state, and the latest obser-
+vation. The executor returns a state patch together
+with its action; the patch is validated against the
+state schema (up to three attempts, with the rejec-
+tion returned to the executor) and merged into the
+state. The procedural specification is retrieved once
+from the task instruction.
+E.2
+Implementation Details
+Direct-agent comparison.
+Table 5 reports all
+four no-skill agents considered during model selec-
+tion. The main table retains the two Qwen models
+used by our method and executor protocol; the two
+architecture-matched alternatives are reported here
+for completeness. Each SkillsBench and τ 2-Bench
+entry is the mean of three runs. All entries are
+success rates (%).
+Executor.
+All skill-augmented methods share
+Qwen3.8-27B as a frozen executor, served with
+vLLM using FP8 weights and a 32,768-token con-
+text. The same-scale direct agents are served with
+the same configuration and each model’s official
+20
+
+
+Table 5: Success rates (%) of the no-skill direct agents. SkillsBench contains 6 Core, 53 Extended, and 28
+Extreme tasks; ALFWorld contains 140 in-distribution games; τ 2-Bench contains 20 airline, 40 retail, and 40
+telecom tasks.
+Model
+SkillsBench
+ALFWorld
+τ 2-Bench
+Core Ext. Extr. SR
+Pick
+Look Clean Heat Cool Pick2
+SR
+Airline Retail Telecom Avg.
+Qwen3-8B
+0.00 0.00 3.57 1.15 71.43 30.77 29.63 0.00
+0.00
+8.33 27.86 15.00
+2.50
+1.67
+6.39
+Llama-3.1-8B-Instruct 0.00 0.00 0.00 0.00 11.43 15.38 0.00
+6.25
+0.00
+8.33
+6.43
+11.67
+3.33
+7.50
+7.50
+Qwen3.8-27B
+0.00 8.18 3.57 6.13 88.57 84.62 85.19 6.25 52.00 75.00 69.29 38.33
+56.67
+20.83
+38.61
+Gemma-4-31B-IT
+16.67 6.29 3.57 6.13 95.24 66.67 65.43 0.00 50.67 77.78 65.00 41.62
+64.17
+22.50
+42.76
+chat template and reasoning parser.
+On Skills-
+Bench, the executor acts through native tool calls
+parsed by the model’s official tool-call parser.
+Skill injection.
+Every method delivers its se-
+lected skills at the same prompt location under
+the same per-step budget. We use k = 3 skills
+and CK = 1,200 tokens by default; Appendix F.3
+shows that JITSKILL is robust to both settings.
+Navigator.
+The navigator is trained on trajecto-
+ries from official training splits only. Its back-
+bone is Qwen3-8B with LoRA adapters (rank 32,
+α = 64, dropout 0.05) on the attention projections
+and 16 latent slots. At each step, the latent state
+is updated recurrently from the previous state, the
+executor’s latest thought, and the most recent ob-
+servation. The weight that combines the learned
+skill score with the relevance of the current step is
+selected by success rate on 200 games of the offi-
+cial ALFWorld training split, and evaluation games
+are never used for selection.
+Explicit record.
+Bt is extracted from the interac-
+tion history by deterministic rules. On AppWorld,
+it keeps the task goal, the six most recent API
+calls, and the six most recent failed calls. On ALF-
+World and SkillsBench, it keeps the task goal, the
+completed actions (environment commands or tool
+calls) with a short excerpt of their observations, and
+the actions that failed. The record is packed into a
+fixed token budget.
+Harnesses.
+AppWorld runs use the official eval-
+uation harness and the official task-goal and
+scenario-goal completion metrics. ALFWorld runs
+use the public text-world harness with the official
+in-distribution evaluation games, scoring a game as
+solved only when the environment reports task com-
+pletion. SkillsBench runs use the official bench-
+mark harness, in which each task executes in its
+own container and is graded by the task’s own veri-
+fier.
+Hardware.
+All executors and navigators run on
+NVIDIA GPUs with at least 48 GB of memory. All
+executor instances use identical serving parameters.
+Benchmarks.
+• AppWorld:
+official test_normal split
+(168 tasks) and test_challenge split
+(417 tasks), at most 50 interaction steps; the
+skill library is built from the official training
+split.
+• ALFWorld: the 140 in-distribution evalua-
+tion games, at most 30 steps, with the 37 ALF-
+World skills from the public skill collection
+used by prior work; results are reported by the
+six task types.
+• SkillsBench: all 87 public tasks under the offi-
+cial harness and each task’s native time budget,
+with the skills bundled with the benchmark;
+difficulty groups follow each task’s own label.
+• τ 2-Bench: the official test split of the airline
+(20), retail (40), and telecom (40) domains,
+with the same user simulator, executor, step
+limit (40), and seed as the direct-agent rows,
+three runs. Since the benchmark ships no skill
+library, we follow prior skill-based evaluations
+on τ 2-Bench and distill 10–12 skills per do-
+main from the executor’s successful trajec-
+tories on the official training split, together
+with each domain’s policy document and tool
+schema; test tasks are never used. Skills are
+appended to the system prompt, and the fusion
+weight is selected on the training split.
+Runs and statistics.
+Each AppWorld and ALF-
+World configuration is run three times with fixed
+seeds; each SkillsBench task runs in its own con-
+tainer for up to several hours and is run three times.
+Paired comparisons use an exact sign test over tasks
+and a paired bootstrap over tasks.
+21
+
+
+F
+Additional Results
+F.1
+Dynamic Execution-State Maintenance on
+ALFWorld
+Dynamic execution-state maintenance is a natural
+strategy for long-horizon agents: it records what
+has happened so that later decisions need not re-
+construct task progress from the entire interaction
+history. The methods differ, however, in what their
+state represents and in whether it conditions sub-
+sequent skill retrieval and execution. Table 6 com-
+pares the dynamic state-maintenance methods un-
+der the common ALFWorld protocol.
+State representations provide different deci-
+sion signals.
+StructAgent maintains verifiable re-
+quirement status, and FlowState preserves state–
+evidence pairs for later reuse. SKILL.STATE re-
+places the history with a procedural specification,
+a structured state, and the latest observation, but re-
+trieves its procedural specification only once from
+the initial task instruction. Their overall success
+rates range from 52.38% to 86.19%.
+Progress-grounded retrieval and execution are
+complementary.
+JITSKILL reaches 92.38% by
+maintaining both an explicit progress record and
+a latent progress representation, then using the
+shared state to condition both which skills are re-
+trieved and how the executor applies them. This
+comparison indicates that retaining execution state
+alone is insufficient when skill decisions must re-
+main consistent with completed work and unre-
+solved requirements.
+F.2
+Performance by Task Difficulty
+To examine where state-grounded skill retrieval
+matters most, we split the AppWorld frozen-
+executor results by the benchmark’s own difficulty
+field into difficulty levels 1, 2, and 3 (57 / 48 / 63
+tasks). The labels are read from task metadata, so
+no method can relabel its own tasks. Table 7 reports
+task goal completion in each group.
+The advantage of JITSKILL grows with task
+difficulty.
+JITSKILL is the strongest method in
+every group, and its margin over step-wise retrieval
+widens from +1.2 at difficulty level 1 to +5.6 at
+difficulty level 2 and +9.0 at difficulty level 3. This
+pattern indicates a larger benefit from tracked task
+progress in the higher-difficulty group.
+Local retrieval degrades at difficulty level 3.
+Step-wise retrieval helps at difficulty levels 1 and 2
+but falls below the no-skill agent at difficulty level
+3 (55.6 vs. 61.9), and removing the task instruction
+from its query drops it further to 48.7. These re-
+sults indicate that local retrieval is insufficient to
+improve completion in the highest-difficulty group,
+whereas JITSKILL remains above the no-skill agent
+in every group.
+Appending more history is not a substitute for
+tracked state.
+Adding the raw textual history
+or the full history to the retrieval query does not
+recover the loss at difficulty level 3 (57.7 and 56.1),
+and the full history even reduces completion at
+difficulty level 2 to 65.3. These results show that
+adding historical context alone does not resolve
+this performance gap; JITSKILL instead conditions
+retrieval on a compact state of task progress and
+reaches 64.6 at difficulty level 3.
+F.3
+Sensitivity to the Number of Skills and the
+Injection Budget
+We study the two hyper-parameters that control
+how many retrieved skills reach the executor: the
+number of injected skills k and the injection bud-
+get CK. We vary k at the default budget and CK
+at the default k on ALFWorld, keeping all other
+settings fixed (Figure 9): k = 1, 3, 5 reach 89.05%,
+92.38%, and 89.76%, and CK = 600, 1,200, and
+2,400 reach 84.05%, 92.38%, and 92.38%.
+JITSKILL is robust to the number of injected
+skills.
+The default k = 3 performs best (92.38%),
+and every setting from k = 1 to k = 5 stays above
+89%. Because the navigator ranks skills against the
+tracked task state, the most relevant skill is already
+at the top of the list: with a single skill, JITSKILL
+still reaches 89.05%.
+A moderate budget suffices.
+Halving the bud-
+get to CK = 600 lowers success to 84.05%, be-
+cause the progress record and one skill document
+no longer fit together and the procedure is cut short.
+Doubling it to CK = 2,400 brings no further gain
+(92.38% in both cases): once the skills that match
+the current stage are delivered in full, additional
+procedural text adds nothing. The navigator there-
+fore makes efficient use of a moderate budget, and
+we use CK = 1,200 in all comparisons so that
+every method operates under the same budget.
+F.4
+Efficiency on ALFWorld
+We complement the AppWorld cost analysis in the
+main text with the interaction length on ALFWorld
+22
+
+
+Table 6: Success rates (%) of dynamic execution-state methods on ALFWorld. Bold and underline mark the
+best and second-best values.
+Method
+Pick
+Look
+Clean
+Heat
+Cool
+Pick2
+SR
+StructAgent
+95.24
+53.85
+80.25
+81.25
+52.00
+87.50
+77.86
+FlowState
+98.10
+89.74
+83.95
+72.92
+69.33
+95.83
+86.19
+SKILL.STATE
+64.76
+41.03
+62.96
+52.08
+42.67
+38.89
+52.38
+JITSKILL
+98.10
+94.87
+90.12
+83.33
+89.33
+94.44
+92.38
+Table 7: Task goal completion (%) by difficulty level
+on AppWorld. Difficulty levels follow the task meta-
+data of the official test split; three runs with a frozen
+executor.
+Method
+TGCD1 ↑
+TGCD2 ↑
+TGCD3 ↑
+No skills
+83.0
+70.1
+61.9
+Pre-execution retrieval
+85.4
+69.4
+57.7
+Step-wise retrieval
+88.3
+75.0
+55.6
+without instruction
+87.7
+69.4
+48.7
++ raw textual history
+86.5
+68.8
+57.7
++ full history
+87.7
+65.3
+56.1
+JITSKILL
+89.5
+80.6
+64.6
+1
+3
+5
+k (skills per step)
+85
+90
+95
+SR (%)
+89.05
+92.38
+89.76
+(a) Number of skills k
+600
+1200
+2400
+CK (tokens)
+84.05
+92.38
+92.38
+(b) Injection budget CK
+Figure 9: Sensitivity of JITSKILL to (a) the number of
+injected skills k (CK = 1,200) and (b) the injection
+budget CK (k = 3) on ALFWorld, averaged over three
+runs.
+and the overhead of the navigator itself. Table 8
+reports the average number of environment steps
+per game.
+JITSKILL succeeds more while acting less.
+JIT-
+SKILL takes 24.0% fewer steps than the no-skill
+agent and 11.2% fewer than SGDR, while achiev-
+ing the highest success rate. Its gains therefore
+do not come from longer interaction: skills that
+match the current stage of the task let the executor
+reach the goal along a shorter path. In contrast,
+SKILL.state, which rewrites a structured state at
+every step, takes the most steps.
+The navigator adds little overhead.
+With the
+navigator on the executor’s GPU, building the skill
+block takes about 0.13 s per step on ALFWorld and
+about 1.1 s per step on AppWorld, a small fraction
+of an executor call. The latent state compresses a
+median interaction history of about 4,600 tokens
+into 16 slots, and training the navigator takes about
+11 minutes on a single GPU.
+Table 8: Interaction length on ALFWorld. Average
+environment steps per game on the 140 in-distribution
+games (three runs, at most 30 steps).
+Method
+Steps / game ↓
+SR (%) ↑
+No skills
+17.57
+70.24
+SGDR
+15.03
+87.14
+SkillTrace
+15.53
+81.19
+SKILL.state
+21.10
+52.38
+JITSKILL
+13.35
+92.38
+12
+14
+16
+18
+20
+22
+Environment steps per game ↓
+50
+60
+70
+80
+90
+SR (%) ↑
+No skills
+SGDR
+SkillTrace
+SKILL.state
+JitSkill
+better
+Figure 10: Success rate versus interaction length on
+ALFWorld. Results on the 140 in-distribution games
+(three runs); the upper left is better.
+Execution cost under a fixed budget.
+Table 9
+keeps the skill-injection budget fixed, so the re-
+ported payload differences arise from episode
+length and retrieval policy rather than an unre-
+stricted context advantage. The whole-library row
+injects every skill and serves only as a reference for
+the payload size: it saturates the context window,
+so 21.2% of its model calls return an error, and it
+is not a comparable baseline.
+F.5
+Training Objectives and Curves
+JITSKILL trains task-state tracking and naviga-
+tion in two stages. It first pretrains the encoder
+with the history-compression objective Lcomp, then
+jointly fine-tunes the encoder and navigator with
+23
+
+
+Table 9: Execution cost per episode on AppWorld. Results on the official test split (three runs). The whole-library
+row is a payload reference rather than a comparable baseline.
+Method
+Steps / ep.
+Skill tokens /
+step
+Skill tokens /
+ep.
+No skills
+17.8
+0
+0
+Whole library
+4.4
+27,828
+122,465
+Pre-execution retrieval
+15.5
+1,072
+16,605
+Step-wise retrieval
+14.6
+1,107
+16,193
++ raw textual history
+14.7
+1,212
+17,765
+JITSKILL
+15.8
+1,209
+19,051
+Lnav. The executor-side projection is trained sub-
+sequently with Lproj while the executor remains
+frozen. We retrain the history compressor with
+each term of Lcomp removed or reweighted, keep-
+ing data, steps, and seed fixed, and evaluate on
+held-out scenarios (Table 10).
+Each term of the compression objective is neces-
+sary.
+Each term protects its own function. With-
+out Lalign, the latent state drifts away from the ref-
+erence distribution (JSD rises from 0.085 to 0.500);
+without Ldisc, the latent state can no longer identify
+its own episode and retrieval falls to chance; and
+halving λrec degrades reconstruction. The three
+terms are thus complementary rather than redun-
+dant.
+The default weights lie on a flat optimum.
+Un-
+der the full objective, only doubling λrec matches
+the default weights, and every other setting is worse.
+The method therefore does not depend on a finely
+tuned weighting.
+Both state-training stages train stably and
+quickly.
+Figure 11 shows the encoder pretrain-
+ing and the subsequent navigation fine-tuning. The
+navigator’s ranking loss decreases steadily, and val-
+idation recall of the next-step skill rises from 0.07
+to 0.70 R@1 and 0.93 R@3 within two epochs;
+this checkpoint is used in all experiments. All
+three terms of the history-compression objective
+decrease smoothly; the discriminative term is nor-
+malized by its chance level log(1 + Nneg) because
+the negative queue fills during the first steps.
+F.6
+Generalization to a Different Executor
+JITSKILL separates task-state tracking and navi-
+gation from the frozen executor. When a target
+executor requires a different latent-state interface,
+we keep the pretrained encoder and navigator fixed
+and train only its lightweight projection on offi-
+cial training trajectories. We test generalization
+0
+50
+100
+150
+200
+training episodes
+2.0
+2.5
+3.0
+3.5
+4.0
+ranking loss
+(a) Navigator
+training loss
+val R@1
+val R@3
+0
+100
+200
+300
+400
+optimization steps
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+loss (EMA)
+(b) History compressor
+rec
+align
+disc/log(1 + Nneg)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+validation recall
+Figure 11: Training curves. (a) Navigator ranking loss
+and validation recall of the next-step skill. (b) Terms
+of the history-compression objective under the default
+weights (exponential moving average).
+across held-out environments and a different ex-
+ecutor without using evaluation data for training or
+selection.
+No evaluation data is used for training or selec-
+tion.
+The navigator is trained on official training
+splits, and every hyper-parameter is selected on
+training data, so the results in Table 1 measure
+generalization to held-out evaluation tasks.
+The navigator transfers to a different executor.
+We further replace the executor with Llama-3.1-8B-
+Instruct while keeping the navigator unchanged,
+so the navigator now serves an executor it was
+never trained with. Each skill-augmented method
+selects its own hyper-parameter on 200 games of
+the official ALFWorld training split under the same
+rule, and all methods share one system prompt
+that describes only the environment’s action format.
+As shown in Figure 12b (three runs: 6.43, 9.29,
+and 8.57% for JITSKILL; 2.14, 5.00, and 0.00%
+for step-wise retrieval; 7.86, 3.57, and 9.29% for
+the no-skill agent), JITSKILL achieves the highest
+success rate, whereas step-wise retrieval falls below
+the no-skill agent: for a smaller executor, skills
+that do not match the current stage of the task act
+as distractors, and state-grounded selection avoids
+them.
+24
+
+
+Table 10: Effect of each term of Lcomp on held-out scenarios. Each row reports the quantity that the changed
+term controls, under the default weights and under the variant.
+Variant
+Affected quantity
+Default
+Variant
+w/o Lalign
+alignment JSD ↓
+0.085
+0.500
+w/o Ldisc
+episode retrieval top-1 ↑(chance 0.085)
+0.337
+0.072
+λrec × 0.5
+reconstruction NLL ↓
+0.537
+0.588
+Full objective Lcomp ↓(default weights)
+0.523
+0.518–0.620
+F.7
+Generalization to Unseen ALFWorld
+Environments
+We further evaluate on the official out-of-
+distribution split of ALFWorld (valid_unseen,
+134 games), whose rooms do not appear in the in-
+distribution games. Every setting is identical to the
+main ALFWorld experiment: the same frozen ex-
+ecutor, skill library, navigator, skill budget, prompt,
+and 30-step limit; nothing is re-tuned on the unseen
+split. Table 11 reports success rates averaged over
+three runs.
+40
+60
+80
+SR (%)
+SKILL.state
+No skills
+FlowState
+StructAgent
+SoftSkill
+SGDR
+SkillTrace
+SkillZip
+WebXSkill
+CodeSkill
+JitSkill
+48.8
+66.9
+73.1
+75.4
+82.3
+84.8
+84.8
+87.8
+88.3
+88.3
+88.3
+(a) Unseen environments
+No skills
+Step-wise
+JitSkill
+0
+2
+4
+6
+8
+10
+SR (%)
+6.90
+2.38
+8.10
+(b) Llama-3.1-8B executor
+Figure 12: Generalization under held-out evaluation.
+(a) Success rate on unseen ALFWorld environments
+(134 games) without re-tuning. (b) Success rate with
+Llama-3.1-8B-Instruct as the executor; the navigator
+remains unchanged and any executor-side interface is
+trained only on official training trajectories. Both aver-
+age three runs.
+JITSKILL remains among the strongest meth-
+ods on unseen environments.
+JITSKILL reaches
+88.31%, matching the highest overall success rate
+in Table 11, and improves on the no-skill agent
+by 21.4 points. The other methods that maintain
+an execution state transfer far less well: StructA-
+gent, FlowState, and SKILL.state, whose state is
+rewritten by the executor at every step, reach only
+75.37%, 73.13%, and 48.76%. Because the navi-
+gator ranks skills against the tracked task progress
+rather than against surface features of a particular
+room, the selected procedures remain appropriate
+when the environment layout changes.
+The gains concentrate on multi-stage tasks.
+The largest improvements over the no-skill agent
+appear on Heat (2.9%
+→
+78.3%) and Cool
+(54.0% →92.1%), which require the agent to find
+an object, carry it to an appliance, operate the ap-
+pliance, and then place the object. These tasks
+span several stages whose skill needs differ, and
+conditioning retrieval on the progress made so far
+supplies the procedure for the stage that comes
+next.
+F.8
+Trajectory-level Diagnostics
+Beyond task completion, we examine how execu-
+tion unfolds on AppWorld with two trajectory-level
+measures. Action calls per solved task divides the
+average number of API calls per episode, exclud-
+ing documentation lookups, by the fraction of tasks
+completed, so it measures how much execution ef-
+fort each success costs. Completion after feedback
+is the fraction of episodes that still complete the
+task after encountering at least one error observa-
+tion, which reflects whether execution returns to
+the main line once something goes wrong.
+JITSKILL spends the least effort per success.
+JITSKILL needs 27.4 action calls per solved task,
+13% fewer than the no-skill agent and 16% fewer
+than step-wise retrieval. Tracked progress keeps the
+executor from repeating operations it has already
+completed.
+JITSKILL recovers best after errors.
+After an
+error observation, JITSKILL still completes 72.8%
+of episodes, whereas both retrieval baselines re-
+cover less often than the no-skill agent (68.8% and
+64.2%), and appending raw textual history low-
+ers recovery further (62.7%). Because the explicit
+record retains failed actions, the navigator can steer
+the executor toward skills that address the failure
+instead of retrieving support for the action that just
+failed.
+25
+
+
+Table 11: Success rate (%) on unseen ALFWorld environments. Official out-of-distribution split (134 games:
+Pick 24, Look 18, Clean 31, Heat 23, Cool 21, Pick2 17), averaged over three runs; all settings follow the main
+experiment without re-tuning.
+Method
+Pick
+Look
+Clean
+Heat
+Cool
+Pick2
+SR ↑
+No skills (Qwen3.8-27B)
+91.7
+85.2
+81.7
+2.9
+54.0
+88.2
+66.92
+SGDR
+88.9
+85.2
+87.1
+71.0
+90.5
+86.3
+84.83
+WebXSkill
+95.8
+96.3
+90.3
+73.9
+90.5
+82.4
+88.31
+SkillTrace
+97.2
+90.7
+82.8
+63.8
+84.1
+94.1
+84.83
+SoftSkill
+91.7
+88.9
+90.3
+72.5
+74.6
+70.6
+82.34
+CodeSkill
+95.8
+96.3
+88.2
+85.5
+74.6
+90.2
+88.31
+SkillZip
+94.4
+92.6
+95.7
+66.7
+88.9
+86.3
+87.81
+StructAgent
+98.6
+72.2
+69.9
+60.9
+57.1
+98.0
+75.37
+FlowState
+79.2
+96.3
+71.0
+47.8
+66.7
+86.3
+73.13
+SKILL.state
+51.4
+48.1
+59.1
+43.5
+54.0
+27.5
+48.76
+JITSKILL
+88.9
+92.6
+89.2
+78.3
+92.1
+90.2
+88.31
+Table 12: Trajectory-level diagnostics on AppWorld.
+Results on the official test split (three runs) with a frozen
+executor.
+Method
+Action calls /
+solved task ↓
+Completion after
+feedback (%) ↑
+No skills
+31.6
+71.6
+Pre-execution retrieval
+32.7
+68.8
+Step-wise retrieval
+32.5
+64.2
++ raw textual history
+30.3
+62.7
+JITSKILL
+27.4
+72.8
+F.9
+Benchmark and Skill-Library Statistics
+Table 13 summarizes the evaluation sets and the
+skill libraries shared by all skill-augmented meth-
+ods. Skill lengths are counted with the executor’s
+tokenizer.
+The three benchmarks impose different re-
+trieval demands.
+ALFWorld pairs a compact
+library of 37 procedural skills with long-horizon
+embodied tasks, so the challenge is to retrieve the
+procedure that fits the current stage of a multi-step
+task. SkillsBench ships a much larger library (195
+skills) whose documents are long (median 1,121
+tokens, up to 8,199), so skills cannot be injected in
+full: each selected skill is delivered as a compact
+pointer to its full document, and selection among
+many candidates becomes the main difficulty. τ 2-
+Bench uses short, domain-specific skills (245 to-
+kens on average) inside multi-turn conversations
+with a simulated user, where the relevant procedure
+changes as the dialogue moves from verification to
+lookup to the requested modification.
+F.10
+Run-to-Run Variability
+Table 14 reports the success rate of JITSKILL in
+each of the three runs with the shared frozen execu-
+tor.
+The improvements are stable across runs.
+On
+in-distribution ALFWorld, the three runs differ by
+less than one point (92.14–92.86%), and every run
+exceeds the strongest baseline average (90.48%).
+On SkillsBench, every run solves at least 13 of
+the 87 tasks, so even the weakest run (14.94%)
+is above the average of every baseline in Table 1.
+On τ 2-Bench, the run-to-run standard deviation
+(2.50) is small relative to the gain over the direct
+agent with the same executor (+10.6 points), so the
+improvement is not an artifact of a single favorable
+run.
+F.11
+How the Skill Library Is Used
+We next examine which skills reach the executor
+during execution (Table 15). A switch is a step at
+which the top-ranked injected skill differs from the
+previous step.
+JITSKILL re-selects skills as the task progresses.
+Pre-execution retrieval fixes its selection before the
+first action and never switches, and step-wise re-
+trieval switches only 3.33 times per ALFWorld
+episode, because consecutive observations look
+alike even when the task has moved to a new stage.
+JITSKILL switches 7.21 times per episode and uses
+7.31 distinct skills per episode, more than twice
+as many as step-wise retrieval.
+Every injected
+block stays within the 1,200-token budget, so these
+switches do not enlarge the context; they replace
+the injected procedure when the tracked progress
+indicates that the next stage needs a different one.
+The whole library stays in use.
+JITSKILL draws
+on 36 of the 37 ALFWorld skills, 178 of the 195
+SkillsBench skills, and all 33 τ 2-Bench skills,
+26
+
+
+Table 13: Evaluation sets and skill libraries. Test episodes are broken down by split, difficulty tier, or domain.
+Skill lengths are counted in executor tokens.
+Benchmark
+Test
+episodes
+Breakdown
+Step
+limit
+#Skills
+Skill length
+(mean / median)
+Skill length
+(max)
+ALFWorld
+140 / 134
+seen / unseen environments
+30
+37
+572 / 567
+1,010
+SkillsBench
+87
+Core 6, Extended 53, Extreme 28
+task-specific
+195
+1,517 / 1,121
+8,199
+τ 2-Bench
+100
+Airline 20, Retail 40, Telecom 40
+40
+33 (12 / 11 / 10)
+245 / 248
+298
+Table 14: Run-to-run variability of JITSKILL. Suc-
+cess rate (%) of each run and the mean ± sample stan-
+dard deviation.
+Benchmark
+Run 1
+Run 2
+Run 3
+Mean ± std
+ALFWorld (seen)
+92.14
+92.86
+92.14
+92.38 ± 0.41
+ALFWorld (unseen)
+90.30
+88.81
+85.82
+88.31 ± 2.28
+SkillsBench
+14.94
+14.94
+17.24
+15.71 ± 1.33
+τ 2-Bench (avg.)
+46.67
+51.67
+49.17
+49.17 ± 2.50
+whereas pre-execution retrieval touches only 18
+ALFWorld skills. On SkillsBench, the five most
+frequently selected skills each account for only
+3–4.4% of selections, so the navigator does not col-
+lapse onto a few generic documents. On τ 2-Bench,
+the most frequent skills are exactly the procedures
+for the requested operations, such as modifying or
+cancelling a reservation and exchanging delivered
+items.
+F.12
+Where the Gains Come From
+Gains grow with the number of task stages.
+Ta-
+ble 16 groups the in-distribution ALFWorld games
+by task type. On single-stage tasks (Pick and Look),
+where the agent only needs to find and place an ob-
+ject, JITSKILL improves the no-skill agent by 9.7
+points. On multi-stage tasks (Clean, Heat, Cool,
+and Pick2), which require the agent to carry an ob-
+ject through an appliance or to repeat a sub-task,
+the improvement triples to 30.1 points, led by Heat
+(+77.1) and Cool (+37.3). JITSKILL improves
+every one of the six task types.
+Gains are largest on the games the executor can-
+not finish alone.
+On the unseen split, we group
+games by how many steps the no-skill agent spends
+on them (Figure 14). Games that the no-skill agent
+finishes in under 20 steps are already almost al-
+ways solved, and JITSKILL keeps them solved. As
+the no-skill agent needs longer, the gap widens to
++28.0 points, and on the 26 games where it hits
+the 30-step limit in all three runs, its success rate
+is 1.3% while JITSKILL succeeds in 76.9% of at-
+tempts. Tracked progress thus matters most exactly
+Pick
+Look
+Clean
+Heat
+Cool
+Pick2
+0
+50
+100
+SR (%)
++9.5
++10.2
++4.9
++77.1
++37.3
++19.4
+single-stage
+multi-stage
+No skills
+JitSkill
+Figure 13: Gains by task type on ALFWorld. Success
+rates of the no-skill agent and JITSKILL with the same
+executor (three runs); numbers above the bars are the
+gains.
+where the executor otherwise loses its place in a
+long task.
+< 20 steps
+(77 games)
+20--30 steps
+(31 games)
+30-step limit
+(26 games)
+Average steps of the no-skill agent on the game
+0
+50
+100
+SR (%)
+94.4
+94.8
++0.4
+53.8
+81.7
++27.9
+1.3
+76.9
++75.6
+No skills
+JitSkill
+Figure 14: Success rate by task length on ALFWorld
+(unseen). Games are grouped by the average number
+of steps the no-skill agent takes (three runs per game);
+green numbers are the gains of JITSKILL.
+G
+Case Study: Progress-Aware Skill
+Selection in an Unseen Environment
+We trace one episode from the ALFWorld unseen
+split to show how the progress record changes
+which skills reach the executor. The game is a
+Heat task in a kitchen that does not appear in train-
+ing: “put a hot apple in fridge.” JITSKILL solves it
+in all three runs (14, 8, and 12 steps), whereas the
+no-skill executor fails all three runs and exhausts
+the 30-step limit each time. All skill identifiers,
+progress records, actions, and observations below
+are copied from the execution logs.
+27
+
+
+Table 15: Skill usage per episode. Averages over three runs; distinct skills count every skill injected at any position.
+Benchmark
+Method
+Skills used
+in library
+Switches /
+episode
+Distinct skills /
+episode
+ALFWorld (seen)
+Pre-execution retrieval
+18/37
+0.00
+1.73
+Step-wise retrieval
+34/37
+3.33
+4.34
+JITSKILL
+36/37
+7.21
+7.31
+SkillsBench
+JITSKILL
+178/195
+11.27
+–
+τ 2-Bench
+JITSKILL
+33/33
+6.22
+8.42
+Table 16: Success rate (%) by task type on ALFWorld
+(seen). No skills is the Qwen3.8-27B direct agent of
+Table 1.
+Stages
+Type
+No skills
+JITSKILL
+∆
+Single
+Pick
+88.57
+98.10
++9.5
+Look
+84.62
+94.87
++10.3
+Combined
+87.50
+97.22
++9.7
+Multiple
+Clean
+85.19
+90.12
++4.9
+Heat
+6.25
+83.33
++77.1
+Cool
+52.00
+89.33
++37.3
+Pick2
+75.00
+94.44
++19.4
+Combined
+59.78
+89.86
++30.1
+Skill
+selection
+follows
+the
+stage
+of
+the
+task.
+Table
+17
+lists
+the
+second
+run
+step
+by step.
+At the first step, with an empty
+record,
+the
+navigator
+supplies
+the
+generic
+heat-object-with-appliance
+skill.
+As soon as the record shows the apple on
+the
+countertop,
+the
+selection
+switches
+to
+object-locator, and the executor picks up
+the apple and walks to the microwave.
+Once
+the record shows that the executor holds the
+apple and stands at a closed microwave, the
+selection switches to object-heater and
+appliance-navigator,
+whose
+workflow
+is exactly “open the appliance if closed, then
+heat {object} with {appliance}”.
+The executor opens the microwave and heats the
+apple on the first attempt. After the record contains
+the successful heating and the opened fridge,
+the selection moves on to open-receptacle,
+and the executor places the apple. The skill set
+therefore changes at the three points where the
+task changes stage (the apple is found, the closed
+microwave is reached, and the fridge is opened),
+and stays fixed in between.
+The same stage transitions recur across runs.
+In runs 1 and 3 the executor first visits the fridge
+before looking for the apple. In both runs, the
+navigator
+then
+supplies
+object-locator
+while
+the
+apple
+is
+being
+picked
+up
+and
+temperature-regulator once it is in hand.
+When the executor reaches the closed microwave,
+the selection again centers on object-heater,
+paired
+with
+appliance-navigator
+or
+appliance-preparer,
+until
+the
+fridge
+is opened, after which both runs switch to
+heat-object-with-appliance
+and
+open-receptacle for placement. Although
+the action order differs between runs, the skills
+track the recorded progress rather than the static
+task description.
+Without progress-aware support the executor
+loops at the heating stage.
+The no-skill execu-
+tor reaches the same intermediate state in all three
+runs: it finds the apple and walks to the microwave.
+It then moves the apple into the microwave, closes
+the door, and issues use microwave 1, instead
+of heating the apple while holding it. Because the
+apple is no longer in hand, every later heat com-
+mand returns “Nothing happens”, and the executor
+cycles through the stove burners, the toaster, and
+the coffee machine until the step limit. In run 1
+it finally places the unheated apple in the fridge,
+which fails the task. The object-heater skill
+that JITSKILL injects at exactly this stage states
+the correct action form and names the failure di-
+rectly: “Nothing happened” on heat: check (1) you
+are holding the object.
+Figure 15 shows the complete block injected at
+step 5 of run 2, consisting of the explicit progress
+record followed by the two selected skills.
+Injected block at step 5 (run 2): progress record and
+the two selected skills
+Progress notes for the current episode (observed, not instructions):
+GOAL: put a hot apple in fridge.
+ACTIONS DONE (4 so far, latest last):
+−go to countertop 1 −> You arrive at countertop 1. On the countertop 1,
+you see a apple 2, a apple 1, a mug 3, a ...
+−take apple 1 from countertop 1 −> You pick up the apple 1 from the
+countertop 1.
+−go to microwave 1 −> You arrive at microwave 1. The microwave 1 is
+closed.
+−open microwave 1 −> You open the microwave 1. The microwave 1 is
+open. In it, you see a mug 1.
+28
+
+
+Table 17: Step-by-step trace of JITSKILL on an unseen ALFWorld game (“put a hot apple in fridge”, run 2).
+Injected skills are those delivered before the executor’s action at each step (prefix alfworld- omitted); bold
+marks a change of selection.
+Step Injected skills
+Executor action
+Observation
+1
+heat-object-with-appliance
+go to countertop 1
+sees apple 1 and apple 2
+2
+object-locator
+take apple 1 from countertop 1 picks up apple 1
+3
+object-locator
+go to microwave 1
+the microwave is closed
+4
+object-heater, appliance-navigator
+open microwave 1
+the microwave is open
+5
+appliance-navigator, object-heater
+heat apple 1 with microwave 1 “You heat the apple 1”
+6
+object-heater, appliance-navigator
+go to fridge 1
+the fridge is closed
+7
+appliance-navigator, object-heater
+open fridge 1
+the fridge is open
+8
+heat-object-with-appliance,
+open-receptacle
+move apple 1 to fridge 1
+task completed
+REFERENCE ONLY −−skill documents from a public skill library,
+written for other episodes. Nothing below has been executed in the
+current episode and any values in it are examples, not observations. Use
+it as guidance for what to do next; you must still act through your own
+actions.
+[SKILL] alfworld−appliance−navigator
+Navigates the agent to a target appliance (microwave, stove, fridge, or
+sinkbasin) needed for object processing. Use when you are holding an
+object that needs heating, cooling, or cleaning and must move to the
+correct appliance station. Identifies the required appliance from the task
+context and executes the movement action.
+# Instructions
+Use this skill when you are holding an object that needs to be processed
+(heated, cooled, or cleaned) and you must locate and move to the correct
+appliance to perform the action.
+## Workflow
+1. **Identify the Target Appliance:** Determine which appliance is
+required for the task. Map the action to the appliance: ‘heat‘ −>
+microwave/stoveburner, ‘cool‘ −> fridge, ‘clean‘ −> sinkbasin.
+2. **Locate the Appliance:** Scan the environment observation for the
+target appliance (e.g., ‘microwave 1‘, ‘fridge 1‘, ‘sinkbasin 1‘).
+3. **Navigate:** Execute ‘go to {appliance}‘ to move to the identified
+appliance location.
+4. **Prepare Appliance (if needed):** Upon arrival, check if the
+appliance requires preparation (e.g., opening a closed microwave or
+fridge door). If so, perform ‘open {appliance}‘ before proceeding.
+## Example
+**Scenario:** You are holding ‘potato 1‘ and need to heat it.
+Thought: I need to heat this potato. The microwave is the appropriate
+appliance.
+Action: go to microwave 1
+Observation: The microwave 1 is closed.
+Thought: I need to open the microwave before I can use it.
+Action: open microwave 1
+Observation: You open the microwave 1. The microwave 1 is open. In
+it, you see nothing.
+**Result:** You are now at the open microwave, ready to heat the
+potato.
+## Key Principles
+−**Trigger:** The agent is holding an object and the next step in the
+task is to ‘heat‘, ‘cool‘, or ‘clean‘ it.
+−**Core Action:** The primary output of this skill is the navigation
+command ‘go to {target_appliance}‘.
+−**Prerequisite Check:** Always ensure the appliance is accessible (e.
+g., open) before attempting to use it for processing.
+[SKILL] alfworld−object−heater
+Heats a specified object using an available heating appliance (e.g.,
+microwave, stoveburner). Use when you are holding an object that
+requires heating and need to navigate to and operate the heating
+appliance. Takes the object and appliance as inputs and results in the
+object being in a heated state.
+# Instructions
+Heat an object you are holding using a compatible heating appliance (
+microwave or stoveburner).
+## Prerequisites
+−The target object must be in your inventory
+−A heating appliance (microwave, stoveburner) must exist in the
+environment
+## Workflow
+1. **Navigate:** ‘go to {appliance}‘ (e.g., ‘go to microwave 1‘)
+2. **Check state:** If observation says appliance is closed, execute ‘
+open {appliance}‘ −−verify observation confirms it is now open
+3. **Heat:** ‘heat {object} with {appliance}‘ −−verify observation
+confirms "You heat the {object}"
+4. **(Optional) Place:** If the task requires it, navigate to the
+destination and place the heated object
+## Action Format
+−‘go to microwave 1‘ / ‘go to stoveburner 1‘
+−‘open microwave 1‘
+−‘heat {object} with {appliance}‘ (e.g., ‘heat potato 1 with microwave
+1‘)
+## Error Recovery
+−"Nothing happened" on heat: Check (1) you are holding the object, (2)
+appliance is open, (3) appliance name is correct
+−Appliance occupied: Take the existing item out first, then retry
+## Example
+**Scenario:** You are holding ‘potato 1‘ and need to heat it.
+Thought: I need to heat the potato. I’ll go to the microwave.
+Action: go to microwave 1
+Observation: The microwave 1 is closed.
+Action: open microwave 1
+Observation: You open the microwave 1. The microwave 1 is open. In
+it, you see nothing.
+Action: heat potato 1 with microwave 1
+Observation: You heat the potato 1 using the microwave 1.
+**Result:** The potato is now heated. Proceed to place it at the
+destination if required by the task.
+Figure 15: Complete skill block injected at step 5 of
+the case-study episode (run 2). The explicit progress
+record precedes the reference header and the two se-
+lected skills; the whole block fits within the per-step
+budget and is appended to the latest observation.
+H
+Prompts
+This section lists the prompts used in the experi-
+ments. All methods share the executor prompt of
+each environment, and retrieved skills are delivered
+only through the injected block, so the methods dif-
+fer only in what that block contains.
+Executor prompt.
+On ALFWorld, the execu-
+tor receives the system prompt below, followed
+by the initial observation, which contains the task
+goal, as the first user message. Each later obser-
+vation is returned as a user message of the form
+Observation:
+..., and the action is parsed
+from the Action: line of the response. No few-
+shot demonstrations are used.
+29
+
+
+ALFWorld executor system prompt
+Interact with a household to solve a task. Imagine you are an intelligent
+agent in a household environment and your target is to perform actions
+to complete the task goal. At the beginning of your interactions, you will
+be given the detailed description of the current environment and your
+goal to accomplish.
+For each turn, think briefly and then choose exactly one of these two
+outputs:
+1. ‘Thought: ...‘ followed by ‘Action: ...‘ for a normal environment
+action.
+2. ‘Thought: ...‘ followed by ‘SkillRequest: ...‘ if you want extra skill
+help before acting.
+Use ‘SkillRequest‘ when it directly helps the next step, especially if you
+are blocked, the action syntax is unclear, the retrieved skill names look
+unrelated to the current blocker, or 1−2 actions already failed. In GoS
+mode, prefer ‘SkillRequest: GOS_RETRIEVE ...‘ when you need a
+better−targeted skill search. In vector mode, prefer ‘SkillRequest:
+VECTOR_RETRIEVE ...‘ when you need a better−targeted vector−only
+search. Use ‘READ_SKILL‘ only when you already know which exact
+skill is worth reading. Do not output both ‘Action:‘ and ‘SkillRequest:‘
+in the same turn.
+The available actions are:
+1. go to {recep}
+2. take {obj} from {recep}
+3. move {obj} to {recep}
+4. open {recep}
+5. close {recep}
+6. use {obj}
+7. clean {obj} with {recep}
+8. heat {obj} with {recep}
+9. cool {obj} with {recep}
+where {obj} and {recep} correspond to objects and receptacles.
+After your each turn, the environment will give you immediate feedback
+based on which you plan your next few steps. if the envrionment output
+"Nothing happened", that means the previous action is invalid and you
+should try more options.
+Your response should use one of the following formats:
+Thought: <your thoughts>
+Action: <your next action>
+or
+Thought: <your thoughts>
+SkillRequest: <your tool−style request>
+Injected skill block of JITSKILL.
+At every step,
+the block below is appended to the latest obser-
+vation on ALFWorld, or to the latest tool result
+on SkillsBench, immediately before the executor’s
+turn. On τ 2-Bench, the same block is appended to
+the end of the system prompt, because executors
+tend to read a block placed in the last user turn
+as words of the simulated customer. The progress
+record is produced by deterministic rules without
+any model call: the goal is taken from the task
+statement (at most 400 characters), each executed
+action is stored with its observation truncated to 90
+characters, and the most recent six actions and six
+failed actions are rendered. Skill documents are
+packed in the navigator’s ranking order. On Skills-
+Bench, each skill is injected as a compact pointer
+(name, one-line purpose, and mounted path to the
+full SKILL.md).
+Template of the injected block
+Progress notes for the current episode (observed, not instructions):
+GOAL: <task goal>
+ACTIONS DONE (<n> so far, latest last):
+−<action> −> <observation>
+...
+FAILED ACTIONS:
+−<action> −> <error observation>
+REFERENCE ONLY −−skill documents from a public skill library,
+written for other episodes. Nothing below has been executed in the
+current episode and any values in it are examples, not observations. Use
+it as guidance for what to do next; you must still act through your own
+actions.
+<skill document 1>
+<skill document 2>
+<skill document 3>
+Baseline prompts.
+Baselines that maintain or
+summarize state call the same frozen executor
+with greedy decoding and thinking disabled. The
+prompts below are those used on ALFWorld; the
+prompts on the other benchmarks differ only in
+environment-specific vocabulary.
+SGDR: state summarizer (the two examples are de-
+scriptions drawn from the skill library)
+You are a state summarizer for an agent whose skill library is indexed by
+descriptions like ’<example 1>’ or ’<example 2>’. Your summary will
+be cosine−matched against such skill descriptions, so use the SAME
+operational vocabulary they do.
+Given the agent’s latest action and the environment observation it
+produced, produce ONE short paragraph (1−2 sentences) that:
+1. Names the kind of state the agent is in, in operational terms (what it
+has just obtained, where it is, or what error it hit).
+2. Lists the action verbs this state ENABLES right now −−i.e. what sub
+−routines could plausibly run on this exact state. Use verb + object
+phrasing.
+Do NOT enumerate every visible element or value, do NOT describe
+pure formatting, and do NOT mention task instructions or speculate
+about future steps. Output only the summary text.
+FlowState: active-state update
+You maintain the Active State of an agent that is executing a task (
+FlowState). The Active State is a set of typed nodes. Node types:
+Preference (preferences and constraints the task imposes), Knowledge (
+facts observed from the environment or tool outputs), Attribute (
+attributes of the entities involved), Judgement (the agent’s conclusions
+and decisions so far), Artifact (things the agent has produced or changed
+). Every node has an id, a type, a one−line summary and a value.
+Given the task, the current Active State and the latest action and
+observation, output ONLY a JSON object with the minimal state change
+for the current request:
+{"state_delta": {"add": [{"id": "K1", "type": "Knowledge", "summary":
+"...", "value": "..."}], "update": [{"id": "...", "summary": "...", "value":
+"..."}], "remove": ["id"]}}
+Use short ids (first letter of the type + a number). Do not repeat
+unchanged nodes. Remove nodes that are no longer true.
+StructAgent: requirement decomposition and verifier
+[Decomposition] Decompose the task into the ordered list of required
+outcomes that must ALL hold for the task to be complete. Each
+requirement is one concrete, verifiable outcome in the environment. Do
+not add requirements the task does not imply. Output ONLY JSON: {"
+requirements": ["...", "..."]}
+[Verifier] You are the verifier of an agent’s progress. Given the task, the
+requirement table (id, status, requirement) and the agent’s latest action
+and observation, decide which requirements the observation now
+VERIFIES (direct evidence the outcome holds) and which it
+INVALIDATES (evidence the outcome no longer holds or was undone).
+Change a status only on direct evidence in the observation. Output
+ONLY JSON listing the changed requirements: {"updates": [{"id": "R1",
+"status": "Verified", "evidence": "..."}]} with status one of Verified,
+Invalidated, Pending. Output {"updates": []} if nothing changed.
+30
+
+
+CodeSkill: skill manager
+You are the skill manager of a household−robot agent (ALFWorld). You
+maintain a library of reusable skills learned from experience. Each skill
+has: title; granularity ("task" = a strategy for a whole task family, "event
+" = how to react to a specific local situation such as an error message, a
+closed receptacle, or an object not found); when_to_apply (a precise
+trigger condition); rules (short, concrete, imperative rules using the
+environment’s exact action syntax, e.g. ’go to {recep}’, ’take {obj} from
+{recep}’, ’move {obj} to {recep}’, ’heat {obj} with {recep}’). Skills
+must generalise: never mention object numbers or room−specific details.
+Given one finished episode and the related existing skills, output
+maintenance operations as JSON:
+{"operations": [ ... ]} where each operation is one of
+{"op": "ADD", "skill": {"title": ..., "granularity": "task"|"event", "
+when_to_apply": ..., "rules": [...]}}
+{"op": "MERGE", "target": "<existing id>", "skill": {<the full updated
+skill>}}
+{"op": "DROP", "target": "<existing id>"}
+ADD only knowledge that is new and useful; MERGE when an existing
+skill covers the same situation and the episode adds or corrects rules;
+DROP an existing skill only if the episode shows it is wrong or
+misleading. Use at most 3 operations; an empty list is allowed. Output
+only the JSON object.
+31

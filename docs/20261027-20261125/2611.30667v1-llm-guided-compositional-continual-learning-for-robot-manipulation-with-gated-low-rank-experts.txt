@@ -1,0 +1,1313 @@
+LLM-Guided Compositional Continual Learning for Robot Manipulation
+with Gated Low-Rank Experts
+Nilay Kushawaha*1, Abdalla Swikir2, and Fares Abu-Dakka1
+Abstract— General-purpose manipulation robots must ac-
+quire new skills over time without forgetting prior ones or
+retraining from scratch. We present a continual learning
+framework that represents each skill as a dedicated expert sub-
+network in a Progressive Neural Network (PNN). New tasks
+reuse prior knowledge through low-rank adaptation (LoRA)
+modules on lateral connections controlled by learnable per-
+parent gates, enabling explicit attenuation of individual transfer
+paths while reducing the parameter cost of dense PNN laterals.
+For long-horizon deployment, a frozen local large language
+model decomposes natural-language instructions into sub-tasks,
+routes them to suitable experts, and requests a new expert only
+when the library is insufficient. Using a shared task-space action
+interface, we evaluate the framework on twelve MetaWorld
+tasks and in a Sawyer-to-Panda-to-UR5e cross-embodiment
+transfer experiment, showing improved task success relative
+to learning from scratch when demonstrations are limited.
+Real-robot manipulation experiments further demonstrate that
+the proposed framework supports compositional execution and
+expert orchestration.
+I. INTRODUCTION
+Robots operating in unstructured environments must ac-
+quire new manipulation skills throughout their lifetime with-
+out losing previously learned ones. This requirement is
+difficult to satisfy with the dominant paradigm of training
+a single monolithic policy across all tasks. When new tasks
+are added, previously acquired knowledge can be partially or
+completely overwritten, leading to catastrophic forgetting [1].
+Continual learning (CL) addresses this problem by enabling
+incremental skill acquisition while preserving earlier capa-
+bilities. However, forgetting is not the only limitation of
+monolithic policies [2]. Because different skills are entangled
+within the same set of parameters, it is difficult to identify
+which part of the network is responsible for a particu-
+lar behavior or to quantify how much a new skill reuses
+prior knowledge. In safety-critical robotics [3], this lack
+of transparency limits inspection, verification, and selective
+deployment of individual competencies.
+We address these issues by learning each skill as a ded-
+icated expert that is preserved after training and composed
+only when needed, as shown in Fig. 1. Our architecture is
+based on a Progressive Neural Network (PNN) [4], where
+every task is assigned a new column, or sub-network, that is
+frozen once learned. This prevents parameter overwriting in
+previously learned columns. To enable forward knowledge
+transfer with a lower per-connection parameter cost than
+dense lateral connections, prior knowledge is reused through
+*Corresponding author. 1Mechanical Engineering Program, New York
+University Abu Dhabi, Abu Dhabi, UAE. 2Mohammed bin Zayed University
+for Artificial Intelligence, Abu Dhabi, UAE.
+Fig. 1.
+A frozen LLM decomposes a long-horizon instruction into sub-
+tasks and routes each to an expert in a continually growing library of frozen
+PNN columns, training a new expert policy for unseen tasks.
+LoRA-style low-rank lateral adapters
+[5]. Each adapter
+is modulated by a learnable per-parent gate, allowing the
+new column to draw selectively from relevant prior experts
+while suppressing unhelpful ones. This design reduces the
+quadratic parameter growth of vanilla PNNs, mitigates nega-
+tive knowledge transfer, and exposes transfer as a measurable
+quantity. Depending on the experiment, experts are trained
+either with soft actor-critic (SAC) augmented by behav-
+ior cloning or from demonstrations using conditional flow
+matching [6].
+A library of reusable experts becomes most useful when
+paired with a planner that can decide which skill to invoke.
+We therefore integrate a frozen, locally served large language
+model (LLM) as a high-level supervisor. Given a natural-
+language instruction, the LLM decomposes it into an ordered
+sequence of sub-tasks, selects the appropriate expert for each
+step, and requests that a new expert be trained only when the
+current library is insufficient. The LLM operates purely at
+the symbolic planning level and is never fine-tuned, keeping
+task reasoning separate from low-level control and making
+the high-level task decomposition and routing explicit.
+Using shared task-space action conventions, we also evalu-
+ate the gated transfer mechanism across robot embodiments.
+We study transfer from a Sawyer arm in MetaWorld [7] to
+Panda and UR5e arms in Robosuite [8], and finally to a
+real Franka Research 3 (FR3) arm performing a long-horizon
+manipulation task. In the simulated cross-embodiment exper-
+iments, the framework achieves higher mean task success
+than learning from scratch at every tested demonstration
+budget. The main contributions of this article are summarized
+as follows:
+• We introduce a continual reinforcement learning (CRL)
+framework that combines frozen PNN columns with
+arXiv:2611.30667v1  [cs.RO]  23 Nov 2026
+
+
+LoRA lateral adapters and learnable per-parent gates,
+enabling selective and parameter-efficient forward trans-
+fer.
+• We develop a frozen local LLM planner that de-
+composes long-horizon instructions, routes sub-tasks
+to learned expert policies, and requests a new expert
+when the library cannot solve the task, while remaining
+separate from low-level control.
+• We evaluate the framework against representative CL
+methods in the MetaWorld simulator, and demonstrate
+cross-embodiment transfer to the Robosuite simulator
+and then to an FR3 robot.
+• We demonstrate a six-stage real-world manipulation se-
+quence on the FR3, where the LLM planner coordinates
+dedicated expert policies across all the sub-tasks.
+II. RELATED WORK
+A. Continual Learning for Robot Manipulation
+CL methods are commonly grouped into three categories:
+Regularization methods preserve previous knowledge by
+penalizing changes to parameters that are important for past
+tasks [1]. Rehearsal methods revisit stored samples from
+earlier tasks, or generate synthetic ones, to reduce forget-
+ting [9]. Architectural methods allocate separate capacity
+to new tasks, either by expanding the network with task-
+specific modules [4], [10] or by partitioning a fixed-size
+model through pruning or masking [11].
+In robotic manipulation, CL is often studied with re-
+inforcement learning (RL) or imitation learning (IL). Li
+et al. [12] study dexterous manipulation in simulation us-
+ing an offline CRL student–teacher framework with replay.
+LEGION [13] accumulates knowledge from a continuous
+task stream through a Bayesian nonparametric knowledge
+space, a SAC policy, and experience replay, while using
+language embeddings to infer tasks in long-horizon settings.
+CLARE [14] adds encoder-decoder adapters to a frozen flow-
+matching vision-language-action (VLA) model, expanding
+only when a feature-novelty score indicates a new task and
+routes without task IDs. SPECI [15] builds a self-evolving
+skill codebook with frozen prior entries and decomposes
+shared and task-specific parameters. COLADA [16] freezes
+an action-chunking transformer backbone, learns one LoRA
+adapter per skill from teleoperated demonstrations, and ac-
+quires missing skills through grounded human dialogue.
+While these methods are effective, many rely on large
+frozen VLA backbones that are costly to train, store, and de-
+ploy. In contrast, we use a PNN composed of compact task-
+specific expert policies, connected through LoRA-style low-
+rank lateral adapters [5]. This design emphasizes selective
+forward transfer across both tasks and robot embodiments, a
+setting not addressed by the above methods.
+B. LLMs as High-Level Planners for Long-Horizon Manip-
+ulation
+Recent work increasingly uses LLMs to decompose
+natural-language commands into sub-goals rather than to
+generate low-level robot actions directly. Huang et al. [17]
+prompt a frozen LLM to map household goals to mid-level
+actions from a fixed vocabulary. LEAGUE++ [18] com-
+bines task-and-motion planning with SAC, using an LLM
+to produce symbolic operators and design dense rewards,
+while warm-starting each new policy from the embedding-
+nearest prior skill. CLIMB [19] constructs a symbolic PDDL
+world model and introduces new predicates after execution
+failures. LRLL [20] grows a library of LLM-written code
+skills through a gradient-free wake–sleep procedure. Tan et
+al. [21] decompose long-horizon tasks over a tree-structured
+skill library with GPT-4V perception, querying a human
+when a skill is unavailable. LCB [22] represents sub-goals
+as learnable latent tokens, but fine-tunes the LLM end-to-
+end and couples it to a single monolithic policy. These
+approaches similarly use LLMs primarily for high-level
+planning rather than direct control. Our framework differs by
+using a frozen local LLM to decompose tasks, select among
+learned expert policies, and request that a new expert be
+trained when no suitable expert is available.
+III. PROBLEM STATEMENT
+We study lifelong manipulation, where a robot must ac-
+quire skills sequentially, reuse prior knowledge across tasks
+and embodiments, and compose learned skills from language.
+We separate this setting into two layers: a low-level control
+layer, in which each skill is represented by a state-feedback
+policy, and a high-level planning layer, in which language
+selects and orders those skills. Language is therefore used
+only for planning and never as an input to the control policy.
+This formulation leads to three requirements.
+(P1) Incremental skill acquisition. Skills arrive sequen-
+tially as tasks {Tn}N
+n=1, with N unknown in advance. Each
+task is an MDP Tn = (S, A, Pn, rn, ρ0
+n, γ), sharing the state
+space S ⊆Rds and task-space action space A ⊆Rda
+with all other tasks. The action is an end-effector command
+[∆x, ∆y, ∆z, g], while the dynamics Pn, reward rn, and
+initial distribution ρ0
+n may differ across tasks. At stage n,
+the learner can interact only with Tn and has access to a
+small demonstration set Dn; previous environments and data
+are unavailable. For each task, we learn a dedicated expert
+policy πn that maximizes
+Jn = Eρ0
+n, πn, Pn
+h P
+t≥0 γt rn(st, at)
+i
+.
+(1)
+The lifelong learner must satisfy two constraints: (R1) no
+forgetting, so learning a new task does not degrade previ-
+ously learned experts, and (R2) selective forward transfer,
+so useful prior experts improve learning while unhelpful
+lateral connections are suppressed.
+(P2) Compositional orchestration. The learned experts
+form a library Π = {(πi, mi)}, where each policy πi is
+paired with a language descriptor mi. Given a long-horizon
+instruction L that cannot be solved by a single policy, the
+planner decomposes it into sub-task descriptions and assigns
+each one to an expert,
+( ˆm1, . . . , ˆmK) = Φ(L),
+ek = ρ( ˆmk, Π).
+(2)
+
+
+Input state st
+EEF position
+(x, y, z)
+Object pose
+(x, y, z, q)
+Gripper state
+(open / close)
+Goal
+(x, y, z)
+Frozen Column 1
+(Task 1 Policy)
+ΔW1,1
+ΔW1,2
+ΔW1,L
+α1,1
+α1,2
+α1,L
+FC1
+FC2
+⋮
+FCL
+Frozen Column 2
+(Task 2 Policy)
+FC1
+FC2
+⋮
+FCL
++
++
++
+ΔW2,1
+ΔW2,2
+ΔW2,L
++
++
++
+(Δx, Δy, Δz, gripper)
+New Column t
+(Task t Policy)
+FC1
+FC2
+⋮
+FCL
+Current task column
+(trainable)
+Frozen columns
+(fixed)
+LoRA adapters
+(trainable)
+Transfer gates
+(trainable)
+Source feature hlk
+Low-rank adapter: ΔWk,l = Bk,lAk,l
+Ak,l (d × r)
+Bk,l (r × d)
+0 ≤αk,l ≤1
+×
+Transferred contribution
+to col. t, layer l
+α2,1
+α2,2
+α2,L
+Fig. 2.
+Our proposed PNN-LoRA architecture. Each previously learned task is represented by a frozen column, and a new trainable column receives
+forward transfer from all prior columns through low-rank lateral adapters.
+Here, Φ returns an ordered list of K sub-tasks, and ρ routes
+each ˆmk to a matching expert in the library. If no expert
+applies, ek = ∅, triggering acquisition of a new expert under
+(P1). The selected expert is then executed closed-loop on the
+robot state. We require both Φ and ρ to be implemented by
+a frozen, general-purpose planner rather than a task-specific
+trained module.
+(P3) Cross-embodiment reuse. The same library should
+support transfer across robot embodiments. Given experts
+learned on a source robot, such as a Sawyer in MetaWorld
+or a Panda in Robosuite, the learner should acquire a new
+skill on a target embodiment, such as a UR5e or a real FR3,
+from only a few target demonstrations. Since all policies
+share the same task-space action interface, prior experts can
+be reused when learning downstream skills on new robots.
+IV. METHODOLOGY
+A. PNN-LoRA: Gated Low-Rank Lateral Transfer
+A PNN represents each task with a dedicated network
+column whose parameters are frozen after training [4]. When
+task n arrives, a new column is appended while all previous
+columns 1, . . . , n−1 remain fixed as shown in Fig. 2. Trans-
+fer to the new task occurs only through lateral connections
+from these frozen columns. Each column consists of blocks
+of width d. Block ℓhas its own affine map f n
+ℓand, for ℓ≥2,
+receives one lateral adapter Ln
+ℓ,j from every previous column
+j < n. With hn
+0 = s, the activations are
+hn
+ℓ= ϕ
+
+f n
+ℓ(hn
+ℓ−1) +
+X
+j<n
+gn
+ℓ,j Ln
+ℓ,j
+ h j
+ℓ−1
+
+,
+(3)
+where ϕ is a ReLU nonlinearity for the hidden blocks, h j
+ℓ−1
+are the frozen features of parent column j, and gn
+ℓ,j ∈(0, 1)
+is a per-parent gate. The final block outputs the mean and
+log-standard-deviation over the action space A, which to-
+gether give the sampled action and its associated uncertainty.
+Because only the new column is trainable, learning task n
+cannot alter any earlier policy πm with m < n, so every
+prior skill is preserved exactly.
+In the original PNN each lateral Ln
+ℓ,j is a dense d × d
+matrix that is always active, which has two drawbacks. First,
+connecting every new column to all predecessors makes the
+lateral parameter count grow as Θ(n2d2), quickly dominating
+memory and training cost. Second, the new column is forced
+to absorb features from all prior experts, including unrelated
+ones; these irrelevant signals act as noise that can slow
+convergence or push final performance below that of learning
+the task in isolation, a failure mode known as negative
+transfer.
+We address both issues through the design of the lateral
+Ln
+ℓ,j and the gate gn
+ℓ,j in Eq. 3. First, following LoRA [5],
+we replace each dense lateral with a low-rank factorization
+Ln
+ℓ,j(h) = h An
+ℓ,jBn
+ℓ,j, where An
+ℓ,j ∈Rd×r and Bn
+ℓ,j ∈Rr×d
+with rank r ≪d. This lowers the per-lateral parameter count
+from d2 to 2rd and confines transfer to an r-dimensional
+subspace of the parent’s features, regularizing it when target-
+task data is scarce. Second, we attach a learnable gate to
+every lateral, gn
+ℓ,j = σ(αn
+ℓ,j), with σ the logistic function
+and αn
+ℓ,j a free scalar, so the signal expert j contributes to
+block ℓis the gated map T n
+ℓ,j = σ(αn
+ℓ,j) An
+ℓ,jBn
+ℓ,j. Because
+the gate multiplies the lateral output and is optimized jointly
+with the policy, it is driven toward 1 when its parent expert
+lowers the task loss and toward 0 when it does not. The
+column therefore engages only the predecessors that benefit
+the current task, realizing the selective transfer a dense,
+always-on PNN cannot express.
+Beyond aiding learning, the gates make transfer mea-
+surable. Let cn
+j = P
+ℓ∥gn
+ℓ,jLn
+ℓ,j(h j
+ℓ−1)∥be the magnitude
+of the signal expert j injects into column n, and cn
+0 =
+P
+ℓ∥f n
+ℓ(hn
+ℓ−1)∥that of the column’s own contribution. The
+transfer share
+un
+j = cn
+j
+.
+cn
+0 + P
+k<n cn
+k
+
+∈[0, 1]
+(4)
+is then the fraction of column n’s output borrowed from
+prior expert j, letting us read off which skills each new task
+reuses.
+B. Reinforcement Learning Training
+Each new column is trained with SAC [6], an off-policy
+maximum-entropy actor–critic method, augmented with a
+behavior-cloning (BC) loss from the task demonstrations Dn.
+The actor is the newly added PNN column πθn described in
+Sec. IV-A. It is trained with two critics, Qϕ1 and Qϕ2, and
+their delayed target networks. After training, only the actor
+column is frozen and added to the expert library.
+
+
+The critics minimize the standard soft Bellman residual
+using the clipped double-Q target. The actor is optimized
+with
+Lπ = EB
+
+η log πθn(˜a | s) −mini Qϕi(s, ˜a)
+
++ λBC EDn
+µθn(s) −a
+2,
+(5)
+where ˜a ∼πθn(·|s) is sampled through the reparameter-
+ization trick. The first term is the SAC objective, which
+maximizes expected value while encouraging exploration
+through the entropy temperature η, tuned automatically to a
+target entropy. The second term anchors the policy to expert
+demonstrations and provides a dense learning signal when
+task rewards are sparse.
+Training batches are formed from both online replay and
+a fixed demonstration buffer, so the learner continues to use
+expert states while improving through interaction. During
+each task, only the newly added column is updated. The
+gates αn use a higher learning rate without weight decay, the
+LoRA factors An, Bn use weight decay λL, and the column-
+specific layers f n use the base optimizer configuration.
+Gradients are norm-clipped for stability. Once the evaluation
+success rate remains above a preset threshold, the column is
+frozen and the learner proceeds to the next task.
+C. LLM-Based Planning
+At deployment, the expert library is coordinated by
+a frozen, locally served LLM, Qwen2.5-7B [23] running
+through Ollama. The LLM is never fine-tuned and outputs
+only structured JSON decisions, not low-level robot actions.
+Routing is possible because each expert is stored with
+a short natural-language descriptor of its capabilities. For
+example, box-close-v3 is associated with skills such
+as reach, grasp handle, and pick-place. Expert selection is
+therefore performed in language space over skill descriptors
+rather than over policy parameters, and the library persists
+across sessions so each deployment starts from all previously
+acquired experts.
+The planner operates in two stages, following Sec. III.
+First, during decomposition, it receives a compound instruc-
+tion L and a catalog of available environments, then returns
+an ordered list of sub-goals, each paired with a candidate
+skill. Second, during routing and supervision, it selects an
+expert for the current sub-goal by comparing the sub-goal
+description with the library descriptors. Based on the running
+success rate, the required threshold, and the remaining switch
+budget, it issues one of three decisions: keep expert,
+switch expert, or train new expert.
+Execution proceeds one sub-goal at a time in a long-
+horizon environment where each sub-goal is presented in its
+corresponding scene. The selected expert is rolled out closed-
+loop on the robot state for a small number of trials, and the
+sub-goal is accepted if it succeeds in the majority of them.
+If it fails, the LLM switches to the next candidate expert.
+When the switch budget is exhausted and no existing expert
+reaches the required performance, the framework invokes a
+train-on-failure fallback in which a new PNN column is
+added and trained for that skill, re-evaluated on the sub-
+goal, and then registered with its descriptor in the library.
+Thus, the skill library grows only when the current experts
+are insufficient, while planning remains symbolic and control
+remains learned.
+D. Cross-Embodiment and Real-Robot Transfer
+All embodiments considered in this work are controlled
+through the same task-space interface where each policy
+outputs an end-effector displacement and a gripper command
+[∆x, ∆y, ∆z, g], while the robot’s low-level controller con-
+verts this command into joint motion. This shared interface
+allows a column trained on one robot to serve as a lateral
+parent for a new column on another embodiment. To learn a
+skill on a target platform, such as a Robosuite Panda, UR5e,
+or real FR3, we append a new column and connect its LoRA
+laterals (Eq. 3) to the previously frozen experts, including
+the 12 MetaWorld columns and any Robosuite columns
+learned later. During training, the new column learns which
+prior experts to reuse and which lateral signals to suppress,
+reducing interference from unrelated skills.
+Since target demonstrations from teleoperation or real
+robots are limited, the new column is trained by imitation
+using a flow-matching policy [24] from N demonstrations.
+Instead of directly regressing actions, the policy learns a
+state-conditioned velocity field over the action space. At
+deployment, an action is generated by sampling from a
+Gaussian prior and integrating this velocity field for a fixed
+number of Euler steps; the resulting endpoint is used as
+the commanded [∆x, ∆y, ∆z, g] (along with a 3D rotation
+vector for the complete pose experiments), which is further
+sent to the low-level controller.
+V. EXPERIMENTS & EVALUATION
+This
+section
+describes
+the
+experimental
+setup
+and
+evaluates the proposed framework in simulation, cross-
+embodiment transfer, pose-control, and real-world settings,
+together with comparisons against benchmark methods.
+A. Data Collection
+In the MetaWorld simulation experiments [7], we train on
+the 12 tasks listed in Table I. Each task is learned using SAC
+through online environment interaction, while 50 successful
+scripted rollouts are stored in a fixed demonstration buffer
+and used as an auxiliary behavior-cloning signal to guide
+exploration and speed up policy learning.
+For the cross-embodiment study, we use five Robosuite
+tasks: Panda pick-place with a can, milk carton, and bread,
+and UR5e pick-place with a milk carton and bread. All
+tasks share the same 4-D operational-space position interface.
+The Panda can demonstrations are taken from the Robosuite
+library, while the remaining Panda demonstrations are col-
+lected through keyboard teleoperation. UR5e demonstrations
+are recorded directly on the UR5e robot in the Robosuite
+simulator.
+For the real-world experiments, we collect demonstrations
+on an FR3 arm for empty-glass, hang-glass, box-open, box-
+close, and pick-place with a bowl and a cup. The robot is
+
+
+0
+50
+100
+0
+50
+100
+Reach
+0
+40
+80
+Push
+0
+8
+16
+Button Press
+0
+25
+50
+0
+50
+100
+Door Open
+0
+15
+30
+Hammer
+0
+40
+80
+Box Close
+0
+80
+160
+0
+50
+100
+Assembly
+0
+15
+30
+Window Open
+0
+20
+40
+Faucet Open
+0
+50
+100
+0
+50
+100
+Shelf Place
+0
+10
+20
+Drawer Open
+0
+50
+100
+Peg Insert
+Eval success (%)
+Training steps (
+)
+×103
+Standalone
+Vanilla PNN
+PNN-LoRA (ours)
+SAC-CLARE
+SAC-DEN
+SAC-PackNet
+SAC-LEGION
+SAC-Replay
+Fig. 3.
+Evaluation success rate versus training steps for each MetaWorld
+task. PNN-LoRA converges faster than the standalone, vanilla-PNN, and
+continual-learning baselines on every task after the first, and learns the hard
+tasks where most baselines fail.
+teleoperated using a Force Dimension™Lambda 7 haptic
+device to collect the demonstration data. Initial and goal
+configurations are randomized across demonstrations, and
+each object is equipped with an AprilTag so its 6-DOF pose
+can be estimated in real time. We collect 35 demonstrations
+per task, using 30 for training and 5 for validation.
+B. Model Architecture & Baseline Methods
+Each PNN-LoRA column contains four fully connected
+blocks. A 39-D input is passed through three 400-unit ReLU
+layers and mapped to an 8-D output, representing the mean
+and log standard deviation of the action distribution. The
+MetaWorld library contains 12 such columns, trained with
+the objective in Eq. 5. We use Adam with learning rate 10−3
+for the gates and 10−4 for the LoRA factors and column-
+specific layers, with weight decay 10−3 applied to the LoRA
+factors. Training uses discount factor 0.99, batch size 256
+split equally between online and demonstration data, and
+λBC = 2. The two critics are independent three-layer 400-
+unit networks and are discarded after the corresponding actor
+column is trained and frozen.
+The Robosuite and real-robot columns use the same ar-
+chitecture but are trained only from demonstrations using
+conditional flow matching. Their 39-D input contains the
+robot-object state, the intermediate action sample, and the
+flow time. We train these columns with Adam for 300 epochs
+TABLE I
+PER-TASK SUCCESS RATE (%) ON METAWORLD. MEAN OVER 3 SEEDS;
+BEST PER TASK IN BOLD.
+Task
+Ours V-PNN Standalone DEN PackNet CLARE LEGION Replay
+Reach
+96.7
+92.3
+87.3
+98.7
+71.3
+85.3
+40.0
+4.7
+Push
+94.7
+90.1
+96.0
+86.0
+2.0
+40.7
+90.0
+0.0
+Button
+100.0
+78.0
+94.2
+100.0
+100.0
+88.0
+0.0
+0.0
+Door
+100.0
+95.1
+90.7
+98.7
+96.0
+99.3
+90.0
+0.0
+Hammer
+100.0
+94.7
+81.3
+80.7
+9.3
+91.3
+50.0
+0.0
+Box
+98.0
+96.0
+94.7
+0.0
+0.0
+0.0
+95.0
+0.0
+Assembly 94.0
+0.0
+86.0
+0.0
+0.0
+0.0
+60.0
+0.0
+Window
+100.0
+97.0
+73.3
+100.0
+0.0
+98.7
+0.0
+4.7
+Faucet
+100.0 100.0
+94.0
+98.0
+0.0
+100.0
+0.0
+88.0
+Shelf
+91.3
+0.0
+90.5
+34.0
+0.0
+72.0
+0.0
+54.0
+Drawer
+100.0
+97.0
+98.0
+100.0
+0.0
+100.0
+40.0
+68.7
+Peg
+99.3
+88.7
+97.3
+92.7
+0.0
+98.7
+80.0
+96.7
+Mean
+97.8
+77.4
+90.3
+74.1
+23.2
+72.8
+45.4
+26.4
+using batch size 64, and generate actions at deployment by
+integrating the learned velocity field with 20 Euler steps.
+We compare PNN-LoRA against SOTA CL baselines: Ex-
+perience Replay [9], PackNet [11], DEN [10], and the recent
+robot-learning methods LEGION [13] and CLARE [14].
+We also include a vanilla PNN [4] with dense always-
+on laterals and a standalone per-task policy to bound the
+comparison. All baselines are implemented in the same SAC
+and behavior-cloning framework and evaluated on the same
+12-task MetaWorld sequence. For the cross-embodiment
+experiment, the reference baseline is a flow-matching policy
+(MLP-flow) with the same backbone, trained from scratch
+without lateral connections.
+C. MetaWorld Experiments
+A continual learner should use previously acquired skills
+to learn new ones more quickly and reliably. We therefore
+evaluate PNN-LoRA on the 12-task MetaWorld sequence,
+where tasks are learned sequentially and compared against
+the CL baselines and a standalone policy trained from scratch
+for every task.
+Figure 3 shows evaluation success versus environment
+steps for each task. Except for the first task, where no
+previous columns are available, PNN-LoRA converges faster
+than the standalone policy, vanilla PNN, and the other CL
+baselines. This can be attributed to the direct effect of
+positive forward transfer through the gated LoRA laterals,
+as well as to the selective gating mechanism that preserves
+useful representations while excluding interfering ones. The
+effect is most visible on difficult tasks. In assembly, for
+example, most baselines fail to learn, while PNN-LoRA
+reaches high success and even converges faster than the
+standalone policy by reusing earlier manipulation skills.
+The faster convergence also translates into strong final
+performance. Table I reports the final per-task success rates.
+PNN-LoRA achieves optimal performance on nearly every
+task and the highest mean success across the sequence.
+Several baselines collapse on contact-rich tasks such as box-
+close and assembly, whereas PNN-LoRA remains stable. It
+also outperforms vanilla PNN and the standalone policy on
+most tasks, with the main exceptions being reach and push,
+where DEN and the standalone policy obtain the best scores.
+These gains are achieved with a favorable model foot-
+print. As shown in Figure 4, PNN-LoRA keeps storage and
+trainable parameters per task close to the standalone policy
+
+
+2
+4
+6
+8
+10
+12
+Tasks (MetaWorld)
+1
+10
+100
+Total storage (MB)
+(a) Storage growth
+100
+101
+102
+Total footprint (MB)
+0
+25
+50
+75
+100
+Mean success (%)
+(b) Accuracy vs. size
+18 MB, 98%
+113 MB, 77%
+16 MB, 90%
+2.0 MB, 74%
+1.3 MB, 23%
+7.9 MB, 73%
+5.1 MB, 45%
+78 MB, 26%
+2
+4
+6
+8
+10
+12
+Tasks (MetaWorld)
+100K
+1.0M
+Trainable params
+(c) Per-task training cost
+PNN-LoRA
+Vanilla PNN
+Standalone
+SAC-DEN
+SAC-PackNet
+SAC-CLARE
+SAC-LEGION
+SAC-Replay
+Fig. 4.
+Model size and trainable parameters per task along the sequence. PNN-LoRA stays close to the standalone policy, whereas the dense-lateral vanilla
+PNN grows rapidly as more tasks are added.
+(a) LLM orchestration
+All skills available
+Missing skill → grow expert
+(b) Learned complete pose
+gripper axis → nut grasp axis
+USER PROMPT
+“go and open the door by grabbing the handle, then open the
+window, and finally put the lid on the box.”
+[Task Planner] decompose → 3 sub-tasks
+door-open · window-open · box-close
+[Expert Planner] route to frozen experts
+LLM: “expert already has all the required skills … grasp,
+twist handle, slide, place lid”
+all 3 sub-tasks pass → no training
+Reuses the frozen experts · zero forgetting.
+USER PROMPT
+“… then open the window, and finally open the drawer
+by grabbing the knob.”
+[Task Planner] decompose → 3 sub-tasks
+door-open · window-open · drawer-open
+(no expert)
+[Expert Planner] try nearest experts
+LLM: “missing skill is grasp+slide … try door-open, reach”
+door-open
+reach
+[Incremental Training]
+grow PNN column → learn drawer-open expert
+policy → all previous columns stay frozen
+Fig. 5.
+(a) LLM orchestration of a long-horizon task. The instruction is decomposed into an ordered set of sub-tasks, each routed to the matching expert;
+(b) PNN-LoRA policy predicting the actions to handle orientation-aware nut insertion.
+while still enabling lateral transfer. This is because low-rank
+adapters provide transfer at a small fraction of the cost of
+dense laterals. By contrast, vanilla PNN grows rapidly in
+both storage and trainable parameters without a correspond-
+ing performance gain. Some baselines use fewer parameters,
+but their success rates are substantially lower, indicating that
+PNN-LoRA offers a stronger accuracy–efficiency tradeoff.
+Finally, Figure 5 illustrates a long-horizon orchestration
+for a simulation experiment based on the MetaWorld en-
+vironments. The frozen LLM decomposes a compound in-
+struction into an ordered set of sub-tasks and routes each
+to the appropriate frozen expert, which then executes it
+in a closed loop. The example also highlights the train-
+on-failure fallback. Since no expert was available for the
+drawer-open task (drawer-open expert policy was withheld
+for this experiment), the LLM first selected the closest
+existing policies, door-open and reach. After both failed, the
+framework triggered incremental training to learn a dedicated
+drawer-open expert.
+D. Cross-Embodiment Experiments
+The cross-embodiment experiments evaluate whether the
+expert library can transfer knowledge across both tasks and
+robot platforms. Figure 6 (A) shows the per-source contri-
+bution share for each target column at N ∈{10, 30, 50}
+demonstrations. Two patterns emerge. First, the contribu-
+tion from MetaWorld experts decreases as more target data
+becomes available: from 42% to 25% on Panda-Can, and
+from roughly one quarter to at most 3% on the other
+targets. This indicates that the coarse cross-simulator prior is
+most useful in the low-data regime. As more demonstrations
+are added, the target column shifts toward more relevant
+sources. Since Panda-Can is the first Robosuite task, it has
+no same-simulator parent and therefore relies increasingly
+on its own pathway, whose share rises from 58% to 75%. In
+contrast, later Robosuite columns reuse previously learned
+pick-place experts from the same task family, keeping their
+own contribution nearly unchanged, such as 20% to 22% on
+Panda-Bread and a constant 15% on UR5e-Bread.
+Second, transfer is driven more by task similarity than by
+robot identity. The Panda milk and bread columns receive
+most of their transferred signal from earlier Panda pick-place
+experts, particularly can and milk, because these policies
+capture the same underlying manipulation pattern. The same
+trend holds across embodiments, as the UR5e milk and bread
+columns also reuse available Panda and UR5e pick-place
+experts. This indicates that a skill learned on one robot
+can support learning on another when the task structure is
+shared. The main exception is UR5e-Bread at N = 10,
+where the column relies more heavily on MetaWorld experts,
+suggesting that the broader prior can be more useful than a
+small number of same-family demonstrations at very low
+data budgets.
+This selective reuse leads to consistent performance gains.
+Figure 7 compares success rate as a function of the number of
+demonstrations for PNN-LoRA and the from-scratch MLP-
+flow baseline. PNN-LoRA outperforms the baseline on every
+task and at every demonstration budget, reflecting the benefit
+of lateral transfer that the baseline cannot access. The largest
+gains appear on bread pick-and-place, the most challenging
+task due to the smaller object size, where reusable pick-place
+priors are especially valuable. The improvement eventually
+saturates; after approximately 30 demonstrations, the curves
+flatten, with four of five tasks changing by at most 5 points
+between N = 30 and N = 50, and three already peaking at
+N = 40.
+
+
+Target task
+MW
+(Σ12)P-can
+P-milk
+P-bread
+U-milk
+own
+Panda-Can
+Panda-Milk
+Panda-Bread
+UR5e-Milk
+UR5e-Bread
+42
+58
+20
+39
+42
+18
+39
+22
+20
+26
+34
+20
+5
+15
+25
+23
+18
+9
+11
+15
+N = 10
+MW
+(Σ12)P-can
+P-milk
+P-bread
+U-milk
+own
+38
+62
+6
+20
+74
+7
+17
+43
+33
+13
+14
+30
+13
+29
+8
+13
+28
+18
+14
+19
+N = 30
+MW
+(Σ12)P-can
+P-milk
+P-bread
+U-milk
+own
+25
+75
+2
+41
+58
+2
+30
+47
+22
+3
+25
+38
+9
+25
+1
+22
+36
+11
+15
+15
+N = 50
+0
+10
+20
+30
+40
+50
+60
+70
+80
+transfer share (%)
+Source (frozen expert / skill)
+(A) Simulation transfer shares
+MetaWorld
+Panda
+UR5e
+empty-glass
+hang-glass
+box-open
+bowl-pick
+cup-pick
+Self
+0
+5
+10
+15
+20
+Transfer share (%)
+5%
+13%
+9%
+7%
+3%
+14%
+16%
+13%
+20%
+box-close: source of the new skill
+(B) Real-robot transfer shares
+sim experts
+prior real skills
+self
+Fig. 6.
+Transfer-share analysis. (A) Per-source shares for Robosuite target columns at N = 10, 30, 50; the MetaWorld share decreases as data grows,
+while same-family pick-place columns dominate across robot embodiments. (B) Source share of the real-robot box-close skill across frozen simulation
+experts, prior real-world skills, and its own path.
+10
+30
+50
+0
+20
+40
+60
+80
+(a) Panda-Can
+10
+30
+50
+(b) Panda-Milk
+10
+30
+50
+(c) Panda-Bread
+10
+30
+50
+0
+20
+40
+60
+80
+(d) UR5e-Milk
+10
+30
+50
+(e) UR5e-Bread
+Methods
+MLP (flow)
+PNN-LoRA (ours)
+success (%)
+number of demonstrations N
+Fig. 7.
+Success rate versus number of demonstrations; PNN-LoRA beats
+the from-scratch MLP-flow baseline at every budget and saturates beyond
+N ≈30.
+E. Complete Pose Control Experiments
+The preceding experiments used a 4-D action space con-
+taining only end-effector translation and gripper state. To
+test whether the proposed continual mechanism also extends
+to orientation-aware control, we replace this interface with
+Robosuite’s 7-D pose command [∆p, ∆r, g], where ∆r is an
+incremental axis–angle rotation expressed in the robot base
+frame. Everything else, including the PNN-LoRA structure,
+frozen columns, LoRA laterals, and gated transfer mecha-
+nism, remains unchanged.
+For this experiment, we learn three tasks incrementally
+from 50 demonstrations each, along with the online inter-
+action (same as metaworld training): nut assembly, door
+opening, and pose-aware cereal pick-place. The resulting
+policies reach 84.0%, 100.0%, and 76.0% success, respec-
+tively. Transfer follows the same pattern observed in the
+translation-only setting. The door-opening column strongly
+gates onto the nut-assembly expert and converges in 10.6k
+frames, compared with 106k frames for its parent.
+Figure 5(b) illustrates this behavior. The square nut is
+initialized with an arbitrary yaw, while the gripper begins 76◦
+away from the only feasible grasp axis. The policy rotates
+the wrist toward that axis, grasps the handle, and carries the
+nut over the fixed peg, ending with less than one degree of
+residual orientation error. A rollout is counted as successful
+only after the nut descends over the peg.
+F. Real-World Experiments
+The real-world experiment evaluates the PNN-LoRA
+framework, coordinated by the LLM planner, on a long-
+horizon manipulation sequence using the FR3 arm (Fig. 8).
+The first two sub-tasks require full pose control, including
+orientation, while the remaining four sub-tasks use position
+control. The robot first picks up a plastic glass and empties
+its contents into a bowl, then moves to a second glass and
+hangs it on a wall-mounted nail. It then opens a box by
+displacing its lid, places a bowl and then a cup inside the
+box, and finally restores the lid to close the box. Each stage
+is executed by its corresponding expert policy.
+Each expert is trained using 30 demonstrations, and
+columns are added incrementally so that each new skill
+can reuse previously learned frozen skills without causing
+forgetting. Figure 6(B) quantifies this reuse through the gates
+of the final box-close column. In this column, lateral paths
+account for 80% of the measured transferred share, with
+53% coming from the five preceding real-world sub-skills
+and 27% from the frozen simulation experts. The remaining
+20% is attributed to the new column’s own path.
+During execution, a sub-task is considered complete when
+the current object-pose error relative to its target falls below
+a predefined threshold. This signal is returned to the LLM
+planner, which uses it to decide when to advance the plan
+and which expert policy to invoke next. The sub-task order
+remains fixed across all real-world trials. A trial is counted
+as successful only if every sub-task is completed; under this
+criterion, the framework succeeds in four of five trials.
+VI. LIMITATIONS & FUTURE WORK
+The current framework does not use force or tactile
+feedback. Consequently, the hardware evaluation is limited
+to quasi-static manipulation and does not assess interactions
+that require compliant force regulation. Extending the action
+space to full pose control does not address this limitation
+because the policies still rely primarily on visual and kine-
+matic state information. Another limitation is that the current
+real-world evaluation uses a fixed sub-task order.
+Future work will incorporate force and tactile feedback
+directly into the policy input, allowing each expert to adapt
+its motion based on the measured contact state. This ex-
+tension could support force modulation during grasping,
+insertion, sliding, and other contact-rich tasks. We will also
+evaluate more flexible long-horizon instructions, including
+
+
+Fig. 8.
+Real-world long-horizon tasks (a) initial state, (b) empty glass, (c) hang glass, (d) open box, (e)–(f) pick-place bowl and cup, and (g) close box.
+For the task to be successful, the policy needs to complete all the sub-tasks.
+prompts with randomized sub-task order, to assess whether
+the planner and expert library can complete all required sub-
+tasks reliably. Finally, we plan to investigate force-aware
+expert transfer, examining whether previously learned con-
+tact strategies can be reused across tasks and embodiments
+through the same gated low-rank lateral mechanism.
+VII. CONCLUSION
+We presented a continual robot learning framework that
+grows a library of frozen PNN expert policies connected
+through gated LoRA lateral adapters. The framework en-
+ables selective forward transfer without forgetting and is
+coordinated by a frozen local LLM for long-horizon task
+decomposition and expert routing. Across MetaWorld, cross-
+embodiment transfer, pose-control, and real-world experi-
+ments on an FR3, the results show that reusable expert
+libraries can reduce the data required to acquire new skills
+while supporting compositional robot behavior.
+REFERENCES
+[1] J. Kirkpatrick, R. Pascanu, N. Rabinowitz, J. Veness, G. Desjardins,
+A. A. Rusu, K. Milan, J. Quan, T. Ramalho, A. Grabska-Barwinska,
+D. Hassabis, C. Clopath, D. Kumaran, and R. Hadsell, “Overcoming
+catastrophic forgetting in neural networks,” Proceedings of the Na-
+tional Academy of Sciences (PNAS), vol. 114, no. 13, pp. 3521–3526,
+2017.
+[2] N. Kushawaha, L. Fruzzetti, E. Donato, and E. Falotico, “Synapnet:
+A complementary learning system inspired algorithm with real-time
+application in multimodal perception,” IEEE Transactions on Neural
+Networks and Learning Systems, vol. 36, no. 7, pp. 13 162–13 176,
+2024.
+[3] A. E. Binny, M. Anand, H. T. Kussaba, L. Chen, S. Agrawal, F. J.
+Abu-Dakka, and A. Swikir, “Safe and stable neural network dynamical
+systems for robot motion planning,” IEEE Robotics and Automation
+Letters, 2026.
+[4] A. A. Rusu, N. C. Rabinowitz, G. Desjardins, H. Soyer, J. Kirkpatrick,
+K. Kavukcuoglu, R. Pascanu, and R. Hadsell, “Progressive neural
+networks,” arXiv preprint arXiv:1606.04671, 2016.
+[5] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang,
+and W. Chen, “LoRA: Low-rank adaptation of large language models,”
+in Int. Conf. on Learning Representations (ICLR), 2022.
+[6] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine, “Soft actor-critic: Off-
+policy maximum entropy deep reinforcement learning with a stochastic
+actor,” in Proc. Int. Conf. on Machine Learning (ICML), 2018.
+[7] R. McLean, E. Chatzaroulas, L. McCutcheon, F. R¨oder, T. Yu, Z. He,
+K. Zentner, R. Julian, J. K. Terry, I. Woungang, N. Farsad, and P. S.
+Castro, “Meta-world+: An improved, standardized, RL benchmark,”
+in The Thirty-ninth Annual Conf. on Neural Information Processing
+Systems Datasets and Benchmarks Track, 2025.
+[8] Y. Zhu, J. Wong, A. Mandlekar, R. Mart´ın-Mart´ın, A. Joshi,
+K. Lin, S. Nasiriany, and Y. Zhu, “robosuite: A modular simulation
+framework and benchmark for robot learning,” in arXiv preprint
+arXiv:2009.12293, 2020.
+[9] D. Rolnick, A. Ahuja, J. Schwarz, T. P. Lillicrap, and G. Wayne,
+“Experience replay for continual learning,” in Advances in Neural
+Information Processing Systems (NeurIPS), 2019.
+[10] J. Yoon, E. Yang, J. Lee, and S. J. Hwang, “Lifelong learning
+with dynamically expandable networks,” in Int. Conf. on Learning
+Representations (ICLR), 2018.
+[11] A. Mallya and S. Lazebnik, “PackNet: Adding multiple tasks to a
+single network by iterative pruning,” in Proc. IEEE/CVF Conf. on
+Computer Vision and Pattern Recognition (CVPR), 2018.
+[12] L. Li, E. Donato, V. Lomonaco, and E. Falotico, “Continual policy
+distillation of reinforcement learning-based controllers for soft robotic
+in-hand manipulation,” in 2024 IEEE 7th Int. Conf. on Soft Robotics
+(RoboSoft).
+IEEE, 2024, pp. 1026–1033.
+[13] Y. Meng, Z. Bing, X. Yao, K. Chen, K. Huang, Y. Gao, F. Sun, and
+A. Knoll, “Preserving and combining knowledge in robotic lifelong
+reinforcement learning,” Nature Machine Intelligence, 2025.
+[14] R. R¨omer, Zhang, Li, and A. P. Schoellig, “CLARE: Continual
+learning for vision-language-action models via autonomous adapter
+routing and expansion,” IEEE Robotics and Automation Letters (RA-
+L), 2026.
+[15] J. Xu and X. Nie, “SPECI: Skill prompts based hierarchical continual
+imitation learning for robot manipulation,” IEEE Transactions on
+Cognitive and Developmental Systems (TCDS), 2026.
+[16] Gu, Kondepudi, Gupta, Huang, and N. Gopalan, “Continual robot
+skill and task learning via dialogue,” arXiv preprint arXiv:2409.03166,
+2026.
+[17] W. Huang, P. Abbeel, D. Pathak, and I. Mordatch, “Language models
+as zero-shot planners: Extracting actionable knowledge for embodied
+agents,” in Proc. Int. Conf. on Machine Learning (ICML), 2022.
+[18] Li, Yu, Cheng, and D. Xu, “LEAGUE++: Empowering continual robot
+learning through guided skill acquisition with large language models,”
+in Int. Conf. on Learning Representations (ICLR) Workshop, 2024.
+[19] Byrnes, Bogdanovic, Balakirsky, and A. Garg, “CLIMB: Language-
+guided continual learning for task planning with iterative model
+building,” in Proc. IEEE Int. Conf. on Robotics and Automation
+(ICRA), 2025.
+[20] G. Tziafas and H. Kasaei, “Lifelong robot library learning: Boot-
+strapping composable and generalizable skills for embodied control
+with language models,” in Proc. IEEE Int. Conf. on Robotics and
+Automation (ICRA), 2024.
+[21] Tan, Lou, Zhou, and Lv, “Multi-modal LLM-enabled long-horizon
+skill learning for robotic manipulation,” in Proc. IEEE Int. Conf. on
+Cybernetics and Intelligent Systems (CIS) and IEEE Int. Conf. on
+Robotics, Automation and Mechatronics (RAM), 2024.
+[22] Y. Shentu, P. Wu, A. Rajeswaran, and P. Abbeel, “From LLMs to
+actions: Latent codes as bridges in hierarchical robot control,” in Proc.
+IEEE/RSJ Int. Conf. on Intelligent Robots and Systems (IROS), 2024.
+[23] Qwen
+Team,
+“Qwen2.5
+technical
+report,”
+arXiv
+preprint
+arXiv:2412.15115, 2024.
+[24] Y. Lipman, R. T. Q. Chen, H. Ben-Hamu, M. Nickel, and M. Le,
+“Flow matching for generative modeling,” in Int. Conf. on Learning
+Representations (ICLR), 2023.

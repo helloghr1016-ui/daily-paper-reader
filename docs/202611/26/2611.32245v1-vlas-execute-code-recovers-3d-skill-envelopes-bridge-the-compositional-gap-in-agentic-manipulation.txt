@@ -1,0 +1,234 @@
+Title: VLAs Execute, Code Recovers: 3D Skill Envelopes Bridge the Compositional Gap in Agentic Manipulation
+
+URL Source: https://arxiv.org/pdf/2611.32245v1
+
+Published Time: Wed, 25 Nov 2026 02:41:27 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# VLAs Execute, Code Recovers: 3D Skill Envelopes Bridge the Compositional Gap in Agentic Manipulation 
+
+Jiajie Zhang 1,†, Yankai Xiang 2,†, and Changhao Chen 1,∗
+
+Fig. 1. 3D Skill Envelopes bridge the compositional gap between frozen VLAs and code recovery. Top: End-to-end demonstrations scale exponentially with horizon ( O(nL)), motivating composing O(n) frozen VLA skills. Yet skills that work alone break at transitions ( seams ): after open drawer (Done ), 
+
+push plate succeeds 0/10 times even after returning the arm to its home pose ( re-homing ), colliding with the open drawer and halting steps 3–4. (1) Across 640 skill transitions, re-homing ( Body ) recovers most of the drop; on the remaining failures, erasing leftover objects from the camera image ( View ) barely helps, whereas physically removing them ( World ) recovers +10.0 pts and cuts collisions to 2.0%. (2) Because a frozen skill rigidly repeats its motion, rolling it out alone measures the 3D volume its arm sweeps, forming a Skill Envelope (teal) whose overlap with the open drawer (red) predicts the collision before execution. (3) Exposed to the agent, C HECK detects blocking objects and F REE finds clear placement zones so short code repairs the scene (closing drawers 138/140 vs. 1/280 for the VLA) before the VLA runs in distribution, lifting 2-step and drawer-bearing 3–4 step success to match simulator reset. 
+
+Abstract —Composing frozen Vision-Language-Action (VLA) skills under an agentic planner promises scalable long-horizon manipulation without long-horizon demonstrations, yet strong atomic skills routinely fail at the seams between them even under a correct plan. Standard remedies either reset the robot’s pose or draft entry conditions in language, missing the physical cause we uncover through controlled causal interventions: even after re-homing, a frozen VLA rigidly retraces its habitual trajectory and collides with displaced scene residue, whether or not it can see it. To address this, we propose the Skill Envelope , a policy-measured 3D geometric precondition that captures the volume a frozen skill sweeps during its own successful executions. 
+
+> 1
+
+Jiajie Zhang and Changhao Chen are with the Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China 
+
+jiajiezhang@hkust-gz.edu.cn ,
+
+changhaochen@hkust-gz.edu.cn 
+
+> 2
+
+Yankai Xiang is with ShanghaiTech University, Shanghai, China 
+
+xiangyk2025@shanghaitech.edu.cn 
+
+> †
+
+These authors contributed equally to this work. 
+
+> ∗
+
+Corresponding author. 
+
+Grounded in the insight that the very rigidity making a frozen skill fragile at seams also makes its trajectory predictable in advance, we expose each envelope to an agent as two classical 3D tools (C HECK to detect blocking residue before invocation and FREE to locate safe placement regions), establishing a division of labor where VLAs execute in-distribution manipulation and code repairs out-of-distribution world states. On LIBERO-Goal with frozen π0.5, our zero-failure envelope predicts collisions at 0.946 AUROC (0.944 from one RGB-D view) and beats frontier VLMs on seam readiness (0.902 vs. 0.793); using it to guide skill ordering and code repair lifts success from 82.8% to 92.3% on two-step seams and from 29.7% to 93.8% on drawer-bearing 3– 4 step chains, matching privileged world reset. Together, these results show that reliable VLA composition hinges on measuring a policy’s physical workspace rather than guessing preconditions in language, offering a training-free geometric interface between high-level planners and frozen visuomotor skills. To test whether this interface holds beyond a fixed simulated kitchen and deter-ministic plans, Stage 2 will close the loop with autonomous LLM orchestration and synthesized free-object recovery, and evaluate arXiv:2611.32245v1 [cs.RO] 24 Nov 2026 cross-policy transfer on cluttered benchmarks and real hardware with online RGB-D sensing. 
+
+I. I NTRODUCTION 
+
+Everyday long-horizon manipulation cannot be solved by enumerating end-to-end demonstrations: even ten atomic skills yield 5,040 four-step permutations, each creating distinct intermediate world states. A natural alternative is agentic composition : pairing a high-level planner or LLM agent with a library of frozen manipulation or Vision-Language-Action (VLA) skills [1, 4, 13, 16]. Yet strong atomic skills routinely collapse at the transitions (or seams ) between them. Consider a two-step kitchen routine in LIBERO-Goal [5]: open the middle drawer, then push the plate to the front of the stove. A frozen π0.5 policy [9] executes both skills reliably in isolation. Chained directly, however, the second skill drops to 0/10; even after returning the robot arm to its home pose ( re-homing ), the standard fix, it remains at 0/10 because the arm runs into the open drawer (Fig. 1). Across 64 ordered skill pairs (640 handoff states), mean success drops from 98.0% in isolation to 14.2% under direct chaining, and recovers only to 82.8% after re-homing. The predecessor is 
+
+done , yet the successor is not ready .Recent work has recognized this compositional gap, but ad-dresses it through proxies rather than querying the policy itself. Skill-chaining frameworks address only the robot’s configura-tion while leaving scene objects untouched [15, 12, 7]. Agen-tic orchestrators prompt a language model to draft natural-language entry conditions at seams and invoke programmatic primitives when those conditions fail [13], or ask a vision-language model whether to advance or retry [10]. Others diagnose scene-residue failures only after the policy gets stuck, relying on learned recovery policies or fine-tuning [11]. What remains missing is a physical question: what exact precondition does a frozen policy require to succeed, and how can an agent check it beforehand? 
+
+We answer this question in two steps. First, by intervening on the exact same 640 re-homed handoff states, we causally separate visual observation shift from physical world shift. Contrary to the common assumption that seam failures stem primarily from visual distractors, rendering residual objects invisible in the camera feed barely helps, while physically removing them recovers most of what re-homing leaves and slashes collisions (Fig. 2a). Seam failure is therefore governed by physical, policy-specific hidden preconditions : a frozen VLA follows its habitual trajectory and collides with any residue standing in its way. Second, we turn this weakness into a measurement tool: the rigidity that makes a frozen skill fragile at seams is the very property that makes its trajectory measurable in advance. By running each skill in isolation, without human demonstrations or failure rollouts, we record the 3D volume swept by the arm, gripper, and carried object, yielding a Skill Envelope . Exposed to an agent as two classical 3D tools (C HECK and F REE ), the envelope establishes a clean division of labor: VLA policies execute in-distribution manipulation, classical code repairs out-of-distribution world states, and the boundary between them is drawn by policy measurement rather than language. 
+
+In this Stage-1 submission, we establish the empirical foundation and core mechanism of this framework: 1) Causal seam diagnosis (Sec. II): We decompose the compositional gap across body, view, and world states on the same 640 handoffs, showing that failures remaining after robot re-homing are dominated by policy-specific physical collisions rather than visual shift. 2) Skill Envelopes as agent tools (Sec. III): We in-troduce an O(n), zero-failure 3D envelope profiling method and formalize two geometric tools (C HECK 
+
+and F REE ) linking frozen VLAs with classical recovery code, supporting both pre-built primitives and future agent-synthesized skills. 3) Validation across sensing, language, and multi-step seams (Sec. IV): We show that zero-failure envelopes detect collisions even from one RGB-D view, generalize across unseen predecessors and categories, and beat frontier VLMs. Grounding why cleanup belongs to code over the VLA, envelope-guided planning and repair match privileged reset on two-skill seams and compound on 3–4 step chains. II. W HY SKILLS FAIL AT SEAMS : A C AUSAL DIAGNOSIS 
+
+To understand why high-performing atomic skills break when composed, we evaluate a frozen π0.5 policy on the 64 ordered two-skill pairs of LIBERO-Goal whose goals involve disjoint objects or parts (ten handoff states each, 640 in total). When predecessor A finishes and successor B starts, three factors simultaneously deviate from B’s training distribution: the robot’s body configuration, the visual appearance of the scene ( view ), and the physical presence of objects moved or articulated by A (world ). 
+
+Physical collision dominates visual shift. We disentangle all three factors via controlled interventions on the exact same 640 handoff states, each snapshotted in full and replayed with identical policy noise (Fig. 2a). Directly chaining A → B
+
+collapses success from 98.0% (isolated) to 14.2%. Standard 
+
+re-homing removes body shift and recovers success to 82.8%, leaving a 15.2-point residual gap. On these identical re-homed states, we next apply View Reset : hiding residual objects from the renderer while keeping physical colliders intact. Strikingly, View Reset improves success by only +1.7 points (95% CI [ −0.5, +3.9]) and leaves arm-residue collisions virtually unchanged (17.0% vs. 17.8%). In our running example (open middle drawer → push plate to stove), erasing the drawer from the image still causes the arm to run into it in 10 of 10 handoff states. In contrast, World Reset , which physically restores residual objects via state teleportation, recovers +10.0 points (92.8%) and drops collisions to 2.0%. While visual shift can affect isolated seams or narrower policies [14], in shared-workspace multi-step tasks with a strong pretrained VLA, re-homed seam failure is dominated by physical collision. 
+
+Policy-specific, not scene-generic. As shown in Fig. 2b, the exact same open middle drawer devastates five of the nine Fig. 2. Seam failures are primarily physical and policy-specific. (a) Comparing three interventions on the exact same transition and random seed of open middle drawer → push the plate (totals over 10 trials): returning the arm home ( Re-homed ) still collides 10 of 10 times; erasing the drawer from the policy’s camera input ( View Reset , inset) leaves the physical collision unchanged (0/10 success, 10 of 10 collisions); only physically closing the drawer ( World Reset )succeeds (10/10). (b) Top: on the same open drawer, push the plate ’s 3D envelope intersects the drawer (red, 0/10), whereas turn on the stove sweeps clear (no overlap, 10/10). Bottom: across all nine skills that can follow open middle drawer (dashed green line: World Reset 9–10/10), our 3D overlap cleanly separates the six colliding skills (breaking five) from the three clear ones, whereas frontier VLM Qwen4-Max flags nearly every skill as blocked across 7 held-out trials per pair, even the completely unaffected turn on the stove .
+
+downstream skills ( ≤ 4/10 success) while leaving three others nearly untouched ( ≥ 9/10). Whether a residue breaks a seam cannot be judged from scene state alone or inferred reliably from a task description: it depends on the 3D corridor a frozen policy’s arm actually traverses. 
+
+Done is not ready. Together, these results expose the mecha-nism behind the compositional gap. A frozen VLA encodes its 
+
+hidden preconditions in its weights: never having seen an open drawer along its approach path, it neither recognizes the obsta-cle nor replans around it, rigidly replaying its habitual sweep straight into contact. Yet that very rigidity points directly to the cure: because the arm traces a repeatable corridor, we can measure its swept volume in advance and flag obstructions before the skill is ever called. III. S KILL ENVELOPES AND DISTRIBUTION -A WARE 
+
+COMPOSITION 
+
+A. Measuring the Skill Envelope 
+
+Because a frozen skill k executes repeatable trajectories within its training distribution, we can measure its spatial requirements directly from the policy itself. We run k in isolation from its nominal start states and discard any un-successful episodes, keeping N successful rollouts (37 to 89 here, depending on the skill). At each control step, forward kinematics maps the robot’s links, gripper, and grasped object into a world-frame grid of 1 cm voxels, marking those their oriented bounding boxes pass through. Aggregating occupancy across the N executions yields the Skill Envelope , the empir-ical probability that skill k sweeps through voxel x:
+
+Ek(x) = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+1[x ∈ sweep i] ∈ [0 , 1] . (1) Profiling requires no human demonstrations, no failure roll-outs, and no symbolic domain model , and scales linearly as O(n) with the number of skills rather than O(n2) over skill pairs: an envelope describes the successor, whichever predecessor produced the residue. The same rollouts record each skill’s effect (what it displaces and where), so candidate skill orders can be scored pre-execution. 
+
+B. Geometric Tools and Readiness Scoring 
+
+Given a scene state s, its residue R(s) is the set of elements (objects or articulated parts) altered by prior skills, excluding those the successor is itself meant to manipulate. Element e
+
+occupies voxels Ve, and its overlap with the envelope of skill 
+
+k is 
+
+me(k, s ) = max 
+
+> x∈Ve
+
+Ek(x), oe(k, s ) = X
+
+> x∈Ve
+
+Ek(x), (2) where me is peak occupancy probability and oe is expected overlapping volume (in cm 3). We expose the measured en-velopes to the agent through two classical 3D tools (Fig. 3a):  
+
+> •
+
+CHECK (k, s ): computes the overlap me(k, s ) of every residue element with Ek. If me(k, s ) ≥ τ , C HECK flags the seam as blocked and returns the offending residue, ranked by overlap, to repair. We fixed τ =0 .05 in advance.  
+
+> •
+
+FREE (K, s ): given remaining downstream skills K, com-putes the complement of S 
+
+> j∈K
+
+{x : Ej (x) ≥ τ } to return Fig. 3. Geometric tools detect collisions from depth, outperform VLMs, and repair multi-step chains. (a) Real handoff ( push the plate → cheese in the bowl ): top, CHECK flags the displaced plate (red) intersecting the next skill’s 3D envelope Ek (teal); bottom, FREE marks a safe zone outside both Ek and the following skill’s envelope Ek+1 (indigo: wine to rack ) so moving the plate will not block the upcoming step (amber arrow illustrates planned free-object repair, Q2, Table II). (b) Pre-execution collision detection across 640 handoffs using only nominal-rollout overlap (no failure data): geometry detects collisions with both drawers (0.986) and free objects (0.847), and a single RGB-D camera nearly matches simulator state (0.944 vs. 0.946 AUROC). (c) Top: predicting whether the next skill will succeed on 429 handoffs, our envelope-based readiness model (0.902 AUROC) beats frontier VLMs prompted with images ( Img ) or BATON-style text rules ( Text ) by at least +0.110. Bottom: on 128 drawer-bearing 3–4 step chains, envelope-guided skill ordering and code repair ( Plan+Fix )lifts full-chain success from 29.7% ( Random+Home ) to 93.8% ( +64.1 pts), matching simulator World Reset (90.6%). 
+
+Algorithm 1 Envelope-guided agent loop 
+
+Require: goals G; skills with envelopes and effects; programs P; budget B
+
+1: C ← LLM( G); order ← arg max C
+
+Q 
+
+> k
+
+pk ▷ semantic constraints 2: for skill k in order, with K the skills still pending do 
+
+3: HOME ; X ← CHECK (k, s ) ▷ blocking residue 4: while X̸ = ∅ and fewer than B repairs do 
+
+5: execute u ∈ P the LLM picks for X, targets from F REE (K, s )
+
+6: HOME ; X ← CHECK (k, s ) ▷ verify 7: end while 
+
+8: execute the frozen VLA πk ▷ in distribution 9: end for 
+
+10: re-invoke skills whose goals a repair undid; verify G
+
+the nearest supported, collision-free poses for relocating blocking objects without obstructing future steps. 
+
+Zero-failure gating vs. readiness scoring. Crucially, both collision scoring ( P 
+
+> e
+
+oe, RQ1) and the C HECK repair gate (me ≥ τ , RQ4) are purely geometric and require zero failure data . To rank candidate skill orderings (RQ5), compare against VLMs (RQ3), and test generalization (RQ2), we map overlap 
+
+(me, o e) and residual re-homing pose error to a readiness prob-ability pk(s) via a lightweight shared calibration head: either a logistic scorer σ(w⊤ϕk(s)) (with displaced-element indi-cators) or a type-agnostic 5-parameter multiplicative hazard head pbase 
+
+Q 
+
+> e∈R(s)
+
+exp( −(am e +co e)) that saturates smoothly on unseen object categories. Removing geometry collapses generalization to chance (RQ2), confirming power comes from the zero-failure envelope rather than memorized pairs. 
+
+C. Distribution-Aware Division of Labor 
+
+Algorithm 1 integrates C HECK and F REE into an agentic loop: given goals G, the agent respects semantic constraints C
+
+while picking the highest-readiness order Q 
+
+> k
+
+pk. Before each 
+
+TABLE I GENERALIZATION (RQ2) AND TWO -STEP SEAM REPAIR (RQ4).                                         
+
+> (a) Generalization AUROC (RQ2): Envelope vs. baselines
+> Split (model, test set) Envelope Lookup No-Geom Unseen pred. (logistic, 640) 0.843 0.695 0.499 Single →multi-obj. (logistic) 0.892 0.766 –Unseen pred. (5-param, 640 fresh) 0.864 0.605 –Multi-object (5-param, 640 fresh) 0.971 0.790 –Cross-category, 0 drawers (5-param) 0.912 0.681 –
+> (b) Two-step seam repair success % (RQ4)
+> Condition All 640 Mid (90) Top (50) Re-homing only 82.8 38.9 42.0 Reactive post-contact repair 91.4 84.4 80.0 Proactive code repair (Ours) †92.3 95.6 94.0
+> Privileged World Reset (upper) 92.8 93.3 92.0
+> †CHECK -gated on 640 handoffs; proactive on 140 open-drawer states. 95% CIs: RQ2 [ +0.074, +0.215]; RQ3 [+0.054, +0.162]; RQ4 [ +8.3, +10.6]; RQ5 [ +53.9, +73.4].
+
+skill, if the seam is clear, the frozen VLA executes inside its training distribution; if residue intrudes into Ek, a short classical repair program from P (pre-built analytic primitives in Stage 1, extensible via F REE -guided code synthesis in Stage 2) restores the initiation set without changing policy weights, and any undone prior goal is re-invoked at the end. This architecture establishes a clean division of labor: VLA as execution policy in-distribution, code as recovery policy out-of-distribution, and measured 3D geometry, rather than language guessing, as the boundary between them. 
+
+Algorithm 1 defines the full agentic loop; to isolate the phys-ical mechanism in Stage 1, Sec. IV validates the geometric tools, depth sensing, VLMs, and deterministic planning/repair (RQ1–RQ5), leaving LLM orchestration, free-object synthesis, and transfer for Stage 2 (Sec. V). TABLE II REMAINING STAGE -2 OPEN QUESTIONS , DECISION RULES , AND WHAT A NEGATIVE OUTCOME WOULD WITHDRAW .                  
+
+> Question Experiment Decision rule If no
+> Q1. LLM-in-the-loop tool orchestration LLM backends run Algorithm 1 from text alone on original and new scenes, querying envelopes while preserving goals. Paired gain over the same agent without tools (CI lower >0). Tool formatting or goal reasoning, not the geometric check, limits orchestration.
+> Q2. Free-object code synthesis & accumulation For blocking free objects, the agent synthesizes relocation code via F REE ; verified programs join a library [6]. Synthesized programs clear the envelope in ≥0.90 of states. Code covers articulated parts; cluttered free objects need learned recovery.
+> Q3. Cross-benchmark, cross-policy & real robot Evaluate on dense-clutter BOSS [14], OpenVLA-OFT [3], and a real bimanual arm with online RGB-D depth checking. Body ≫world ≫view; repair recovers ≥80% of reset gain. Diagnosis depends on policy or layout; we report the dominant factor per class.
+
+IV. E XPERIMENTS 
+
+We evaluate Skill Envelopes on LIBERO-Goal with frozen 
+
+π0.5 across five questions: state and depth detection (RQ1), generalization (RQ2), VLMs (RQ3), two-step repair (RQ4), and multi-step chains (RQ5). All primary metrics were pre-registered; every gain has a 95% CI above zero. 
+
+A. Pre-Execution Detection from State and Depth (RQ1) 
+
+We first test whether zero-failure envelope overlap ( P 
+
+> e
+
+oe)predicts collisions across 640 handoffs pre-execution (Fig. 3b). From state, overlap reaches 0.946 AUROC (0.986 drawers, 0.847 free objects), showing the mechanism is not drawer-specific even though this sparse table makes free-object con-tacts rarely fatal (92.0% success across 500 states). Differ-encing one RGB-D frame against start depth (426 ms median) retains 0.944 AUROC and matches the state gate on 140/140 drawers. 
+
+B. Generalization Beyond Memorized Skill Pairs (RQ2) 
+
+To verify readiness stems from 3D geometry rather than memorized pairs, we test pk(s) on held-out splits against pair lookup and a no-geometry ablation (Table Ia). Envelopes beat lookup on every split; removing geometry drops unseen-predecessor AUROC to chance (0.499). On 640 fresh handoffs, the 5-parameter head (Sec. III-B) passes all six splits, reaching 0.912 AUROC cross-category with zero drawer training states. 
+
+C. Can Frontier VLMs Replace Measured Envelopes? (RQ3) 
+
+We benchmark three frontier VLMs (Qwen4-Max ,
+
+Qwen3.8-27B , GLM-5.3-Flash ) under BATON-style [13] text rules, image queries, and state diffs across 429 handoffs (Fig. 3c). Our model (0.902 AUROC) beats all nine VLM runs by at least +0.110 (best: Qwen4-Max ). VLMs lack policy specificity: within one predecessor, they drop to 0.666 ( Qwen4-Max ) and 0.500 ( GLM-5.3 ) vs. 0.834 ours (flagging turn on the stove , Fig. 2b), and trail on collisions (0.866 vs. 0.961). 
+
+D. Why Code Repairs, and Two-Step Seam Recovery (RQ4) 
+
+Prompting frozen π0.5 with two inverse phrasings to close a drawer succeeds only 1/280 (0.4%), whereas a concise slide primitive succeeds 138/140 (98.6%) on 140 fresh drawer handoffs (Fig. 1), grounding our VLA–code split. Gating this primitive with C HECK matches privileged World Reset via real actions (Table Ib; an earlier Cartesian-homing run got 90.5% vs. 92.7%). Rather than always closing drawers, CHECK catches all 70/70 failing states and skips 20 safe ones (always-repair ties at 92.3% with 20 extra actions). On 140 fresh drawer handoffs, proactive repair matches privileged reset and beats reactive repair (Table Ib). 
+
+E. Do Seam Gains Compound on Multi-Step Chains? (RQ5) 
+
+We test compounding on 256 3–4 goal chains requiring all goals at termination (Fig. 3c). On 128 drawer-bearing chains, envelope-guided ordering and repair adds +64.1 pts over random order with re-homing ( p=1 .5×10 −5, 16/16 positive), matching privileged reset. On four two-drawer sets, where no order avoids conflict, repair lifts success from 0/32 to 28/32. V. S TAGE -2 P LAN AND OPEN QUESTIONS 
+
+Stage 1 uses one frozen policy in a fixed kitchen, two drawer primitives, offline depth checks, and deterministic planning. Table II gives three falsifiable Stage-2 experiments and goals: Q1 tests autonomous LLM orchestration; Q2 tests FREE -guided free-object code synthesis; and Q3 tests cross-policy, cluttered-scene, and real-robot transfer with online RGB-D. VI. R ELATED WORK 
+
+Seam diagnosis and skill chaining. Recent studies show frozen skills fail at seams [14], yet remedies either address only robot pose while leaving residue intact [15, 12, 7], or, closest to ours, Wagh et al. [11] detect stalls post-hoc and apply learned recovery and fine-tuning. Because prior resets alter physics and visuals together, they conflate visual and physical shift. We first separate body, view, and world shifts on identical handoffs, showing physical collisions dominate and preventing them pre-execution without training. 
+
+Agentic orchestration of frozen VLAs. Agentic frameworks pair planners with frozen VLAs for contact-rich skills and analytic primitives for free space [16]. Closest, BATON [13] prompts an LLM to draft language entry conditions at seams and invokes analytic recovery when checks fail. We retain this split but replace language-guessed conditions with policy-measured 3D preconditions: an LLM reasons over task seman-tics, not a frozen policy’s swept corridor. 
+
+Geometric preconditions of visuomotor policies. Stage-Craft [8] uses a VLM over labeled single-task rollouts to clear obstructions pre-execution. Closest geometrically, DR-LfD [2] replays human demos to extract swept volumes for self-trained policies in symbolic TAMP. Skill Envelopes instead profile the 
+
+frozen VLA itself , with no demos, failures, or symbolic model, to resolve self-inflicted seam residue pre-execution. VII. C ONCLUSION 
+
+We showed that seam failures persisting after re-homing in composed frozen VLAs are dominated by physical, policy-specific collisions rather than visual shift. Turning a policy’s trajectory rigidity into an O(n), zero-failure Skill Envelope lets an agent flag blocking residue pre-execution and repair out-of-distribution states with concise code. Drawing the neural–code boundary via measurement rather than language gives a clean, training-free foundation for agentic manipulation. REFERENCES 
+
+[1] Michael Ahn et al. Do As I Can, Not As I Say: Grounding Language in Robotic Affordances. arXiv preprint arXiv:2204.01691 , 2022. [2] Yizhou Chen et al. Decompose and Reorganize: Planning with Primitives and Visuomotor Policies Learned from Demonstrations. arXiv preprint arXiv:2607.25397 , 2026. [3] Moo Jin Kim, Chelsea Finn, and Percy Liang. Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success. arXiv preprint arXiv:2502.19645 ,2025. [4] Jacky Liang et al. Code as Policies: Language Model Programs for Embodied Control. arXiv preprint arXiv:2209.07753 , 2022. [5] Bo Liu et al. LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning. arXiv preprint arXiv:2306.03310 , 2023. [6] Runyu Lu et al. ASPIRE: Agentic /Skills Discovery for Robotics. arXiv preprint arXiv:2607.00272 , 2026. [7] Yiwen Pang et al. AtomBridge: Agentic VLA Inference Plugin for Long-Horizon Tasks in Scientific Experiments. 
+
+arXiv preprint arXiv:2602.09430 , 2026. [8] Kartikay Milind Pangaonkar et al. StageCraft: Execution Aware Mitigation of Distractor and Obstruction Failures in VLA Models. arXiv preprint arXiv:2603.20659 , 2026. [9] Physical Intelligence et al. π0.5: a Vision-Language-Action Model with Open-World Generalization. arXiv preprint arXiv:2504.16054 , 2025. [10] Ke Rui et al. Diagnosing Semantic Handoff Failures in Agent-Orchestrated Vision-Language-Action Skill Com-position. arXiv preprint arXiv:2607.06256 , 2026. [11] Pranav Wagh et al. Diagnosing and Recovering from Observation-Space Shift at Long-Horizon Skill Seams. 
+
+arXiv preprint arXiv:2610.10810 , 2026. [12] Qingzi Wang et al. Causeway: Restoring Task Accessi-bility for Instruction Switching in VLA Policies. arXiv preprint arXiv:2609.30913 , 2026. [13] Bingxin Xu, Yuzhang Shang, and Emilio Ferrara. Don’t Drop the BATON: Long-Horizon Robot Manipulation via Agentic Subtask Exploration and Transition-aware Memory. arXiv preprint arXiv:2608.16889 , 2026. [14] Yue Yang et al. BOSS: Benchmark for Observation Space Shift in Long-Horizon Task. arXiv preprint arXiv:2502.15679 , 2025. [15] Xupeng Zhang et al. Exploring the Limits of Combina-torial Generalization in Embodied Manipulation. arXiv preprint arXiv:2610.15425 , 2026. [16] Yixian Zhang et al. Harness VLA: Steering Frozen VLAs into Reliable Manipulation Primitives via Memory-Guided Agents. arXiv preprint arXiv:2607.08448 , 2026.

@@ -1,0 +1,359 @@
+Title: EmbodyAgent: Post-Training Embodied VLM Agents via Distillation, SFT, and RL
+
+URL Source: https://arxiv.org/pdf/2611.26196v1
+
+Published Time: Fri, 20 Nov 2026 03:15:04 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# EmbodyAgent: Post-Training Embodied VLM Agents via Distillation, SFT, and RL 
+
+Wei Dai 1* Jinkun Liu 1* Jiayi Chen 2 Han Liu 1 Wenbo Ding 1† Shaolun Huang 1† 1Tsinghua University 2Xidian University  
+
+> {daiw26, liujk22, liuhan26}@mails.tsinghua.edu.cn chenjy26@stu.xidian.edu.cn {ding.wenbo, shaolun.huang}@sz.tsinghua.edu.cn
+
+Abstract 
+
+Vision-language models (VLMs) can act as closed-loop 
+
+robot-use agents (RUAs) by writing and executing con-trol code through tool interfaces[15, 46]. However, turn-ing an open-weight VLM into a high-performing embod-ied agent requires a complete post-training stack: out-of-the-box open VLMs fail completely at interactive tool con-tracts, strong frontier teachers are typically accessible only as black-box endpoints without exposed weights or token probabilities, and supervised imitation alone plateaus un-der rollout distribution shift. We present EmbodyAgent ,an end-to-end post-training framework for embodied VLM agents built around three tightly coupled pipelines: (1) a black-box data synthesis pipeline that queries a strong teacher model—requiring no teacher weights or internal signals—under a forced think-then-code contract and filters trajectories by task success predicates; (2) an SFT pipeline 
+
+that distills these explanation-and-program targets into an open-weight 9B VLM with both vision and language en-coders kept trainable; and (3) an online RL pipeline that optimizes student-generated episodes via group-relative ad-vantage using a runtime-error-penalized outcome reward. All three pipelines share a single primitive-free Python execution tool exposing only raw visual observation and seven-dimensional end-effector control, requiring no ac-tion decoder and no interface shift across stages. Under a strictly separated evaluation protocol on ten LIBERO Spa-tial tasks[26]—disjoint initial-state splits, greedy decoding at test time, and training-only safeguards—held-out success on 100 test states rises from 0/100 (base 9B VLM) to 14/100 (after SFT) and 84/100 (after RL), while RL training rollout success climbs from 8.4% to 87.7% and median model calls per test episode drop from 36 to 11. We further identify a self-reinforcing runtime-error mode induced by outcome-based RL on executable code, and establish the failure-category monitoring and sampling-side curation protocol that stabilizes training. 
+
+> *Equal contribution.
+> †Co-corresponding authors.
+
+1. Introduction 
+
+Closed-loop robot manipulation demands tight coordination between perception, planning, and control: an agent must decide how to structure control commands over time, when acquiring a fresh observation warrants another model turn, and how to recover when execution diverges from expec-tation. Recent robot-use agent (RUA) systems [15, 46, 7] demonstrate that vision-language models (VLMs) can sup-ply this coordination directly through tool use [49, 36, 30, 23, 6], extending the interaction paradigm of digital computer-use agents [1, 38] to physical environments. Yet equipping an open-weight VLM with reliable closed-loop manipulation capability is not a prompting problem—it is a full-pipeline post-training problem. Off-the-shelf open VLMs fail completely under interactive control contracts (0/100 held-out tasks for an untrained 9B model); fron-tier models capable of solving these tasks zero-shot are often accessible only as black-box endpoints without ex-posed weights, hidden states, or token logits; and super-vised fine-tuning (SFT) on teacher trajectories alone stalls early (14/100) because an imitated policy encounters its own execution histories, errors, and observations at test time rather than the teacher’s. To close this end-to-end gap, we build EmbodyAgent ,a complete post-training stack for embodied VLM agents organized as three successive pipelines: 1. Black-box strong-teacher data synthesis. A frontier VLM teacher interacts with the environment strictly as a black-box agent through the tool harness—requiring zero access to teacher weights or logits. Our synthe-sis pipeline enforces structured reasoning before ev-ery code output and filters episodes by environment success predicates, turning raw black-box rollouts into clean multimodal training trajectories. 2. Multimodal SFT distillation. An open-weight 9B VLM student is distilled on the synthesized explanation-and-program targets with both its vision encoder and language backbone kept trainable. This stage eliminates cold-start format failures and grounds visual observations into executable control loops and observation requests. 3. Online outcome-based RL. Starting from the SFT 1arXiv:2611.26196v1 [cs.RO] 19 Nov 2026 checkpoint with no teacher in the loop, group-relative reinforcement learning optimizes the student VLM di-rectly on its own sampled episodes using a runtime-error-penalized success reward. Online optimization overcomes imitation distribution shift and substan-tially improves both task success and multi-turn deci-sion efficiency. All three pipelines are unified by a single think-then-code policy representation over one Python execution tool (execute_python ). Unlike prior code-as-policy agents [24, 2] that compose a hand-engineered library of manipulation primitives, EmbodyAgent exposes only two raw runtime operations: env.observation() , which re-turns primary and wrist camera images together with robot proprioception, and env.action(a) , which advances one simulator control step with a ∈ [−1, 1]7. At every turn, the VLM is required to emit a chain-of-thought explanation planning loop structure, step batching, and observation tim-ing, followed by an executable Python program. Because the policy lives entirely within a standard multimodal text-and-code interface—with no external action decoder and no pre-defined primitives—black-box synthesis, SFT, and RL operate over the exact same output contract without any cross-stage representation shift. We validate the complete pipeline on ten LIBERO Spa-tial tasks [26] under a strictly separated evaluation protocol: per-task initial states are partitioned into disjoint train, val-idation, and test splits; Stage 1 synthesizes 100 successful episodes (1,475 targets) from the black-box teacher Astra Medium on train states; Stage 2 distills Qwen3.5-9B [41] across vision and language parameters; and Stage 3 runs temperature-one group-relative RL on train and validation states while evaluating greedily on all 100 held-out test states after every round under full episode budgets and zero test-time safeguards. Across this progression, held-out suc-cess advances from 0/100 (base 9B VLM) to 14/100 (af-ter SFT) and 84/100 (after 64 rounds of RL), while RL training rollout success rises from 8.4% to 87.7% with all ten tasks improving. Simultaneously, Stage 3 RL sharp-ens the VLM’s execution efficiency, compressing median model calls per test episode from 36 (SFT) to 11 and yield-ing a self-contained 9B VLM that executes locally with no ongoing reliance on the black-box teacher. Executing outcome-based RL over multi-turn code gen-eration also surfaces a failure mode absent from fixed-action policies: a self-reinforcing runtime-error loop in which ex-ecution tracebacks enter the multimodal history that subse-quent turns condition on, allowing error-prone patterns to amplify before recovery. We show that aggregate success rate lags this pathology and establish a per-round failure-category monitoring and sampling-only curation protocol that restores healthy optimization without altering evalua-tion. Our contributions are threefold: • A full-pipeline Embodied Agent post-training stack. An end-to-end framework integrating weight-free black-box teacher data synthesis, multimodal SFT distillation, and online outcome-based RL that trains an open-weight 9B VLM from 0/100 to 14/100 to 84/100 across ten LIBERO Spatial tasks. • A unified think-then-code interface across stages. A single primitive-free execution con-tract (env.observation() , env.action(a) )shared verbatim by synthesis, SFT, and RL, turning action composition and observation scheduling into explicit VLM learning targets with no action decoder or cross-stage mismatch. • Diagnosis and stabilization of executable-code RL. 
+
+Identification of a self-reinforcing runtime-error loop induced by outcome optimization over execution feed-back, paired with failure-category monitoring and training-side safeguards that stabilize RL without con-taminating test evaluation. 
+
+2. Related Work 
+
+Robot-use agents and code-as-policy. Code as Policies[24] established that language models can close the control loop on robots by emitting programs over perception and actuation APIs, followed by SayCan[2], Inner Monologue[14], ProgPrompt[37], and VoxPoser[13] grounding code in affordances, feedback, structured prompts, and 3D value maps. Executable code also strengthens general language agents[39], and autonomous coding-agent loops[16, 42] have extended into physical manipulation[21] under the umbrella of the robot-use agent (RUA)—a VLM operating a robot through a tool and feedback harness[15, 46, 7]. Recent harness works equip frozen frontier VLMs with perception, motion, and geometric tooling[30, 23, 6, 11, 49, 36], where generated code selects which pre-built routine to invoke. Concurrent post-training efforts explore complementary directions: CaPtain[10] post-trains an open model over guarded motion primitives using per-request credit from a privileged simulator critic, whereas EmbodiedEvo[21] evolves external skills and lessons in context without updating model weights. In contrast, EmbodyAgent targets complete, weight-updating post-training of an open-weight VLM over raw observations and seven-dimensional control alone: it requires no motion-primitive library, no teacher weights at data synthesis, and no privileged simulator critic during RL. 
+
+Reasoning and distillation for interactive agents. 
+
+Chain-of-thought prompting[40], outcome-filtered 2bootstrapping[48], and outcome-based reinforcement[8] demonstrate the value of explicit reasoning traces, while interleaved reasoning and tool calling[44, 32] and reasoning-trace distillation[12] transfer interactive problem-solving from strong teachers into smaller open models. In embodied learning, Embodied Chain-of-Thought[47] and CoT-VLA[51] pair reasoning with action-decoder policies ahead of single actions or short chunks. Under EmbodyAgent’s think-then-code contract, the VLM’s explanation plans an entire multi-step program and its observation requests, allowing reasoning, control composition, and observation scheduling to be distilled together in SFT and refined together in RL. 
+
+VLM-based embodied policies and VLAs. A large body of work adapts VLMs to manipulation via continuous or to-kenized action decoders, including PaLM-E[9], RT-1 and RT-2[4, 5], OpenVLA[17], Octo[29], π0[3], RDT-1B[27], and RoboFlamingo[22] on LIBERO, with SimpleVLA-RL[20] adding RL and Harness VLA[50] wrapping a frozen VLA inside an agent harness. Rather than attaching a sepa-rate action head, EmbodyAgent post-trains a VLM directly inside its native multimodal text-and-code interface, where one model turn can express loops, conditionals, and explicit observation requests. The two paradigms are orthogonal— a post-trained code-writing VLM agent could invoke an action-decoder VLA as a subroutine—and our focus here is establishing the full-pipeline post-training recipe (black-box synthesis, SFT, and RL) for executable VLM policies. 
+
+Outcome-based RL for executable policies. PPO[33], value-free group-relative optimization in GRPO[34], and asymmetric clipping in DAPO[45] provide the algorith-mic basis for outcome-driven post-training of reasoning models[8] without process supervision[25], while execution feedback has been used to optimize code generation[19] and agent reflection[35]. Applying outcome-based RL to multi-turn embodied code generation exposes a distinct instabil-ity: runtime-error feedback enters the context that subse-quent turns condition on, creating a self-reinforcing error basin that we diagnose via failure-category monitoring and resolve with training-side curation. 
+
+3. The EmbodyAgent Post-Training Pipeline 
+
+Figure 1 illustrates the complete EmbodyAgent post-training stack: a unified executable interface shared verba-tim across three successive pipelines—Stage 1 black-box teacher data synthesis, Stage 2 multimodal SFT, and Stage 3 online RL (detailed in Section 4). Each pipeline consumes the preceding stage’s outputs without altering the model’s observation, reasoning, or action schema. 
+
+3.1. Shared think-then-code policy interface 
+
+We formulate closed-loop manipulation as a multi-turn par-tially observed interaction conditioned on a language in-struction g. At model turn t, the multimodal context ht con-tains g, previous assistant turns, and environment execution feedback, including any explicitly requested images. Rather than emitting raw action vectors, the VLM policy outputs a public chain-of-thought explanation et followed by an exe-cutable Python program ct :
+
+πθ (et , ct | ht ) = πθ (et | ht )πθ (ct | ht , et ).
+
+A persistent Python runtime executes ct inside a mini-mal environment interface exposing only two operations: 
+
+env.observation() , which returns primary and wrist camera images together with robot proprioception, and 
+
+env.action(a) , which steps the existing simulator con-troller with a seven-dimensional end-effector command a ∈
+
+[−1, 1]7 (translation, rotation, and gripper). Unlike code-as-policy frameworks that select from a pre-built library of ma-nipulation primitives, this interface provides no primitives: the VLM synthesizes its own control loops, conditionals, and action batches directly over raw sensing and actuation. Executing ct returns feedback ft —stdout, exceptions, the last expression’s value, and any requested images—and ad-vances the history: 
+
+ht+1 = ht ∥ (et , ct , ft ).
+
+Because visual observations enter the context only when ct
+
+invokes env.observation() , a single program can ex-ecute multiple control steps before consulting the VLM again. This keeps the entire policy inside a standard mul-timodal text-and-code interface with no external action de-coder, making both action composition and observation scheduling directly trainable across synthesis, SFT, and RL. 
+
+3.2. Stage 1: Black-box teacher data synthesis 
+
+The goal of Stage 1 is to synthesize high-quality multimodal training trajectories from a strong teacher VLM without re-quiring access to teacher weights, activations, or token log-probabilities. We deploy Astra Medium (a frontier VLM at medium reasoning effort) strictly as a black-box agent operating through the execute_python harness on official pre-generated LIBERO initial states restricted to the train-ing split. Left unconstrained, the teacher defaults to emitting bare code blocks without explicit planning. The synthesis har-ness therefore enforces the think-then-code contract at ev-ery turn: any response omitting the explanation terminates the episode immediately as a format failure and is dis-carded. Completed episodes are retained if and only if the environment’s BDDL success predicate passes. Across 1,620 synthesis attempts (32% task-averaged acceptance 3=
+
+ONE OUTPUT CONTRACT  
+
+> turn t
+
+think:  inspect the camera views and 
+
+robot pose,  bowl, plate, ramekin. 
+
+o = env.observation() 
+
+print(o[  ’robot_state ’ ]) 
+
+> execution feedback
+
+stdout, return value, 
+
+requested images   
+
+> turn t+1
+
+think:  the gripper is near the objects, 
+
+lower partway for wrist alignment. 
+
+drive  ([-0.06,0.16,1.04],n=30) 
+
+explanation  et program  ct
+
+env.observation()  → images, proprioception 
+
+env.action( a
+
+∈ [− 1, 1]7) → one control step 
+
+ht+ 1 = ht ||  (et , ct , ft ) 
+
+> each turn appends explanation, program, feedback
+> primary wrist
+
+primitive-free 
+
+STAGE 1: Black-box teacher data synthesis  forced CoT: explanation precedes every program         
+
+> official init states (LIBERO)
+> think: bowl left of the plate;
+> lower from above, grip, lift.
+> while far (grip, tgt) >0.02:
+> grip =env.action (step)
+> GPT-6 Astra Teacher
+> execute program in simulator
+
+success filter 
+
+100 ep.  / 1,475  targets 
+
+STAGE 2: Multimodal SFT 
+
+1,475  think-then-code targets 
+
+> explanation to program
+
+Qwen3.5-9B student 
+
+> vision + language
+
+assistant-token loss 
+
+> on explanation and code
+
+distilled policy 
+
+14/100  held-out 
+
+STAGE 3: Online RL 
+
+samples 
+
+32 groups  x 8 rollouts 
+
+shaped success reward 
+
+> group-relative advantage
+
+policy update 
+
+> asymmetric clip
+
+84/100  held-out                                
+
+> deployed policy
+> SUCCESS ROLLOUT DEPLOYED POLICY, ROUND 64 (PRIMARY |WRIST)
+> start grasp lift lower place
+> inspect the camera views and robot
+> pose: bowl, plate, ramekin the bowl is directly beneath the
+> gripper —close here and lift lifted off its spot, hanging
+> tilted —carry toward the plate above the plate’s location, lower
+> edge close to the rim release the gripper and lift away
+> so the bowl can settle
+> o=env.observation() env.action(...,1) x12 drive([0.055,0.16,0.97], g=1) env.action(...,-1) x12 env: success =true
+> distilled checkpoint
+
+=o env.observation() 
+
+> 1,475 think-then-code targets
+> next round
+
+Figure 1: The EmbodyAgent full-pipeline post-training framework; the photographs are LIBERO Spatial frames. Left: the single output contract shared verbatim across all stages—at every turn the VLM emits a forced explanation et followed by an executable program ct over two raw runtime operations, shown for two turns of the episode below. Center: the three-stage pipeline. Stage 1 (black-box data synthesis) queries Astra Medium on training-split initial states without accessing teacher weights and filters successful think-then-code episodes into 1,475 targets; Stage 2 (multimodal SFT) distills these targets into an open-weight 9B VLM; Stage 3 (online RL) optimizes the student’s own rollouts via group-relative outcome credit. 
+
+Bottom: a successful held-out episode from the post-trained 9B VLM (RL round 64), pairing each frame with its verbatim explanation and program through grasp, lift, lower, and place. rate over valid attempts), Stage 1 collects 100 validated episodes—ten per task across the ten LIBERO Spatial tasks—and exports them into 1,475 multimodal assistant-response targets. Each target pairs the full interaction his-tory with the teacher’s explanation and executable program, providing clean supervision for control synthesis, format-ting, and observation timing purely from black-box interac-tion. 
+
+3.3. Stage 2: Multimodal supervised fine-tuning 
+
+An out-of-the-box open-weight 9B VLM fails completely on the interactive contract (0/100 held-out states), making supervised cold-start distillation essential before online ex-ploration. Let Yi denote the explanation, code, and output-format tokens in synthesized target i. Stage 2 optimizes the standard autoregressive cross-entropy objective over assis-tant outputs: 
+
+LSFT = − 1
+
+∑i |Yi| ∑
+
+i
+
+# ∑
+
+j∈Yi
+
+log πθ (yi j | hi, yi,< j),
+
+while masking prompt history, visual inputs, and tool feedback from the loss. Supervision preserves the exact explanation-then-program generation order enforced during Stage 1. Crucially, both the vision encoder and the lan-guage parameters of the 9B VLM are kept trainable so vi-sual grounding and program synthesis co-adapt. After ten epochs of SFT, we verify on held-out states that the check-point produces format-valid outputs and well-formed tool calls, and advance it directly into Stage 3 RL under the un-changed contract. 44. Stage 3: Outcome-Based Reinforcement Learning 
+
+Stage 1 black-box synthesis and Stage 2 SFT equip the 9B VLM with format compliance and initial closed-loop ma-nipulation skill (0/100 → 14/100). However, SFT super-vises only trajectories generated by the teacher, whereas at rollout time the student VLM must condition on its own generated programs, execution feedback, and result-ing visual observations. Stage 3 closes this gap through online outcome-based reinforcement learning on student-generated episodes, requiring no teacher supervision, no learned critic, and no change to the think-then-code inter-face. 
+
+4.1. Group-relative outcome optimization 
+
+Training proceeds in rounds. In each round, the current VLM policy samples groups of G = 8 episodes on ini-tial states drawn exclusively from the training and valida-tion splits of our state manifest—never from held-out test states. Each episode receives a terminal outcome reward built around the environment’s BDDL success predicate, where ki counts the cells in episode i whose execution raised a runtime error: 
+
+Ri =
+
+
+
+1.0 − 0.05 ki, success (BDDL predicate passes) 
+
+−0.05 ki, other failure (floor −1.0) 
+
+−0.2, failure ending within 50 simulator steps. This shaping preserves strict outcome ordering: every suc-cess scores at least 0 .8 and thus outscores every failure (≤ 0), error-heavy failures rank below clean attempts, and the fast-fail floor prevents the policy from learning to quit early. The reward function remains fixed throughout train-ing. Within each group, episode i receives the group-relative advantage 
+
+Ai = Ri − Rs(R) + ε ,
+
+where R and s(R) are the group mean and sample stan-dard deviation and ε is a small constant. Groups whose 
+
+G = 8 episodes share identical binary outcomes carry no success contrast and are discarded; sampling continues un-til 32 informative groups are gathered (capped at 160 at-tempted groups per round). This filtering acts as an im-plicit curriculum, concentrating gradient updates on initial states where the current policy is stochastic. Episodes fail-ing due to infrastructure errors unrelated to the policy are resampled (up to three times) and excluded from reward statistics. Following GRPO[34], our trainer adapts policy-loss primitives from SimpleVLA-RL[20] to variable-length multimodal histories and multi-turn Python responses. The episode advantage Ai is broadcast across all newly generated explanation and program tokens of episode i
+
+(with preceding history and tool feedback masked). Using token importance ratio ρi j = πθ (yi j | hi j )/πold (yi j | hi j ), we optimize the DAPO-style[45] asymmetric clipped surrogate objective: 
+
+LPG = −Ei, j[min (ρi j Ai, clip (ρi j , 1 − εlo , 1 + εhi )Ai)] ,
+
+with (εlo , εhi ) = ( 0.2, 0.28 ). Rollouts are sampled at tem-perature one from the full vocabulary, storing exact sam-pled tokens and old-policy log-probabilities for update con-sistency. Optimization uses AdamW[28] across all VLM parameters—including the vision encoder—under ZeRO-3 sharding[31] on sixteen PPU accelerators with a constant learning rate of 2 × 10 −6 and no KL penalty (format vio-lations terminate rollouts in failure and are disciplined di-rectly by the reward). Rollout and evaluation inference is served via vLLM[18], and flash-linear-attention kernels ac-celerate the student’s gated-delta-rule layers[43] during up-dates. 
+
+4.2. Sampling-side safeguards for executable RL 
+
+Online sampling with an executable Python runtime ex-poses rollout pathologies absent in static teacher demonstra-tions. We enforce three safeguards strictly during training sampling: (i) Unparseable cells are resampled. At temper-ature one, a cell that fails to parse or compile is resampled up to twice before consuming simulator steps; runtime er-rors are deliberately retained because their tracebacks are genuine policy feedback. (ii) Error loops are truncated. 
+
+Once an episode accumulates four cells ending in runtime errors, it is terminated early so prolonged traceback–retry loops do not exhaust group sampling budget while the re-ward’s per-error penalty already scores them below honest attempts. (iii) Pathological rollouts are replaced. Failed rollouts whose accumulated context exceeds one million tokens dominate host memory while contributing few in-formative tokens; they are rejected and resampled (up to three replacements per group), with group advantages re-computed over the final composition. All three safeguards were active from round 1 and ap-ply only during training rollouts. Test evaluation decodes greedily, resamples nothing, truncates nothing, and runs ev-ery episode to its full budget or voluntary termination. 
+
+5. Experiments 
+
+5.1. Experimental setup and strict evaluation sep-aration 
+
+All experiments evaluate the ten LIBERO Spatial tasks[26] initialized from official pre-generated LIBERO states under a fixed SHA-256 manifest. Per task, states are partitioned into disjoint sets of 30 training, 10 validation, and 10 test states. Stage 1 black-box teacher synthesis samples only from the training split, and Stage 3 RL samples only from 5Table 1: Per-task success on the held-out states (ten per task), greedy decoding, identical protocol for both check-points (RL at round 64).                         
+
+> Task SFT RL 02/10 10/10 12/10 9/10 22/10 9/10 32/10 9/10 40/10 4/10 50/10 9/10 60/10 9/10 71/10 8/10 84/10 8/10 91/10 9/10 Total 14/100 84/100
+
+the training and validation splits; the 100 held-out test states (ten per task) never enter any training or synthesis stage and are evaluated after every RL round. Training and evaluation regimes are strictly separated. Stage 3 RL samples at temperature one with the sampling-side safeguards of Section 4; every test evaluation uses greedy decoding, disables all resampling, truncation, and replacement safeguards, and grants the full episode budget (2,000 simulator steps, 150 model calls, 600-second code-block timeout) or voluntary termination. Task success is judged solely by the environment’s BDDL predicate, and per-episode failure categories are logged on every test eval-uation. 
+
+5.2. Stage-by-stage post-training progression 
+
+Table 1 and Figures 2–4 quantify what each stage of the post-training pipeline contributes on the identical Qwen3.5-9B[41] backbone: • Base 9B VLM (0/100): Given the exact same tool schema and prompt without post-training, Qwen3.5-9B fails on all 100 held-out states because every episode terminates in a format-invalid output. • After Stage 2 SFT (14/100): Distilling the 1,475 tar-gets synthesized by the black-box teacher resolves for-mat failure (only five of 86 failures end in a Python parse or runtime error; 85 exhaust the simulator-step budget) and establishes initial closed-loop manipula-tion. • After Stage 3 RL (84/100): Within 64 rounds of on-line outcome-based RL, held-out test success climbs by +70 points to 84/100, while temperature-one train-ing rollout success rises from 8.4% to 87.7%. The close tracking between training rollout success and greedy held-out success confirms genuine generaliza-tion beyond the training and validation initial states. All ten tasks improve (Table 1, Figure 3): nine reach 8–10/10, while task 4 rises from 0/10 to 4/10. 
+
+5.3. Learned observation scheduling and execu-tion efficiency 
+
+The shared think-then-code representation makes the VLM’s observation scheduling directly measurable across stages. In Stage 1 synthesized trajectories, each teacher turn pairs a 38-word explanation with a program of median three lines (mean 3.8, maximum 17), 99.5% of programs call 
+
+env.observation() , and an episode averages 14.8 model turns (6–25). After Stage 2 SFT, the student VLM is sub-stantially more verbose in interaction frequency, emitting a median of 36 model calls per test episode (mean 35.2). Stage 3 RL compresses this back without any explicit turn-count penalty: by round 64, the post-trained 9B VLM emits a median of 11 calls per test episode under identical bud-gets, batching longer control loops per turn while achieving 84/100 success (and 13 of its 16 remaining failures exhaust the 150-call budget rather than simulator steps). Consequently, Stage 3 RL improves capability and per-episode execution time together (Figure 4): the post-trained 9B VLM completes a successful test episode in a me-dian of 136 s wall-clock including simulation (versus 117 s for SFT). Meanwhile, the black-box teacher’s 1,887 s of frontier-API inference per episode (72.8 s per call at the me-dian across 1,620 attempts) is incurred solely as a one-time Stage 1 offline synthesis cost, leaving a self-contained open-weight VLM that operates locally with no dependency on teacher weights or API endpoints. 
+
+5.4. Self-reinforcing runtime-error dynamics in Stage 3 
+
+Failure-category monitoring during Stage 3 revealed an op-timization pathology specific to outcome-based RL on exe-cutable outputs. Through rounds 11–20, held-out runtime-error episodes stay below five per 100. Beginning at round 21, runtime errors surge and plateau at 63–69 per 100 across rounds 24–32, pulling held-out success down from 40 to 34 even as gradient updates continue. Inspection of episode transcripts reveals the feedback loop: a failing cell leaves its error traceback in history ht , subsequent turns condition on that traceback, and trajectories that still pass the success check despite repeated error–retry cycles re-ceive positive group-relative advantage—reinforcing error-generating contexts and code patterns. Crucially, aggregate success masked this dynamics dur-ing its onset, continuing to climb through rounds 21–26 even as runtime errors saturated the failure mix; only per-round failure-category logging exposed it. Unlike an ear-lier transient spike at rounds 6–7 that dissipated immedi-ately, the round-21 wave persisted across more than ten rounds before the reward’s per-error-cell penalty ( −0.05 ki)60 10 20 30 40 50 60 70        
+
+> RL round
+> 020 40 60 80 100
+> Success rate (%)
+> Astra Medium teacher: 32%
+> Per-round evaluation on 100 held-out states
+> Held-out test (greedy) Training rollouts (temp 1.0) 010 20 30 40 50 60 70
+> RL round
+> 010 20 30 40 50
+> Median model calls / episode  error-loop inflation calls compress toward the teacher's ~10
+> Median model calls per test episode
+
+Figure 2: Stage 3 RL progression across ten LIBERO Spatial tasks. Left: greedy success on the 100 held-out test states after each round alongside temperature-one training rollout success (round 0 is the Stage 2 SFT checkpoint). The purple dashed line indicates the black-box Astra Medium teacher’s collection acceptance rate (32%, validated episodes over valid attempts, averaged over tasks); under RL, student rollout success rises from 8.4% to 87.7%, surpassing the teacher’s collection rate. The shaded band marks rounds 21–33, where runtime-error episodes dominated failures. Right: median model calls per test episode, inflating briefly during the error wave (rounds 31–33) and compressing to 10–14 calls once the wave subsides. 0 10 20 30 40 50 64  
+
+> RL round
+> 0123456789
+> Task
+> SFT RL rounds
+> 0510
+> Successes / 10 states
+
+Figure 3: Per-task held-out success across Stage 3 RL rounds (column 0 is the Stage 2 SFT checkpoint). Every task improves over SFT, with nine of ten tasks reaching 8– 10/10; task 4 remains the hardest throughout, matching the task that also resisted Stage 1 black-box synthesis longest. and sampling-side safeguards (truncating four-error loops and replacing million-token rollouts) drove it back down— dropping runtime errors from 69 to 14 per 100 by round 64, precisely as held-out success accelerated from the mid-30s to 84/100. 
+
+6. Discussion and Limitations 
+
+EmbodyAgent demonstrates that a complete post-training stack—black-box strong-teacher data synthesis, multi-modal SFT, and online outcome-based RL—can turn an 0 20 40 60 80 100  
+
+> Held-out success (/ 100 states)
+> 100 300 1,000 3,000
+> Wall-clock per episode (s, log scale)
+> Astra Medium teacher: 1,887 s frontier-API / episode
+> SFT RL
+> +70 successes at +19 s base Qwen3.5-9B: 0/100 (format-invalid outputs) 14× less
+> inference time
+
+Figure 4: Stage-by-stage progression on Qwen3.5-9B (suc-cess versus median per-episode wall-clock time). Out of the box, the base 9B VLM solves 0/100 held-out states due to format failure. Stage 2 SFT lifts the same VLM to 14/100 (117 s/episode), and Stage 3 RL advances it to 84/100 (136 s/episode, simulation included). The dashed line marks the black-box teacher’s 1,887 s of frontier-API inference per episode, paid once offline during Stage 1 syn-thesis across 1,620 attempts. open-weight 9B VLM that initially solves 0/100 tasks into a reliable closed-loop embodied agent achieving 84/100. Anchoring all three stages on a single primitive-free think-
+
+7then-code interface keeps the VLM inside its native mul-timodal text-and-code space throughout: Stage 1 synthe-sizes grounded trajectories from a black-box teacher with-out needing teacher weights or logits; Stage 2 adapts both vision and language parameters to resolve cold-start con-tract failure; and Stage 3 optimizes the student VLM di-rectly on its own rollouts, overcoming imitation distribution shift while compressing decision frequency by over 3 ×.Stage 3 also highlights a structural lesson for post-training executable VLM agents with outcome rewards: be-cause runtime tracebacks re-enter the context, outcome-based RL contains a positive feedback loop on the policy’s own runtime errors. Aggregate success rate is a lagging in-dicator of this pathology—it continued rising for six rounds while runtime errors climbed toward saturation. Per-round failure-category monitoring is therefore essential alongside success tracking; paired with sampling-side safeguards (cell resampling, loop truncation, and memory-outlier replace-ment) and a small per-error penalty in the reward, optimiza-tion recovers cleanly from the error basin without altering reward definitions or test-time evaluation. Several limitations define the scope for future work. Our evaluation covers one simulation suite (ten LIBERO Spa-tial tasks) with a 100-episode synthesized corpus and a 9B VLM student; each training stage reflects a single run with-out multi-seed replication, giving the headline score on 100 test states a binomial standard error of ±3.7 points (and ten states per task). Task 4 remains challenging at 4/10, show-ing that outcome-based RL over sparse rewards does not eliminate per-task difficulty ceilings. Moreover, fixing 100 evaluation states enables exact round-by-round comparabil-ity at the cost of coarse initial-state coverage. Extending this black-box synthesis → SFT → RL post-training pipeline to broader manipulation suites, real-robot execution, and controlled ablations isolating each stage and representation component (explanations, program structure, and observa-tion scheduling) remains natural next work. 
+
+7. Conclusion 
+
+We introduced EmbodyAgent, a full-pipeline post-training framework for embodied VLM agents comprising weight-free black-box teacher data synthesis, multimodal supervised fine-tuning, and group-relative outcome reinforcement learning over one unified think-then-code Python interface. On ten LIBERO Spatial tasks under a strictly separated evaluation protocol, the pipeline elevates an open-weight Qwen3.5-9B VLM from 0/100 (base) to 14/100 (SFT) and 84/100 (RL), while cutting median test model calls from 36 to 11 and removing any ongoing dependence on the black-box teacher. We further diagnosed a self-reinforcing runtime-error loop unique to outcome optimization over executable feedback and provided the monitoring and sampling-side curation protocol that keeps RL stable. These results establish end-to-end post-training over executable programs as a coherent and effective recipe for building self-improving embodied VLM agents. 
+
+References 
+
+[1] Saaket Agashe, Kyle Wong, Vincent Tu, et al. Agent S2: A compositional generalist-specialist framework for computer use agents. 
+
+https://arxiv.org/abs/2504.00906 , 2025. [2] Michael Ahn, Anthony Brohan, Noah Brown, et al. Do as i can, not as i say: Grounding language in robotic affordances. In CoRL , 2022. [3] Kevin Black, Noah Brown, Danny Driess, et al. π0: A vision-language-action flow model for general robot control. https://arxiv.org/abs/2410.24164 ,2024. [4] Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-1: Robotics transformer for real-world control at scale. In RSS , 2023. [5] Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. In CoRL , 2023. [6] Yanzhe Chen, Zechen Bai, Zhijun Cao, et al. Show-Harness: Just a VLM agent can play robots. 
+
+https://arxiv.org/abs/2609.10522 , 2026. [7] Zhaoyang Chu, Earl T. Barr, Claire Le Goues, et al. OpenRUA: Robot-use agents are zero-shot visuomotor policies. 
+
+https://arxiv.org/abs/2610.02459 , 2026. [8] DeepSeek-AI et al. DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning. https://arxiv.org/abs/2501.12948 ,2025. [9] Danny Driess, Fei Xia, Mehdi S. M. Sajjadi, et al. PaLM-E: An embodied multimodal language model. In ICML , 2023. [10] Yijia Fan, Xilin He, Yilei Jiang, Dongming Wu, Jiaxu Wang, and Xiangyu Yue. CaPtain: A pipeline for post-training code-as-policy robot agents. 
+
+https://arxiv.org/abs/2610.40799 , 2026. [11] Meng-Hao Guo, Zhe-Han Mo, Jia-Jun Wang, et al. Transferring the intelligence of VLMs to robotic control. https://arxiv.org/abs/2609.22966 ,2026. 8[12] Cheng-Yu Hsieh, Chun-Liang Li, Chih-Kuan Yeh, et al. Distilling step-by-step! outperforming larger language models with less training data and smaller model sizes. In Findings of ACL , 2023. [13] Wenlong Huang, Chen Wang, Ruohan Zhang, and Li Fei-Fei. VoxPoser: Composable 3D value maps for robotic manipulation with language models. In 
+
+CoRL , 2023. [14] Wenlong Huang, Fei Xia, Ted Xiao, et al. Inner monologue: Embodied reasoning through planning with language models. In CoRL , 2022. [15] Phillip Isola. Robot-use agents. 
+
+https://web.mit.edu/phillipi/www/writing/ robot-use-agents.html , 2026. [16] Carlos E. Jimenez, John Yang, Alexander Wettig, et al. SWE-bench: Can language models resolve real-world GitHub issues? In ICLR , 2024. [17] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, et al. Openvla: An open-source vision-language-action model. In CoRL , 2024. [18] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, et al. Efficient memory management for large language model serving with PagedAttention. In SOSP , 2023. [19] Hung Le, Yue Wang, et al. CodeRL: Mastering code generation through pretrained models and deep reinforcement learning. In NeurIPS , 2022. [20] Haozhan Li, Yuxin Zuo, Jiale Yu, et al. SimpleVLA-RL: Scaling VLA training via reinforcement learning. 
+
+https://arxiv.org/abs/2509.09674 , 2025. RL infrastructure adapted for this work. [21] Wenyi Li, Yizhe Chi, Youjie Zheng, et al. EmbodiedEvo: Self-evolving coding agent for physical intelligence. 
+
+https://arxiv.org/abs/2610.18867 , 2026. [22] Xinghang Li, Minghuan Liu, Hanbo Zhang, et al. Vision-language foundation models as effective robot imitators. In CoRL , 2023. [23] Zexi Li, Yehang Zhang, Wenqian Li, et al. Robo-Harness K1: Harnessing robot-use agents via perception augmentation. 
+
+https://arxiv.org/abs/2609.29389 , 2026. [24] Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and Andy Zeng. Code as policies: Language model programs for embodied control. In ICRA , 2023. [25] Hunter Lightman, Szymon Sidor, et al. Let’s verify step by step. In ICLR , 2024. [26] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. LIBERO: Benchmarking knowledge transfer for lifelong robot learning. In NeurIPS , 2023. [27] Songming Liu, Lingxuan Wu, Bangguo Li, et al. RDT-1B: A diffusion foundation model for bimanual manipulation. 
+
+https://arxiv.org/abs/2410.07864 , 2024. [28] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In ICLR , 2019. [29] Octo Team et al. Octo: An open-source generalist robot policy. In RSS , 2024. [30] Bince Qu, Wei Chen, and Bo Zhang. RoboHarness: A simple harness outperforms VLA and world action models. https://arxiv.org/abs/2610.14018 ,2026. [31] Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yuxiong He. ZeRO: Memory optimizations toward training trillion parameter models. In SC ,2020. [32] Timo Schick, Jane Dwivedi-Yu, et al. Toolformer: Language models can teach themselves to use tools. In NeurIPS , 2023. [33] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. 
+
+https://arxiv.org/abs/1707.06347 , 2017. [34] Zhihong Shao, Peiyi Wang, Qihao Zhu, et al. DeepSeekMath: Pushing the limits of mathematical reasoning in open language models. 
+
+https://arxiv.org/abs/2402.03300 , 2024. Introduces group-relative policy optimization. [35] Noah Shinn, Federico Cassano, Edward Berman, et al. Reflexion: Language agents with verbal reinforcement learning. In NeurIPS , 2023. [36] Ruiyang Si, Jianxin Bi, Shunyu Yang, et al. Fewer tokens, better action: GPT-6 Astra robot agents with 14% higher success rate but 65% fewer tokens. 
+
+https://arxiv.org/abs/2610.01939 , 2026. [37] Ishika Singh, Valts Blukis, Arsalan Mousavian, et al. ProgPrompt: Generating situated robot task plans using large language models. In ICRA , 2023. 9[38] Haoming Wang, Haoyang Zou, Huatong Song, et al. UI-TARS-2 technical report: Advancing GUI agent with multi-turn reinforcement learning. 
+
+https://arxiv.org/abs/2509.02544 , 2025. [39] Xingyao Wang, Yangyi Chen, Lifan Yuan, et al. Executable code actions elicit better language model agents. In ICML , 2024. [40] Jason Wei, Xuezhi Wang, Dale Schuurmans, et al. Chain-of-thought prompting elicits reasoning in large language models. In NeurIPS , 2022. [41] An Yang, Anfeng Li, Baosong Yang, et al. Qwen3 technical report. 
+
+https://arxiv.org/abs/2505.09388 , 2025. [42] John Yang, Carlos Jimenez, Alexander Wettig, et al. SWE-agent: Agent-computer interfaces enable automated software engineering. In NeurIPS , 2024. [43] Songlin Yang et al. Parallelizing linear transformers with the delta rule over sequence length. In NeurIPS ,2024. [44] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. ReAct: Synergizing reasoning and acting in language models. In ICLR , 2023. [45] Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, et al. DAPO: An open-source LLM reinforcement learning system at scale. 
+
+https://arxiv.org/abs/2503.14476 , 2025. [46] Jiarui Yuan, Yuxin Zuo, Xiaoyu Huang, et al. Democratizing robot-use agents: A unified harness with open models. 
+
+https://arxiv.org/abs/2611.01560 , 2026. [47] Michał Zawalski, William Chen, Karl Pertsch, et al. Robotic control via embodied chain-of-thought reasoning. https://arxiv.org/abs/2407.08693 ,2024. [48] Eric Zelikman, Yuhuai Wu, Jesse Mu, and Noah D. Goodman. STaR: Bootstrapping reasoning with reasoning. In NeurIPS , 2022. [49] Wenbo Zhang, Kaixuan Wang, Yutao Ouyang, et al. An unexpected robot policy: Early evaluations of GPT-6 Astra on RoboDojo and beyond. 
+
+https://arxiv.org/abs/2609.24170 , 2026. [50] Yixian Zhang, Huanming Zhang, Feng Gao, et al. Harness VLA: Steering frozen VLAs into reliable manipulation primitives via memory-guided agents. 
+
+https://arxiv.org/abs/2607.08448 , 2026. [51] Qingqing Zhao, Yao Lu, Moo Jin Kim, et al. CoT-VLA: Visual chain-of-thought reasoning for vision-language-action models. 
+
+https://arxiv.org/abs/2503.22020 , 2025. 
+
+A. Reproducibility Checklist 
+
+Item Protocol Suite LIBERO Spatial, tasks 0–9 [26] Environments Created from official LIBERO BDDL task definitions Initial states Official pre-generated state pool, pinned by a manifest (official_state_split_v1 ) with per-state SHA-256 hashes State split Per task: 30 train / 10 validation / 10 test states; training and validation feed the teacher and RL sampling; the 100 test states are scored after every round for monitoring, and the reported checkpoint is the best score observed under this monitoring Policy tool Single execute_python tool; no primitives beyond 
+
+env.observation() and 
+
+env.action( a ∈ [−1, 1]7)
+
+Observation Primary + wrist images and proprioception, supplied only when the program requests them; no automatic post-code observation; no privileged state Success label Environment BDDL success predicate; failure category recorded per episode Episode budget 2,000 environment steps, 150 model calls, 600-second code-block timeout, or voluntary STOP_EPISODE ;identical for training rollouts and evaluation Teacher corpus Astra Medium (frontier VLM, medium reasoning effort) through the same tool and contract; 100 successful episodes (ten per task), all on train-split states; 1,475 assistant-response targets, each pairing an explanation with a program Student SFT Qwen3.5-9B[41]; vision encoder and language parameters both trained; assistant-token loss on explanation, code, and format tokens; ten epochs; RL starts after the distilled checkpoint passes output-format and tool-call validation on held-out states RL objective Shaped success reward (binary_success_minus_cell_errors_v1 ): binary outcome minus a capped 0 .05 per-error-cell penalty, fast-fail floor −0.2; group size G = 8; 32 valid groups per round (uniform-binary-outcome groups discarded, at most 160 attempted); episode-level group-relative advantage; infrastructure failures resampled up to three times and excluded from reward statistics RL optimization Temperature-one sampling; AdamW on all parameters including the vision encoder; ZeRO-3 sharding; constant learning rate 2 × 10 −6; no KL term; asymmetric clip (εlo , εhi ) = ( 0.2, 0.28 )
+
+Compute RL training on 16 PPU accelerators (ZeRO-3); policy inference for training rollouts and evaluation served by vLLM; training accelerated by flash-linear-attention kernels for the gated-delta-rule layers; SFT gate: RL starts only after the distilled checkpoint passes output-format and tool-call validation on held-out states RL schedule 70 rounds configured; the reported run is in progress within this schedule; every round’s checkpoint and per-round test scores are preserved Training safeguards Sampling-only: (i) unparseable/non-compiling cells resampled up to twice; (ii) episode truncated after four runtime-error cells; (iii) failed rollouts exceeding 10 6 context tokens replaced up to three times per group with advantages recomputed. None applies at evaluation Evaluation All 100 test states after every RL round; greedy decoding; full budgets; no resampling, truncation, or replacement; per-episode failure categories logged 
+
+10 A.1. Execution and training details 
+
+The runtime maintains a persistent Python namespace across each episode. Tool feedback contains captured std-out, stderr, exceptions, the last expression’s value, and any requested images. An exception does not undo actions al-ready executed by earlier statements of the same cell. The first model turn receives no automatically supplied image, and the harness does not append an image after a program unless the program requested one. The interface exposes robot proprioception but no object poses, contact oracles, or simulator internals. The Python process is not a security sandbox. At update time, only newly generated assistant tokens contribute to the policy loss; environment feedback and pre-ceding history remain masked. The episode-level advantage is shared across all explanation and program tokens of the episode. Rollouts store the exact sampled tokens and their old-policy log-probabilities, and training consumes exactly those tokens. Two numerical guards are worth recording for replica-tion under ZeRO-3. First, an initialization audit found that the visual rotary-frequency buffer is materialized in reduced precision under sharded initialization; rebuild-ing this non-persistent buffer in FP32 restores the stan-dalone inference construction without changing any trained weights. Second, the frozen vision encoder’s patch con-volution is expressed as its algebraically equivalent lin-ear projection during ZeRO parameter gathering, which removes a standalone-versus-distributed numerical diver-gence observed at the update-consistency guard; sampled likelihoods, rewards, masks, and guard thresholds are un-changed by this reformulation. 11

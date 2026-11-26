@@ -1,0 +1,687 @@
+Title: Atomic Policy: Composing Atomic Manipulation Skills with Agentic Reasoning
+
+URL Source: https://arxiv.org/pdf/2611.32813v1
+
+Published Time: Wed, 25 Nov 2026 03:42:16 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# Atomic Policy: Composing Atomic Manipulation Skills with Agentic Reasoning 
+
+Kaidi Zhang ∗ Pengyuan Guo ∗ Zhengtong Xu ∗ Caiyi Zhang Huayi Gou Guanlin Huang Aaron Lim Anas Rafei Yu She Purdue University 
+
+> ∗
+
+Equal contribution Environment     
+
+> Push 5 Blocks Tabletop Manipulation MolmoSpaces
+> (PnP Next-To)
+> simulation
+> Crossword Multi-drawer Stacking real-world
+> composing steering replan
+
+Planner 
+
+> PDDL solver
+
+Grounder 
+
+> MolmoPoint
+
+VLM 
+
+> Reasoning
+
+Checker 
+
+> execute verify
+
+Atomic Skills  
+
+> pick
+> place
+> open
+> close
+> grasp
+> pregrasp
+
+# 𝛑 0.5 
+
+Figure 1. Atomic Policy integrates high-level reasoning with learned atomic skills for solving complex tasks. A VLM interprets user intent from language and scene observations, while a PDDL solver composes atomic skills into executable plans. Language instructions and visual pointing steer low-level execution, and a separate VLM checker verifies phase completion and triggers replanning when necessary. 
+
+Abstract 
+
+Long-horizon manipulation requires robots to translate task intent into physical interactions as the scene changes. Vision-language models (VLMs) offer semantic and spatial reasoning, while visuomotor policies provide fine-grained control. Yet ambiguous goals and dependencies between actions make their integration challenging. We introduce Atomic Policy, a framework that composes learned ma-nipulation skills through grounded steering and execution feedback. A VLM estimates the symbolic state and goal, and a PDDL solver constructs a skill plan. An agentic harness steers each skill through language, visual point-ing, or both, and verifies its outcome to guide phase tran-sitions and replanning. A common phase-level interface supports specialized policies and generalist action models. Experiments in simulation and on a real robot show how Atomic Policy improves task following and supports recov-ery in complex, long-horizon manipulation. Project page: 
+
+aaronzkd.github.io/atomic-policy 
+
+1. Introduction 
+
+Long-horizon manipulation requires a robot to pursue its task goal while reasoning about a scene that changes with every interaction. Instructions may leave intermediate steps implicit, and an unsuccessful action can alter what is fea-sible next. Vision-language models (VLMs) provide a ba-sis for this reasoning, enabling robotic agents to interpret instructions and coordinate perception, planning, and con-trol [7, 18, 23]. Perceptual and geometric tools help these agents resolve spatial relationships and ground ambiguous 1arXiv:2611.32813v1 [cs.RO] 24 Nov 2026 or underspecified instructions in the scene [8]. Visual feed-back then allows them to monitor progress and revise deci-sions as execution unfolds [7, 20]. Translating these decisions into reliable manipulation re-mains difficult. The physical interactions available to an agent are constrained by its execution interface [18, 61]: identifying the correct object and operation does not spec-ify the motion needed to complete the interaction. Analytic primitives can struggle with complex grasps, constrained placement, and articulated-object interaction [66]. Imitation learning provides fine-grained motor behaviors learned from demonstrations [10, 67]. Vision-language-action models (VLAs) extend this capability to language-conditioned control, demonstrating semantic generalization and extended task execution in unfamiliar settings [20, 46]. Reliable execution nevertheless remains challenging when a familiar behavior must be redirected toward a different tar-get or composed with other skills in a new sequence [7, 66]. Recent efforts address skill reuse and coordination through procedural knowledge and code-based skills [24, 36], orchestration of learned motor policies [7, 32, 65, 66], and skill transitions guided by world models [64]. We fo-cus on how task reasoning can steer these motor behaviors while remaining responsive to their outcomes. The agent must specify the intended interaction and its target, then de-termine whether the resulting state supports the next step. Grounded steering and verification therefore become part of skill composition. We introduce Atomic Policy (Fig. 1), a framework that separates local manipulation skills from task-level reason-ing and composition. Each atomic skill is a reusable behavior with a phase-level completion condition, imple-mented by either a dedicated visuomotor policy or a shared language-conditioned model. A VLM-based agentic har-ness estimates the symbolic state and goal, and a PDDL solver composes the skills according to their preconditions and effects. The harness steers each phase through lan-guage, visual pointing, or both: language specifies the in-teraction and its referents, while points make spatial targets explicit. A VLM checker verifies the outcome and deter-mines whether to continue, advance, or replan from the cur-rent scene. This common interface allows task reasoning to redirect and compose skills while learned policies generate local motion, supporting recovery as execution unfolds. Our contributions are threefold. (1) We introduce Atomic Policy, a framework for com-plex, long-horizon manipulation that connects task-level reasoning to learned skill execution through grounded steer-ing and verification. (2) We formulate point and language steering as comple-mentary interfaces for skill composition. A common phase-level abstraction supports specialized visuomotor policies and generalist action models within the same planning and execution loop. (3) We evaluate the framework in simulation and on a real robot across tasks requiring dependent skill sequences and interpretation of ambiguous or underspecified goals. Comparisons, ablations, and failure analysis examine how steering and replanning contribute to task following and re-covery. 
+
+2. Related Work 
+
+Agentic Robotics. Frontier multimodal models provide reasoning and tool-use capabilities [12]. Robot agents use these capabilities to call learned policies as tools [7, 32, 65] or generate executable robot programs [18, 51, 55]. Har-ness VLA [66] combines a frozen VLA contact primitive with analytic actions. Other systems co-design physical tools and action plans [19] or learn to use tools for spa-tial reasoning [8]. Agents also acquire reusable skills or refine programs through practice [6, 24, 36, 61], and im-prove policies or execution through real-world trials [54]. Agent-generated demonstrations and program annotations also support policy learning [35, 50]. Benchmarks test au-tomation [56], manipulation for evidence gathering [3], and memory [53]. Plans can also be evaluated using world and video models [17, 64]. Neuro-symbolic representations fur-ther structure task reasoning [37]. VLMs support task plan-ning [26] and can be coupled with PDDL-based or task-and-motion planning [39, 58, 63]. PLanAR [23] uses sym-bolic action schemas for verification and replanning, with grasp-pose generation and parameterized primitives for ex-ecution. Other work learns composable skills from unseg-mented demonstrations [42, 49] or composes short-horizon plan distributions through search [40]. VLM-based systems also support visual failure detection and execution moni-toring [16, 69]. Atomic Policy formulates skill execution through a common phase interface, coupling the selected behavior and target to a completion condition. This sup-ports dedicated policies and shared action models within symbolic planning and verification. 
+
+Generalist Policies and Grounding Interfaces. Imita-tion learning acquires visuomotor skills from demonstra-tions [10, 67]. Generalist policies scale imitation learn-ing to large robot datasets [5, 30, 45]. Vision-language-action models support language-conditioned robot con-trol [21, 43, 46, 62]. Simulation training enables zero-shot transfer to real robots [15, 57], while RoboArena evaluates generalist policies across institutions [1]. When conditioned only on a full-task prompt, a policy must infer the current subtask and target during execution. Intermediate reason-ing takes the form of language motions [2], embodied rea-soning steps [60], or subtask instructions from a high-level model [20, 52]. Embodied reasoning models integrate lo-calization, spatial reasoning, and long-horizon planning [4]. 2Planner    
+
+> VLM state + goal PDDL solver
+
+Grounder 
+
+> 2D point
+
+Checker                             
+
+> observation
+> done →next phase
+> not_done →continue
+> replan →query planner
+> VLM checklist:
+> ☑Target cube is in blue
+> ☑Target’s being grasped
+> ☑Target’s being lifted
+> “Put the blue cube in the drawer and close it”
+> Phase plan
+> grasp handle
+> open drawer
+> pick blue cube
+> place in drawer
+> close drawer
+> grasp handle
+> MolmoPoint “blue cube”
+
+Control Policy    
+
+> Diffusion U-Net
+> images proprio
+> point action chunk ss
+> close
+> open
+> place
+> pick
+> Atomic skills
+
+# 𝛑 0.5   
+
+> VLA
+> replan continue next phase
+
+Environment Figure 2. Atomic Policy architecture , shown with point-steered skills for Tabletop Manipulation. The planner combines VLM state and goal estimation with PDDL planning. For the active pick blue cube phase, the grounder (MolmoPoint) supplies a 2D image point pk . The selected skill generates an action chunk At using a diffusion U-Net conditioned on images, proprioception qt, and pk . The VLM checker 
+
+evaluates the outcome against a phase-specific checklist: done advances the plan, not_done continues the phase, and replan requests a new plan. Blue arrows indicate execution and phase transitions; the red arrow indicates replanning. 
+
+Pointing VLMs ground language in image locations, in-cluding objects and free-space regions [11, 14, 59, 70]. PointArena [9] benchmarks this capability. Visual spa-tial cues guide action selection, motion planning, or op-timization [27, 28, 34, 41]. Trajectory sketches, visual traces, and 3D contact points also condition learned poli-cies [13, 22, 33, 68]. CAP composes contact-conditioned skills through VLM tool calling, verification, and retries. Atomic Policy supports dedicated skill policies and gener-alist action models through language, 2D target points, or both, with symbolic planning and phase-level verification. For point steering, a pretrained grounder requires neither depth input nor task-specific fine-tuning. 
+
+3. Method 
+
+Atomic Policy composes learned manipulation behaviors through a phase-level interface that specifies the active skill, its target, and the evidence required for completion. A ded-icated policy or shared action model executes each phase, steered by language instructions, image points, or both. The harness grounds task intent, composes phases, and uses vi-sual feedback to continue, advance, or replan. Figure 2 illustrates the framework through a drawer-manipulation task. 
+
+3.1. General Formulation and Closed-Loop Execu-tion 
+
+The robot receives a language instruction ℓ and observes 
+
+ot = ( I1 
+
+> t
+
+, . . . , I Mt , q t) at control step t, where the images come from M cameras and qt is the proprioceptive state. A plan Pt consists of K phases Pk = ( sk, g k), k = 1 , . . . , K ,where sk ∈ S identifies an atomic skill and gk describes its target, such as “the blue cube” or “the third target cir-cle”. We use gk = ∅ when a phase requires no separate target, as in opening an already-grasped drawer. An atomic skill is a reusable manipulation behavior with a phase-level completion condition. It serves as a unit of task composi-tion and may span multiple control steps and policy queries. Each skill can be implemented by a dedicated policy or by a shared policy conditioned on the phase instruction. Each task family has a PDDL domain [38], denoted by 
+
+D, whose operators describe the available skills through their preconditions and effects. Given this domain, the instruction, and the current image, the VLM estimates the ground predicates that hold in the scene, ˆxt, and the goal predicates implied by the instruction, G. Formally, 
+
+(ˆ xt, G ) = VLM( D, ℓ, I 1 
+
+> t
+
+), and the symbolic solver con-structs the phase sequence Pt = Solve( D, ˆxt, G ). The solver searches over applicable operators and maps the re-sulting sequence to the phases Pk. The plan is valid with re-spect to the estimated state and domain; visual verification checks whether its intended effects occur during execution. Consider the instruction “Put the blue cube in the drawer and close it” in Fig. 2. With the drawer initially closed and the cube on the table, the plan is the following sequence of 
+
+(sk, g k) pairs: 
+
+(grasp , drawer handle ) → (open , ∅)
+
+→ (pick , blue cube ) → (place , drawer )
+
+→ (grasp , drawer handle ) → (close , ∅).
+
+(1) The plan respects dependencies such as grasping before opening and picking before placement. After placement, 3the grasp skill is reused to hold the handle for closing. The 
+
+open and close phases act on the already-grasped drawer without a separate point target. For the active phase, the harness forms a steering input 
+
+uk from the skill and target description and invokes the pol-icy as At ∼ πsk ( · | ot, u k). Here At is an action chunk, and uk is a target point, a phase instruction, or both. For 
+
+pick , a dedicated picking policy receives the blue cube’s image point, while a language-conditioned policy receives an instruction to pick up that cube. The policy generates local motion through repeated queries from the latest ob-servations until the checker advances the phase or requests replanning. A VLM checker periodically evaluates the current phase against a task-specific checklist using visual observations and robot state. It returns not_done to continue execu-tion, done to advance to the next phase, or replan when the remaining plan needs revision. For example, advanc-ing from pick to place requires visual evidence that the blue cube is grasped and lifted (Fig. 2). On replan or a phase timeout, the planner re-estimates the symbolic state and solves from the latest observation. If the drawer is al-ready open, the new plan can skip the opening sequence and proceed with the remaining phases. Execution resumes from the current observation with updated steering inputs, closing the planning and verification loop. The planner, grounder, and checker require no training on task-specific robot demonstrations. Implementation details and execu-tion pseudocode are provided in Sec. A. 
+
+3.2. Point Grounding and Steering 
+
+Point steering makes the spatial target of a skill explicit. For each target-dependent phase, the harness turns gk
+
+into a pointing query, such as “Point to the blue cube”. MolmoPoint-8B [11] grounds this query in the current primary-camera image and returns a 2D point pk ∈ [0 , 1] 2
+
+in normalized image coordinates. The point is refreshed during execution so that the policy can follow changes in the target’s image location. In the drawer example, grounding identifies the handle for grasp , the blue cube for pick , and the drawer as the des-tination for place , providing the spatial reference needed for each interaction. The selected policy receives uk = pk along with its vi-sual and proprioceptive observations. Skill selection speci-fies the behavior, and the point identifies its target; the pol-icy determines the approach and interaction from its obser-vations. This lets the harness resolve semantic intent and direct a skill toward a named target without passing the full task instruction to that skill. For phases without a sepa-rate target, the point input is omitted. Our specialized skill bank learns these behaviors from phase-segmented demon-strations; its architecture and training details are given in Sec. A.3. 
+
+3.3. Language Grounding and Steering 
+
+For language steering, the harness expresses the selected skill and its resolved target as a short phase instruction. We use phase-specific templates; for example, “grasp the {ob-ject} and lift it” becomes “grasp the blue cube and lift it”. The resulting phase instruction ℓk provides the steering in-put uk = ℓk to a language-conditioned policy. The harness specifies the immediate operation and its referent, while the policy localizes the named target in its observations and generates the motion. Phase transitions and replanning fol-low the same verification loop as point steering. Vision-language-action models provide a natural imple-mentation of this interface because they already map lan-guage, images, and robot state to actions. A shared model can therefore execute different atomic skills through phase-specific prompts. We instantiate language steering with 
+
+π0.5, using phase prompts without points because its native interface does not support point conditioning. Existing policies also support combined steering: Mol-moBot [15] accepts language and point inputs, while GR00T 2 [44] uses language instructions with visual grasp and release markers. 
+
+4. Experiments 
+
+We evaluate Atomic Policy on three simulated suites spanning 2D pushing, Franka drawer manipulation, and generalist-policy pick-and-place, followed by real-robot tasks. The tasks combine semantic and spatial ambiguity with dependent skill sequences, allowing us to study how steering and replanning support long-horizon execution. All tasks use the same framework with task-specific phases, PDDL domains, and checker prompts. Section B summa-rizes the simulated suites, and Fig. 3 illustrates phase exe-cution and replanning in simulation and on the real robot. 
+
+4.1. Main Results 
+
+Push 5 Blocks requires a circular pusher in a 2D physics simulator to move five blocks of different shapes and colors to their instructed target circles. The task combines instruc-tion following with precise object-target grounding across successive pushes. Tabletop Manipulation requires a Franka Panda in MuJoCo to open a drawer, place the instructed cube (one of five randomly positioned colored cubes) in-side, and close it. Successful execution depends on track-ing state changes across coupled skills and recovering when an earlier interaction fails. The first two rows of Fig. 3 il-lustrate how point targets change between pushes and how drawer opening and closing proceed without point condi-tioning. By default, the planner and checker use 
+
+gemini-2.5-flash and the grounder is MolmoPoint-4grasp : drawer_handle open : n/a pick : blue_cube place : drawer grasp : drawer_handle close : n/a - finished      
+
+> push : red_block push : purple_block push : yellow_block
+> pregrasp : birthday_card grasp : birthday_card preplace : ceramic_plate finished
+
+… …                 
+
+> pregrasp :letter_M grasp : letter_M preplace :slot_1 place :slot_1 finished
+> place :ceramic_plate
+> push :green_block push :green_block
+> replan: green cube shifts
+> replan: place too far
+> grasp :birthday_card
+
+…          
+
+> TTemporal Timeline
+> preopen : left_handle open_and_home :n/a preopen :right_handle finished open_and_home :n/a pregrasp :chicken grasp :chicken
+
+…     
+
+> replan: no chicken
+> pregrasp :letter_A grasp :letter_A
+
+…
+
+Push 5 Blocks           
+
+> “Push the blocks onto the matching target circles from left to right: red square, purple pentagon, green star, yellow heart, grey circle”
+
+Tabletop Manipulation   
+
+> “Open the drawer, put the blue cube into the drawer, then close the drawer
+
+MolmoSpaces          
+
+> (PnP Next-To)
+> “Pick up the birthday card with rabbit and fox and place it next to the round olive ceramic plate”
+
+Crossword         
+
+> “Rearrange the letter cubes to spell the word written on the whiteboard. Place cubes in the numbered tiles on the table.”
+
+Multi-drawer                 
+
+> “Find the chicken leg hidden in one of the two drawers: open one drawer at atime and check inside, then pick up the chicken leg and place it in the blue bin.”
+
+Stacking                        
+
+> “Pick up the block and stack it on top of the other block in the order of purple, orange, cyan from bottom to top.”
+> finished
+> pregrasp :orange grasp : orange preplace :purple place :purple finished
+
+…        
+
+> pregrasp :orange grasp :orange preplace :purple place :purple
+> replan: orange falls
+
+Figure 3. Task instructions and phase execution. Each row pairs an instruction with selected observations from execution. Bold labels name atomic phases, and the text after each colon identifies the point target; n/a denotes a phase without point conditioning. Blue boxes mark replanning after a detected failure or uncertain task state, such as a fallen cube in Stacking. The checker uses phase-specific completion criteria to continue execution, advance the phase, or request a new plan. Ellipses omit repeated or previously illustrated phases. 
+
+8B. We report mean ± standard deviation over up to ten evaluations, each on ten fixed held-out episodes. We evaluate diffusion-policy (DP) instantiations of Atomic Policy with fully fine-tuned CLIP and DINOv3 encoders and a scratch-trained ResNet, alongside the following language-conditioned configurations: (1) VLA U-Net: a language-conditioned counterpart us-ing the same denoiser and ResNet, with either a learned byte-level or frozen CLIP text encoder. (2) π0.5: fine-tuned with task prompts using LoRA or full fine-tuning. (3) π0.5 + atomic: a language-steered Atomic Policy variant that runs the fully fine-tuned π0.5 with phase prompts and checker-controlled transitions, without point conditioning. The DP instantiations of Atomic Policy outperform the end-to-end baselines on both tasks (Tab. 1). With the CLIP encoder, Atomic Policy reaches 78.7% success on Push 5 Blocks and 64.0% on Tabletop, compared with 8.0% and 40.0% for the best end-to-end baselines, respectively. The language-conditioned VLA U-Net rarely completes either task, supporting the use of explicit phase and target con-ditioning in this setting. With full fine-tuning, π0.5 reaches 40.0% success on Tabletop but only 1.0% on Push 5 Blocks. One possible explanation is that its pretrained manipula-tion priors transfer more readily to tabletop interaction than to the out-of-distribution 2D pusher. π0.5 + atomic im-proves Push 5 Blocks success from 1.0% to 26.0%, show-ing that Atomic Policy can improve performance with the same VLA backbone. On Tabletop, however, success drops from 40.0% to 16.3%, possibly reflecting difficulty follow-ing phase-specific prompts across dependent manipulation steps without explicit point guidance. All encoders perform well on Push 5 Blocks, whereas pretrained ViTs outperform the scratch-trained ResNet by roughly 15 percentage points on Tabletop, suggesting a greater role for visual representa-5Table 1. Main simulation results. Success and score are percentages, reported as mean ± standard deviation across evaluations. VLA U-Net uses a scratch-trained byte-level or frozen CLIP text encoder. π0.5 + atomic uses phase prompts and checker-controlled transitions without points. DP variants use a scratch-trained ResNet or fully fine-tuned DINOv3/CLIP vision encoder. Grey rows denote Atomic Policy; bold marks the best mean in each column. Push 5 Blocks Tabletop Manipulation 
+
+Method Success Score Success Score 
+
+End-to-End Policies 
+
+VLA U-Net (scratch text enc.) 1.0 ± 3.0 26.7 ± 5.4 8.3 ± 9.0 26.3 ± 8.5 
+
+VLA U-Net (CLIP text enc.) 0.0 ± 0.0 20.9 ± 7.0 5.0 ± 5.0 20.6 ± 6.2 
+
+π0.5 (LoRA) 8.0 ± 7.5 47.3 ± 5.2 0.0 ± 0.0 12.8 ± 5.1 
+
+π0.5 (full FT) 1.0 ± 3.0 29.6 ± 5.3 40.0 ± 14.1 60.5 ± 12.6 
+
+Atomic Policy 
+
+π0.5 + atomic 26.0 ± 13.6 68.3 ± 12.8 16.3 ± 14.1 43.4 ± 15.0 
+
+DP + ResNet 71.0 ± 15.8 95.3 ± 3.9 48.8 ± 25.7 68.8 ± 16.7 
+
+DP + DINOv3 66.7 ± 11.9 93.5 ± 5.3 64.0 ± 15.0 82.3 ± 8.5 
+
+DP + CLIP 78.7 ± 11.4 97.9 ± 0.8 64.0 ± 9.2 80.2 ± 6.4 
+
+Table 2. MolmoSpaces PnP Next-To success (%). Fine-tuned results average the last 10 checkpoint evaluations ending at 16k training steps, with 20 rollouts per checkpoint (200 rollouts total). Zero-shot results use 200 rollouts per model. Grey denotes Atomic Policy. 
+
+Method Success (%) 
+
+π0.5 zero-shot 3.0 
+
+π0.5 FT 7.5 MolmoBot zero-shot 37.0 MolmoBot FT 43.5 MolmoBot FT + Point 27.5 MolmoBot FT + Point + Atomic Policy 48.5 
+
+tion quality in complex manipulation. Section C.1 further examines vision-encoder adaptation and sensitivity to the planner/checker VLM. 
+
+4.2. Generalist Policies on MolmoSpaces 
+
+PnP Next-To in the MolmoSpaces [31] benchmark requires a Franka arm to pick up a named object and place it next to a named receptacle across diverse household scenes, includ-ing kitchens, dining areas, and living spaces (Fig. 3, third row). Following the benchmark protocol, an episode suc-ceeds if the moved object is placed within 5 cm of the target object, and each episode is limited to 40 seconds. The di-verse scenes require the robot to ground object referents and spatial relations before composing the manipulation phases. Among the simulation tasks reported in MolmoBot [15], PnP Next-To is the most challenging, with its best variant reaching only 28.3% oracle success and 22.6% final suc-cess. We fine-tune MolmoBot [15] on phase-labeled MolmoBot-Data and evaluate on MolmoSpaces-Bench; Sec. B.1 specifies the dataset and bench-mark configurations. The planner and checker use 
+
+gemini-3.8-flash . We evaluate four configurations based on the same MolmoBot backbone. The released DROID [29] checkpoint serves as the zero-shot baseline. The fine-tuned baselines use either the task prompt alone (FT) or the task prompt with one <points> tag for the pickup object and one for the receptacle, both fixed at the first frame (FT + Point). The Atomic Policy configuration uses phase prompts, per-phase points, and the VLM planning and checking loop (FT + Point + Atomic Policy). We also evaluate π0.5 zero-shot and with task-specific fine-tuning. Fine-tuned checkpoints share 20 fixed bench-mark episodes and evaluation seeds across methods. Both zero-shot models share 200 fixed benchmark episodes. At 16k fine-tuning steps, Atomic Policy reaches 48.5% moving-average success, compared with 43.5% for Mol-moBot FT, 27.5% for FT + Point, and 37.0% for zero-shot MolmoBot (Tab. 2; learning curves in Sec. D.1). These re-sults use 200 rollouts per configuration; Atomic Policy also outperforms MolmoBot FT at every reported training step. By comparison, π0.5 achieves 3.0% zero-shot success; its fine-tuned variant reaches 7.5% at 16k steps, with a peak moving average of 8.0%. With both prompt points fixed throughout the task, FT + Point must infer the active target, whereas Atomic Policy specifies it for each phase and fin-ishes 21.0 percentage points higher at 16k steps. The con-trast with static point prompts suggests that spatial guid-ance benefits from being aligned with the active phase. This comparison evaluates the combined effect of phase-specific 6guidance, planning, and checking on the same backbone. 
+
+4.3. Ablation of Points and Replanning 
+
+We ablate replanning and point conditioning in the CLIP-based Atomic Policy (Sec. 4.1). Without replanning, the checker still advances phases but cannot invoke the planner for recovery. Without points, phase policies receive only images and proprioception. Tabletop retains phase selec-tion by the planner and checker, isolating spatial guidance within each phase. Push 5 Blocks instead uses one policy throughout, without planning or checking; its comparison therefore also changes the execution loop. Without point conditioning (Tab. 3), success falls to 0.0% on Push 5 Blocks and 4.4% on Tabletop. On Table-top, spatial guidance improves execution even when high-level phase selection is retained. Replanning has a larger effect on Tabletop, where phases are strongly dependent. A failed grasp or a partially opened drawer can leave later phases in an unsuitable state, and success falls from 64.0% to 17.8% without replanning. The phases in Push 5 Blocks are more independent, and the variant without replanning retains 64.4% success, about 14 percentage points below the full Atomic Policy result of 78.7%. Together, the Table-top ablations show why phase selection alone is insufficient: a skill still needs its intended target, and the remaining se-quence must reflect the state actually reached. Grounding and replanning address these complementary requirements. 
+
+4.4. Real-Robot Experiments 
+
+We evaluate three real-robot tasks (Fig. 3). In Multi-drawer, the robot searches two drawers for a chicken leg and places it in a bin. If the checker finds no target in the first drawer, it triggers replanning to search the other. Stacking requires identifying and stacking colored cubes in the bottom-to-top order specified by the prompt. If a cube falls, subsequent placements may no longer be valid, so the system must de-tect the failure and revise the plan from the observed state. Crossword requires reading the word on a whiteboard and placing letter blocks into numbered slots in the correct or-der. The target word is specified visually rather than named in the prompt, requiring the planner to infer the letter se-quence from the observation. Together, these tasks couple ambiguous or underspecified goals with dependent manip-ulation phases, testing whether scene interpretation and ex-ecution feedback sustain progress over long horizons. We use a Franka Panda robot with a Franka HAND gripper and external and wrist cameras. Hardware and demonstration-collection details are provided in Sec. B.2. We instantiate Atomic Policy with three policy back-bones. DP uses a separate point-conditioned diffusion pol-icy for each phase; MolmoBot receives phase prompts and point coordinates; and π0.5 receives phase prompts with-out point conditioning. The end-to-end baselines fine-tune MolmoBot and π0.5 on whole demonstrations with task in-structions, without phase decomposition or point inputs. Training epochs and optimization steps are matched, and all methods use their final checkpoints. The planner and checker use gpt-6-astra , and MolmoPoint provides spatial grounding. The checker is queried every 128 control steps, and a phase exceeding 256 steps triggers replanning. Each method is evaluated on 20 trials per task (10 in-distribution and 10 out-of-distribution). OOD conditions change cube colors, retrieval objects, and the word or visual cues used for Crossword; Sec. B.2 records the evaluation conditions. Task score measures the fraction of correctly completed grasp/place steps, and success requires a score of 1. We report task scores as percentages with sample stan-dard deviations across trials. Table 4 summarizes the results; Sec. D.2 visualizes indi-vidual trials. Under ID conditions, fine-tuned π0.5 matches Atomic + π0.5 on Multi-drawer and Stacking, but both baselines fall behind on Crossword. Under OOD Cross-word conditions, their rollouts frequently follow the demon-strated word or an incorrect letter sequence rather than the requested target. The real-robot results expose a gap between executing learned motions and adapting them to a changed goal. On OOD Crossword, both end-to-end baselines obtain zero task score, while Atomic + MolmoBot and Atomic + π0.5
+
+reach 72.5 and 60.0, respectively. Thus, the same pol-icy backbones become more responsive to the requested goal when guided through explicit phases. The improve-ment with Atomic + π0.5, which receives no points, shows that language-based phase guidance and closed-loop execu-tion alone can recover substantial performance. Atomic + MolmoBot combines this guidance with spatial targets; the matched-backbone comparisons are detailed in Sec. D.2. The failure analysis reveals a corresponding shift in what limits performance. On Crossword, incorrect objects, or-der, or placement locations account for 36 of 39 unsuccess-ful baseline trials, whereas grasp and place errors account for 25 of 31 unsuccessful Atomic Policy trials (Sec. D.3). Explicit phase guidance therefore reduces failures in select-ing and sequencing actions, leaving physical execution as the dominant source of remaining errors. This distinction also explains why stronger task steering does not guaran-tee success on every task: Atomic + DP performs well on Crossword but struggles with the precise block alignment required for Stacking. High-level guidance can specify and retry the correct action, but its completion still depends on the precision of the low-level policy. 
+
+5. Discussion 
+
+Tabletop ablations support distinct roles for target ground-ing and plan revision: points improve execution with phase selection retained, and replanning improves execution with 7Table 3. Point-conditioning and replanning ablations. The grey reference row uses Atomic Policy with fully fine-tuned CLIP diffusion policies. Removing replanning preserves checker-controlled transitions; removing points omits the U-Net’s spatial input. The no-point Push 5 Blocks variant also omits planning and checking. Metrics follow Tab. 1; bold marks the best mean. Push 5 Blocks Tabletop Manipulation 
+
+Variant Replanning Point Success Score Success Score Atomic Policy ✓ ✓ 78.7 ± 11.4 97.9 ± 0.8 64.0 ± 9.2 80.2 ± 6.4 
+
+w/o replanning ✗ ✓ 64.4 ± 10.2 86.9 ± 4.4 17.8 ± 24.4 40.6 ± 25.2 
+
+w/o points ✓ ✗ 0.0 ± 0.0 14.8 ± 4.1 4.4 ± 6.8 29.4 ± 5.0 
+
+Table 4. Real-robot results under ID and OOD conditions. Success is the percentage of trials with task score 1; task score measures the fraction of completed steps, scaled to 100. Task scores report mean ± sample standard deviation across 10 trials per method, task, and condition. Crossword OOD pools the two evaluated words. Grey rows denote Atomic Policy; bold marks the highest mean within each condition, including ties. Multi-drawer Stacking Crossword 
+
+Method Success Task Score Success Task Score Success Task Score 
+
+In-Distribution (ID) 
+
+Atomic + DP 90.0 95.0 ± 15.8 20.0 62.5 ± 28.3 60.0 91.3 ± 13.2 
+
+Atomic + MolmoBot 80.0 89.2 ± 24.8 70.0 96.3 ± 6.0 50.0 82.5 ± 24.4 
+
+Atomic + π0.5 100.0 100.0 ± 0.0 90.0 98.8 ± 4.0 60.0 77.5 ± 29.9 
+
+MolmoBot (fine-tuned) 80.0 91.3 ± 18.7 50.0 50.0 ± 52.7 0.0 30.0 ± 26.5 
+
+π0.5 (fine-tuned) 100.0 100.0 ± 0.0 90.0 98.8 ± 4.0 10.0 65.0 ± 23.4 
+
+Out-of-Distribution (OOD) 
+
+Atomic + DP 90.0 96.3 ± 11.9 10.0 56.3 ± 23.0 50.0 90.0 ± 12.9 
+
+Atomic + MolmoBot 50.0 77.5 ± 26.1 30.0 85.0 ± 16.5 30.0 72.5 ± 26.9 
+
+Atomic + π0.5 50.0 83.3 ± 19.5 80.0 85.0 ± 33.7 40.0 60.0 ± 41.2 
+
+MolmoBot (fine-tuned) 10.0 70.1 ± 13.0 40.0 62.5 ± 45.6 0.0 0.0 ± 0.0 
+
+π0.5 (fine-tuned) 80.0 88.8 ± 25.3 70.0 70.0 ± 48.3 0.0 0.0 ± 0.0 
+
+checker-controlled transitions retained (Tabs. 1 and 3). On Crossword, fine-tuned generalist policies often reproduce the demonstrated word or follow an incorrect sequence when the visual goal changes. Atomic Policy improves task progress, while its remaining failures predominantly involve grasping and placement (Secs. D.3 and 4.4). The generalist-policy comparisons assess the combined effect of phase-conditioned training, steering, and execution feed-back. Several limitations remain. The phase set, PDDL do-main, and checker prompts are specified manually for each task family, and demonstrations require phase and point annotations. Execution depends on the accuracy of the VLM and pointing model, whose inference also adds la-tency. Zero-shot gpt-6-astra outputs end-effector dis-placements from camera images (Sec. C.2). Direct control reaches 98.0% success on Push 5 Blocks, compared with 86.3% for Atomic Policy, whereas Atomic Policy reaches 60.0% success and a score of 80.0 on Tabletop, compared with 52.0% and 69.5. Learned skills thus matter most for contact-rich phases that require precise and timely control, while planar pushing from a static view is within reach of direct VLM control. Future work includes automatic phase discovery and runtime selection between direct VLM con-trol and learned skills. 
+
+6. Conclusion 
+
+We presented Atomic Policy, connecting symbolic planning to learned skills through a shared steering and verification interface. Phase-specific language and 2D image points support both specialized policies and shared action mod-els. Experiments in 2D pushing, tabletop manipulation, and pick-and-place demonstrate the benefits of explicit steer-ing and feedback. Real-robot results show improved task following and illustrate recovery in complex, long-horizon tasks with ambiguous or underspecified goals. 8LLM Usage Statement 
+
+We used LLM-based assistants, Claude Code and Codex, in preparing this work. They helped polish the manuscript text, the figures, and the visualizations. They also assisted with part of the coding in our research. For this code, we specified the functional requirements, the implementation workflow, and the method details. The assistants helped only with the basic low-level implementation. We reviewed all AI-assisted content and take full responsibility for this paper. 
+
+References 
+
+[1] Pranav Atreya, Karl Pertsch, Tony Lee, Moo Jin Kim, Arhan Jain, Artur Kuramshin, Clemens Eppner, Cyrus Neary, Ed-ward Hu, Fabio Ramos, et al. RoboArena: Distributed Real-World Evaluation of Generalist Robot Policies. arXiv preprint arXiv:2506.18123 , 2025. 2 [2] Suneel Belkhale, Tianli Ding, Ted Xiao, Pierre Sermanet, Quon Vuong, Jonathan Tompson, Yevgen Chebotar, De-bidatta Dwibedi, and Dorsa Sadigh. RT-H: Action Hierar-chies Using Language. arXiv preprint arXiv:2403.01823 ,2024. 2 [3] Vineet Bhat, Mikaela Angelina Uy, Siyi Chen, Chan Hee Song, Alex Zook, Xuning Yang, Stan Birchfield, Valts Blukis, and Jonathan Tremblay. MG-VQA: Manipulation Grounded Visual Question Answering with VLMs. arXiv preprint arXiv:2608.17129 , 2026. 2 [4] Johan Bjorck, Zhiqi Li, Yunze Man, Jing Wang, An-Chieh Cheng, Sifei Liu, Shihao Wang, Zhiding Yu, Abhishek Badki, Stan Birchfield, et al. Vesta: A Generalist Embodied Reasoning Model. arXiv preprint arXiv:2606.20905 , 2026. 2[5] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. π0: A Vision-Language-Action Flow Model for General Robot Control. arXiv preprint arXiv:2410.24164 , 2024. 2 [6] Kaiyuan Chen, Shuangyu Xie, Letian Fu, Justin Yu, William Pacini, Sandeep Bajamahal, Hudson Kim, Jaimyn Drake, Daehwa Kim, Haoru Xue, et al. GaP: A Graph-as-Policy Multi-Agent Self-Learning Harness For Variational Automa-tion Tasks. In Conference on Robot Learning , 2026. 2 [7] Siyi Chen, Hugo Hadfield, Alex Zook, Mikaela Angelina Uy, Chan Hee Song, Erwin Coumans, Xuning Yang, Faisal Lad-hak, Qing Qu, Stan Birchfield, Jonathan Tremblay, and Valts Blukis. VoLo: A Physical Orchestrator for Open-Vocabulary Long-Horizon Manipulation. In Conference on Robot Learn-ing , 2026. 1, 2 [8] Siyi Chen, Mikaela Angelina Uy, Chan Hee Song, Faisal Ladhak, Adithyavairavan Murali, Qing Qu, Stan Birchfield, Valts Blukis, and Jonathan Tremblay. SpaceTools: Tool-augmented spatial reasoning via double interactive RL. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vi-sion and Pattern Recognition (CVPR) , 2026. 2 [9] Long Cheng, Jiafei Duan, Yi Ru Wang, Haoquan Fang, Boyang Li, Yushan Huang, Elvis Wang, Ainaz Eftekhar, Ja-son Lee, Wentao Yuan, Rose Hendrix, Noah A. Smith, Fei Xia, Dieter Fox, and Ranjay Krishna. PointArena: Probing Multimodal Grounding Through Language-Guided Pointing. 
+
+arXiv preprint arXiv:2505.09990 , 2025. 3 [10] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin Burchfiel, and Shuran Song. Diffu-sion policy: Visuomotor policy learning via action diffusion. In Robotics: Science and Systems (RSS) , 2023. 2, 13 [11] Christopher Clark, Yue Yang, Jae Sung Park, Zixian Ma, Jieyu Zhang, Rohun Tripathi, Mohammadreza Salehi, Sangho Lee, Taira Anderson, Winson Han, and Ranjay Kr-ishna. MolmoPoint: Better pointing for vlms with grounding tokens. arXiv preprint arXiv:2603.28069 , 2026. 3, 4 [12] Gheorghe Comanici, Eric Bieber, Mike Schaekermann, Ice Pasupat, Noveen Sachdeva, Inderjit Dhillon, Marcel Blistein, Ori Ram, Dan Zhang, Evan Rosen, et al. Gemini 2.5: Push-ing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities. 
+
+arXiv preprint arXiv:2507.06261 , 2025. 2 [13] Zichen Jeff Cui, Omar Rayyan, Haritheja Etukuru, Bowen Tan, Zavier Andrianarivo, Zicheng Teng, Yihang Zhou, Kr-ish Mehta, Nicholas Wojno, Kevin Yuanbo Wu, Manan H Anjaria, Ziyuan Wu, Manrong Mao, Guangxun Zhang, Binit Shah, Yejin Kim, Soumith Chintala, Lerrel Pinto, and Nur Muhammad Mahi Shafiullah. Contact-Anchored Policies: Contact Conditioning Creates Strong Robot Utility Models. 
+
+arXiv preprint arXiv:2602.09017 , 2026. 3 [14] Matt Deitke, Christopher Clark, Sangho Lee, Rohun Tri-pathi, Yue Yang, Jae Sung Park, Mohammadreza Salehi, Niklas Muennighoff, Kyle Lo, Luca Soldaini, et al. Molmo and PixMo: Open Weights and Open Data for State-of-the-Art Vision-Language Models. arXiv preprint arXiv:2409.17146 , 2024. 3 [15] Abhay Deshpande, Maya Guru, Rose Hendrix, Snehal Jauhri, Ainaz Eftekhar, Rohun Tripathi, Max Argus, Jordi Salvador, Haoquan Fang, Matthew Wallingford, et al. Mol-moB0T: Large-scale simulation enables zero-shot manipula-tion. arXiv preprint arXiv:2603.16861 , 2026. 2, 4, 6 [16] Jiafei Duan, Wilbert Pumacay, Nishanth Kumar, Yi Ru Wang, Shulin Tian, Wentao Yuan, Ranjay Krishna, Dieter Fox, Ajay Mandlekar, and Yijie Guo. AHA: A Vision-Language-Model for Detecting and Reasoning Over Failures in Robotic Manipulation. arXiv preprint arXiv:2410.00371 ,2024. 2 [17] Jiahui Fu, Junyu Nan, Lingfeng Sun, Hongyu Li, Jianing Qian, Yilun Du, Jennifer L. Barry, Kris Kitani, and George Konidaris. NovaPlan: Zero-Shot Long-Horizon Manipula-tion via Closed-Loop Video Language Planning. In Confer-ence on Robot Learning , 2026. 2 [18] Letian Fu, Justin Yu, Karim El-Refai, Ethan Kou, Haoru Xue, Huang Huang, Wenli Xiao, Li Fei-Fei, Guanya Shi, Ji-ajun Wu, S. Shankar Sastry, Yuke Zhu, Ken Goldberg, and Linxi Fan. CaP-X: A Framework for Benchmarking and Im-proving Coding Agents for Robot Manipulation. In Interna-tional Conference on Machine Learning (ICML) , 2026. 1, 2[19] George Jiayuan Gao, Tianyu Li, Junyao Shi, Yihan Li, Zizhe Zhang, Nadia Figueroa, and Dinesh Jayaraman. VLMgineer: 
+
+9Vision Language Models as Robotic Toolsmiths. In Inter-national Conference on Learning Representations (ICLR) ,2026. 2 [20] Gemini Robotics Team, Abbas Abdolmaleki, Saminda Abeyruwan, Joshua Ainslie, Jean-Baptiste Alayrac, Montserrat Gonzalez Arenas, Ashwin Balakrishna, Nathan Batchelor, Alex Bewley, Jeff Bingham, et al. Gemini Robotics 1.5: Pushing the Frontier of Generalist Robots with Advanced Embodied Reasoning, Thinking, and Motion Transfer. arXiv preprint arXiv:2510.03342 , 2025. 2 [21] Gemini Robotics Team, Saminda Abeyruwan, Joshua Ainslie, Jean-Baptiste Alayrac, Montserrat Gonzalez Are-nas, Travis Armstrong, Ashwin Balakrishna, Robert Baruch, Maria Bauza, Michiel Blokzijl, et al. Gemini Robotics: Bringing AI into the Physical World. arXiv preprint arXiv:2503.20020 , 2025. 2 [22] Jiayuan Gu, Sean Kirmani, Paul Wohlhart, Yao Lu, Montser-rat Gonzalez Arenas, Kanishka Rao, Wenhao Yu, Chuyuan Fu, Keerthana Gopalakrishnan, Zhuo Xu, et al. RT-Trajectory: Robotic Task Generalization via Hindsight Tra-jectory Sketches. arXiv preprint arXiv:2311.01977 , 2023. 3[23] Pengyuan Guo, Zhonghao Mai, Zhengtong Xu, Kaidi Zhang, Quan Khanh Luu, Heng Zhang, Zichen Miao, Arash Ajoudani, Zachary Kingston, Qiang Qiu, and Yu She. PLa-nAR: Planning-Language-Grounded Agentic Reasoning for Robot Manipulation. arXiv preprint arXiv:2602.01662 ,2026. 1, 2 [24] Xincheng He, Siyu Ma, Chang Yu, Yunuo Chen, Yanjia Huang, Ying Nian Wu, Yin Yang, and Chenfanfu Jiang. Skill2Real: Agentic Skill Learning for Zero-Shot Sim-to-Real Robot Manipulation. arXiv preprint arXiv:2610.02788 ,2026. 2 [25] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising dif-fusion probabilistic models. In Advances in Neural Informa-tion Processing Systems (NeurIPS) , 2020. 14 [26] Yingdong Hu, Fanqi Lin, Tong Zhang, Li Yi, and Yang Gao. Look Before You Leap: Unveiling the Power of GPT-4V in Robotic Vision-Language Planning. arXiv preprint arXiv:2311.17842 , 2023. 2 [27] Haoxu Huang, Fanqi Lin, Yingdong Hu, Shengjie Wang, and Yang Gao. CoPa: General Robotic Manipulation through Spatial Constraints of Parts with Foundation Models. arXiv preprint arXiv:2403.08248 , 2024. 3 [28] Wenlong Huang, Chen Wang, Yunzhu Li, Ruohan Zhang, and Li Fei-Fei. ReKep: Spatio-Temporal Reasoning of Rela-tional Keypoint Constraints for Robotic Manipulation. arXiv preprint arXiv:2409.01652 , 2024. 3 [29] Alexander Khazatsky, Karl Pertsch, Suraj Nair, Ash-win Balakrishna, Sudeep Dasari, Siddharth Karamcheti, Soroush Nasiriany, Mohan Kumar Srirama, Lawrence Yun-liang Chen, Kirsty Ellis, et al. Droid: A large-scale in-the-wild robot manipulation dataset. arXiv preprint arXiv:2403.12945 , 2024. 6 [30] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Fos-ter, Grace Lam, Pannag Sanketi, et al. OpenVLA: An Open-Source Vision-Language-Action Model. arXiv preprint arXiv:2406.09246 , 2024. 2 [31] Yejin Kim, Wilbert Pumacay, Omar Rayyan, Max Argus, Winson Han, Eli VanderBilt, Jordi Salvador, Abhay Desh-pande, Rose Hendrix, Snehal Jauhri, et al. MolmoSpaces: A large-scale open ecosystem for robot navigation and manip-ulation. arXiv preprint arXiv:2602.11337 , 2026. 6 [32] Ruiying Li, Yunlang Zhou, YuYao Zhu, Kylin Chen, Jingyuan Wang, Sukai Wang, Kongtao Hu, Minhui Yu, Bowen Jiang, Zhan Su, Jiayao Ma, Xin He, Yongjian Shen, Yang Yang, Guanghui Ren, Maoqing Yao, Wenhao Wang, and Yao Mu. RoboClaw: An Agentic Framework for Scalable Long-Horizon Robotic Tasks. arXiv preprint arXiv:2603.11558 , 2026. 2 [33] Yi Li, Yuquan Deng, Jesse Zhang, Joel Jang, Marius Mem-mel, Raymond Yu, Caelan Reed Garrett, Fabio Ramos, Di-eter Fox, Anqi Li, Abhishek Gupta, and Ankit Goyal. HAM-STER: Hierarchical Action Models For Open-World Robot Manipulation. arXiv preprint arXiv:2502.05485 , 2025. 3 [34] Fangchen Liu, Kuan Fang, Pieter Abbeel, and Sergey Levine. MOKA: Open-World Robotic Manipulation through Mark-Based Visual Prompting. arXiv preprint arXiv:2403.03174 ,2024. 3 [35] Zhuoyang Liu, Dantong Niu, Botong Zhang, Boning Shao, Jing Wang, Ruijie Zheng, Yuvan Sharma, Runyu Lu, Ji-aming Liu, Renrui Zhang, Roei Herzig, Yutong Bai, Ken Goldberg, Danfei Xu, Yuke Zhu, Guanzhi Wang, Linxi Fan, and Trevor Darrell. Agentic World Action Models. arXiv preprint arXiv:2610.30136 , 2026. 2 [36] Runyu Lu, Yubo Wu, Ethan Kou, Haotian Lin, Letian Fu, Wenli Xiao, Ajay Mandlekar, Yinzhen Xu, Guanya Shi, Ken Goldberg, Ang Chen, Mosharaf Chowdhury, Jan Kautz, Yuke Zhu, Linxi Fan, and Guanzhi Wang. AS-PIRE: Agentic /Skills Discovery for Robotics. arXiv preprint arXiv:2607.00272 , 2026. 2 [37] Jiayuan Mao, Joshua B. Tenenbaum, and Jiajun Wu. Build-ing Intelligent Agents with Neuro-Symbolic Concepts. arXiv preprint arXiv:2505.06191 , 2025. 2 [38] Drew McDermott, Malik Ghallab, Adele Howe, Craig Knoblock, Ashwin Ram, Manuela Veloso, Daniel Weld, and David Wilkins. PDDL: The planning domain definition lan-guage. Technical Report CVC TR-98-003/DCS TR-1165, Yale Center for Computational Vision and Control, 1998. 3 [39] Utkarsh A. Mishra, Alperen Degirmenci, Yongxin Chen, Danfei Xu, Tucker Hermans, and Caelan Garrett. TAMPA-gent: Agentic Belief-Space Planning for Mobile Manipula-tion. arXiv preprint arXiv:2611.03584 , 2026. 2 [40] Utkarsh A. Mishra, David He, Yongxin Chen, and Danfei Xu. Compositional Diffusion with Guided Search for Long-Horizon Planning. In International Conference on Learning Representations (ICLR) , 2026. 2 [41] Soroush Nasiriany, Fei Xia, Wenhao Yu, Ted Xiao, Jacky Liang, Ishita Dasgupta, Annie Xie, Danny Driess, Ayzaan Wahid, Zhuo Xu, et al. PIVOT: Iterative Visual Prompt-ing Elicits Actionable Knowledge for VLMs. arXiv preprint arXiv:2402.07872 , 2024. 3 [42] Neil Nie, Wenlong Huang, Jiayuan Mao, Li Fei-Fei, Weiyu Liu, and Jiajun Wu. Learning Composable Skills by Discov-
+
+10 ering Spatial and Temporal Structure with Foundation Mod-els. In IEEE International Conference on Robotics and Au-tomation (ICRA) , 2026. 2 [43] NVIDIA, Johan Bjorck, Fernando Castañeda, Nikita Cher-niadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, et al. GR00T N1: An Open Founda-tion Model for Generalist Humanoid Robots. arXiv preprint arXiv:2503.14734 , 2025. 2 [44] NVIDIA et al. GR00T 2: Scaling robot foundation mod-els for generalization, dexterity, and adaptation. Whitepaper, NVIDIA, 2026. 4 [45] Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, et al. Octo: An Open-Source Generalist Robot Policy. arXiv preprint arXiv:2405.12213 , 2024. 2 [46] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. π0.5: a vision-language-action model with open-world generaliza-tion. arXiv preprint arXiv:2504.16054 , 2025. 2 [47] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. Learning transferable visual models from natural language supervision. In International Conference on Machine Learning (ICML) , 2021. 13 [48] Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman Rädle, Chloe Rolland, Laura Gustafson, et al. Sam 2: Seg-ment anything in images and videos. In International Con-ference on Learning Representations , pages 28085–28128, 2025. 14 [49] Yifei Simon Shao, Yuchen Zheng, Sunan Sun, Pratik Chaud-hari, Vijay Kumar, and Nadia Figueroa. SymSkill: Symbol and Skill Co-Invention for Data-Efficient and Reactive Long-Horizon Manipulation. In IEEE International Conference on Robotics and Automation (ICRA) , 2026. 2 [50] Zeyu Shen, Haoxiang You, Yilang Liu, Zhicheng Zheng, Li-han Zha, Kashu Yamazaki, Mingtong Zhang, Suning Huang, Jiankai Sun, Qianzhong Chen, Lucy He, Kaiyuan Liu, Hao-ran Chang, Katerina Fragkiadaki, Dhruv Shah, Mac Schwa-ger, Peter Henderson, Ian Abraham, and Canwen Xu. Em-bodiedSWE: Coding Agents for Long Horizon Dexterous Robotics. arXiv preprint arXiv:2609.27308 , 2026. 2 [51] Junyao Shi, Rujia Yang, Kaitian Chao, Selina Bingqing Wan, Yifei Shao, Jiahui Lei, Jianing Qian, Long Le, Pratik Chaud-hari, Kostas Daniilidis, Chuan Wen, and Dinesh Jayaraman. MAESTRO: Orchestrating Robotics Modules with Coding Agents for Zero-Shot Generalist Robots. In Conference on Robot Learning , 2026. 2 [52] Lucy Xiaoyang Shi, Brian Ichter, Michael Equi, Liyiming Ke, Karl Pertsch, Quan Vuong, James Tanner, Anna Walling, Haohuan Wang, Niccolo Fusai, et al. Hi Robot: Open-Ended Instruction Following with Hierarchical Vision-Language-Action Models. arXiv preprint arXiv:2502.19417 , 2025. 2 [53] Junxiang Wang, Yuchen Liu, Yi Wu, Guofei Chen, Nir Pechuk, Tao Chen, Zackory Erickson, Yuzhe Qin, and Tianyu Li. What Should Embodied Agents Remember? Benchmarking and Evaluating Memory Modality for Em-bodied Agents. arXiv preprint arXiv:2610.12561 , 2026. 2 [54] Wenli Xiao, Jia Xie, Tonghe Zhang, Haotian Lin, Letian Fu, Haoru Xue, Jalen Lu, Yi Yang, Cunxi Dai, Zi Wang, Jimmy Wu, Guanzhi Wang, S. Shankar Sastry, Ken Goldberg, Linxi Fan, Yuke Zhu, and Guanya Shi. ENPIRE: Agentic Robot Policy Self-Improvement in the Real World. In Conference on Robot Learning , 2026. 2 [55] Shuangyu Xie, Kaiyuan Chen, and Ken Goldberg. Revis-iting the “Push-T” Robot Manipulation Task with Agentic Robotics. arXiv preprint arXiv:2608.18227 , 2026. 2 [56] Shuangyu Xie, Kaiyuan Chen, Uksang Yoo, Xinyue Zhu, Meadow Shen, Jaimyn Drake, Eugen Solowjow, Lionel Gulich, Alexander Millane, Rafael Cathomen, Tuur Stuyck, Sangeeta Subramanian, Yichao Pan, Bruce McGowan, Michael Benedict, Linxi Fan, Yuke Zhu, Spencer Huang, and Ken Goldberg. VABAR: A Variational Automa-tion Benchmark for Agentic Robotics. arXiv preprint arXiv:2611.06881 , 2026. 2 [57] Haoru Xue, Tairan He, Zi Wang, Qingwei Ben, Wenli Xiao, Zhengyi Luo, Xingye Da, Fernando Castañeda, Guanya Shi, Shankar Sastry, Linxi Fan, and Yuke Zhu. Opening the Sim-to-Real Door for Humanoid Pixel-to-Action Policy Transfer. 
+
+arXiv preprint arXiv:2512.01061 , 2025. 2 [58] Zhutian Yang, Caelan Garrett, Dieter Fox, Tomás Lozano-Pérez, and Leslie Pack Kaelbling. Guiding Long-Horizon Task and Motion Planning with Vision Language Models. 
+
+arXiv preprint arXiv:2410.02193 , 2024. 2 [59] Wentao Yuan, Jiafei Duan, Valts Blukis, Wilbert Pumacay, Ranjay Krishna, Adithyavairavan Murali, Arsalan Mousa-vian, and Dieter Fox. RoboPoint: A Vision-Language Model for Spatial Affordance Prediction for Robotics. arXiv preprint arXiv:2406.10721 , 2024. 3 [60] Michał Zawalski, William Chen, Karl Pertsch, Oier Mees, Chelsea Finn, and Sergey Levine. Robotic Control via Embodied Chain-of-Thought Reasoning. arXiv preprint arXiv:2407.08693 , 2024. 2 [61] Junyi Zhang, Jiaxin Ge, Hanjun Yoo, Letian Fu, Zihan Yang, Yaowei Liu, Raj Saravanan, Shaofeng Yin, Justin Yu, Dan-tong Niu, Zirui Wang, Roei Herzig, Ken Goldberg, Yutong Bai, David M. Chan, Ion Stoica, Angjoo Kanazawa, Jiahui Lei, Haiwen Feng, and Trevor Darrell. Playful Agentic Robot Learning. In Conference on Robot Learning , 2026. 2[62] Kaidi Zhang, Heng Zhang, Zhengtong Xu, Zhiyuan Zhang, Md Rakibul Islam Prince, Xiang Li, Xiaojing Han, Yuhao Zhou, Arash Ajoudani, and Yu She. TacVLA: Contact-Aware Tactile Fusion for Robust Vision-Language-Action Manipulation. arXiv preprint arXiv:2603.12665 , 2026. 2 [63] Xiaohan Zhang, Zainab Altaweel, Yohei Hayamizu, Yan Ding, Saeid Amiri, Hao Yang, Andy Kaminski, Chad Es-selink, and Shiqi Zhang. DKPROMPT: Domain Knowledge Prompting Vision-Language Models for Open-World Plan-ning. arXiv preprint arXiv:2406.17659 , 2024. 2 [64] Xiangcheng Zhang, Runhan Huang, and Yilun Du. World Action Planner: Generalizable Robot Decision-Making 
+
+11 with Action-Conditioned World Models. arXiv preprint arXiv:2607.27599 , 2026. 2 [65] Xilun Zhang, Maggie Wang, Erik Bauer, Hong-Xing Yu, Huang Huang, Jiajun Wu, and Marco Pavone. Co-Evolving Robot Orchestrators and Policies through Deploy-ment. arXiv preprint arXiv:2610.09228 , 2026. 2 [66] Yixian Zhang, Huanming Zhang, Feng Gao, Xiao Li, Zhihao Liu, Yi Nie, Chunyang Zhu, Jiaxing Qiu, Yuchen Yan, Jiyuan Liu, Wenhao Tang, Jiaji Rao, Zhengru Fang, Changxu Wei, Yu Wang, Wenbo Ding, and Chao Yu. Harness VLA: Steer-ing Frozen VLAs into Reliable Manipulation Primitives via Memory-Guided Agents. arXiv preprint arXiv:2607.08448 ,2026. 2 [67] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware. In Proceedings of Robotics: Science and Systems , 2023. 2 [68] Ruijie Zheng, Yongyuan Liang, Shuaiyi Huang, Jianfeng Gao, Hal Daumé, Andrey Kolobov, Furong Huang, and Jian-wei Yang. TraceVLA: Visual Trace Prompting Enhances Spatial-Temporal Awareness for Generalist Robotic Policies. 
+
+arXiv preprint arXiv:2412.10345 , 2024. 3 [69] Enshen Zhou, Qi Su, Cheng Chi, Zhizheng Zhang, Zhongyuan Wang, Tiejun Huang, Lu Sheng, and He Wang. Code-as-Monitor: Constraint-aware Visual Programming for Reactive and Proactive Robotic Failure Detection. arXiv preprint arXiv:2412.04455 , 2024. 2 [70] Enshen Zhou, Jingkun An, Cheng Chi, Yi Han, Shanyu Rong, Chi Zhang, Pengwei Wang, Zhongyuan Wang, Tiejun Huang, Lu Sheng, and Shanghang Zhang. RoboRefer: To-wards Spatial Referring with Reasoning in Vision-Language Models for Robotics. arXiv preprint arXiv:2506.04308 ,2025. 3 
+
+12 Appendix 
+
+This appendix documents the implementation (Sec. A), experimental protocols (Sec. B), additional comparisons (Sec. C), and learning curves and trial outcomes (Sec. D). 
+
+A. Method Implementation Details 
+
+The following implementation details instantiate the com-mon execution loop introduced in Sec. 3. 
+
+A.1. Planning and Execution 
+
+Each PDDL operator specifies an atomic phase through its preconditions and effects. For the drawer task, the opera-tors are grasp-handle , open-drawer , pick-cube ,
+
+place-in-drawer , and close-drawer ; the pushing task uses a single push-to-slot operator. The VLM re-turns the current ground predicates and task goal in a fixed format. A breadth-first search over ground states returns the shortest operator sequence to the goal. The domains have at most five operators, and the solver enforces their preconditions and effects during search. Replanning repeats state estimation and search from the current observation, so already-satisfied goals need not be executed again. Every C control steps, the checker receives the phase de-scription together with the current primary-camera frame, wrist-camera frame, and gripper opening. The prompt lists the visual evidence required for successful completion of each phase. The checker returns done , not_done , or 
+
+replan , together with a one-sentence justification. Aphase timeout after T steps also triggers replanning. Al-gorithm 1 gives the point-steered instantiation of this loop; for phases with gk = ∅, grounding and point conditioning are omitted. The no-replanning ablation in Sec. 4.3 retains checker-controlled phase transitions but disables plan revi-sion. Push 5 Blocks is the exception. Instead of the full frame, the checker receives a crop centered on the current target and judges whether the target is fully covered by the in-structed block. We use this input because the VLM often fails to locate the target in the full image, especially when a block partially occludes it during pushing. 
+
+Algorithm 1 Closed-loop execution of Atomic Policy with point-steered skills.                                                                   
+
+> Require: instruction ℓ, phase policies {πs}s∈S
+> 1: (P1, . . . , P K)←PLANNER (ℓ, I t);k←1
+> 2: while k≤Kdo
+> 3: pk←GROUNDER (gk, I t)▷every Rsteps
+> 4: execute At∼πsk(· | ot, p k)
+> 5: v←CHECKER (Pk, o t)▷every Csteps
+> 6: if v=done then
+> 7: k←k+ 1
+> 8: else if v=replan or steps in Pk> T then
+> 9: (P1, . . . , P K)←PLANNER (ℓ, I t);k←1
+> 10: end if
+> 11: end while
+
+A.2. Grounding and Prompt Interfaces 
+
+The pointing model returns target locations in pixel coor-dinates. We divide the horizontal and vertical coordinates by the primary-camera image width and height to obtain 
+
+pk ∈ [0 , 1] 2. Grounding runs at the start of each target-dependent phase and every R control steps thereafter. For policies that also accept language, the phase instruction ac-companies the updated point. Each phase has a fixed prompt template, such as “grasp the {object} and lift it” for grasp . The template is filled with the target identified for the active phase. The 
+
+π0.5 implementation uses these phase-specific language prompts without points. For the MolmoSpaces experi-ments, MolmoBot is fine-tuned on phase-labeled demon-strations from MolmoBot-Data, with an image point for each target-dependent phase. Points are encoded using its native <points> tag with integer coordinates in [0 , 1000] .All implementations use the planning and verification pro-cedure described in Sec. A.1. 
+
+A.3. Point-Conditioned Skill Policies 
+
+In the specialized skill bank (Fig. 2), each phase uses a dif-fusion policy [10] that generates an action sequence At =(at, . . . , a t+H−1) with horizon H. The first Ha actions are executed before the policy is queried again. The condition-ing input is 
+
+ct =  ϕ(I1
+
+> t−To+1: t
+
+), . . . , ϕ (IMt−To+1: t), q t−To+1: t, ψ (pk) ,
+
+(2) where ϕ is the vision encoder shared across camera views and applied to the latest To frames, while ψ is a three-layer MLP that maps the two point coordinates to a 128-dimensional feature. The default encoder ϕ is CLIP ViT-B/32 [47]. We fully fine-tune it using one-tenth the learning rate of the rest of the network. Sections C.1 and 4.1 compare vision backbones and fine-tuning strategies. The denoiser 
+
+ϵθ is the 1D convolutional U-Net of Diffusion Policy [10] and is conditioned on ct. For phases without a separate tar-13 get, such as pulling an already-grasped drawer open, the point feature ψ(pk) is omitted. Demonstrations are divided into contiguous segments using their phase labels, and each segment is assigned to the corresponding policy πs. For a target-dependent phase, every frame also includes the target point in the primary-camera image. Each policy uses the standard noise-prediction objective and DDPM noise schedule [25], with noise levels sampled uniformly from the N diffusion steps. All phase policies use the same architecture and train-ing hyperparameters. 
+
+A.4. Wrist-Camera Pointing 
+
+Real-robot point-conditioned policies also receive a target point in the moving wrist-camera view. Unlike the fixed primary-camera point, this point must be updated as the end effector moves. Image-based tracking proved unreliable: SAM 2 drifted to similar cubes or gripper fingers and could not consistently isolate individual Crossword tiles. We in-stead maintain a 3D target xk in the robot base frame and project it into the wrist image: 
+
+wt = Π  E(qt)−1 xk
+
+, E(qt) = F (qt) Ecam , (3) where F (qt) is the flange forward kinematics, Ecam is the calibrated camera-to-flange transform, and Π is pinhole projection normalized by image size. A geometric visibility flag νt indicates whether the target is in front of the camera and within the image. Annotation, training, and deployment use the same geometry. We estimate the wrist-camera intrinsics and Ecam di-rectly from demonstrations, without a calibration target. For each grasp, we approximate the cube’s 3D position by the fingertip center at gripper closure and obtain 2D correspon-dences by tracking the cube backward through preceding wrist frames with SAM 2 [48]. Minimizing reprojection error gives a median error of 8.0 pixels on the 672 ×376 im-age. The unchanged camera mount allows this calibration to be shared across all three tasks. We then infer 3D targets from gripper events and fingertip poses, sharing each target between its approach and contact phases. Projecting these targets with Eq. (3) provides per-frame wrist points without manual frame-by-frame annotation. For Atomic + DP, the two-dimensional point input to 
+
+ψ in Eq. (2) is replaced by the five-dimensional vec-tor [ pk, w t, ν t ], which concatenates the primary-camera point, the wrist point normalized to the wrist-image crop, and the visibility flag. The primary-camera point remains fixed within each phase, while the wrist point uses the most recent observation. When νt = 0 , the wrist point is set to zero. During training, we add Gaussian noise with a stan-dard deviation of 0.02 to visible wrist coordinates and mask the wrist point and visibility flag with probability 0.15. Atomic + MolmoBot receives the visible wrist point as an additional <points> tag on the current wrist image. During deployment, MolmoPoint-8B is queried on the wrist image at the start of each target-dependent phase, during the pause for primary-camera grounding. The pre-dicted pixel is back-projected onto a plane at the phase’s target height, estimated from median contact heights in the demonstrations and adjusted for stack level during place-ment. This intersection initializes xk. We then update wt
+
+at every control step using Eq. (3), without image process-ing, including during target occlusion. Asynchronous wrist queries refine the estimate every 16 control steps, or every 8 steps until two consistent predictions confirm the target. Each prediction is back-projected using the robot pose at image capture; predictions on gripper fingers, identified by a SAM 2 mask, are rejected. At each policy query, the up-dated wrist point and visibility flag are supplied using the same encoding and masking rules as in training. 
+
+A.5. Real-Robot Policy Training 
+
+All policies are trained separately for each task on the demonstrations described in Sec. B.2, and each method uses the same training budget across the three tasks. For Atomic + DP, each phase policy uses the architecture of Sec. A.3 and is trained for 500 epochs with a batch size of 256 and a cosine learning-rate schedule. For Atomic + MolmoBot, we initialize from MolmoBot-DROID, train the action expert for 8,000 steps with the language model frozen, and use a batch size of 64. For Atomic + π0.5, we fully fine-tune π0.5-DROID in joint-position space for 20,000 steps with a batch size of 32 and 15-step action chunks at 15 Hz. The fine-tuned MolmoBot and π0.5 baselines follow the same recipes and training budgets as their Atomic Policy counterparts, with whole-task instructions in place of phase prompts and points. We set these budgets from pilot runs on a separate sorting task, where they offered a good balance between training time and policy performance. For every method and task, we deploy the final checkpoint and use it for all 20 evaluation trials without further checkpoint selection. 
+
+B. Experimental Protocols 
+
+B.1. Simulation Task Suites 
+
+Table 5 summarizes the atomic phases and scoring criteria for the simulated and real-robot tasks. The main text de-scribes their task requirements and evaluation procedures in Secs. 4.1 and 4.2. The phase sets and checker inputs vary with the task, while the planning and execution procedure is shared. For MolmoSpaces, training uses the phase-labeled 
+
+FrankaPickAndPlaceNextToOmniCamConfig 
+
+demonstrations from MolmoBot-Data, and evaluation uses 
+
+FrankaPickandPlaceNextToHardBench from 14 Table 5. Task suites, atomic phases, and scoring. Phases are listed in execution order. For the real-robot tasks, the task score is the fraction of correctly completed grasp and place steps (Eq. (4)), and success requires all steps to be completed.                               
+
+> Task Atomic Phases Success / Score
+> Simulation
+> Push 5 Blocks push_block all blocks on their targets / mean coverage Tabletop Manipulation grasp ,open ,pick ,place ,close cube in the closed drawer / fraction of 4 subtasks MolmoSpaces (PnP Next-To)
+> pregrasp ,grasp ,preplace ,place ,done object next to the receptacle / n/a
+> Real robot
+> Multi-drawer preopen ,open_and_home ,pregrasp ,grasp ,
+> preplace ,place
+> target object placed in the bin / fraction of grasp and place steps Stacking pregrasp ,grasp ,preplace ,place cubes stacked in the specified order / fraction of grasp and place steps Crossword pregrasp ,grasp ,preplace ,place letters placed in the numbered slots in order / fraction of grasp and place steps
+
+MolmoSpaces-Bench. For each fine-tuned configuration, we average success over the last 10 checkpoint evaluations ending at 16k train-ing steps. Each checkpoint is evaluated on the same 20 benchmark episodes, giving 200 rollout executions per con-figuration. Evaluation seeds are shared across methods and checkpoints. This aggregation summarizes repeated execu-tion over a fixed episode set across the final training win-dow. Each zero-shot model is evaluated at a single check-point on the same fixed set of 200 benchmark episodes. The total rollout budget is therefore matched across configura-tions, while episode coverage and checkpoint allocation dif-fer. 
+
+B.2. Real-Robot Setup and Evaluation Conditions 
+
+We evaluate on a Franka Panda robot with a Franka HAND gripper, controlled through DROID+ using absolute joint-position targets. A static side-view ZED 2i camera and a wrist-mounted ZED mini camera provide visual observa-tions. Demonstrations are collected through SpaceMouse teleoperation at approximately 14–15 Hz. The base datasets contain 99 demonstrations for Multi-drawer, 171 for Stack-ing, and 148 for Crossword. Each demonstration records a complete task episode and is subsequently annotated with phase labels and target points. Training budgets are matched in both epochs and opti-mization steps across the compared methods. We use the fi-nal saved checkpoint of each trained policy throughout real-robot evaluation, including both ID and OOD conditions. Initial cube positions are randomized for Stacking and Crossword; in Multi-drawer, the target is placed in the left and right drawers for five trials each. OOD evaluation introduces unseen cube colors in Stacking, grapes and a white bowl in Multi-drawer, and changed word, object, and visual-cue configurations in Crossword. The ID condition uses large letter cubes and a white-board displaying MARS . The OOD evaluation includes two conditions. For ROBO , we change the word on the white-board to ROBO while retaining the large-letter setup. No large-letter demonstrations spell ROBO . However, the train-ing data include ROBOT demonstrations with smaller letter cubes and a smaller numbered-slot board, so the letters and their relative order are not entirely unseen. For COKE , we replace the whiteboard cue with a Coke drink on the table and use the instruction: “Rearrange the letter cubes to spell the object on the table. Place cubes in the numbered tiles on the table.” Thus, COKE combines new target letters with a change in how the goal is specified visually. Results for both conditions are pooled into the 10 OOD Crossword trials per method. Each real-robot trial is divided into Ki scored manipu-lation phases, and the evaluator records which phases the robot completes correctly. For trial i of a given method, task, and condition, the task score is 
+
+si = 1
+
+KiKiX
+
+> k=1
+
+ci,k , ci,k ∈ { 0, 1}, (4) where ci,k = 1 if phase k is completed correctly and ci,k =0 otherwise. 
+
+C. Additional Comparisons 
+
+These analyses complement the steering and replanning ab-lations in Sec. 4.3. We first vary the vision encoder and planner/checker, then compare learned skill execution with direct VLM control to examine how performance depends on the task’s interaction requirements. 15 C.1. Vision Encoder and Planner/Checker VLM 
+
+We vary the vision encoder and the VLM while keeping the rest of the system fixed. For the vision encoder, we use officially released base-sized checkpoints from two model families, CLIP ViT-B/32 and DINOv3 ViT-B/16, and com-pare full and partial fine-tuning within each backbone. Par-tial fine-tuning freezes the lower eight transformer blocks and updates the top four. To study sensitivity to the plan-ner/checker, we compare frontier, lower-cost, and open-weight VLMs: gemini-3.8-flash , gpt-6-astra ,
+
+claude-opus-5.5 , gemini-2.5-flash , and 
+
+Qwen3-VL-235B . All models use the same prompts. Full fine-tuning improves both encoders on both tasks (Tab. 6). On Tabletop, it improves CLIP from 40.0% to 64.0% and DINOv3 from 27.5% to 64.0%, gains of 24.0 and 36.5 percentage points, respectively. This suggests that full adaptation better captures manipulation-specific visual cues. Among the VLMs, gemini-3.8-flash performs best on Push 5 Blocks at 83.8%, while gpt-6-astra 
+
+performs best on Tabletop at 65.0%. Qwen3-VL-235B 
+
+performs worst on both tasks, particularly on Tabletop, which may reflect difficulty with the spatial and state rea-soning required for planning and completion checking. The other four models are broadly competitive. The lower-cost 
+
+gemini-2.5-flash reaches 78.7% on Push 5 Blocks and 64.0% on Tabletop, remaining competitive with the other models. The VLM ranking depends on the task. 
+
+C.2. Zero-Shot Direct VLM Control 
+
+We also test whether a frontier VLM can control the robot directly without task-specific policy training. 
+
+gpt-6-astra receives the current camera images, end-effector state, and a history of its previous actions. At each query, it outputs up to four relative end-effector dis-placements for the simulator to execute. gpt-6-astra 
+
+is used zero-shot. Atomic Policy uses the CLIP en-coder and its saved policy checkpoints, while select-ing the best planner/checker VLM for each task from Tab. 6: gemini-3.8-flash on Push 5 Blocks and 
+
+gpt-6-astra on Tabletop. Both methods are evaluated on the same 50 seeded episodes. Push 5 Blocks is a simplified planar benchmark with a static top-down view and limited dexterity demands. Di-rect control with gpt-6-astra is highly effective, reach-ing 98.0% success compared with 86.3% for Atomic Policy (Tab. 7). Both approaches achieve high task scores, with Atomic Policy reaching 95.5 compared with 99.2 for direct control. Tabletop is a more realistic simulation of articulated manipulation, requiring precise grasps and timely control at 10 Hz across dependent actions. Here, Atomic Pol-icy reaches 60.0% success and a score of 80.0, compared with 52.0% and 69.5 for direct VLM control, with less variation across episode blocks. Both configurations use 
+
+gpt-6-astra on Tabletop. The gains therefore sup-port coupling its task-level reasoning and verification with trained, point-steered skills for precise local execution. 
+
+D. Learning Curves and Trial Outcomes 
+
+D.1. MolmoSpaces Learning Curves 
+
+Figure 4 shows how evaluation success evolves during fine-tuning for the configurations in Sec. 4.2. The curves com-plement the final-window comparison in Tab. 2 by showing the trajectory of performance across training. 1k 2k 3k 4k 5k 6k 7k 8k 9k 10k 11k 12k 13k 14k 15k 16k      
+
+> Training Steps
+> 0510 15 20 25 30 35 40 45 50 55 60
+> Success  Rate  (%)  43.5% 48.5% 8.0% 35.0% 37.0% 3.0%
+> π0.5 zero-shot π0.5 FT MolmoBot zero-shot MolmoBot FT MolmoBot FT + Point
+> MolmoBot FT + Point + Atomic (ours)
+
+Figure 4. Learning curves on MolmoSpaces PnP Next-To. Mol-moBot and π0.5 are evaluated during task-specific fine-tuning. Solid curves show success averaged over the ten most recent checkpoint evaluations. For the first nine checkpoints, the aver-age uses all checkpoints evaluated so far. Dashed horizontal lines indicate each model’s zero-shot success rate. 
+
+16 Table 6. Vision-encoder and planner/checker ablations. Vision-encoder experiments compare full and partial fine-tuning with 
+
+gemini-2.5-flash as both planner and checker. VLM experiments use the same prompts and a fully fine-tuned CLIP vision en-coder. Grey marks the reference configuration in each group; bold marks the best mean within each group. Metrics follow Tab. 1. Push 5 Blocks Tabletop Manipulation 
+
+Variant Success Score Success Score 
+
+Vision Encoder 
+
+CLIP, full FT 78.7 ± 11.4 97.9 ± 0.8 64.0 ± 9.2 80.2 ± 6.4 
+
+CLIP, partial FT 76.7 ± 12.4 96.6 ± 2.1 40.0 ± 17.6 67.5 ± 11.8 
+
+DINOv3, full FT 66.7 ± 11.9 93.5 ± 5.3 64.0 ± 15.0 82.3 ± 8.5 
+
+DINOv3, partial FT 52.2 ± 13.1 93.3 ± 3.9 27.5 ± 31.1 55.0 ± 21.6 
+
+Planner/Checker VLM 
+
+gemini-2.5-flash 78.7 ± 11.4 97.9 ± 0.8 64.0 ± 9.2 80.2 ± 6.4 
+
+gemini-3.8-flash 83.8 ± 9.7 98.7 ± 0.7 48.0 ± 16.0 76.1 ± 9.8 
+
+gpt-6-astra 68.1 ± 19.1 97.6 ± 1.6 65.0 ± 11.2 81.9 ± 8.2 
+
+claude-opus-5.5 70.8 ± 19.7 97.5 ± 1.4 50.0 ± 0.0 72.2 ± 7.0 
+
+Qwen3-VL-235B 47.7 ± 23.4 91.6 ± 3.9 8.6 ± 8.3 40.7 ± 5.5 
+
+Table 7. Direct VLM control versus learned skill execution. 
+
+The direct controller is gpt-6-astra . Success and score are reported as mean ± std (%) across five 10-episode blocks from the same 50 episodes. Grey denotes Atomic Policy; bold marks the higher mean. Both methods achieve high task scores on Push 5 Blocks; Atomic Policy achieves higher mean success and score with lower variation on simulated Tabletop manipulation. Push 5 Blocks Tabletop 
+
+Method Success Score Success Score gpt-6-astra 98.0 ± 4.0 99.2 ± 1.6 52.0 ± 16.0 69.5 ± 11.4 
+
+Atomic Policy 86.3 ± 10.9 95.5 ± 3.2 60.0 ± 6.3 80.0 ± 4.2 
+
+D.2. Real-Robot Trial Outcomes 
+
+Figure 5 complements Tab. 4 by showing individual trial scores and their variation across tasks and conditions. These outcomes complement the analysis in Sec. 4.4 of task inter-pretation, skill dependencies, and recovery across the real-robot tasks. Relative to their corresponding fine-tuned baselines, Atomic + MolmoBot and Atomic + π0.5 improve OOD Crossword task score by 72.5 and 60.0 percentage points, respectively. The corresponding gains are 22.5 and 15.0 points on Stacking, and +7 .4 and −5.5 points on Multi-drawer. Thus, the largest gains occur on Crossword, where execution depends on grounding a visually specified target into individual letter selections and an ordered sequence. This pattern illustrates the value of grounding task intent from visual context and maintaining that intent across a de-pendent skill sequence. Figure 6 reports the completion time of successful tri-als. The decomposition adds overhead from VLM planning, phase verification, and replanning. Among the Atomic Pol-icy variants, Atomic + π0.5 is the fastest on both tasks in ID and OOD conditions. On Crossword, this overhead ac-companies a substantially higher success rate, whereas the fine-tuned baselines complete only one trial in total. 
+
+D.3. Real-Robot Failure Modes 
+
+Figures 7 to 9 trace execution and outcomes across 300 real-robot rollouts: 20 trials per method and task (10 ID and 10 OOD). Trials that do not complete the task are classified by the error that ends execution. We distinguish unsuccess-ful trials, which include partial completion, from zero-score failures. Multi-drawer. No method receives a zero task score, in-dicating that all trials complete at least some manipulation steps. The remaining failures of the Atomic Policy variants are mainly grasp and place error. For fine-tuned MolmoBot, 7 of 11 unsuccessful trials involve failure to reach the white bowl during OOD placement. The policy grasps the object but fails to transport it to the unfamiliar receptacle, suggest-ing a limitation in target grounding rather than grasp execu-tion alone. Stacking. All 17 unsuccessful trials of Atomic + DP and 9 of 10 of Atomic + MolmoBot end in grasp or place er-rors. Atomic + DP particularly struggles with the precise alignment needed to place one cube on another. Replanning can select a new action or retry a failed step, but successful stacking still requires sufficient precision from the low-level policy. Crossword. The distinction between task-following and execution errors is most pronounced on Crossword. Wrong object, order, or place accounts for 36 of 39 unsuccessful 17 Figure 5. Real-robot trial outcomes. Top: in-distribution (ID); bottom: out-of-distribution (OOD). Boxes show the interquartile range (IQR), dark lines mark medians, and whiskers extend to the outermost observations within 1.5 IQR of the box edges. White diamonds mark means, and dots show individual trials ( n = 10 per method, task, and condition). Tasks are arranged by increasing language-grounding and compositional demands, from Multi-drawer to Stacking to Crossword. The language-only end-to-end baselines show wide trial-to-trial variation on Stacking and poor performance on Crossword, suggesting limited steerability as language-conditioning demands increase. Atomic + MolmoBot improves over fine-tuned MolmoBot on OOD Stacking and Crossword, supporting the combined benefit of point guidance and atomic-phase execution. Atomic + π0.5 also improves on these tasks without point inputs, showing that high-level planning and checker-controlled execution can improve OOD performance through language-based phase guidance alone. 
+
+baseline trials. The policies often revert to the demonstrated word or select an incorrect letter sequence instead of follow-ing the visually specified target. Across the Atomic Policy variants, 25 of 31 unsuccessful trials instead end in grasp or place errors; the other six involve a wrong object, order, or placement location. Four additional trials encounter an error but succeed after recorded recovery. Together, task score, full-task success, and the failure analysis provide complementary views of hierarchical ma-nipulation. Task score captures partial progress toward the requested goal, while full-task success measures whether that progress is sustained through completion. The failure analysis further distinguishes errors in target selection and action ordering from grasping and placement errors, help-ing interpret the contributions of high-level guidance and low-level execution. This distinction is particularly informative on Cross-word, where explicit phase and target guidance substantially improves task scores and shifts the dominant failure mode from incorrect letter selection and ordering to physical exe-cution. On tasks with simpler goal-grounding and sequenc-ing demands, end-to-end policies can already follow the in-tended goal, making manipulation reliability a more promi-nent factor in overall performance. For example, on OOD Stacking, Atomic + MolmoBot raises task score from 62.5 to 85.0, despite completing three rather than four of the ten trials. These results highlight the complementary roles of explicit guidance in maintaining goal-directed progress and reliable motor skills in converting that progress into com-plete task execution. 18 Figure 6. Completion time of successful real-robot trials. Top: ID; bottom: OOD. Only trials with a task score of 1 are included. Large dots show the mean completion time, vertical lines show ± one sample standard deviation, and faint dots show individual trials; n is the number of successful trials for each method. Fine-tuned MolmoBot completes no Crossword trial, and fine-tuned π0.5 completes a single ID Crossword trial. Completion time for Atomic Policy includes planning, verification, and replanning by the VLM, so successful Atomic Policy trials take longer than successful end-to-end trials; for example, Atomic + π0.5 averages 128.6 s on ID Stacking versus 61.6 s for fine-tuned π0.5. Means based on few successes, such as n ≤ 2, should be interpreted with caution. 
+
+19 Atomic + DP        
+
+> Episodes (20) No failure (18) Failures (2) Grasp (2)
+> SUCCESS (18) PARTIAL (2)
+
+Atomic + MolmoBot          
+
+> Episodes (20) No failure (12) Failures (8) Recovered (1) Wrong obj/order (1) Reach/stuck (2) Grasp (2) Place (2)
+> SUCCESS (13) PARTIAL (7)
+
+Atomic + 0.5       
+
+> Episodes (20) No failure (15) Failures (5) Grasp (2) Place (3)
+> SUCCESS (15) PARTIAL (5)
+
+MolmoBot (fine-tuned)       
+
+> Episodes  (20) No failure (9) Failures (11) Reach/stuck (7) Grasp (3) Place (1)
+> SUCCESS (9) PARTIAL (11)
+> 0.5
+
+(fine-tuned)        
+
+> Episodes  (20) No failure (18) Failures (2) Reach/stuck (1) Grasp (1)
+> SUCCESS (18) PARTIAL (2)
+
+Unrecovered failure types 
+
+Wrong obj/order    
+
+> wrong object, order, word, target, or plan
+
+Reach/stuck   
+
+> target not reached, drawer not opened, froze
+
+Grasp    
+
+> missed, dropped, or knocked over in grasp
+
+Place            
+
+> dropped in transport or missed the target
+> Multi-drawer: 20 episodes per method {ID, OOD} × 10 trials
+
+Figure 7. Failure modes on Multi-drawer. Each panel traces the 20 trials of one method (10 ID and 10 OOD) from execution to outcome. Trials either proceed without a recorded failure or encounter an error that is recovered through replanning or remains unresolved. Outcomes are SUCCESS (task score 1), PARTIAL ( 0 < task score < 1), and FAIL (task score 0). Failure types are wrong object or order (incorrect object, sequence, word, target recognition, or plan), reach or stuck (target or receptacle not reached, drawer not opened, or robot motion stalls), grasp, and place. Recovery is counted only when explicitly recorded in the evaluation notes. No method produces a zero-score trial on Multi-drawer. The Atomic Policy variants fail mainly through grasp and place errors, with one planning error for Atomic + MolmoBot. For fine-tuned MolmoBot, 7 of its 11 unsuccessful trials involve failure to reach the OOD receptacle during placement: the policy fails to guide the grasped object to the white bowl, suggesting difficulty grounding the unfamiliar receptacle’s location. 
+
+20 Atomic + DP       
+
+> Episodes  (20) No failure (2) Failures (18) Recovered (1) Grasp (8) Place (9)
+> SUCCESS (3) PARTIAL (17)
+
+Atomic + MolmoBot       
+
+> Episodes  (20) No failure (10) Failures (10) Reach/stuck (1) Grasp (1) Place (8)
+> SUCCESS (10) PARTIAL (10)
+
+Atomic + 0.5         
+
+> Episodes  (20) No failure (17) Failures (3) Wrong obj/order (2) Place (1)
+> SUCCESS (17) PARTIAL (2) FAIL (1)
+
+MolmoBot (fine-tuned)     
+
+> Episodes (20) No failure (9) Failures (11) Wrong obj/order (8) Reach/stuck (1) Place (2)
+> SUCCESS (9) PARTIAL (3) FAIL (8)
+
+0.5 (fine-tuned)         
+
+> Episodes (20) No failure (16) Failures (4) Wrong obj/order (3) Place (1)
+> SUCCESS (16) PARTIAL (1) FAIL (3)
+
+Unrecovered failure types 
+
+Wrong obj/order 
+
+wrong object, order, word, target, or plan 
+
+Reach/stuck 
+
+target not reached, drawer not opened, froze 
+
+Grasp 
+
+missed, dropped, or knocked over in grasp 
+
+Place 
+
+dropped in transport or missed the target 
+
+Stacking: 20 episodes per method {ID, OOD} × 10 trials Figure 8. Failure modes on Stacking. Panels and failure types follow Fig. 7. All 17 unrecovered failures of Atomic + DP and 9 of 10 of Atomic + MolmoBot are grasp or place errors, while Atomic + π0.5 fails in only 3 of 20 trials. Atomic + DP struggles with the fine-grained alignment required for stacking, suggesting that its low-level visuomotor policy has not learned sufficient placement precision from the available demonstrations. High-level replanning can retry these actions but cannot ensure accurate execution. In contrast, wrong object or order accounts for 8 of 11 failed trials of fine-tuned MolmoBot and 3 of 4 of fine-tuned π0.5, which together produce 11 zero-score trials. 
+
+21 Atomic + DP         
+
+> Episodes (20) No failure (10) Failures (10) Recovered (1) Grasp (2) Place (7)
+> SUCCESS (11) PARTIAL (9)
+
+Atomic + MolmoBot         
+
+> Episodes (20) No failure (7) Failures (13) Recovered (1) Wrong obj/order (1) Grasp (8) Place (3)
+> SUCCESS (8) PARTIAL (12)
+
+Atomic + 0.5          
+
+> Episodes (20) No failure (8) Failures (12) Recovered (2) Wrong obj/order (4) Wrong place (1) Grasp (4) Place (1)
+> SUCCESS (10) PARTIAL (8) FAIL (2)
+
+MolmoBot (fine-tuned)       
+
+> Episodes  (20) Failures (20) Wrong obj/order (16) Wrong place (1) Grasp (1) Place (2)
+> PARTIAL (8) FAIL (12)
+> 0.5
+
+(fine-tuned)        
+
+> Episodes  (20) No failure (1) Failures (19) Wrong obj/order (15) Wrong place (4)
+> SUCCESS (1) PARTIAL (9) FAIL (10)
+
+Unrecovered failure types 
+
+Wrong obj/order 
+
+wrong object, order, word, target, or plan 
+
+Wrong place 
+
+right object, wrong spot 
+
+Grasp 
+
+missed, dropped, or knocked over in grasp 
+
+Place 
+
+dropped in transport or missed the target 
+
+Crossword: 20 episodes per method {ID, OOD} × 10 trials Figure 9. Failure modes on Crossword. Panels and failure types follow Fig. 7. Wrong object, order, or place accounts for 36 of 39 unsuccessful trials of the fine-tuned baselines, whose rollouts often follow the training word or misorder letters. In contrast, 25 of 31 unrecovered failures across the Atomic Policy variants are grasp or place errors, and four trials succeed after recovery. Together with Tab. 4, these results support the benefit of explicit guidance and closed-loop planning for both ID execution and OOD generalization: Atomic + MolmoBot raises task score from 30.0 to 82.5 on ID trials and from 0.0 to 72.5 on OOD trials. Atomic + DP achieves the highest task scores in both conditions (91.3 ID and 90.0 OOD), showing that a point-guided policy can perform well on a task with strong language-grounding and sequencing demands. 
+
+22

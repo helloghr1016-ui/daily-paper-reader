@@ -1,0 +1,404 @@
+Title: CoachSI: Self-Improvement of Robot Policies with a Language Coach
+
+URL Source: https://arxiv.org/pdf/2611.25529v1
+
+Published Time: Fri, 20 Nov 2026 02:04:36 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# CoachSI: Self-Improvement of Robot Policies with a Language Coach 
+
+## Jiachen Tao Gengyu Zhang Haoxuan Wang Bing Liu Yan Yan †
+
+## University of Illinois at Chicago 
+
+https://tlxhlll.github.io/CoachSI/ step 0step 630 step 1,200           
+
+> step 411 step 620 step 804
+> step 439 step 630 step 818
+> Pick the mug from the counter and place it inside the microwave. Then close the microwave.
+> Pick the mug from the counter and place it in the microwave. Close the microwave door. Pick the mug from the counter and place it inside the microwave. Then close the microwave.
+> share that complete the next subgoal (%) unassisted success on this task (%) gain over the pretrained policy (points)
+
+1 The Policy Stalls 2 A Coach Names the Next Step 3 The Policy Improves Itself       
+
+> language coach relabel, fine-tune
+> 1frozen VLM as the coach 0additional human demos 0coach calls at test time
+
+Stalled States 
+
+> 2.9
+> task instruction
+> 13.5
+> next-step instruction
+> 4.6×
+
+This Task 
+
+> 41.7
+> pretrained
+> 86.7
+> CoachSI
+> +45.0
+
+18 Long-Horizon Tasks          
+
+> +2.0
+> human demos
+> +4.5
+> self-collected
+> +11.9
+> CoachSI
+> T A S K I N S T R U C T I O N N E X T S T E P 1N E X T S T E P 2T A S K I N S T R U C T I O N
+
+× ✓
+
+Figure 1. CoachSI: self-improvement with a language coach. (1) Given the task instruction, the pretrained policy picks up the mug and stalls; it does not complete any subgoal in 1,800 steps. (2) A frozen VLM coach reads the camera images and names the next step; the same policy, from the same initial state, completes the task. (3) Fine-tuned on its coached successes relabeled with the task instruction, the policy completes the task from the task instruction alone, with no coach at test time. Results: across 500 stalled states from two policies, the correct next-step instruction raises subgoal completion by 4.6×, and a VLM coach recovers 91% of this gain from images alone. CoachSI raises unassisted success from 41.7% to 86.7% on this task and from 47.4% to 59.3% across 18 long-horizon tasks, a gain of 11.9 points where human demonstrations and self-collected successes add 2.0 and 4.5. 
+
+## Abstract 
+
+Generalist robot policies execute atomic skills reliably but fail when the same skills are composed into long-horizon tasks. Self-improvement from the policy’s own experience does not close this gap: experience collected by the policy alone stays within its own distribution and reproduces what it can already do. We show that what the policy lacks is not a skill but the next step. We present CoachSI, a self-improvement method in which a frozen, off-the-shelf vision-
+
+†Corresponding author. 
+
+language model (VLM) coaches the policy in language: it watches the robot and names the next step in the format of the policy’s atomic instructions, and never outputs an action. Successful coached rollouts are relabeled in hind-sight with the original task instruction and used to fine-tune the policy. The fine-tuned policy is then deployed on its own. On states where a World Action Model and a Vision-Language-Action model have stalled, naming the next step raises subgoal completion by 4.6× over the unchanged task instruction, and the frozen VLM supplies it from the same camera images the policy sees. After fine-tuning, unassisted success on long-horizon tasks in unseen scenes rises from 
+
+1arXiv:2611.25529v1 [cs.RO] 19 Nov 2026 47.4% to 59.3%, 9.8 points above fine-tuning on human demonstrations and 7.3 points above fine-tuning on self-collected successes at an equal data budget. With a coach that sees only camera images, it reaches 56.8%, above both baselines. The gain is obtained with the action backbone frozen: language coaching teaches the policy what should happen next, and the skills it already has do the rest. 
+
+## 1. Introduction 
+
+Humans become skilled in the physical world not by be-ing shown every motion, but by practice: they act, ob-serve the outcome, and adjust. Repeated over many at-tempts, this loop turns a clumsy first try into a reliable skill, and it continues long after instruction ends. Gener-alist robot policies now perform a wide range of manipula-tion tasks [5, 6, 8, 9, 24, 40–42], yet they rarely improve this way: when a policy fails, making it better typically means collecting new human demonstrations. Enabling a robot to improve from its own experience is the goal of self-improvement in physical AI [7, 35], and it would scale robot learning beyond what human teleoperation can supply. The most direct form of self-improvement changes the policy itself: the robot acts, keeps its successful rollouts, and is fine-tuned on them. This recipe has two limitations. First, a policy acting alone stays within its own distribution, so its successes show it only what it can already do. Sec-ond, on the long-horizon tasks where improvement matters most, the policy fails often and has few successes to collect. Experience improves a policy when it contains successes the policy cannot yet produce, and self-collected experience contains few of them. Existing methods obtain such successes with supervi-sion from outside the policy. Interactive imitation learn-ing brings in a human operator who takes over when the robot errs and supplies corrective actions [2, 23]. Every correction costs operator time, so the supervision scales with human effort, the cost that self-improvement is meant to remove. Reinforcement learning replaces the operator with reward and value models that score the robot’s own at-tempts [10, 45]. These models must themselves be trained before they can supervise the policy. Hierarchical systems place a vision-language model above the policy to decom-pose the task into steps [1, 47]. The policy itself is left un-changed, and the system depends on the high-level model at every deployment. To understand what keeps a policy from producing these successes on its own, we analyze rollouts of generalist poli-cies on long-horizon tasks. We find that the missing suc-cesses are closer than they appear. The policies execute atomic skills reliably, yet fail when the same skills are com-posed into a long-horizon task [16, 29, 37, 48], and the fail-ures take a specific form: partway through the task the pol-icy stalls, and a stalled policy almost never recovers on its own. In a recurring case, the robot is already at the right object and holds the required skill, yet does not act. What the policy lacks in that moment is not a skill but the next step. What it needs is therefore far less than corrective ac-tions or rewards: a single instruction. We introduce CoachSI (Fig. 1), a self-improvement method guided by language alone. Its central component is a language coach: a frozen, off-the-shelf vision-language model (VLM) that watches the robot and replaces the task instruction with the next step, phrased in the format of the policy’s atomic instructions. The coach never outputs an action; every motion is produced by the policy’s own skills. Successful coached rollouts are relabeled in hindsight with the original task instruction [3] and used to fine-tune the policy, which is then deployed on its own. On a World Ac-tion Model, fine-tuning updates only the video backbone and keeps the action backbone frozen. CoachSI needs no human operator, no reward model, and no VLM at test time. We evaluate CoachSI on RoboCasa365 [39] with a World Action Model (WAM) [49] and a Vision-Language-Action model (VLA) [55]. On states where the two poli-cies have stalled, naming the next step raises subgoal com-pletion by 4.6× over the unchanged task instruction, and a VLM coach that sees only the policy’s camera images de-livers 91% of the gain of an oracle that always names the correct step. With the coach, the policy completes more than a quarter of the episodes it fails on its own. After fine-tuning the WAM on coached experience, unassisted success on 18 long-horizon tasks in unseen scenes rises from 47.4% to 59.3%, 9.8 points above fine-tuning on human demon-strations and 7.3 points above fine-tuning on self-collected successes at an equal data budget. With a coach that sees only camera images, it reaches 56.8%, above both base-lines. The action backbone is frozen throughout, so the en-tire gain comes from what the policy predicts will happen next: the skills were already there. Our contributions are: • We identify a class of stalls in long-horizon manipulation in which the policy has the skill but lacks the next step, and show that a single next-step instruction resolves them, for both a WAM and a VLA. • We propose CoachSI, a self-improvement method of lan-guage coaching, hindsight relabeling, and fine-tuning, guided only by a frozen VLM’s next-step instruction. • We show that CoachSI turns coached experience into unassisted capability and outperforms both human demonstrations and self-collected experience at an equal data budget. 
+
+## 2. Related Work 
+
+Self-improving robot policies. A growing body of work improves robot policies with experience collected after pre-2training [35]. Autonomous-improvement systems let the policy practice and train on its own rollouts after hind-sight relabeling or success filtering [7, 64]. Reinforcement-learning methods learn reward or value functions and opti-mize the policy against them [2, 10, 45, 54, 56, 57], with VLMs increasingly serving as the reward model [26, 36]. Interactive imitation learning queries an expert, typically a human teleoperator, for corrective actions on the states the policy visits [2, 23, 31, 34, 44]. Most recently, agents built on LLMs and world models improve the system around the policy: RoboRSI [50] writes and repairs skill code, and RoboCoach [32] selects which subtask demonstrations to collect next. In contrast to these works, CoachSI improves the policy with a single signal, the next-step instruction of a frozen VLM. It trains no reward or value model, requires no action-level expert, and updates the policy itself. 
+
+Language guidance at deployment. Language is the standard interface between high-level reasoning and low-level control. Hierarchical systems decompose a task into language steps at run time, with a separate LLM or VLM planner [1, 18, 20, 21, 28, 47] or inside the pol-icy [4, 5, 58, 60]. A second line corrects the policy in language during execution, with corrections issued by hu-mans [30, 46] or by VLMs that detect and explain fail-ures [15, 33] or choose among the policy’s candidate ac-tion plans [52]. RACER [12] trains both a VLM supervisor and a language-conditioned policy on expert-corrected fail-ure data and keeps the supervisor in the loop at deployment. These systems rely on a human or a high-level model at test time, and several train the policy to follow a new lan-guage interface. CoachSI uses the VLM only during data collection: the coach is frozen and off-the-shelf, it reuses the instruction format of the policy’s atomic skills, and the fine-tuned policy executes the task instruction on its own. 
+
+Language as a training signal. Language also serves as a signal for training. Hindsight relabeling assigns to a trajec-tory the goal it reached [3], and DIAL [53] and SOAR [64] use VLMs to produce such instruction labels for offline or autonomously collected data. BOSS [61] has an LLM pro-pose which skills to chain during practice and learns the chains as new skills. Scaling Up and Distilling Down [17] and Manipulate-Anything [14] have an LLM or a VLM generate demonstrations and distill them into a policy. In these works, language labels experience after the fact, se-lects what the policy practices, or drives a separate data generator. In CoachSI, language intervenes at the point of failure: the coach names the next step to a policy that has stalled, in the format of the policy’s own atomic instruc-tions, so every action in the resulting experience is produced by skills the policy already has. This design lets us mea-sure what language alone contributes, on fixed stalled states of a WAM [49] and a VLA [55] in RoboCasa365 [39] and against the policy’s own successes at an equal data budget. 
+
+World Action Models. A growing family of policies pre-dicts future observations together with actions. UniPi [13] casts control as text-conditioned video generation and ex-tracts actions from the generated video. GR-1 [51] pretrains a transformer on video generation and fine-tunes it to out-put future frames and actions. Video Prediction Policy [19] conditions its action head on the internal representations of a video diffusion model, CoT-VLA [62] predicts a subgoal image before each action chunk, the Unified Video Action model [27] learns a joint video-action latent, and Unified World Models [65] couple video and action diffusion in one model. DreamZero [59] and OpenWAM [49] scale this de-sign into World Action Models (WAMs) built on pretrained video-generation backbones, and Cosmos Policy [25] fine-tunes a pretrained video model directly into a policy. In a WAM, the video backbone predicts what will happen and the action backbone turns the prediction into motor com-mands. CoachSI exploits this separation: coached experi-ence updates only the video backbone, and the action back-bone stays frozen. 
+
+## 3. CoachSI 
+
+3.1. Preliminaries 
+
+We consider a language-conditioned policy πθ [9, 22] that maps an observation ot and an instruction ℓt to an action chunk [11, 63] of length h,
+
+at:t+h−1 ∼ πθ (· | ot, ℓ t). (1) The policy is trained on atomic tasks, each a single skill such as opening a cabinet, and on composite tasks that chain several skills toward one goal. A composite task is specified by a task instruction g. In unassisted execution, the policy is conditioned on ℓt = g for the whole episode. A World Action Model (WAM) implements πθ with two coupled components. A video backbone predicts future frames from the observation and the instruction, and an action backbone predicts the action chunk while attending to the features of the video backbone. The two are de-noised jointly and trained with L = λv Lvideo + λaLaction .A vision-language-action model (VLA) maps observations and language to actions without a video-prediction branch. We fine-tune the WAM, whose separate backbones let us update what the policy predicts next while every action is still produced by the pretrained weights (Sec. 3.3). 
+
+3.2. Language Coach 
+
+Each composite task g has a set of next-step instructions 
+
+V(g) = {v1, . . . , v m}, one per step of the task, written in the format of the policy’s atomic instructions. For the task 3(a) coached collection (b) relabeling and fine-tuning (c) deployment                                                                              
+
+> camera views xt
+> ❄
+> candidates (g)
+> “Turn on the front right burner of the stove.”
+> “Pick the croissant from the plate and place it in the pan.”
+> selects
+> ❄
+> ℓt
+> actions at:t+h− 1 : the policy's own
+> same frames, same actions
+> task instruction g
+> ❄
+> video only policy
+> unseen scene
+> task instr. g
+> actions at:t+h− 1
+> 1✓
+> ⋯
+> policy alone: stalls
+> 1✓2✓with the coach collected
+> 1✓2✓relabeled
+> relabel
+> ℓt→g
+> 1✓
+> ⋯
+> pretrained: stalls
+> 1✓2✓fine-tuned
+> task instruction gnext-step instruction 1next-step instruction 21square =1action chunk (32 steps) ✓subgoal completed
+> VLM coach
+> frozen
+> policy
+> frozen
+> video backbone
+> trained
+> action
+> frozen
+> fine-tuned policy
+> no coach
+
+Figure 2. Overview of CoachSI. (a) Coached collection. At every action chunk, a frozen VLM coach reads the camera views and selects the policy’s instruction ℓt from the next-step candidates of the task, or keeps the task instruction g. The policy weights are fixed and every action is the policy’s own. (b) Hindsight relabeling and fine-tuning. Successful rollouts keep their observations and actions, and ℓt is replaced by g. Fine-tuning mixes them with human demonstrations and updates only the video backbone. (c) Deployment. The fine-tuned policy receives observations and g alone, with no coach. Each square is one action chunk, colored by the instruction the policy receives; ticks mark completed subgoals. The example is one long-horizon task: alone, the pretrained policy completes the first subgoal and stalls; with the coach, it completes the task; after fine-tuning, it completes the task in an unseen scene without the coach. 
+
+“Pick the croissant and place it on the pan. Then turn on the stove to warm the croissant.”, V(g) holds “Pick the croissant from the plate and place it in the pan.” and “Turn on the front right burner of the stove.” Each vi asks for a skill the policy already has. The coach cϕ is a frozen, off-the-shelf VLM. At every action-chunk boundary it receives the task instruction, the candidate set, and the camera views the policy sees, denoted 
+
+xt, and selects the first step that is not yet done, or returns 
+
+KEEP when every step is done: 
+
+zt = cϕ(g, V(g), x t), (2) 
+
+ℓt =
+
+(
+
+g, zt = KEEP ,vzt , otherwise . (3) The selected instruction conditions the policy for the next action chunk, and the coach is queried again afterwards. The coach never outputs an action: every motion in a coached rollout is produced by πθ . We also use a state-based variant of the coach, which reads a text description of object and robot state in place of the images. 
+
+3.3. Hindsight Relabeling and Fine-Tuning 
+
+We run the coached policy from the initial state on a set of collection scenes and keep the rollouts that reach task success within the task horizon. For each kept rollout τ , we retain the observations and the executed actions and replace every coaching instruction with the task instruction g [3]: 
+
+Dcoach = {(τ, g ) : succ( τ, g ) = 1 }. (4) The relabeled data shows the task being completed under g
+
+alone. We fine-tune the policy on Dcoach mixed with the Robo-Casa365 human demonstrations Dhuman on which it was trained, with a fraction α of the training samples drawn from Dcoach . Because the coach outputs no actions, the actions in Dcoach are the policy’s own and carry no new action knowledge. What is new is the future that unfolds under g, which is a target for video prediction. We there-fore update only the self-attention layers of the video back-bone, with parameters θv , using the video loss, and keep the action backbone frozen: 
+
+min 
+
+> θv
+
+(1 − α) EDhuman 
+
+Lvideo 
+
+ + α EDcoach 
+
+Lvideo 
+
+. (5) At deployment the fine-tuned policy receives g for the whole episode. No coach, no candidate set, and no instruc-tion switch is used. 
+
+## 4. Experiments 
+
+Our experiments follow the argument of the paper. We show that generalist policies possess the skills for long-horizon tasks yet stall and that a single next-step instruction resolves 40 160 320 480 640             
+
+> Steps after the stall
+> 0% 10% 20% 30%
+> Stalled states completing the next subgoal
+> (a) WAM and VLA
+> 0160 320 480 640
+> Steps after the stall
+> 0% 10% 20% 30%
+> (b) Frozen VLM as the coach
+> State Images only 0% 50% 100%
+> Oracle gain recovered  101% 91%
+> oracle
+> (c) Coach input
+> Next-step instruction (oracle) VLM coach, images only Task instruction WAM VLA Figure 3. A single next-step instruction resolves the stall, and a frozen VLM supplies it. (a) Share of stalled states in which the policy completes the next subgoal, as a function of steps after the stall, for a WAM and a VLA (500 states, 15 tasks). (b) On the states evaluated with every instruction source (261 states), a VLM coach that sees only camera images matches the oracle. (c) Share of the oracle gain recovered by the VLM coach at 320 steps.
+
+the stall (Sec. 4.2), that a frozen VLM supplies this instruc-tion from camera images (Sec. 4.3), and that fine-tuning on coached experience turns it into the policy’s own capability (Sec. 4.4). 
+
+4.1. Experimental Setup 
+
+Benchmark and policies. We evaluate on Robo-Casa365 [39], which builds on RoboCasa [38]. The bench-mark provides atomic tasks, each a single skill, and com-posite tasks that chain several of them; we use 18 composite tasks as our long-horizon tasks. We study two public check-points as released: OpenWAM [49], a WAM, and Xiaomi-Robotics-1 [55], a VLA. Data collection and evaluation use disjoint sets of kitchen scenes. 
+
+Stalled states. A rollout under the task instruction stalls when no subgoal changes status for 320 steps. We collect 500 stalled states from failed rollouts of the two policies on 15 tasks. From each state we restore the simulator and con-tinue the same policy under each instruction source, with six continuations per source and matched random seeds. We report subgoal completion , the share of continuations that complete the next subgoal within 320 steps, and task suc-cess within 640 steps. 
+
+Coach. The coach is a frozen Qwen3.8-27B [43]. At every action chunk it receives three camera views and the candi-date next-step instructions of the task, and returns one can-didate or KEEP (Sec. 3.2). The oracle replaces the VLM with a rule that reads subgoal status from the simulator and always selects the first unfinished step; it is the upper bound of a coach. We collect coached data with the image-only coach and with the state-based coach (Sec. 3.2) and report CoachSI for both (Tab. 1); the analyses of Sec. 4.4 use the state-based coach. 
+
+Fine-tuning and evaluation. All fine-tuned policies start from the OpenWAM checkpoint and share one recipe: 3,000 gradient steps at batch size 16, with only the self-attention layers of the video backbone updated (Sec. 3.3). Of the 48,000 training samples, 80% are RoboCasa365 hu-man demonstrations, identical across policies. The remain-ing 20% is the only variable: each of the 18 tasks receives the same budget of 530 samples, filled from human demon-strations, from the policy’s own successes under the task instruction, or from coached successes. We evaluate ev-ery policy under the task instruction alone, on 20 unseen scenes with three trials per task, for 1,080 episodes. Com-parisons are paired by episode, and 95% confidence inter-vals are bootstrapped over tasks. A second training seed confirms the comparison: pooled over both seeds, CoachSI exceeds human demonstrations by 10.0 points and self-collected successes by 5.5. 
+
+4.2. One Next-Step Instruction Resolves the Stall 
+
+Policies have the skills, yet stall. Both policies execute the individual steps reliably: on the atomic tasks of Robo-Casa365, the WAM succeeds in 79.2% of episodes and the VLA in 86.2%. Yet once a long-horizon rollout stalls, it stays stalled: under the task instruction, 97% of continua-tions from a stalled state make no further progress within 320 steps. The failure is therefore not a missing skill. The policy holds a skill it does not invoke. We replace the task instruction with the oracle’s next-step instruction and change nothing else. Subgoal comple-tion rises by 4.6× (Fig. 3a), a gain of 10.5 points (95% CI [5.3, 17.6]), and the effect holds for both architectures: 50 320 640   
+
+> Steps after the stall
+> 0% 10% 20%
+> Next subgoal completed
+> (a) Subgoal
+> 0% 5% 10%
+> Task success
+> (b) Task
+> Task instruction Paraphrase Wrong step Next-step instruction Figure 4. Instruction-content controls on 228 stalled states of the WAM and the VLA. (a) Share of continuations that complete the next subgoal, by steps after the stall. (b) Task success within 640 steps.
+
+4.2× on the WAM and 6.4× on the VLA. The effect is largest where the policy has not started the task, with a 6.3×
+
+increase on states stalled before the first subgoal, and it car-ries through to the end of the task: task success rises by 
+
+2.3×. The curves keep separating for the full 640 steps. 
+
+The gain comes from the content of the instruction. Two controls on 228 of the stalled states isolate what the instruc-tion contributes (Fig. 4). A paraphrase of the task instruc-tion leaves subgoal completion unchanged ( +1 .3 points, 95% CI [ −0.2, 3.0]), and the next-step instruction exceeds it by 9.4 points [3.3, 18.2]. Naming the wrong step lowers task success below that of the unchanged task instruction, and the correct step exceeds it by 4.6×. A stall is resolved by telling the policy the right step, not by telling it some-thing new. 
+
+4.3. A Frozen VLM Is a Sufficient Coach 
+
+We replace the oracle with the frozen VLM on the 261 stalled states evaluated with every instruction source (Fig. 3b). With camera images as its only input, the VLM coach follows the oracle curve over the full horizon and re-covers 91% of the oracle gain at 320 steps (Fig. 3c); with access to state it recovers all of it. Selecting the next step requires no training, no robot data, and no privileged infor-mation: an off-the-shelf VLM already knows it. 
+
+4.4. Coached Experience Becomes Unassisted Ca-pability 
+
+Coaching yields successes the policy does not produce alone. With the image-only coach in the loop, the policy completes 28.7% of the evaluation episodes it fails on its own. The training data shows the same pattern: we roll out the policy with and without the coach from identical initial                                   
+
+> Table 1. Success on long-horizon tasks in unseen scenes (18 tasks, 1,080 episodes). The fine-tuned policies receive the task in-struction only; they share the training recipe and the per-task data budget and differ only in the source of the task data. The second row keeps the VLM coach in the loop at test time, without fine-tuning. CoachSI is reported for both coaches used in collection.
+> ∆is the difference to the pretrained policy. Policy VLM at test time Success (%) ∆
+> Pretrained –47.4 –Pretrained + VLM coach in the loop ✓41.9 −5.5
+> + Human demonstrations –49.4 +2 .0
+> + Self-collected successes –51.9 +4 .5
+> CoachSI (image-only coach) –56.8 +9 .4
+> CoachSI (state-based coach) –59.3 +11 .9
+> Table 2. Ablation of CoachSI. Unassisted success on the 18 long-horizon tasks in unseen scenes (1,080 episodes, task instruction only). Each row removes one component and keeps the training recipe and data budget. ∆is the difference to CoachSI. Variant Success (%) ∆
+> CoachSI 59.3 –Without hindsight relabeling 51.7 −7.6
+> Without the coach (self-collected) 51.9 −7.3
+
+states, 100 scenes for each of the 18 tasks, and a third of the 694 coached successes come from initial states where the policy alone fails. These trajectories lie outside what self-collection reaches. 
+
+CoachSI improves the policy where demonstrations and self-collection do not. Tab. 1 reports unassisted success. Additional human demonstrations raise the pretrained pol-icy from 47.4% to 49.4%, and the policy’s own successes reach 51.9%. CoachSI reaches 59.3%, a gain of 11.9 points over the pretrained policy. It exceeds human demonstra-tions by 9.8 points (95% CI [4.0, 16.3]) and self-collected successes by 7.3 points [4.0, 10.7], and it does so with fewer trajectories than self-collection (694 against 794). At an equal budget, what matters is not how much the policy prac-tices but whether the practice contains what it cannot yet do. 
+
+CoachSI works from camera images alone. With a coach that sees only camera images during collection, CoachSI reaches 56.8% (Tab. 1), 9.4 points above the pretrained pol-icy (95% CI [2.3, 17.9]), 7.3 above human demonstrations [1.7, 13.9], and 4.8 above self-collected successes [0.6, 9.5]. 
+
+The coach is better distilled than deployed. Keeping the coach in the loop at test time, the deployment mode of hierarchical systems [1, 47], yields 41.9% (Tab. 1): the coach adds successes the policy does not reach alone, but it also redirects episodes the policy would have completed. CoachSI keeps only the successes. The fine-tuned policy exceeds the coached pretrained policy by 17.3 points (95% CI [9.8, 26.5]) and queries no VLM at test time, where the 60 800 1600 2400 
+
+Episode steps 
+
+0% 20% 40% 60% 
+
+> Share of episodes
+
+(a) Task success 
+
+0 300 600 900 1200 
+
+Episode steps 
+
+0% 25% 50% 75% 100% 
+
+(b) First subgoal completed 
+
+0 240 480 720 960 
+
+Steps after the fi rst subgoal 
+
+0% 20% 40% 60% 80% 
+
+(c) Second subgoal after the fi rst 
+
+Pretrained + Human demonstrations + Self-collected successes CoachSI Figure 5. After CoachSI, the policy advances on its own. Unassisted rollouts on the 18 long-horizon tasks in unseen scenes (1,080 episodes per policy). (a) Share of episodes that have succeeded by each step. (b) Share of episodes that have completed a first subgoal. (c) Among episodes that complete a first subgoal, the share that complete the second, by steps after the first. 0% 25% 50% 75% 100%  
+
+> Unassisted success
+> StartElectricKettle PreRinseStation FryingPanAdjustment BreadAndCheese OrganizeVegetables CupcakeCleanup ChooseMeasuringCup WarmCroissant ScrubCuttingBoard PrepareCo ff ee DessertUpgrade DryDishes KettleBoiling TransportCookware RetrieveIceTray SnackSorting HeatMug FillKettle
+> Pretrained CoachSI
+
+Figure 6. Unassisted success per task before and after CoachSI. 
+
+Each row is one long-horizon task, evaluated on 20 unseen scenes with three trials each. CoachSI improves on the pretrained policy on 14 of the 18 tasks. 
+
+coach in the loop is queried 43 times per episode. 
+
+Every component of CoachSI contributes. Tab. 2 re-moves one component at a time. Without the coach, the pol-icy trains on its own successes and reaches 51.9%. Without hindsight relabeling, the coached data keeps the next-step instructions the policy executed, and success falls to 51.7%, 7.6 points below CoachSI (95% CI [3.8, 11.3]): coached experience becomes a capability under the task instruction because it is relabeled with it. 
+
+The policy now takes the next step by itself. Fig. 5 follows the unassisted rollouts over time. By step 1,200, CoachSI has reached the success rate that the pretrained policy at-0% 10% 20% 30% 40% 
+
+Scenes solved only with the coach 
+
+> 020 40
+> Gain of CoachSI (points)
+> FillKettle HeatMug SnackSorting
+
+Pearson r = 0.70 
+
+Figure 7. The gain follows the successes that only coaching pro-duces. Each point is one task. The horizontal axis is the share of the 100 collection scenes that the policy solves with the coach and fails alone; the vertical axis is the gain in unassisted success of CoachSI over the pretrained policy. 
+
+tains only at the end of the episode (Fig. 5a). The differ-ence appears from the first step of the task: within 320 steps of the start, 41.5% of CoachSI episodes have completed a first subgoal, against 23.9% for the pretrained policy, 24.9% with human demonstrations, and 28.8% with self-collected successes (Fig. 5b). After the first subgoal, the policy pro-ceeds to the second more often and sooner (Fig. 5c). On episodes that both policies complete, CoachSI finishes in a median of 593 steps, against 735 for the policy fine-tuned on human demonstrations. This is the behavior the coach induced in Fig. 3, now produced without the coach. 7step 1,106 step 1,628 step 2,550 step 1,277 step 1,421 step 1,537 step 1,218 step 2,059 step 3,300 step 1,003 step 1,385 step 1,767 step 1,141 step 1,795 step 2,850 step 1,013 step 1,353 step 1,524 
+
+“Open the freezer door, pick up the ice cube tray from the freezer, and place it on the dining counter.” 
+
+> Open the freezer door.
+> both policies complete step 1
+> Pick the ice cube tray from the freezer and place it on the dining counter.
+
+Pretrained policy    
+
+> stalled for 1,844 steps
+> step 2never completed
+
+CoachSI     
+
+> completes step 2 at step 1,537
+> no coach at test time
+
+“Open the cabinet, pick the kettle from the cabinet, and place it in the sink.” 
+
+> Open the cabinet.
+> both policies complete step 1
+> Pick the kettle from the cabinet and place it in the sink.
+
+Pretrained policy    
+
+> stalled for 2,482 steps
+> step 2never completed
+
+CoachSI     
+
+> completes step 2 at step 1,628
+> no coach at test time
+
+“Move the pot and pan from the stove into the sink.” 
+
+> Move the pot from the stove into the sink.
+> both policies complete step 1
+> Move the pan from the stove into the sink.
+
+Pretrained policy    
+
+> stalled for 2,109 steps
+> step 2never completed
+
+CoachSI         
+
+> completes step 2 at step 1,524
+> no coach at test time
+> 1
+> 2
+> ✓
+> 1
+> 2
+> ✓
+> 1
+> 2
+> ✓
+> R E T R I E V E I C E T R A Y F I L L K E T T L E T R A N S P O R T C O O K W A R E
+
+✓
+
+×✓
+
+✓
+
+×✓
+
+✓
+
+×✓Figure 8. CoachSI continues where the pretrained policy stalls. Unassisted rollouts on three long-horizon tasks in unseen scenes. In each task, both policies start from the same initial state and receive only the task instruction. Left: both policies complete the first step. 
+
+Right: the pretrained policy then stalls and makes no progress for the rest of the episode; CoachSI proceeds to the next step and completes the task, with no coach at test time. Bars show each episode on a common step axis: the first step (green), the stall (hatched), and the second step (blue). 
+
+The gain is broad, and the skills were already there. 
+
+CoachSI improves on the pretrained policy on 14 of the 18 tasks (Fig. 6). The largest gains are on tasks the pre-trained policy rarely completes: FillKettle rises from 18.3% to 70.0% and HeatMug from 41.7% to 86.7%. Across tasks, the gain follows the share of scenes that only coaching solves (Pearson r = 0 .70 , p = 0 .001 ; Fig. 7): the pol-icy improves where the coach showed it successes it could not produce. The action backbone is frozen throughout, so every motor command at test time is produced by the pre-trained weights. What changed is the video backbone’s pre-diction of what happens next. Fig. 8 shows the result on three tasks: the pretrained policy completes the first step and stalls for the rest of the episode, while CoachSI, from the same initial state and the same task instruction, proceeds to the next step and completes the task. Language coaching taught the policy the next step, and the skills it already had did the rest. 
+
+## 5. Conclusion 
+
+We presented CoachSI, a self-improvement method guided by language alone. A frozen VLM coach tells a stalled pol-icy its next step, and fine-tuning on the relabeled successes turns the coached behavior into the policy’s own. A single next-step instruction raises subgoal completion on stalled states by 4.6× on a WAM and a VLA, and an off-the-shelf VLM supplies it from camera images alone. Fine-tuning on the coached experience raises unassisted success in unseen scenes from 47.4% to 59.3%, above both human 8demonstrations and self-collected experience at an equal data budget, with the action backbone frozen. Generalist policies already hold the skills that long-horizon tasks require. What they need is to be told the next step, once. 
+
+## References 
+
+[1] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Cheb-otar, Omar Cortes, Byron David, Chelsea Finn, et al. Do as I can, not as I say: Grounding language in robotic affordances. 
+
+arXiv preprint arXiv:2204.01691 , 2022. 2, 3, 6 [2] Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Kevin Black, Ken Conley, et al. π∗
+
+> 0.6
+
+: a VLA that learns from ex-perience. In Robotics: Science and Systems (RSS) , 2026. 2, 3[3] Marcin Andrychowicz, Filip Wolski, Alex Ray, Jonas Schneider, Rachel Fong, Peter Welinder, Bob McGrew, Josh Tobin, Pieter Abbeel, and Wojciech Zaremba. Hindsight ex-perience replay. In Advances in Neural Information Process-ing Systems (NeurIPS) , 2017. 2, 3, 4 [4] Suneel Belkhale, Tianli Ding, Ted Xiao, Pierre Sermanet, Quan Vuong, Jonathan Tompson, Yevgen Chebotar, De-bidatta Dwibedi, and Dorsa Sadigh. RT-H: Action hierar-chies using language. In Robotics: Science and Systems (RSS) , 2024. 3 [5] Kevin Black, Noah Brown, James Darpinian, Karan Dha-balia, Danny Driess, Adnan Esmail, et al. π0.5: a vision-language-action model with open-world generalization. In 
+
+Conference on Robot Learning (CoRL) , 2025. 2, 3 [6] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. π0: A vision-language-action flow model for general robot control. In Robotics: Science and Systems (RSS) , 2025. 2 [7] Konstantinos Bousmalis, Giulia Vezzani, Dushyant Rao, Co-line Devin, Alex X. Lee, Maria Bauza, Todor Davchev, et al. RoboCat: A self-improving generalist agent for robotic ma-nipulation. Transactions on Machine Learning Research ,2023. 2, 3 [8] Anthony Brohan, Noah Brown, Justice Carbajal, Yev-gen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, et al. RT-2: Vision-language-action models trans-fer web knowledge to robotic control. arXiv preprint arXiv:2307.15818 , 2023. 2 [9] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, Chelsea Finn, Keerthana Gopalakr-ishnan, et al. RT-1: Robotics transformer for real-world con-trol at scale. In Robotics: Science and Systems (RSS) , 2023. 2, 3 [10] Qianzhong Chen, Hau Zheng, Justin Yu, Suning Huang, Jiankai Sun, Ken Goldberg, Chuan Wen, Pieter Abbeel, Yide Shentu, Philipp Wu, and Mac Schwager. SARM2: Multi-task stage aware reward modeling for self improving robotic manipulation. arXiv preprint arXiv:2606.10305 , 2026. 2, 3 [11] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin Burchfiel, and Shuran Song. Diffu-sion policy: Visuomotor policy learning via action diffusion. In Robotics: Science and Systems (RSS) , 2023. 3 [12] Yinpei Dai, Jayjun Lee, Nima Fazeli, and Joyce Chai. RACER: Rich language-guided failure recovery policies for imitation learning. In IEEE International Conference on Robotics and Automation (ICRA) , 2025. 3 [13] Yilun Du, Mengjiao Yang, Bo Dai, Hanjun Dai, Ofir Nachum, Joshua B. Tenenbaum, Dale Schuurmans, and Pieter Abbeel. Learning universal policies via text-guided video generation. In Advances in Neural Information Pro-cessing Systems (NeurIPS) , 2023. 3 [14] Jiafei Duan, Wentao Yuan, Wilbert Pumacay, Yi Ru Wang, Kiana Ehsani, Dieter Fox, and Ranjay Krishna. Manipulate-Anything: Automating real-world robots using vision-language models. In Conference on Robot Learning (CoRL) ,2024. 3 [15] Jiafei Duan, Wilbert Pumacay, Nishanth Kumar, Yi Ru Wang, Shulin Tian, Wentao Yuan, Ranjay Krishna, Dieter Fox, Ajay Mandlekar, and Yijie Guo. AHA: A vision-language-model for detecting and reasoning over failures in robotic manipulation. In International Conference on Learn-ing Representations (ICLR) , 2025. 3 [16] Yiguo Fan, Pengxiang Ding, Shuanghao Bai, Xinyang Tong, Yuyang Zhu, Hongchao Lu, Fengqi Dai, Wei Zhao, Yang Liu, Siteng Huang, Zhaoxin Fan, Badong Chen, and Donglin Wang. Long-VLA: Unleashing long-horizon capability of vi-sion language action model for robot manipulation. In Con-ference on Robot Learning (CoRL) , 2025. 2 [17] Huy Ha, Pete Florence, and Shuran Song. Scaling up and distilling down: Language-guided robot skill acquisition. In 
+
+Conference on Robot Learning (CoRL) , 2023. 3 [18] Jiaheng Hu, Mohit Shridhar, Caden Lu, Dhruv Shah, Hao-Tien Lewis Chiang, Jie Tan, and Annie Xie. What matters in orchestrating robot policies: A systematic study of hierar-chical VLA agents. arXiv preprint arXiv:2606.10267 , 2026. 3[19] Yucheng Hu, Yanjiang Guo, Pengchao Wang, Xiaoyu Chen, Yen-Jen Wang, Jianke Zhang, Koushil Sreenath, Chaochao Lu, and Jianyu Chen. Video prediction policy: A generalist robot policy with predictive visual representations. In Inter-national Conference on Machine Learning (ICML) , 2025. 3 [20] Wenlong Huang, Pieter Abbeel, Deepak Pathak, and Igor Mordatch. Language models as zero-shot planners: Extract-ing actionable knowledge for embodied agents. In Interna-tional Conference on Machine Learning (ICML) , 2022. 3 [21] Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, Pete Florence, Andy Zeng, Jonathan Tompson, Igor Mordatch, Yevgen Chebotar, Pierre Sermanet, Noah Brown, Tomas Jackson, Linda Luu, Sergey Levine, Karol Hausman, and Brian Ichter. Inner monologue: Embodied reasoning through planning with language models. In Conference on Robot Learning (CoRL) , 2022. 3 [22] Eric Jang, Alex Irpan, Mohi Khansari, Daniel Kappler, Fred-erik Ebert, Corey Lynch, Sergey Levine, and Chelsea Finn. BC-Z: Zero-shot task generalization with robotic imitation learning. In Conference on Robot Learning (CoRL) , 2022. 3 [23] Michael Kelly, Chelsea Sidrane, Katherine Driggs-Campbell, and Mykel J. Kochenderfer. HG-DAgger: Interactive imitation learning with human experts. In IEEE 
+
+9International Conference on Robotics and Automation (ICRA) , 2019. 2, 3 [24] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Pannag Sanketi, Quan Vuong, Thomas Kol-lar, Benjamin Burchfiel, Russ Tedrake, Dorsa Sadigh, Sergey Levine, Percy Liang, and Chelsea Finn. OpenVLA: An open-source vision-language-action model. In Conference on Robot Learning (CoRL) , 2024. 2 [25] Moo Jin Kim, Yihuai Gao, Tsung-Yi Lin, Yen-Chen Lin, Yunhao Ge, Grace Lam, Percy Liang, Shuran Song, Ming-Yu Liu, Chelsea Finn, and Jinwei Gu. Cosmos Policy: Fine-tuning video models for visuomotor control and planning. In International Conference on Learning Representations (ICLR) , 2026. 3 [26] Tony Lee, Andrew Wagenmaker, Karl Pertsch, Percy Liang, Sergey Levine, and Chelsea Finn. RoboReward: General-purpose vision-language reward models for robotics. arXiv preprint arXiv:2601.00675 , 2026. 3 [27] Shuang Li, Yihuai Gao, Dorsa Sadigh, and Shuran Song. Unified video action model. In Robotics: Science and Sys-tems (RSS) , 2025. 3 [28] Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and Andy Zeng. Code as policies: Language model programs for embodied control. In IEEE International Conference on Robotics and Automa-tion (ICRA) , 2023. 3 [29] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. LIBERO: Benchmarking knowl-edge transfer for lifelong robot learning. In Advances in Neu-ral Information Processing Systems (NeurIPS) , 2023. 2 [30] Huihan Liu, Alice Chen, Yuke Zhu, Adith Swaminathan, Andrey Kolobov, and Ching-An Cheng. Interactive robot learning from verbal correction. arXiv preprint arXiv:2310.17555 , 2023. 3 [31] Huihan Liu, Soroush Nasiriany, Lance Zhang, Zhiyao Bao, and Yuke Zhu. Robot learning on the job: Human-in-the-loop autonomy and learning during deployment. In Robotics: Science and Systems (RSS) , 2023. 3 [32] Jiajun Liu, Yifan Chen, Yichao Liu, Jiayi Zhang, Ruoqu Chen, Shaoxuan Xie, Guocai Yao, Mengdi Xu, Sen Cui, and Changshui Zhang. RoboCoach: World models as ac-tive coaches for compositional robot skills. arXiv preprint arXiv:2609.39685 , 2026. 3 [33] Zeyi Liu, Arpit Bahety, and Shuran Song. REFLECT: Sum-marizing robot experiences for failure explanation and cor-rection. In Conference on Robot Learning (CoRL) , 2023. 3 [34] Jianlan Luo, Charles Xu, Jeffrey Wu, and Sergey Levine. Precise and dexterous robotic manipulation via human-in-the-loop reinforcement learning. Science Robotics , 10(105): eads5033, 2025. 3 [35] Meng Luo, Zechen Bai, Shanqing Xu, Yanlin Li, Kaixin Li, Mengchen Qian, Weifeng Lu, Ran Zhang, Yingtian Zou, Ziyang Luo, Wei Chen, and Hongzhan Lin. Toward re-cursive self-improvement in physical AI. arXiv preprint arXiv:2610.29677 , 2026. 2, 3 [36] Yecheng Jason Ma, Joey Hejna, Ayzaan Wahid, Chuyuan Fu, Dhruv Shah, Jacky Liang, Zhuo Xu, Sean Kirmani, Peng Xu, Danny Driess, Ted Xiao, Jonathan Tompson, Osbert Bas-tani, Dinesh Jayaraman, Wenhao Yu, Tingnan Zhang, Dorsa Sadigh, and Fei Xia. Vision language models are in-context value learners. In International Conference on Learning Representations (ICLR) , 2025. 3 [37] Oier Mees, Lukas Hermann, Erick Rosete-Beas, and Wol-fram Burgard. CALVIN: A benchmark for language-conditioned policy learning for long-horizon robot manipu-lation tasks. IEEE Robotics and Automation Letters , 7:7327– 7334, 2022. 2 [38] Soroush Nasiriany, Abhiram Maddukuri, Lance Zhang, Adeet Parikh, Aaron Lo, Abhishek Joshi, Ajay Mandlekar, and Yuke Zhu. RoboCasa: Large-scale simulation of every-day tasks for generalist robots. In Robotics: Science and Systems (RSS) , 2024. 5 [39] Soroush Nasiriany, Sepehr Nasiriany, Abhiram Maddukuri, and Yuke Zhu. RoboCasa365: A large-scale simulation framework for training and benchmarking generalist robots. In International Conference on Learning Representations (ICLR) , 2026. 2, 3, 5 [40] NVIDIA, Johan Bjorck, Fernando Casta˜ neda, Nikita Cher-niadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, et al. GR00T N1: An open foundation model for generalist hu-manoid robots. arXiv preprint arXiv:2503.14734 , 2025. 2 [41] Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, Jianlan Luo, You Liang Tan, Lawrence Yunliang Chen, Pannag Sanketi, Quan Vuong, Ted Xiao, Dorsa Sadigh, Chelsea Finn, and Sergey Levine. Octo: An open-source generalist robot policy. In 
+
+Robotics: Science and Systems (RSS) , 2024. [42] Open X-Embodiment Collaboration. Open X-Embodiment: Robotic learning datasets and RT-X models. In IEEE In-ternational Conference on Robotics and Automation (ICRA) ,2024. 2 [43] Qwen Team. Qwen3.8-Max: A new bar for coding and cowork. https://qwen.ai/blog?id=qwen3.8 ,2026. 5 [44] St´ ephane Ross, Geoffrey J. Gordon, and J. Andrew Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In International Conference on Artificial Intelligence and Statistics (AISTATS) , 2011. 3 [45] Seyed Kamyar Seyed Ghasemipour, Ayzaan Wahid, Jonathan Tompson, Pannag Sanketi, and Igor Mordatch. Self-improving embodied foundation models. In Advances in Neural Information Processing Systems (NeurIPS) , 2025. 2, 3 [46] Lucy Xiaoyang Shi, Zheyuan Hu, Tony Z. Zhao, Archit Sharma, Karl Pertsch, Jianlan Luo, Sergey Levine, and Chelsea Finn. Yell at your robot: Improving on-the-fly from language corrections. In Robotics: Science and Systems (RSS) , 2024. 3 [47] Lucy Xiaoyang Shi, Brian Ichter, Michael Equi, Liyim-ing Ke, Karl Pertsch, Quan Vuong, James Tanner, Anna Walling, Haohuan Wang, Niccolo Fusai, Adrian Li-Bell, Danny Driess, Lachy Groom, Sergey Levine, and Chelsea Finn. Hi Robot: Open-ended instruction following with hi-
+
+10 erarchical vision-language-action models. In International Conference on Machine Learning (ICML) , 2025. 2, 3, 6 [48] Jiachen Tao, Gengyu Zhang, Haoxuan Wang, Bing Liu, and Yan Yan. PRISM: Primitive routing via in-context skill mixing for retentive VLA adaptation. arXiv preprint arXiv:2611.08917 , 2026. 2 [49] Yuran Wang, Siqiao Huang, Mingleyang Li, Chenhao Zhang, Jiaqi Liang, Weiyang Jin, Yue Chen, et al. OpenWAM: An open, modular exploration towards systematic world-action model pretraining. arXiv preprint arXiv:2609.07398 , 2026. 2, 3, 5 [50] Zimo Wen, Yijin Chen, Yuxuan Cao, Wendi Chen, Yan-wen Zou, Wenye Yu, Fuhang Kuang, Han Xue, Jun Lv, Chuan Wen, and Cewu Lu. RoboRSI: Stable, efficient, and reusable robot self-evolution in complex real-world environ-ments. arXiv preprint arXiv:2610.12424 , 2026. 3 [51] Hongtao Wu, Ya Jing, Chilam Cheang, Guangzeng Chen, Jiafeng Xu, Xinghang Li, Minghuan Liu, Hang Li, and Tao Kong. Unleashing large-scale video generative pre-training for visual robot manipulation. In International Conference on Learning Representations (ICLR) , 2024. 3 [52] Yilin Wu, Ran Tian, Gokul Swamy, and Andrea Bajcsy. From foresight to forethought: VLM-in-the-loop policy steering via latent alignment. In Robotics: Science and Sys-tems (RSS) , 2025. 3 [53] Ted Xiao, Harris Chan, Pierre Sermanet, Ayzaan Wahid, An-thony Brohan, Karol Hausman, Sergey Levine, and Jonathan Tompson. Robotic skill acquisition via instruction augmen-tation with vision-language models. In Robotics: Science and Systems (RSS) , 2023. 3 [54] Wenli Xiao, Haotian Lin, Andy Peng, Haoru Xue, Tairan He, Yuqi Xie, Fengyuan Hu, Jimmy Wu, Zhengyi Luo, Linxi Fan, Guanya Shi, and Yuke Zhu. Self-improving vision-language-action models with data generation via residual RL. In International Conference on Learning Representa-tions (ICLR) , 2026. 3 [55] Xiaomi Robotics Team, Jun Guo, Piaopiao Jin, Jason Li, Peiyan Li, Yingyan Li, Futeng Liu, et al. Xiaomi-Robotics-1: Scaling vision-language-action models with over 100K hours of real-world trajectories. arXiv preprint arXiv:2607.15330 , 2026. 2, 3, 5 [56] Charles Xu, Qiyang Li, Jianlan Luo, and Sergey Levine. RLDG: Robotic generalist policy distillation via reinforce-ment learning. In Robotics: Science and Systems (RSS) ,2025. 3 [57] Jiazhi Yang, Kunyang Lin, Wencong Zhang, Jinwei Li, Tian-wei Lin, Longyan Wu, Ya-Qin Zhang, Hao Zhao, Ping Luo, Zhizhong Su, Hongyang Li, Xiangyu Yue, and Li Chen. RISE: Self-improving robot policy with compositional world model. In Robotics: Science and Systems (RSS) , 2026. 3 [58] Yi Yang, Jiaxuan Sun, Siqi Kou, Yihan Wang, and Zhi-jie Deng. LoHoVLA: A unified vision-language-action model for long-horizon embodied tasks. arXiv preprint arXiv:2506.00411 , 2025. 3 [59] Seonghyeon Ye, Yunhao Ge, Kaiyuan Zheng, Shenyuan Gao, Sihyun Yu, George Kurian, Suneel Indupuru, et al. World action models are zero-shot policies. arXiv preprint arXiv:2602.15922 , 2026. 3 [60] Michał Zawalski, William Chen, Karl Pertsch, Oier Mees, Chelsea Finn, and Sergey Levine. Robotic control via em-bodied chain-of-thought reasoning. In Conference on Robot Learning (CoRL) , 2024. 3 [61] Jesse Zhang, Jiahui Zhang, Karl Pertsch, Ziyi Liu, Xiang Ren, Minsuk Chang, Shao-Hua Sun, and Joseph J. Lim. Bootstrap your own skills: Learning to solve new tasks with large language model guidance. In Conference on Robot Learning (CoRL) , 2023. 3 [62] Qingqing Zhao, Yao Lu, Moo Jin Kim, Zipeng Fu, Zhuoyang Zhang, Yecheng Wu, Zhaoshuo Li, Qianli Ma, Song Han, Chelsea Finn, Ankur Handa, Tsung-Yi Lin, Gordon Wet-zstein, Ming-Yu Liu, and Donglai Xiang. CoT-VLA: Visual chain-of-thought reasoning for vision-language-action mod-els. In IEEE/CVF Conference on Computer Vision and Pat-tern Recognition (CVPR) , 2025. 3 [63] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. In Robotics: Science and Systems (RSS) ,2023. 3 [64] Zhiyuan Zhou, Pranav Atreya, Abraham Lee, Homer Walke, Oier Mees, and Sergey Levine. Autonomous improvement of instruction following skills via foundation models. In Con-ference on Robot Learning (CoRL) , 2024. 3 [65] Chuning Zhu, Raymond Yu, Siyuan Feng, Benjamin Burch-fiel, Paarth Shah, and Abhishek Gupta. Unified world mod-els: Coupling video and action diffusion for pretraining on large robotic datasets. In Robotics: Science and Systems (RSS) , 2025. 3 
+
+11

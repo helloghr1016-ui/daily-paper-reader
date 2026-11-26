@@ -1,0 +1,1310 @@
+Title: RoboHarness-RL: Agentic Reinforcement Learning for VLM-Based Robot Manipulation
+
+URL Source: https://arxiv.org/pdf/2611.32016v1
+
+Published Time: Wed, 25 Nov 2026 02:15:08 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# RoboHarness-RL: Agentic Reinforcement Learning for VLM-Based Robot Manipulation 
+
+Liyang Li * Mingyu Liu * Xiaoman Li Zhiyue Zhao Jin-Chuan Shi Canyu Zhao Haokai Zhang Jinyuan Tian Linhao Zhong Hao Chen † Chunhua Shen †
+
+Zhejiang University, State Key Lab of CAD & CG (c) Same error, different responses    
+
+> SFT
+> #9
+> descent stops short #13
+> lifts away #26–92
+> repeats the attempt #92
+> out of budget
+> RL
+> #9
+> descent stops short #12
+> closes in place #16
+> carries it over #17
+> task success repeats
+> ✗fails adapts
+> ✓succeeds RL at #12: “The downward approach stopped above the intended grasp … so I’ll try closing here.”
+
+(a) From imitation to interaction      
+
+> Successful demos
+> from GPT-6 Astra
+> SFT
+> VLM policy
+> Qwen3.5-9B
+> Rollouts in the harness ×8
+> initial state tool calls ✓reward 1
+> tool calls ✗reward 0
+> ⋮
+> agentic RL (GRPO)
+
+(b) Gains across benchmarks success rate (%)         
+
+> Base SFT RoboHarness-RL
+> 20.0 31.2 44.0
+> +24.0
+> RoboTwin clean 15.6 26.4 38.0
+> +22.4
+> RoboTwin randomized 1.8 57.8
+> 73.3
+> +71.5
+> LIBERO-Pro
+
+Figure 1. RoboHarness-RL trains VLMs to act through tool calls, without a VLA policy. (a) SFT on teacher demonstrations, then agentic RL. (b) Red arrows: gain over the base model. (c) After the same error, SFT repeats it and fails; RL adapts and succeeds. 
+
+## Abstract 
+
+Agentic harnesses enable frontier vision-language models (VLMs) to manipulate robots through perception, plan-ning, and control tools, yet achieving comparable perfor-mance with compact open-weight VLMs remains challeng-ing. We present RoboHarness-RL , an agentic reinforce-ment learning framework for improving VLM-based robot manipulation through tool calls. Starting from supervised fine-tuning on successful teacher demonstrations, the VLM further improves through multi-turn reinforcement learn-ing with task-outcome rewards, without relying on vision-language-action models or world action models. To sup-port efficient multi-turn training, we develop LiteHarness ,which uses hierarchical memory to keep interaction con-texts compact while preserving task performance. With Qwen3.5-9B, RL raises success from 31.2% to 44.0% on RoboTwin 2.0 and from 57.8% to 73.3% on LIBERO-Pro; these gains extend to randomized RoboTwin scenes unseen during training (26.4% to 38.0%). Behavioral analysis fur-
+
+> *
+
+Equal contribution. †Corresponding authors. 
+
+ther shows that RL reduces repetitive-call rates by up to 
+
+4×, shortens successful executions, and improves recovery from negative feedback. Project page: https://aim-uofa.github.io/RoboHarness-RL/ .
+
+## 1. Introduction 
+
+Agentic harnesses let vision-language models (VLMs) ma-nipulate robots through tool calls for perception, planning, and control [6, 28, 61]. Robot systems have traditionally separated a slow model that reasons about the task (Sys-tem 2) from a fast learned policy that produces motor ac-tions (System 1). In a harness, this boundary blurs: the VLM not only decides what to do next, but also specifies end-effector poses and gripper commands, so its decisions directly shape how the robot moves. Yet achieving comparable performance with compact open-weight VLMs remains challenging. On randomized RoboTwin 2.0 scenes, the ORA harness reaches 69.2% suc-cess with DeepSeek-V4.1-Flash but only 6.8% with the open-weight Qwen3.5-9B (Sec. 4.3). Approaches to im-1arXiv:2611.32016v1 [cs.RO] 24 Nov 2026 Low : motor commands High : text / API calls Abstraction level of actions         
+
+> High-level ✗
+> Physical action ✓
+> action chunks
+> Δpose, gripper
+> RL for VLAs / WAMs
+> ConRFT, πRL, SimpleVLA-RL, WAM-RL
+> High-level ✓
+> Physical action ✗
+> search("…") run(code) click(x, y) answer(…)
+> Agentic RL for LLMs
+> Search-R1, ReTool, UI-TARS-2, GiGPO
+> Where is RoboHarness-RL?
+> High-level ✓
+> Physical action ✓
+> vision_ground("can") grasp_plan(target) move_pose(xyz, quat)
+> RoboHarness-RL
+> agentic RL over tool calls with continuous parameters
+
+Figure 2. Where is RoboHarness-RL? It optimizes robot tool calls, which are higher-level than the motor commands of VLAs and finer-grained than the text actions of LLM agents. 
+
+proving compact VLM agents include refining the har-ness [12, 53] or distilling frontier models through super-vised learning [6, 28]. Building on these advances, we in-vestigate whether reinforcement learning from the model’s own interactions can further improve manipulation perfor-mance beyond supervised imitation. Reinforcement learning (RL) has improved vision-language-action models (VLAs) [5, 27, 49] and world ac-tion models (WAMs) [41, 62] beyond imitation. In paral-lel, agentic RL trains language models through multi-turn tool use in digital environments such as web search [22] and graphical interfaces [50]. Harness-based manipulation lies between the two (Fig. 2): the VLM uses high-level tool calls as in agentic RL, while controlling physical robot ac-tions. Concurrent approaches include RL with a learned VLA executor [35] and single-turn RL for control-program generation [10]. We instead train the VLM to specify robot actions itself through multi-turn tool calls. Two challenges make RL costly in this setting. First, every model call carries a growing interaction history, in-cluding camera images, across episodes of up to 200 calls, increasing the cost of both rollout collection and policy up-dates. Second, tasks that the current policy consistently solves or fails may provide little group-relative learning sig-nal, yet still consume rollout budget. We address both with RoboHarness-RL , an agentic RL framework that trains VLMs to manipulate through tool calls, with no VLA or WAM generating actions. After fine-tuning on teacher demonstrations, the VLM learns through multi-turn GRPO with task-outcome rewards. Interac-tion runs through LiteHarness , whose hierarchical mem-ory keeps recent interactions in detail, summarizes older ac-tions, and records failures separately. Compared with com-pressed full history, it roughly halves the prompt tokens per call while achieving higher success. Adaptive scheduling postpones solved tasks, removes persistently failed ones, and allocates more rollouts to tasks with a learning signal. With Qwen3.5-9B [42], RL raises success from 31.2% after SFT to 44.0% on RoboTwin 2.0 [4] and from 57.8% to 73.3% on LIBERO-Pro. Although trained only in clean scenes, the policy also improves from 26.4% to 38.0% in randomized RoboTwin scenes. RL also succeeds on tasks that SFT fails to solve in evaluation. Behavioral analysis shows how RL changes the way the model uses the harness: on RoboTwin, repetitive-call rates drop from about 10% to under 3%, jointly successful episodes require about a third fewer model calls, and the policy more often recovers to complete the task after execution failures (Fig. 1c). Our main contributions are as follows: • We propose RoboHarness-RL , an agentic RL framework that trains VLMs to manipulate robots through multi-turn tool calls without relying on VLAs or WAMs. • We design LiteHarness and adaptive task scheduling for efficient multi-turn RL. Hierarchical memory roughly halves prompt tokens per call and improves success. • We show that RL improves over supervised imitation by 
+
+12.8 and 15.5 percentage points on RoboTwin 2.0 and LIBERO-Pro, respectively. These gains extend to ran-domized scenes unseen during training. RL also reduces repetitive tool calls, shortens successful executions, and improves recovery after negative feedback. 
+
+## 2. Related Work 
+
+2.1. Agentic harnesses for robot manipulation 
+
+Early language-guided systems compose predefined skills [1, 16, 46], generate policy code [29], or guide motion planning with spatial representations [17]; hierar-chical VLM planning also supports long-horizon mobile manipulation [52]. Recent harnesses enable closed-loop control through code and tools. Code-based systems compose perception and control primitives and revise programs from execu-tion feedback [10, 11, 21, 39]. Tool-based systems expose perception, planning, and control functions for direct in-vocation [6, 28, 61, 64, 67, 68]. Other harnesses connect VLM motion commands to deterministic control with asyn-chronous monitoring [23]. Across episodes, agents refine code through repeated trials [57, 59], evolve harnesses around frozen mod-els [12, 53], or retain experience as persistent mem-ory [36, 51], transferable spatial lessons [65], and reusable skills [15]. RoboHarness-RL instead improves model deci-sions through multi-turn RL. 
+
+2.2. Agentic reinforcement learning for language models 
+
+Agentic RL trains language models through multi-turn in-teraction, including search [22, 71], tool-assisted reason-ing [8, 26], and graphical or web interfaces [50, 56]. Broader studies examine training stability, exploration, and rollout design [55, 58], while fine-grained credit assignment combines trajectory-level advantages with step-level esti-2a Teacher SFT 
+
+Teacher VLM 
+
+> GPT-6 Astra
+> 1grasp_execute
+> 2move_pose
+> 3move_to
+> 4move_pose
+> 5set_gripper
+> 6finish_episode
+
+b LiteHarness “Open the microwave.” 
+
+> brief plan + tool call “The proposed grasp was rejected before any motion. I’ll try a side approach to the handle instead…” move_pose(side)
+
+Perception 
+
+> T0 0.89 T2
+> vision_ground mark_point +3 more
+
+Planning  
+
+> G1 G2 G0 ✗
+> grasp_plan compute +1 more
+
+Action      
+
+> grasp_execute move_pose set_gripper recover_pose move_to +3 more
+> grasp_execute(G0)
+> ✗G0 unreachable move_pose(side)
+> ✓reached
+
+Hierarchical memory         
+
+> Summaries St
+> step 1 · move_pose →reached step 2 · move_pose →blocked
+> Failure record Ft
+> ✗grasp_execute(G0) G0 unreachable, refused
+> Recent window Rt
+> feedback
+> Student VLM
+> context LoRA SFT
+
+c Agentic RL  
+
+> task-aware sampling
+> skip
+> hard ×2 easy ×1
+> rollouts from the same initial state
+> s0
+
+✓ r=1 
+
+✓ r=1  
+
+> +69
+
+✗ r=0  
+
+> +68
+
+✗ r=0       
+
+> observation query action success
+> group-relative advantage
+> A1+0.75
+> A2+0.75
+> A3−0.25
+> A4−0.25
+> GRPO update
+
+πθ
+
+> next round
+
+Figure 3. Overview of RoboHarness-RL. (a) SFT on successful teacher episodes initializes the student VLM. (b) In LiteHarness, the student issues tool calls to fixed perception, planning, and action tools; feedback is kept in a hierarchical memory that forms the next context. (c) Agentic RL samples groups of rollouts with per-task scheduling and updates the policy with GRPO. 
+
+mates [9]. Training frameworks decouple agent execution from pol-icy optimization through standardized interfaces or rollout services [38, 66]. They record model interactions for train-ing while leaving tool use, context management, and exe-cution to the harness [14, 60]. We adopt this approach for robot manipulation. 
+
+2.3. Training embodied agents 
+
+Robot policies use sparse plans with action experts [32], sparse trajectory interfaces [18], or joint-aligned actions and adversarial learning for cross-embodiment demonstra-tion transfer [70]. Yet demonstration learning can leave modality shortcuts [34] and insufficient recovery-state cov-erage [33]. RL improves VLAs and diffusion policies be-yond imitation [5, 19, 24, 27, 37, 49, 54], and extends to world action models [41, 62]. SFT and multi-turn RL are also studied for embodied agents acting on visual feed-back [25]. For robot harnesses, teacher distillation transfers frontier-model capabilities to compact agents [6, 12, 28]. CaP-RL studies single-turn RL for control programs, while Guava explores RL refinement on two selected manipula-tion tasks [10, 31]. AgenticRoboRL [35] invokes VLAs through RPent and generates code with privileged state through CaP-X; PyRUA-Lean Coder [45] generates Python programs over primitives including frozen VLAs. CaPtain combines SFT and multi-turn RL for code-as-policy agents with a privileged-state critic [7], while ZAP uses manu-ally designed progress rewards [40]. We use direct tool calls, task-success rewards, and general tool-use penalties, without VLAs, privileged-state critics, or task-specific re-ward shaping. We train and evaluate on RoboTwin 2.0 and LIBERO-Pro with hierarchical memory and adaptive task scheduling. 
+
+## 3. Method 
+
+3.1. Overview 
+
+RoboHarness-RL trains a VLM policy through multi-turn interaction with a robot environment. Interaction is sup-ported by LiteHarness , a lightweight harness built on the tools of ORA [61] and designed for efficient agentic RL. Figure 3 illustrates the harness and the two training stages. For a manipulation task with instruction x, a VLM pol-icy πθ , parameterized by θ, interacts with the environment through LiteHarness. At model call t, the policy generates a response yt ∼ πθ (· | x, h t), where ht denotes the inter-action context provided by LiteHarness for that call. Tool calls within these responses provide access to perception, 3planning, and control, with execution feedback guiding sub-sequent decisions. The resulting interaction is represented by a trajectory τ = (( h1, y 1), . . . , (hT , y T )) , where T is the number of model calls until the episode ends. Training proceeds in two stages: supervised fine-tuning on teacher demonstrations establishes basic manipulation procedures, followed by multi-turn agentic RL to improve decision-making through interaction. Both stages optimize only the VLM policy, keeping the perception models and motion planners fixed. Section 3.2 describes LiteHarness, Section 3.3 the two training stages, and Section 3.4 interac-tion budgets and task scheduling. 
+
+3.2. LiteHarness: A Lightweight Agent Harness 
+
+LiteHarness is built around one constraint: every model call carries the interaction history, so the length of this context drives the cost of both rollout collection and policy opti-mization. It keeps the context compact in two ways, through concise tool descriptions and through hierarchical memory. 
+
+Tool interface. The policy acts on the environment only through tools, which fall into two kinds. Read-only queries return information without moving the robot, such as object masks from SAM 3 [3], grasp candidates from Contact-GraspNet [48], or geometric measurements. Robot-action tools end the policy’s turn and execute grasp selections, end-effector targets, or gripper commands specified by the VLM. Motion execution uses cuRobo [47] planning or lo-cal control, while gripper commands control opening and closing. Concise descriptions of each tool’s purpose and arguments keep the fixed context short. Full interface spec-ifications are provided in Appendix B.1. 
+
+Hierarchical memory. Hierarchical memory controls context growth by retaining different parts of the interac-tion history at different levels of detail. Without it, feed-back from every query and action would accumulate, and the policy often issues several queries before each robot ac-tion. Omitting fixed instructions, the context is written as 
+
+ht = [ St; Ft; Rt], (1) where St, Ft, and Rt denote historical summaries, failure records, and recent interactions, respectively. Here, [ · ; · ]
+
+denotes concatenation, and all memory components contain only information available before model call t.
+
+St summarizes actions older than the recent window and their outcomes to maintain a concise account of task progress. To discourage repeated unsuccessful attempts, Ft
+
+consolidates failed actions and rejected calls with their key arguments and reported causes, keeping prior failures acces-sible after their details leave the window. Recent memory 
+
+Rt retains the current observation and up to K preceding observations, together with their associated responses and tool feedback. Earlier queries within this window are com-pressed while preserving key outputs, such as coordinates and candidate identifiers, for subsequent tool use. Images use a shorter window: only the current and two preceding steps can contribute images. Tool-feedback im-ages from previous observations are discarded, and each re-quest is capped at Bimg images, removing the oldest first. All memory operations are deterministic and require no ad-ditional model calls; retention and compression settings are provided in Appendix B.4. 
+
+3.3. Training with Teacher Demonstrations and Agentic RL 
+
+Learning from teacher demonstrations. The teacher re-ceives detailed tool descriptions, while the student uses LiteHarness’s concise ones with the same tool names and argument schemas. The teacher acts under the same mem-ory rules, and each of its responses is paired with the con-text the student would receive at that call. The policy is fine-tuned on successful demonstrations by maximizing the likelihood of teacher responses: 
+
+LSFT (θ) = −E(x,h,y ∗)∼D SFT [log πθ (y∗ | x, h )] , (2) where DSFT contains task instructions x, student contexts 
+
+h, and teacher responses y∗.
+
+Multi-turn agentic reinforcement learning. The super-vised policy is further trained with multi-turn group relative policy optimization (GRPO) [44]. In each round, a batch of tasks and initial states is selected by the schedule in Sec. 3.4. For each, the rollout policy πθold generates a group of G tra-jectories through LiteHarness, which executes the requested tools and returns feedback until the episode ends. Each trajectory τi receives a reward ri based on task suc-cess, with a bounded penalty for prolonged querying with-out robot action while the task remains incomplete. Its group-relative advantage [9] is 
+
+Ai = ri − 1
+
+G
+
+> G
+
+X
+
+> k=1
+
+rk. (3) Each response inherits its trajectory’s group-relative ad-vantage Ai, with a penalty pi,t subtracted for invalid tool calls. To reduce the influence of trajectories with more training responses, we apply a weight ¯M /M i, yielding 
+
+bAi,t = ( ¯M /M i)( Ai − pi,t ). Here, Mi counts training re-sponses in trajectory τi, and ¯M is the mean response count across trajectories in the batch. With the token-level proba-bility ratio 
+
+ρi,t,j (θ) = πθ (yi,t,j | xi, h i,t , y i,t,<j )
+
+πθold (yi,t,j | xi, h i,t , y i,t,<j ) , (4) 4Table 1. Success rates (%) with LiteHarness; separate training per benchmark, clean-only on RoboTwin. RoboTwin: 250 episodes/condi-tion; LIBERO-Pro: 100 per Task/Swap column (800 overall). RL gain: percentage points over SFT. Randomized SFT is rescored to the task-specific call budgets.                                                            
+
+> Base model Training RoboTwin 2.0 LIBERO-Pro Clean Randomized Spatial Object Goal Long Avg. Task Swap Task Swap Task Swap Task Swap Qwen3.5-9B Base 20.0 15.6 1.0 1.0 2.0 0.0 5.0 5.0 0.0 0.0 1.8 SFT 31.2 26.4 77.0 71.0 86.0 79.0 52.0 49.0 19.0 29.0 57.8
+> SFT + RL 44.0 38.0 95.0 81.0 86.0 86.0 83.0 71.0 42.0 42.0 73.3 RL gain +12.8 +11.6 +18.0 +10.0 +0.0 +7.0 +31.0 +22.0 +23.0 +13.0 +15.5
+
+where yi,t,j is the j-th token of response yi,t , the policy minimizes 
+
+LGRPO (θ) = EB
+
+h
+
+wi,t,j ℓDC 
+
+
+
+ρi,t,j (θ), bAi,t 
+
+i 
+
+− βH(πθ ),
+
+(5) where B indexes training tokens, ℓDC is the dual-clipped loss, wi,t,j is the rollout correction weight, and β weights the mean token entropy H. See Appendix D for details. 
+
+3.4. Interaction Budgets and Task Scheduling 
+
+Interaction budgets. Each episode is limited by a model-call budget Bcall , which counts every model call including read-only queries, and a robot-action budget Bact . For each task, Bcall is chosen from 80, 120, 160, and 200 calls so that it covers the longest successful teacher and SFT episodes. 
+
+Bact is 80, and an episode ends when either budget is ex-hausted or a terminal condition is reached. 
+
+Adaptive task scheduling. To improve training effi-ciency, we reduce sampling of tasks that consistently suc-ceed or fail and allocate more rollouts to the remaining tasks. Based on recent results, RoboHarness-RL applies three rules. (1) A task whose latest group fully suc-ceeds skips one sampling cycle and is revisited before an-other skip, reducing sampling while maintaining coverage. (2) Tasks whose rollouts fail in two sampled groups are re-moved from the pool at a stage boundary. (3) On LIBERO-Pro, where SFT already solves most episodes of the Spatial and Object suites, later rounds draw twice as many groups from the harder Goal and Long suites. Budget values and scheduling parameters are provided in Appendix D.4. 
+
+## 4. Experiments 
+
+4.1. Experimental Setup 
+
+Benchmark and protocol. We train a separate policy on each of RoboTwin 2.0 [4] and LIBERO-Pro [72], with dis-joint training and evaluation initial states. RoboTwin has 50 bimanual tasks; we train only in clean scenes and eval-uate on five held-out clean states per task with unseen in-structions and on ORA’s randomized set [61], which adds distractors and varies backgrounds, lighting, and tabletop height (250 episodes each). LIBERO-Pro covers the Spa-tial, Object, Goal, and Long suites under task and swap perturbations, with ten tasks per variant and ten initial states each (800 episodes). Success follows the official task checks, and SFT and RL are evaluated on the same instances and settings. 
+
+Implementation details. Both policies use Qwen3.5-9B [42] and LiteHarness. SFT uses 393 and 781 successful GPT-6 Astra demonstrations for RoboTwin and LIBERO-Pro, respectively. We train for two epochs and initialize RL from the resulting SFT checkpoints. Both stages use rank-16 LoRA with α = 32 and a frozen vision encoder, while perception tools and motion planners remain fixed. Think-ing is disabled throughout training and evaluation to keep multi-turn interaction affordable. Each RL rollout batch samples eight trajectories for each of twelve task–initial-state pairs at temperature 1.0. We report checkpoints after 25 sampling rounds on both benchmarks. LiteHarness re-tains the current observation and up to three preceding ob-servations in recent memory, with at most 24 images per model call. Model-call budgets are set to 80–200 depend-ing on the task, with a separate limit of 80 robot decisions per episode. Training and evaluation use the same limits. Evaluation uses temperature 0.7, top-p 0.8, and top-k 20. All training runs on eight NVIDIA H200 GPUs. Full train-ing configurations are provided in Appendix D. 
+
+4.2. Agentic RL beyond Imitation 
+
+Agentic RL provides substantial gains beyond teacher imitation on both benchmarks (Table 1). We compare SFT and RL with the same Qwen3.5-9B backbone and Lite-Harness, keeping evaluation conditions fixed within each benchmark. Perception tools and motion planners remain unchanged, and RL uses no additional teacher demonstra-tions. On RoboTwin 2.0, SFT raises clean-scene suc-5Table 2. LIBERO-Pro comparison. Suite success rates (%) aver-age Task and Swap; Avg. covers all 800 episodes.                                                                  
+
+> System Base model VLA Spat. Obj. Goal Long Avg.
+> End-to-end VLAs
+> π0.5[69] π0.5–10.5 9.0 20.0 4.5 11.0
+> πRLinf [69] π0.5–50.5 74.5 43.5 31.5 50.0
+> Agents with frontier models via API
+> Harness VLA [69] GPT-6 Astra Yes 99.0 99.5 93.5 78.5 92.6 Harness VLA [69] Opus 4.7 Yes 87.0 89.0 87.0 66.5 82.4 ORA [61] DS-V4.1-Flash No 94.5 95.5 77.5 58.0 81.4
+> Agents with compact open-weight models
+> AgenticRoboRL [35] Qwen3.5-9B Yes 91.0 95.5 57.5 40.0 71.0
+> RoboHarness-RL Qwen3.5-9B No 88.0 86.0 77.0 42.0 73.3
+> DS: DeepSeek; VLA: learned VLA executor; –: inapplicable; bold: ours. 0510 15 20 0510 15 20 25 RL round RL gain (pp) RoboTwin clean RoboTwin rand. LIBERO-Pro
+
+Figure 4. RL learning curves. Each point is the gain in success rate over SFT at an evaluated checkpoint (round 0: SFT). RoboTwin: full clean and randomized evaluations; LIBERO-Pro: initial states 1–3 of each task cell (240 episodes). 
+
+cess from 20.0% to 31.2%, while subsequent RL brings it to 44.0%. The 12.8-point RL gain is comparable to the 11.2 points obtained from imitation, showing that teacher demonstrations leave considerable room for further im-provement through interaction. On LIBERO-Pro, success increases from 57.8% after SFT to 73.3% after RL, adding 15.5 percentage points across the full four-suite evaluation. The gains build up over training: every evaluated check-point improves over SFT on both benchmarks (Fig. 4). 
+
+The gains generalize to unseen scenes. Although RoboTwin training uses only clean scenes, RL raises randomized-scene success from 26.4% to 38.0%. This 11.6-point gain is close to the 12.8 points in clean scenes, sug-gesting that the improvement extends beyond the visual conditions encountered during training. 
+
+The gains are largest on the hardest suites. On LIBERO-Pro, Goal improves by 31.0 points under Task per-turbations and 22.0 under Swap, and Long by 23.0 and 13.0 points. Spatial and Object start from higher SFT baselines and gain 0.0–18.0 points, with Object under Task perturba-tions unchanged at 86.0%. Seven of the eight combinations of suite and perturbation type thus improve, while the mag-nitude depends on the task suite. 
+
+Table 3. RoboTwin 2.0 success (%). Data: post-pretraining robot data; —: unavailable. 
+
+System Base model Data Rand. Clean 
+
+End-to-end VLAs † 
+
+> π0.5
+
+[20] π0.5 RoboTwin 46.0 70.7 X-VLA [43] X-VLA RoboTwin 21.0 68.0  
+
+> π0
+
+[2] π0 RoboTwin 16.3 46.4 RDT [43] RDT RoboTwin 13.7 34.5 
+
+Agents with frontier models via API †
+
+ORA [61] DeepSeek-V4.1-Flash – 69.2 —PyRUA-Lean ∗ [45] GPT-6 Astra – 68.8 —RoboDawn [13] GPT-6 Astra – 53.2 —
+
+Agents with compact open-weight models 
+
+K1 [28] Qwen3.5-9B – 2.8 3.6 ORA [61] Qwen3.5-9B – 6.8 10.0 LiteHarness Qwen3.5-27B – 29.6 33.2 
+
+RoboHarness-RL Qwen3.5-9B RoboTwin 38.0 44.0  
+
+> †Leaderboard/paper results; ∗no VLA skills.
+
+RL solves tasks that imitation does not. On LIBERO-Pro, the GPT-6 Astra teacher never completes “put the left moka pot on the stove” in 21 demonstration attempts, so SFT has no successful demonstration of this task and fails all ten evaluation episodes, whereas RL succeeds in seven. More broadly, RL succeeds on nine tasks in each RoboTwin scene condition that SFT never solves in the evaluated trials. 
+
+Improvements far outnumber regressions. On RoboTwin, success rises on 19 of 50 tasks and falls on nine in clean scenes, and rises on 21 and falls on seven in randomized scenes. On LIBERO-Pro, comparing the two policies on the same 800 task–initial-state pairs, RL turns 155 SFT failures into successes, while 31 SFT successes become failures. Regressions and remaining failures con-centrate on long-horizon and precise manipulation: success stays limited on LIBERO-Pro Long, and RL fails all five clean three-block stacking trials, two of which SFT solves. 
+
+4.3. Comparison with Existing Systems 
+
+RoboHarness-RL is competitive with other compact open-weight systems (Tables 2 and 3). On LIBERO-Pro, our 9B model achieves 73.3% overall success, outperform-ing the VLA-assisted AgenticRoboRL-9B by 2.3 percent-age points in a more challenging setting: the VLM must specify and adjust robot actions through tool calls without a VLA or WAM. The advantage is particularly pronounced on Goal, where our policy reaches 77.0%, compared with 57.5% for AgenticRoboRL. Our policy also achieves 88.0% on Spatial and 86.0% on Object, supporting effective ma-nipulation across both task and position perturbations with thinking mode disabled. 
+
+On RoboTwin, policy training matters more than model scale. With the same LiteHarness, our trained 9B policy exceeds the untrained 27B model by 10.8 points 6(a) Responding to a tool error place_object_stand failure feedback response outcome   
+
+> SFT
+> #9 compute
+> invalid arguments
+> shape m ism atch
+> #10–80 compute no robot action
+
+# ×71         
+
+> compute errors
+> repeats the call
+> near-identical expressions
+> #80
+> budget exhausted ✗
+> car never placed
+> RL
+> #9 compute
+> invalid arguments
+> type error
+> #10–11 move_pose
+> rewrites the call
+> then m oves the car
+> #12–14 release
+> task success ✓
+> car on stand
+> Repeated calls
+> all 250 clean episodes 07.5 15
+> 12.3 3.0
+> %
+
+(b) Responding to a failed check open_laptop failure feedback response outcome   
+
+> SFT
+> #10 check_task
+> false
+> lid not open enough
+> #11–120 queries no robot action
+
+# ×110          
+
+> calls
+> only queries
+> 66 com pute errors, 39 checks
+> #120
+> budget exhausted ✗
+> lid unchanged
+> RL
+> #5 check_task
+> false
+> lid not open enough
+> #6–8 move_pose
+> pushes the lid
+> angle from the hinge
+> #9–19 push
+> task success ✓
+> after tw o m ore pushes
+> Final success after a failed check
+> 85 paired episodes 015 30
+> 14.1 22.4
+> %
+
+Figure 5. SFT/RL responses to invalid compute arguments (a) and negative completion checks (b). Frames replay actions; numbers index model calls. Bottom: repetition over 250 clean episodes and success over 85 pairs with negative checks for both policies. Table 4. Mean counts per episode on states solved by both SFT and RL. Change: RL minus SFT; ∗: p < 0.05 , paired sign test. 
+
+VLM calls ↓ Read-only queries ↓ Robot decisions ↓
+
+SFT RL Change SFT RL Change SFT RL Change RT clean 23.3 15.4 −7.9 ∗ 12.7 7.3 −5.3 ∗ 8.1 5.8 −2.2 ∗
+
+RT rand. 21.0 13.1 −7.9 ∗ 11.4 6.6 −4.7 ∗ 6.9 5.0 −1.8 
+
+LIBERO-Pro 28.1 25.1 −2.9 ∗ 13.4 12.6 −0.8 13.1 11.4 −1.8 ∗
+
+in clean scenes and 8.4 in randomized scenes (Table 3). The harness and training contribute separately: with the untrained 9B model, LiteHarness already reaches 20.0% clean-scene success, compared with 10.0% for ORA and 3.6% for K1, and SFT and RL raise it to 44.0%. 
+
+A gap to frontier-model agents remains, mainly in randomized bimanual scenes. Against ORA with DeepSeek-V4.1-Flash, RoboHarness-RL is 8.1 points be-hind on LIBERO-Pro (73.3% versus 81.4%) but 31.2 points behind on randomized RoboTwin (38.0% versus 69.2%). 
+
+4.4. Behavioral Analysis 
+
+RL reduces repetitive tool use. We count consecutive calls with identical arguments as repetitive when they cannot yield a new result: queries repeated without a state change, or actions retried after rejection or failure to move the robot. Repeated actions that move the robot, such as successive pushes, are excluded. Figure 5a illustrates such repetition: SFT retries the same invalid compute call until its budget is exhausted. RL reduces the repetition rate from 10.4% to 2.8% on clean RoboTwin, from 10.9% to 2.5% on random-ized RoboTwin, and from 9.1% to 5.7% on LIBERO-Pro. Even when all consecutive calls with identical arguments are counted, regardless of whether they change the environ-ment, RL reduces repetition from 12.3% to 3.0% on clean RoboTwin, from 12.4% to 2.7% on randomized RoboTwin, and from 12.8% to 7.5% on LIBERO-Pro. 
+
+RL completes tasks with fewer calls. We compare only initial states that both policies solve, since failed episodes mostly run until a budget is exhausted. On these states, VLM calls per episode drop from 23.3 to 15.4 on clean RoboTwin, from 21.0 to 13.1 on randomized RoboTwin, and from 28.1 to 25.1 on LIBERO-Pro (Table 4). The sav-ings come from different sources: on RoboTwin, mainly from fewer read-only queries (12.7 to 7.3 and 11.4 to 6.6), whereas on LIBERO-Pro query counts barely change and robot decisions drop from 13.1 to 11.4. RL thus shortens successful executions by issuing fewer queries on RoboTwin and by needing fewer actions on LIBERO-Pro. 
+
+RL recovers more often after negative feedback. Fig-ure 5 compares their responses to negative feedback. When a compute call is rejected for invalid arguments (a), SFT re-submits near-identical expressions until the budget runs out, whereas RL rewrites the call and completes the placement. When a completion check reports that the laptop is not yet open (b), SFT keeps querying and checking, whereas RL pushes the lid further until the check succeeds. When both policies receive execution-failure feedback on paired initial states, success rises from 23.4% to 33.8% on clean RoboTwin (201 pairs), 18.7% to 30.6% on randomized 720.4 0.0 42.0 41.7 44.0 75.4 40.8 70.4 28.0 54.2               
+
+> highest success
+> success (%) RoboTwin LIBERO-Pro
+> none recent window hierarchical (ours) full, compressed full, raw
+> 15.4 12.3 21.9 18.3 28.4 24.4 53.7 53.1 43.0 51.3 balanced cost
+> prompt tokens per call (K)
+
+Figure 6. Memory ablation after RL. Hierarchical memory (shaded) gives the highest success at about half the tokens of com-pressed full history. 
+
+RoboTwin (209 pairs), and 42.5% to 57.5% on LIBERO-Pro (428 pairs), all significant (Appendix A.6). 
+
+4.5. Ablations 
+
+Hierarchical memory. We vary only the visible interac-tion history, keeping prompts, tools, budgets, and initial states fixed (Fig. 6). On LIBERO-Pro, we evaluate ini-tial states 1–3 of each task cell (240 episodes). For the RL model, hierarchical memory achieves 44.0% success on RoboTwin and 75.4% on LIBERO-Pro. Removing history reduces success to 20.4% and 0%, respectively, while a re-cent window without summaries or a failure record reaches 42.0% and 41.7%. Full raw history yields only 28.0% suc-cess on RoboTwin and 54.2% on LIBERO-Pro. Even with ORA’s built-in compression, full history uses roughly twice as many prompt tokens per call as hierarchical memory, yet achieves lower success rates: 40.8% versus 44.0% on RoboTwin and 70.4% versus 75.4% on LIBERO-Pro. Since the RL policy is trained with hierarchical mem-ory, its performance may partly reflect familiarity with this memory setting. To examine whether the benefit extends to a model without such training, we also evaluate the base Qwen3.5-9B on RoboTwin. Hierarchical memory achieves 20.0% success, compared with 12.8% without history and 8.4% with the full raw history. This consistent advantage suggests that the benefit is not solely due to training with hierarchical memory. 
+
+These context savings also improve execution and training efficiency. Hierarchical memory uses about half the prompt tokens per call of the compressed full history (28.4K vs. 53.7K on RoboTwin and 24.4K vs. 53.1K on LIBERO-Pro) and 23% less time per episode on RoboTwin. On the same three RoboTwin task groups, one policy update under the compressed full history takes 1.65 × the GPU time of hierarchical memory (4.00 vs. 2.43 GPU-hours). More-over, 76% of its calls in the clean evaluation exceed our 
+
+Table 5. Task-scheduling ablation on LIBERO-Pro (success, %). Both runs continue from the round-15 checkpoint for ten rounds. T / S: task / swap variant (100 episodes each); All: 800 episodes.                                       
+
+> Spatial Object Goal Long TSTSTSTSAll Round 15 88 82 86 86 71 67 39 33 69.0 Uniform 87 78 99 82 74 65 33 38 69.5 Scheduled (ours) 95 81 86 86 83 71 42 42 73.3
+
+45K-token training limit, and even with the limit raised to 78K, 10% of its training rows still exceed it, whereas all hierarchical rows fit (Appendix D.5). 
+
+Task scheduling. Adaptive scheduling sustains gains in later rounds (Table 5). Starting from the round-15 check-point (69.0% success on 800 evaluation episodes), we com-pare ten additional rounds with adaptive scheduling versus uniform sampling. Uniform sampling visits every task cell once per cycle in random order; both settings use the same learning rate, temperature, budgets, and batch size. Adap-tive scheduling reaches 73.3%, significantly improving over the starting checkpoint ( p = 0 .002 ), while uniform sam-pling remains at 69.5% ( p = 0 .81 ; paired sign tests). Most of the advantage comes from Goal and Long, where adaptive scheduling produces 28 more successes than uniform sampling, compared with only two additional suc-cesses on Spatial and Object. This matches the schedule’s emphasis on the harder suites: from round 12 onward, Goal and Long receive eight of the twelve rollout groups per round. The advantage persists across checkpoints: rounds 18, 20, and 24 achieve 577, 569, and 588 successes out of 800, respectively, all exceeding the uniform run’s final 556. 
+
+## 5. Conclusion 
+
+RoboHarness-RL trains VLMs for tool-based manipulation through agentic RL, with LiteHarness supporting efficient multi-turn interaction. RL improves success beyond teacher imitation without VLAs or WAMs, reduces repetitive calls, shortens successful executions, and improves recovery from negative feedback. Gains extend to randomized scenes un-seen during training. Randomized bimanual manipulation and long-horizon tasks remain challenging; transfer to real robots remains to be evaluated. 
+
+## LLM Usage Statement 
+
+Our system uses Qwen3.5-9B as the policy and GPT-6 As-tra for teacher demonstrations. The authors used ChatGPT and Claude to edit the paper and improve code, verified all content, numbers, and claims, and take full responsibility for the paper. 8References 
+
+[1] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Cheb-otar, Omar Cortes, Byron David, Chelsea Finn, Chuyuan Fu, Keerthana Gopalakrishnan, Karol Hausman, et al. Do as i can, not as i say: Grounding language in robotic affordances. 
+
+arXiv preprint arXiv:2204.01691 , 2022. [2] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. π0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164 , 2024. [3] Nicolas Carion, Laura Gustafson, Yuan-Ting Hu, Shoubhik Debnath, Ronghang Hu, Didac Suris Coll-Vinent, Chaitanya Ryali, Kalyan Vasudev Alwala, Haitham Khedr, Andrew Huang, et al. Sam 3: Segment anything with concepts. In 
+
+International conference on learning representations , pages 138846–138923, 2026. [4] Tianxing Chen, Zanxin Chen, Baijun Chen, Zijian Cai, Yibin Liu, Zixuan Li, Qiwei Liang, Xianliang Lin, Yiheng Ge, Zhenyu Gu, et al. Robotwin 2.0: A scalable data gen-erator and benchmark with strong domain randomization for robust bimanual robotic manipulation. arXiv preprint arXiv:2506.18088 , 2025. [5] Yuhui Chen, Shuai Tian, Shugao Liu, Yingting Zhou, Hao-ran Li, and Dongbin Zhao. Conrft: A reinforced fine-tuning method for vla models via consistency policy. arXiv preprint arXiv:2502.05450 , 2025. [6] Yanzhe Chen, Zechen Bai, Zhijun Cao, Wenzheng Zeng, Kevin Qinghong Lin, Yiqi Lin, Guoqiang Liang, Kevin Yuchen Ma, Qiming Huang, and Mike Zheng Shou. Show-harness: Just a vlm agent can play robots. arXiv preprint arXiv:2609.10522 , 2026. [7] Yijia Fan, Xilin He, Yilei Jiang, Dongming Wu, Ji-axu Wang, and Xiangyu Yue. Captain: A pipeline for post-training code-as-policy robot agents. arXiv preprint arXiv:2610.40799 , 2026. [8] Jiazhan Feng, Shijue Huang, Xingwei Qu, Ge Zhang, Yu-jia Qin, Baoquan Zhong, Chengquan Jiang, Jinxin Chi, and Wanjun Zhong. Retool: Reinforcement learning for strategic tool use in llms. In International Conference on Learning Representations , pages 37909–37926, 2026. [9] Lang Feng, Zhenghai Xue, Tingcong Liu, and Bo An. Group-in-group policy optimization for llm agent training. 
+
+Advances in Neural Information Processing Systems , 38: 46375–46408, 2026. [10] Letian Fu, Justin Yu, Karim El-Refai, Ethan Kou, Haoru Xue, Huang Huang, Wenli Xiao, Guanzhi Wang, Dantong Niu, Fei-Fei Li, et al. Cap-x: A framework for benchmarking and improving coding agents for robot manipulation. arXiv preprint arXiv:2603.22435 , 2026. [11] Hongcheng Gao, Jianshu Zeng, Alex Zhou, Shijia Ge, Xuan Shangguan, Yazhe Wang, Yexing Wan, Zelin Zheng, Jay Zhu, Xiping Li, Di Wu, Yongli Wang, Lingyu He, Zhiqi Jia, Sihang Wu, and Xiao He. Hexashell: A universal harness for robot coding agents in simulation and the real world, 2026. [12] Kehong Gong, Xiaoxu Zheng, Guanli Hou, Seunghun Lee, Mengqi Guo, Runjia Tan, Zhengyu Wen, Qi Wang, Xiaoyu He, Mingyuan Zhang, et al. Tinyastral: Transferring self-evolving harnesses to tiny generalist manipulation agents. 
+
+arXiv preprint arXiv:2610.41216 , 2026. [13] Meng-Hao Guo, Zhe-Han Mo, Jia-Jun Wang, Yi Zhang, Ke-jin Wang, Yi-Xuan Deng, Jia-Peng Zhang, Yongming Rao, and Shi-Min Hu. Transferring the intelligence of vlms to robotic control. arXiv preprint arXiv:2609.22966 , 2026. [14] Zhiyuan He, Siwei Zhang, Zhiwen Zhou, Yuqing Yang, Yu Kang, Yuge Zhang, Luna K Qiu, Tin Yan Tsui, Jiahang Xu, and Chong Luo. Agent lightning v1. 0: Towards harnessed agentic rl. arXiv preprint arXiv:2608.17528 , 2026. [15] Runhan Huang, Xiangcheng Zhang, Haoyu Chen, Yitong Li, Yen-Jen Wang, Bohan Lyu, Haotian Ye, Chuye Hong, Yix-uan Wang, Chloe Su, et al. Scaling online exploration for robot agents. arXiv preprint arXiv:2610.22496 , 2026. [16] Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, Pete Florence, Andy Zeng, Jonathan Tompson, Igor Mordatch, Yevgen Chebotar, et al. Inner monologue: Em-bodied reasoning through planning with language models. 
+
+arXiv preprint arXiv:2207.05608 , 2022. [17] Wenlong Huang, Chen Wang, Ruohan Zhang, Yunzhu Li, Jiajun Wu, and Li Fei-Fei. Voxposer: Composable 3d value maps for robotic manipulation with language models. arXiv preprint arXiv:2307.05973 , 2023. [18] Zheng Huang, Mingyu Liu, Xiaoyi Lin, Muzhi Zhu, Canyu Zhao, Zongze Du, Ye Lin, Xiaoman Li, Yiduo Jia, Hao Zhong, Hao Chen, and Chunhua Shen. NoTVLA: Semantics-preserving robot adaptation via narrative action interfaces. In Advances in Neural Information Processing Systems , 2026. [19] Physical Intelligence, Ali Amin, Raichelle Aniceto, Ash-win Balakrishna, Kevin Black, Ken Conley, Grace Con-nors, James Darpinian, Karan Dhabalia, Jared DiCarlo, et al. 
+
+π∗
+
+> 0.6
+
+: a vla that learns from experience. arXiv preprint arXiv:2511.14759 , 2025. [20] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. π0.5: a vision-language-action model with open-world generaliza-tion. arXiv preprint arXiv:2504.16054 , 2025. [21] Mengzhao Jia, Yang Lin, Xixin Zhang, Zhihan Zhang, Xi-aobai Liu, and Meng Jiang. Agent as policy for robotic ma-nipulation. arXiv preprint arXiv:2609.12541 , 2026. [22] Bowen Jin, Hansi Zeng, Zhenrui Yue, Jinsung Yoon, Sercan Arik, Dong Wang, Hamed Zamani, and Jiawei Han. Search-r1: Training llms to reason and leverage search engines with reinforcement learning. arXiv preprint arXiv:2503.09516 ,2025. [23] Bingxuan Li, Siqi Song, Yizhuo Wu, Jiarui Yao, Tong Zhang, and Huan Zhang. Motormind: Scaffolding general vision language models for zero-shot robot manipulation. arXiv preprint arXiv:2609.38078 , 2026. [24] Haozhan Li, Yuxin Zuo, Jiale Yu, Yuhao Zhang, Yang Zhao-hui, Kaiyan Zhang, Xuekai Zhu, Yuchen Zhang, Tianxing Chen, Ganqu Cui, et al. Simplevla-rl: Scaling vla training via reinforcement learning. In International Conference on Learning Representations , pages 125846–125869, 2026. 
+
+9[25] Liyang Li, Muzhi Zhu, Zhiyue Zhao, Hengyu Zhao, Ke Liu, Linhao Zhong, Hao Chen, and Chunhua Shen. Where to look: Can foundation models reach a target viewpoint through active exploration? arXiv preprint arXiv:2606.01247 , 2026. [26] Xuefeng Li, Haoyang Zou, and Pengfei Liu. Torl: Scaling tool-integrated rl. arXiv preprint arXiv:2503.23383 , 2025. [27] Yunfei Li, Xiao Ma, Jiafeng Xu, Yu Cui, Zhongren Cui, Zhi-gang Han, Liqun Huang, Tao Kong, Yuxiao Liu, Hao Niu, et al. Gr-rl: Going dexterous and precise for long-horizon robotic manipulation. arXiv preprint arXiv:2512.01801 ,2025. [28] Zexi Li, Yehang Zhang, Wenqian Li, Haojian Huang, Chenxu Wang, Shiyuan Deng, Yangkai Wei, Tianyi Zhang, Binghui Xie, Bohan Zhou, et al. Robo-harness k1: Har-nessing robot-use agents via perception augmentation. arXiv preprint arXiv:2609.29389 , 2026. [29] Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and Andy Zeng. Code as policies: Language model programs for embodied control. In 2023 IEEE International conference on robotics and au-tomation (ICRA) , pages 9493–9500. IEEE, 2023. [30] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowl-edge transfer for lifelong robot learning. Advances in Neural Information Processing Systems , 36:44776–44791, 2023. [31] Haowen Liu, Xirui Li, Shaoxiong Yao, Peng Shi, Tianyi Zhou, Jia-Bin Huang, Furong Huang, and Jiayuan Mao. Guava: An effective and universal harness for embodied ma-nipulation. arXiv preprint arXiv:2606.18363 , 2026. [32] Mingyu Liu, Zheng Huang, Xiaoyi Lin, Muzhi Zhu, Canyu Zhao, Yating Wang, Haoyi Zhu, Hao Chen, and Chunhua Shen. GAE: Unleashing physical potential of VLM with generalizable action expert. In International Conference on Machine Learning , 2026. [33] Mingyu Liu, Zeju Li, Jiuhe Shu, Hanqing Wang, Yuhao Chao, Hao Chen, and Chunhua Shen. Perfect demo makes poor teacher: Learning robust alignment from critical motion segments. In Conference on Robot Learning , 2026. [34] Mingyu Liu, Chonghao Sima, Tianjian Feng, Hanqing Wang, Cong Chen, Hao Chen, and Chunhua Shen. PerturBot: Breaking shortcut priors in vision-language-action models with perturbative training. arXiv preprint arXiv:2610.04616 , 2026. [35] Xinxin Liu, Bingxin Xu, Wenrui Bao, Ming Li, Wentao Bao, Chen Chen, and Yuzhang Shang. Agenticroborl: Bringing coding-agent post-training to agentic robotics. arXiv preprint arXiv:2610.28589 , 2026. [36] Yang Liu, Weixing Chen, Xinshuai Song, Tao Pu, Siwen Mo, Yongjie Bai, Zihao Chen, Qianran Sun, Liruo Zhong, Ying Shen, et al. Phyagentos: A self-evolving operating system for embodied agents with decoupled cognitive planning and physical execution. arXiv preprint arXiv:2607.16636 , 2026. [37] Guanxing Lu, Wenkai Guo, Chubin Zhang, Yuheng Zhou, Haonan Jiang, Zifeng Gao, Yansong Tang, and Ziwei Wang. Vla-rl: Towards masterful and general robotic manipula-tion with scalable reinforcement learning. arXiv preprint arXiv:2505.18719 , 2025. [38] Xufang Luo, Yuge Zhang, Zhiyuan He, Zilong Wang, Siyun Zhao, Dongsheng Li, Luna K Qiu, and Yuqing Yang. Agent lightning: Train any ai agents with reinforcement learning. 
+
+arXiv preprint arXiv:2508.03680 , 2025. [39] Dhia Naouali, Minghan Wu, Claudia Wong, Abhinav Puthran, and Omar G Younis. Vlcp: Vision language control policy closed-loop code replanning for robot manipulation. 
+
+arXiv preprint arXiv:2608.16978 , 2026. [40] Benjamin Pikus, Daniel Saunders, Mircea Mironenco, Salman Mohammadi, Mathew Mathew, Sirou Zhu, Divya Makkar, Xuhua Huang, Qinbo Li, Supreeth Narasimhaswamy, Siyuan Cen, Dejia Xu, Shyamal Buch, and Thomas Neff. Pretraining knows what, simulation teaches how: Compositional generalization for agentic robotics, 2026. [41] Zezhong Qian, Xiaowei Chi, Yu Qi, Haozhan Li, Zhi Yang Chen, and Shanghang Zhang. Wam-rl: World-action model reinforcement learning with reconstruction rewards and on-line video sft. arXiv preprint arXiv:2606.17906 , 2026. [42] Qwen Team. Qwen3.5: Towards native multimodal agents, 2026. [43] RoboTwin Team. RoboTwin 2.0 Leaderboard. https:// robotwin- platform.github.io/leaderboard ,2026. Accessed November 4, 2026. [44] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. Deepseekmath: Pushing the limits of math-ematical reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. [45] Ruiyang Si, Jianxin Bi, Shunyu Yang, Rui Ni, Wenbo Huang, Qiang Wang, Shulong Jiang, Duomin Wang, Xiuyu Li, Hai-wen Feng, et al. Fewer tokens, better action: Gpt-6 astra robot agents with 14% higher success rate but 65% fewer tokens. arXiv preprint arXiv:2610.01939 , 2026. [46] Ishika Singh, Valts Blukis, Arsalan Mousavian, Ankit Goyal, Danfei Xu, Jonathan Tremblay, Dieter Fox, Jesse Thoma-son, and Animesh Garg. Progprompt: Generating situated robot task plans using large language models. arXiv preprint arXiv:2209.11302 , 2022. [47] Balakumar Sundaralingam, Siva Kumar Sastry Hari, Adam Fishman, Caelan Garrett, Karl Van Wyk, Valts Blukis, Alexander Millane, Helen Oleynikova, Ankur Handa, Fabio Ramos, et al. curobo: Parallelized collision-free minimum-jerk robot motion generation. arXiv preprint arXiv:2310.17274 , 2023. [48] Martin Sundermeyer, Arsalan Mousavian, Rudolph Triebel, and Dieter Fox. Contact-graspnet: Efficient 6-dof grasp gen-eration in cluttered scenes. In 2021 IEEE international con-ference on robotics and automation (ICRA) , pages 13438– 13444. IEEE, 2021. [49] Andrew Wagenmaker, Mitsuhiko Nakamoto, Yunchu Zhang, Seohong Park, Waleed Yagoub, Anusha Nagabandi, Ab-hishek Gupta, and Sergey Levine. Steering your diffu-sion policy with latent space reinforcement learning. arXiv preprint arXiv:2506.15799 , 2025. [50] Haoming Wang, Haoyang Zou, Huatong Song, Jiazhan Feng, Junjie Fang, Junting Lu, Longxiang Liu, Qinyu Luo, Shi-hao Liang, Shijue Huang, et al. Ui-tars-2 technical report: 
+
+10 Advancing gui agent with multi-turn reinforcement learning. 
+
+arXiv preprint arXiv:2509.02544 , 2025. [51] Kailin Wang, Haoxiang Jie, Yaoyuan Yan, Zhiyou Heng, and Zhaosong Li. Regenharness: A robot agent harness with evidence-gated recursive self-improvement. arXiv preprint arXiv:2609.27612 , 2026. [52] Kaijun Wang, Liqin Lu, Mingyu Liu, Jianuo Jiang, Zeju Li, Bolin Zhang, Wancai Zheng, Xinyi Yu, Hao Chen, and Chunhua Shen. ODYSSEY: Open-world quadrupeds explo-ration and manipulation for long-horizon tasks. In AAAI Conference on Artificial Intelligence , 2026. [53] Xin Wang, Wenhao Wu, Menghao Zhang, Zhi Wang, Kun Shao, Jian Luan, Yang Li, Qing Li, Shangding Gu, Huichi Zhou, et al. Harnesspai: An evolving harness for physical ai. 
+
+arXiv preprint arXiv:2609.29166 , 2026. [54] Yi Wang, Xinchen Li, Pengwei Xie, Pu Yang, Buqing Nie, Yunuo Cai, Qinglin Zhang, Chendi Qu, Jeffrey Wu, Jianheng Song, et al. Learning while deploying: Fleet-scale reinforce-ment learning for generalist robot policies. arXiv preprint arXiv:2605.00416 , 2026. [55] Zihan Wang, Kangrui Wang, Qineng Wang, Pingyue Zhang, Linjie Li, Zhengyuan Yang, Xing Jin, Kefan Yu, Minh Nhat Nguyen, Licheng Liu, et al. Ragen: Understanding self-evolution in llm agents via multi-turn reinforcement learn-ing. arXiv preprint arXiv:2504.20073 , 2025. [56] Zhepei Wei, Wenlin Yao, Yao Liu, Weizhi Zhang, Qin Lu, Liang Qiu, Changlong Yu, Puyang Xu, Chao Zhang, Bing Yin, et al. Webagent-r1: Training web agents via end-to-end multi-turn reinforcement learning. In Proceedings of the 2025 Conference on Empirical Methods in Natural Lan-guage Processing , pages 7920–7939, 2025. [57] Zimo Wen, Yijin Chen, Yuxuan Cao, Wendi Chen, Yanwen Zou, Wenye Yu, Fuhang Kuang, Han Xue, Jun Lv, Chuan Wen, et al. Roborsi: Stable, efficient, and reusable robot self-evolution in complex real-world environments. arXiv preprint arXiv:2610.12424 , 2026. [58] Zhiheng Xi, Jixuan Huang, Chenyang Liao, Baodai Huang, Honglin Guo, Jiaqi Liu, Rui Zheng, Junjie Ye, Jiazheng Zhang, Wenxiang Chen, et al. Agentgym-rl: Training llm agents for long-horizon decision making through multi-turn reinforcement learning. arXiv preprint arXiv:2509.08755 ,2025. [59] Wenli Xiao, Jia Xie, Tonghe Zhang, Haotian Lin, Letian Fu, Haoru Xue, Jalen Lu, Yi Yang, Cunxi Dai, Zi Wang, et al. Enpire: Agentic robot policy self-improvement in the real world. arXiv preprint arXiv:2606.19980 , 2026. [60] Binfeng Xu, Hao Zhang, Shaokun Zhang, Songyang Han, Mingjie Liu, Jian Hu, Shizhe Diao, Zhenghui Jin, Yunheng Zou, Michael Demoret, et al. Polar: Agentic rl on any har-ness at scale. arXiv preprint arXiv:2605.24220 , 2026. [61] Yuanbo Yang, Siyi Chen, Jun Gao, and Hao Zhang. ORA: Open robot-use agents, 2026. Blog post: https://haoailab.com/blogs/ora/. [62] Angen Ye, Weijie Ke, Xiaofeng Wang, Xinze Chen, Chao-jun Ni, Guosheng Zhao, Boyuan Wang, Zheng Zhu, Junjie Xie, and Dapeng Zhang. Halo-wa: Hybrid-attention latent-guided online reinforcement learning for world-action mod-els. arXiv preprint arXiv:2607.04265 , 2026. [63] Deheng Ye, Zhao Liu, Mingfei Sun, Bei Shi, Peilin Zhao, Hao Wu, Hongsheng Yu, Shaojie Yang, Xipeng Wu, Qing-wei Guo, et al. Mastering complex control in moba games with deep reinforcement learning. In Proceedings of the AAAI conference on artificial intelligence , pages 6672–6679, 2020. [64] Jiarui Yuan, Yuxin Zuo, Xiaoyu Huang, Wenbo Zhang, Kwanyoung Park, Junlin Yang, Tianxiang Zhang, Ruoqu Chen, Yutao Ouyang, Bingxiang He, et al. Democratizing robot-use agents: A unified harness with open models. arXiv preprint arXiv:2611.01560 , 2026. [65] Haokai Zhang, Yuhang Ding, Yunshu Zhou, Xinze Du, Shengtao Zhang, Zhiyue Zhao, Yuling Xi, and Hao Chen. Spatial memory agent: Experience-grounded pro-cedural memory for spatial intelligence. arXiv preprint arXiv:2608.12743 , 2026. [66] Hao Zhang, Mingjie Liu, Shaokun Zhang, Songyang Han, Jian Hu, Zhenghui Jin, Yuchi Zhang, Shizhe Diao, Ximing Lu, Binfeng Xu, et al. Prorl agent: Rollout-as-a-service for rl training of multi-turn llm agents. arXiv preprint arXiv:2603.18815 , 2026. [67] Wenbo Zhang, Kaixuan Wang, Yutao Ouyang, Xiaoyu Huang, Liyang Li, Kailun Su, Weiyang Jin, Wenhao Chai, Haotian Liang, Zhiyang Dou, Yue Chen, and Tianxing Chen. An unexpected robot policy: Early evaluations of GPT-6 Astra on RoboDojo and beyond. arXiv preprint arXiv:2609.24170 , 2026. [68] Yehang Zhang, Haojian Huang, Yifan Chang, Jianchong Su, Bohan Zhou, Yingjie Xu, Wosong Chen, Tianhao Zhou, Chenxu Wang, Tianyi Zhang, et al. World action agent: Harnessing vlms for robot manipulation via world action re-hearsal. arXiv preprint arXiv:2609.29964 , 2026. [69] Yixian Zhang, Huanming Zhang, Feng Gao, Xiao Li, Zhihao Liu, Yi Nie, Chunyang Zhu, Jiaxing Qiu, Yuchen Yan, Jiyuan Liu, et al. Harness vla: Steering frozen vlas into reliable manipulation primitives via memory-guided agents. arXiv preprint arXiv:2607.08448 , 2026. [70] Zhiyue Zhao, Jingyi Wu, Hairuo Liu, Mingyu Liu, Liyang Li, Hengdi Zhang, Tong He, and Zhengxue Cheng. AdvDex: Learning dexterous manipulation from human demonstra-tions via joint-aligned actions and adversarial learning. In 
+
+Conference on Robot Learning , 2026. [71] Yuxiang Zheng, Dayuan Fu, Xiangkun Hu, Xiaojie Cai, Lyu-manshan Ye, Pengrui Lu, and Pengfei Liu. Deepresearcher: Scaling deep research via reinforcement learning in real-world environments. In Proceedings of the 2025 Confer-ence on Empirical Methods in Natural Language Processing ,pages 414–431, 2025. [72] Xueyang Zhou, Yangming Xu, Guiyao Tie, Yongchao Chen, Guowen Zhang, Duanfeng Chu, Pan Zhou, and Lichao Sun. Libero-pro: Towards robust and fair evaluation of vision-language-action models beyond memorization. arXiv preprint arXiv:2510.03827 , 2025. 
+
+11 RoboHarness-RL: Agentic Reinforcement Learning for VLM-Based Robot Manipulation 
+
+# Supplementary Material 
+
+## Overview 
+
+This supplementary material provides the details needed to interpret and reproduce the results in the main paper, to-gether with additional analyses and qualitative examples. It is organized as follows. • Appendix A: Evaluation Protocol and Full Results. 
+
+Benchmark splits and scene perturbations, configurations of the compared systems, checkpoint selection, the evalu-ation runs underlying each reported number, per-task re-sults on RoboTwin 2.0 and LIBERO-Pro, and statistical tests for the SFT–RL comparisons. • Appendix B: LiteHarness. The tool interface, the stu-dent and teacher prompts, the complete student tool de-scriptions, and the hierarchical memory rules with a com-plete example context. • Appendix C: Teacher Demonstrations and Supervised Fine-Tuning. Demonstration collection and filtering, dataset statistics, and the performance of the teacher. • Appendix D: Agentic RL Training. The training proce-dure, reward and advantage design, hyperparameters for both benchmarks, interaction budgets and task schedul-ing, compute, and training dynamics. • Appendix E: Qualitative Examples. Complete SFT and RL trajectories with model responses and tool feedback, including recovery from execution failures and represen-tative failure cases. • Appendix F: Limitations. Dependence on simulation, on the teacher, and on fixed tools, and the statistical scope of the results. 
+
+## A. Evaluation Protocol and Full Results 
+
+A.1. Benchmarks and Data Splits 
+
+We train a separate policy for each benchmark. Table A1 summarizes how initial states and instructions are divided between training and evaluation. 
+
+RoboTwin 2.0. RoboTwin 2.0 [4] contains 50 bimanual manipulation tasks, listed in Table A2. An initial state is determined by the task and a random seed, which sets the object instances and their poses. Following ORA [61], we use only seeds that pass a qualification check: the bench-mark’s scripted expert solves the task, the success condition does not already hold at reset, and the final successful state remains stable for 250 further physics steps. Success is de-termined by the official task-specific check. 
+
+Table A1. Training and evaluation splits. No evaluation initial state is used for teacher demonstrations or RL rollouts.           
+
+> Training Evaluation RoboTwin, clean Qualified demo clean
+> seeds; task-level instruc-tions 5 held-out seeds per task (250); unseen instructions RoboTwin, randomized –ORA’s 5released
+> demo randomized
+> seeds per task (250); unseen instructions LIBERO-Pro, Task / Swap Initial states 11–49 Initial states 1–10 of 80 task cells (800)
+
+Clean scenes use RoboTwin’s demo clean configura-tion. For each task, the first five qualified clean seeds that were not used in any earlier data collection form the held-out clean evaluation set, giving 250 episodes. Each evalua-tion episode receives an instruction drawn from RoboTwin’s unseen instruction split for the objects in that episode. 1 The remaining qualified clean seeds are divided into disjoint sets for teacher demonstrations and RL rollouts; the RL pool contains 1,798 seeds, between 32 and 53 per task. Train-ing episodes use ORA’s task-level instruction for each task, except for place a2b left and place a2b right ,which have no task-level instruction and instead use instruc-tions generated from the objects in each episode. Randomized scenes use RoboTwin’s 
+
+demo randomized configuration, which places dis-tractor objects on the table and randomizes background textures, lighting, and tabletop height. We evaluate on the list of randomized episodes released by ORA, consisting of five seeds per task (250 episodes) with ORA’s published unseen instructions. No randomized scene is used during training. 
+
+LIBERO-Pro. LIBERO-Pro [72] extends LIBERO [30] with perturbations that test whether a policy relies on mem-orized trajectories, using a single Franka Panda arm. We use four suites, Spatial, Object, Goal, and Long (LIBERO-10), each with ten tasks, under two of the benchmark’s pertur-bation types. The Task variant modifies the target object or action of each task, introducing new goals that remain exe-cutable in the scene. The Swap variant perturbs the initial  
+
+> 1For put object cabinet , only four of the five evaluation seeds have the object information required to generate such an instruction; the fifth uses ORA’s task-level instruction.
+
+12 configuration, altering the absolute and relative positions of objects while keeping the scene physically plausible; it cor-responds to the position perturbation of LIBERO-Pro. The four suites and two variants give 80 task cells, each a task under one variant, with 50 initial states. Following Agen-ticRoboRL [35], initial states 1–10 of every cell form the evaluation set of 800 episodes, and states 11–49 are used for training, shared by teacher demonstrations and RL roll-outs; state 0 is not used. Each cell has a single instruction, so generalization on LIBERO-Pro is measured across un-seen initial states rather than unseen instructions. Success is determined by the official LIBERO success predicate. 
+
+A.2. Compared Systems 
+
+Published results on RoboTwin 2.0. The VLA rows of Table 3 are taken from the official RoboTwin 2.0 leader-board [43], updated on October 30, 2026. These policies are trained on 50 clean demonstrations per task and evalu-ated with 100 trials per task and scene condition, so their evaluation instances differ from ours. π0.5 and X-VLA are co-trained across tasks, whereas π0 and RDT are fine-tuned on each task separately. For agents using frontier models through APIs, we report the randomized-scene results pub-lished for ORA [61], RoboDawn [13] (zero-shot, Table 1 of the paper), and PyRUA-Lean [45] (configuration with-out VLA skills, Table 3); none of them reports clean-scene results. 
+
+Baselines evaluated under our protocol. We evaluate three untrained baselines on the same clean and randomized RoboTwin episodes as RoboHarness-RL (Appendix A.1), using the official success checks and a context window of 98,304 tokens. • ORA with Qwen3.5-9B uses the released ORA code with thinking disabled and the same task-specific budgets as LiteHarness. It succeeds in 25/250 clean and 17/250 randomized episodes. In clean scenes, 188 of the 250 episodes end because the context window is exhausted, after a median of 15–16 model calls, illustrating the con-text growth that hierarchical memory is designed to con-trol. • K1 with Qwen3.5-9B [28] retains its native configura-tion, including a limit of 400 model calls and tempera-ture 0.2. It succeeds in 9/250 clean and 7/250 randomized episodes. In 130 of the 250 clean episodes, the arm never moves, because K1’s grasp tool rejects target regions that are not elongated. • LiteHarness with Qwen3.5-27B uses the same harness and budgets as our 9B policies. It succeeds in 83/250 clean and 74/250 randomized episodes. 
+
+Published results on LIBERO-Pro. All rows of Table 2 other than ours are taken from the cited papers, and each suite score averages the reported Task and Swap results. The π0.5, πRLinf , and Harness VLA results come from Zhang et al . [69], with the Harness VLA rows taken from Tables 3 and 21 of that paper. ORA with DeepSeek-V4.1-Flash reports 651 successes out of 800 episodes [61]. For AgenticRoboRL [35], we use its RPent 9B variant trained with SFT and RL, without external memory (Table 1 of the paper); it executes actions through a learned VLA and uses the same split of initial states as ours. 
+
+A.3. Checkpoint Selection 
+
+On both benchmarks, we report the checkpoint after 25 RL rounds. Intermediate checkpoints are used to monitor train-ing (Fig. 4) and in the scheduling ablation (Sec. 4.5). On RoboTwin, the checkpoints after rounds 9, 14, 20, and 25 are evaluated on the full clean set, and those after rounds 9, 13, 14, 20, and 25 on the full randomized set. On LIBERO-Pro, every checkpoint up to round 25 is evaluated on initial states 1–3 of each task cell (240 episodes), and the check-points after rounds 11, 15, 17, 18, 20, 24, and 25 also on all 800 episodes. 
+
+A.4. Evaluation Runs 
+
+Reported evaluations. Each number in Table 1 comes from a single complete evaluation of each policy: 250 episodes per scene condition on RoboTwin and 800 episodes on LIBERO-Pro. All paired analyses use these same evaluations, including the per-task results (Table A2), the behavioral statistics in Sec. 4.4, and the statistics in Fig. 5. SFT and RL are therefore always compared on identical task–initial-state pairs. Each checkpoint in Fig. 4 is evaluated on the full clean and randomized sets on RoboTwin and on initial states 1–3 of each task cell on LIBERO-Pro (240 episodes). Table 1 reports the full 800-episode evaluation on LIBERO-Pro. 
+
+Sizes of the paired analyses. Statistics over all episodes use 250 pairs per RoboTwin condition and 800 pairs on LIBERO-Pro. Both policies succeed on 51 clean and 42 randomized RoboTwin initial states and on 431 LIBERO-Pro initial states; these pairs underlie Table 4. Both poli-cies receive execution-failure feedback in 201 clean, 209 randomized, and 428 LIBERO-Pro pairs, where success in-creases from 47 to 68, from 39 to 64, and from 182 to 246, respectively. The statistic in Fig. 5(b) uses the 85 clean pairs in which both policies receive at least one negative comple-tion check, where success increases from 12 (14.1%) to 19 (22.4%). On LIBERO-Pro, RL succeeds on 155 pairs where SFT fails, and SFT on 31 pairs where RL fails; the base model succeeds in 14 of the 800 episodes (1.75%, shown as 1.8% in Table 1). 13 Table A2. Per-task success rates (%) on RoboTwin under LiteHarness. Each entry uses the five episodes of the task in the evaluations of Table 1.                                                                                                                                                                                                                                                                                                                                                            
+
+> Clean Randomized Clean Randomized Task Base SFT RL Base SFT RL Task Base SFT RL Base SFT RL adjust bottle 60 20 100 080 80 place can basket 040 40 020 20 beat block hammer 020 20 0020 place cans plasticbox 040 0020 40 blocks ranking rgb 060 40 040 40 place container plate 40 60 80 40 40 20 blocks ranking size 0080 020 0place dual shoes 000000click alarmclock 40 100 100 20 60 80 place empty cup 100 80 80 40 40 40 click bell 60 100 100 80 100 100 place fan 000000dump bin bigbin 0020 000place mouse pad 40 060 0020 grab roller 20 80 100 060 100 place object basket 020 60 020 40 handover block 00020 00place object scale 20 40 40 40 60 80 handover mic 0040 020 20 place object stand 80 20 60 020 60 hanging mug 020 20 000place phone stand 0000060 lift pot 0080 0040 place shoe 00040 20 20 move can pot 20 40 20 20 20 20 press stapler 100 100 100 100 100 100 move pillbottle pad 020 0020 0put bottles dustbin 020 0020 20 move playingcard away 20 100 100 20 100 80 put object cabinet 000000move stapler pad 20 20 00040 rotate qrcode 020 20 20 040 open laptop 40 20 40 80 20 40 scan object 20 00000open microwave 020 60 0040 shake bottle 100 80 80 40 60 100 pick diverse bottles 0020 0040 shake bottle horizontally 60 80 60 80 80 80 pick dual bottles 000020 0stack blocks three 040 0000place a2b left 40 60 80 20 40 20 stack blocks two 0080 20 40 80 place a2b right 20 60 100 060 60 stack bowls three 000000place bread basket 060 60 20 20 80 stack bowls two 000020 20 place bread skillet 020 60 20 20 0stamp seal 40 080 40 040 place burger fries 20 100 60 040 60 turn switch 40 060 20 20 60 Mean (50 tasks) 20.0 31.2 44.0 15.6 26.4 38.0
+
+A.5. Per-Task Results 
+
+Table A2 reports all 50 RoboTwin tasks for the three 9B training stages, using the evaluations in Table 1. On clean scenes, RL improves over SFT on 19 tasks and falls behind on nine; nine tasks without any SFT success are solved at least once after RL. Table A3 reports the 40 LIBERO-Pro tasks under both variants, each evaluated on its ten evaluation initial states. Across the 80 task cells, RL improves over SFT on 50, matches it on 24, and falls behind on 6, by at most three episodes. RL succeeds on all ten initial states in 40 task cells, compared with 11 for SFT. Four task cells without any SFT success are solved at least once after RL, includ-ing Goal 6 under Swap, which rises from 0 to 8 successes. Eight task cells remain unsolved by both policies, five of them in the Long suite. 
+
+A.6. Statistical Significance 
+
+Because SFT and RL are evaluated on identical task–initial-state pairs, we compare them with paired tests (Table A4). For success rates, we report 95% Wilson intervals for each policy and a 95% interval for the RL gain from a bootstrap that resamples tasks (10,000 resamples), which accounts for the correlation among episodes of the same task. The p-values come from exact two-sided McNemar tests on the discordant pairs. The RL gain is significant on all three eval-uations, and every bootstrap interval for the gain excludes zero. The behavioral findings in Sec. 4.4 are tested with exact two-sided sign tests over paired episodes. Per-episode rates of repetitive calls, as defined in Sec. 4.4, are lower after RL in all three settings ( p = 3 ×10 −7 and 4×10 −6 on clean and randomized RoboTwin, and p = 0 .013 on LIBERO-Pro). Counting all identical consecutive calls gives p < 10 −7 on both RoboTwin conditions and p < 10 −16 on LIBERO-Pro. On jointly successful initial states, RL uses fewer model calls in all three settings ( p = 7 ×10 −5, 0.004 , and 0.010 
+
+for clean RoboTwin, randomized RoboTwin, and LIBERO-Pro). Read-only queries decrease significantly on both RoboTwin conditions ( p < 0.001 ) but not on LIBERO-Pro (p = 0 .76 ), consistent with the query counts reported there. Robot decisions decrease significantly on clean RoboTwin (p = 0 .02 ) and LIBERO-Pro ( p = 1 ×10 −4), but not on ran-domized RoboTwin ( p = 0 .15 ). Among pairs in which both policies receive execution-failure feedback, the increase in success is significant on clean RoboTwin ( p = 0 .013 ), ran-domized RoboTwin ( p = 0 .002 ), and LIBERO-Pro ( p =2×10 −10 ). The narrower statistic in Fig. 5(b), restricted to the 85 pairs with negative completion checks, points in the same direction but is not significant on its own ( p = 0 .23 ). The memory ablation (Fig. 6) is tested in the same way, pairing each variant with hierarchical memory on identical episodes. On RoboTwin, the settings without history and with the full raw history are significantly lower, whereas the recent window and the compressed full history are not. 14 Table A3. Per-task success rates (%) on LIBERO-Pro. Each entry covers the ten evaluation initial states of a task; tasks are indexed by suite and task ID.                                                                                                                                                                                                                                                                                           
+
+> Task Swap Task Swap Task Base SFT RL Base SFT RL Task Base SFT RL Base SFT RL Spatial 0 090 90 090 100 Goal 0 000050 50 Spatial 1 090 100 090 80 Goal 1 050 100 070 90 Spatial 2 040 80 10 80 100 Goal 2 10 30 70 070 100 Spatial 3 080 100 090 100 Goal 3 050 100 050 80 Spatial 4 070 80 000Goal 4 030 100 080 90 Spatial 5 080 100 080 100 Goal 5 070 80 000Spatial 6 10 70 100 010 30 Goal 6 10 60 80 0080 Spatial 7 090 100 0100 100 Goal 7 30 100 100 50 100 100 Spatial 8 070 100 090 100 Goal 8 070 100 010 20 Spatial 9 090 100 080 100 Goal 9 060 100 060 100 Object 0 0100 100 090 100 Long 0 090 100 080 70 Object 1 090 100 0100 100 Long 1 020 20 060 70 Object 2 0100 100 010 10 Long 2 020 80 060 100 Object 3 10 70 100 040 50 Long 3 0010 000Object 4 0100 100 0100 100 Long 4 0000020 Object 5 0100 100 090 100 Long 5 010 60 010 70 Object 6 0100 100 080 100 Long 6 020 0000Object 7 090 60 090 100 Long 7 030 80 050 40 Object 8 10 20 10 0100 100 Long 8 0070 030 50 Object 9 090 90 090 100 Long 9 000000Mean (40 tasks) 2.0 58.5 76.5 1.5 57.0 70.0
+
+Table A4. Paired comparison of SFT and RL success. Brackets: 95% intervals (Wilson for success rates; task-level bootstrap for the gain). Discordant: pairs solved only by RL / only by SFT; p: exact McNemar test. 
+
+SFT (%) RL (%) Gain (pp) Discordant p
+
+RT clean 31.2 [25.8, 37.2] 44.0 [38.0, 50.2] 12.8 [4.4, 21.6] 59 / 27 7×10 −4
+
+RT rand. 26.4 [21.3, 32.2] 38.0 [32.2, 44.2] 11.6 [5.6, 18.0] 53 / 24 1×10 −3
+
+LIBERO-Pro 57.8 [54.3, 61.1] 73.3 [70.1, 76.2] 15.5 [11.0, 20.2] 155 / 31 5×10 −21 
+
+## B. LiteHarness 
+
+B.1. Tool Interface 
+
+LiteHarness keeps the tools of ORA [61] and their argu-ment schemas unchanged. Table A5 lists the 20 tools available on RoboTwin. SAM 3 [3] serves text ground-ing (vision ground ) and point-prompted segmenta-tion ( vision segment ). Contact-GraspNet [48] pro-poses grasps for grasp plan , combined on RoboTwin with a top-down grasp heuristic for the parallel-jaw grip-pers. Motion targets are planned with cuRobo [47], whereas align plan solves inverse kinematics only. On LIBERO-Pro, the single-arm embodiment exposes 18 tools; 
+
+grasp execute and align plan are absent, and mo-tion tools take their targets without an arm argument. Tools are either read-only or world-changing. Read-only tools may be called several times or batched within one re-sponse. A world-changing tool must be the only call in its response and ends the turn, after which the next observa-tion shows its effect. If a response mixes the two kinds, the read-only calls are executed and the world-changing call is rejected. Each executed world-changing call counts toward the robot-action budget Bact , and every model call counts toward Bcall .
+
+B.2. Prompts and Tool Descriptions 
+
+The student’s system prompt and rules are shown in Fig. A1. The system prompt is shared by both benchmarks. The rules differ only in the embodiment paragraph and in one recovery hint: the LIBERO-Pro version describes the single Franka Panda arm, its controlled point, the agentview 
+
+and wrist cameras, and the command workspace, and it re-places the hint about moving the other arm with one about lifting after the jaw closes on an object. Teacher and student share tool names and argument schemas but receive different descriptions. The teacher sees ORA’s full descriptions, while the student receives concise rewrites that keep the argument conventions, return fields, and common refusal reasons (Fig. A2). On RoboTwin, the tool descriptions total 65.0K characters for the teacher and 16.7K for the student; on LIBERO-Pro, 55.3K and 15.1K. Parameter descriptions in the student’s schemas are short-ened to at most 100 characters, while names, types, enumer-ations, and required fields are unchanged. The first model call of an episode contains no interaction history. In an ex-ample episode, this first call contains about 31K prompt to-kens under ORA and 12.5K under LiteHarness. The com-plete student descriptions of the RoboTwin tools are listed 15 Table A5. LiteHarness tools on RoboTwin. RO: read-only; WC: world-changing (the only call in its response; ends the turn). Optional arguments are omitted. 
+
+Tool Type Main arguments Returns Effect 
+
+observe Perception – Images of the current or a saved observation RO 
+
+vision ground Perception camera, text Ranked object candidates with 3D center, extent, and crop RO 
+
+vision segment Perception camera, pixel prompts Object candidates with 3D center, extent, and crop RO 
+
+mark point Perception view, point names, pixels 3D positions of the marked pixels and an overlay RO 
+
+geometry query Perception camera; world points, pixels, or region Pixel or world coordinates, or depth statistics RO 
+
+grasp plan Planning arm, target reference Grasp candidates with pre-grasp and contact poses, opening, and reachability RO 
+
+align plan Planning target reference, approach side, arm Alignment pose and reachability RO 
+
+compute Planning expressions Named numeric results RO 
+
+grasp execute Action candidate ID Stage status; lift and opening in the next observation WC 
+
+move to Action target position per arm Acknowledgement; motion receipt in the next observa-tion WC 
+
+move pose Action target pose per arm Compiled pose and reachability pre-check WC 
+
+set gripper Action open or close per arm Submission; measured opening in the next observation WC 
+
+rotate wrist Action angle per arm Acknowledgement WC 
+
+rotate pitch Action angle per arm Acknowledgement WC 
+
+recover pose Action previous or home pose per arm Acknowledgement WC 
+
+wait ticks Action number of ticks (1–20) – WC 
+
+check task Episode – Official task success (true or false) RO 
+
+finish episode Episode outcome, reason Ends the episode Terminal 
+
+report issue Episode message Recorded; the episode continues RO 
+
+artifact read Memory artifact reference Bounded excerpt of a stored tool output RO 
+
+in Appendix B.3. For reference, the embodiment paragraph of the LIBERO-Pro rules reads: 
+
+Embodiment: fixed-base Franka Panda, one right 7-DoF arm with a parallel-jaw gripper. right grip site is the controlled point (already offset 0.097 m from the end-effector root: do not add it again); every motion tool takes its fields at the top level, there is no arm choice. Positions are world me-tres, quaternions [x, y, z, w]. Local approach axis [0, 0, 1] (out of the gripper), jaw-closing line [1, 0, 0]; their current world directions are in the observation. Gripper opening is re-ported normalized (0 closed, 1 open), nominal maximum jaw separation 0.08 m; a closed or stalled gripper does not by it-self prove contact or retention. Finger collision extent along the approach axis from the controlled point is [ −44, +9] mm. agentview is a fixed RGB-D camera; wrist rides on the arm and moves with it. Images are 256 ×256, pixel origin top-left. Command workspace x [ −0.6, 0.6], y [ −0.5, 0.5], z [ −0.1, 1.3]. 
+
+Its recovery hint for contact reads: “blocked by contact →
+
+back off along the approach direction and come in from an-other side; a closed jaw that stalled on the object is the ex-pected result of closing on it, then lift and observe.” 
+
+B.3. Student Tool Descriptions 
+
+The following descriptions are given verbatim to the stu-dent policy on RoboTwin, in the order of Table A5. The LIBERO-Pro descriptions follow the same structure, adapted to the single arm and its workspace. 
+
+observe . Return images of the current observation, or of a saved step of this round, without moving the world. The current RGB views and calibration are already delivered automatically after every action: call observe only for a named-point overlay (history point ids = solved mark names) or a saved step (step). views: subset of head camera, front camera, left camera, right camera (omit = every physical camera). Returns im-ages, their dimensions and public robot facts (measured TCP poses, grip-per command and measured opening). Refused: empty or repeated views, a step outside this round’s saved steps, history point ids together with step. It never establishes grasp or task success. 
+
+vision ground . Find up to max candidates (1-3) regions match-ing a short visible description in text (at most 120 characters, e.g. ’green bottle’, never a simulator name) in one current camera image. Returns ranked candidates with bbox xyxy, target ref, score, localization (cen-ter xyz m = median of the visible surface, support z m, mid height z m, height above support m) and numbered preview crops. Rank 0 and the score are not proof of identity: compare every crop with the task object (colour, shape, size, location) and reject one dominated by table, robot or background. For a parallel-jaw side grasp use mid height z m as the height reference, not center xyz m. Refused: empty text, text over 120 charac-ters, max candidates outside 1-3, grounding service unavailable. target refs are bound to this observation: after any motion, ground again before grasp plan. 
+
+vision segment . Propose object masks around 1-8 independent pixel prompts on one camera image (current, or a saved step). Give 3-5 separated points inside the intended object; each point is answered on its own with up to max candidates (1-3) masks. Returns candidates[] (can-didate id T0.., target ref, score, bbox xyxy, localization: center xyz m = median of the visible surface, support z m = height of the surface the object stands on, mid height z m, height above support m) and preview crops. Choose the candidate whose crop is the intended object; the score orders the masks of one point only. A point on background, an edge or 
+
+16 System prompt (both benchmarks). You control one robot episode through the advertised tools. Use only the current observation, the tool results and the earlier-step summaries in this conversation. The Runtime executes actions and judges the task. Turn protocol: read-only tools (grounding, planning, measuring, compute) may be called one after another or batched. A world-changing tool must be the only call in its reply; it ends the turn, and the next observation shows its effect. Every reply must contain a tool call. Numbers you put into a tool argument must come from an observation, a tool result, or the compute tool; do not do arithmetic yourself. CANDIDATE images are previews, not world state. After an action, compare the before and after views before choosing the next tool; the latest observation is authoritative. Earlier steps are summarized: one line per old step, then a list of the failed attempts so far, then the last three steps in full. Use finish episode only when its contract applies. 
+
+Rules (RoboTwin). Evidence: a measurement or candidate is tied to the observation it came from. After any motion, geometry that could have moved is stale until a fresh observation or a new measurement confirms it; re-ground before planning on it. When two measurements disagree by enough to change the action, take another view or measurement; never average them. Command accepted, endpoint reached and task done are three different claims; only claim what the current evidence supports. An object missing from one camera may be out of its field or occluded: change the viewpoint instead of assuming it is gone. Depth-based world points come from the localization tools; calibration alone gives a ray. 
+
+When something fails: a refusal, an error or an unchanged world says the approach was wrong, not only the tool. Before repeating, change what the attempt rests on: refresh the evidence the arguments came from, or take a different route to the same effect. Two failures of the same kind mean the premise is wrong. A failed attempt rules out that pose, contact or route, not the object or the goal. Typical recoveries: a stale candidate or reference →
+
+run grasp plan or vision ground again on the current observation; unreachable or planner failed → pick another candidate, use the reported reachable fraction or nearest reachable orientation, or lift first and move in a shorter segment; blocked by contact → back off along the approach direction and come in from another side or with the other arm; inter-arm collision → move the other arm away first. 
+
+Boundary: the task sentence (and its public contract, when given) is the objective. Simulator state, segmentation truth, contacts and the success predicate are private. Only the evaluator’s verdict at the end counts; motion completion is not success. Measured state can change without a command (settling, gravity). 
+
+Embodiment: fixed-base ALOHA-AgileX, left and right 6-DoF arms with parallel-jaw grippers. left tcp and right tcp are the controlled points (already offset 0.12 m from the flange: do not add it again). Positions are world metres, quaternions [x, y, z, w]. Local approach axis [1, 0, 0], jaw-closing line [0, 1, 0]; their current world directions are in the observation. Gripper opening is reported normalized (0 closed, 1 open), not as an aperture; a closed or stalled gripper does not by itself prove contact or retention. Finger collision extent along the approach axis from the TCP is [ −50, +36] mm. head camera and front camera are fixed RGB-D; left camera and right camera ride on the arms. Images are 320 ×240, pixel origin top-left. 
+
+Figure A1. Student system prompt and rules on RoboTwin, reproduced verbatim. 
+
+Teacher (ORA). Query the environment-owned official RoboTwin Boolean verdict at the current valid state boundary. Use when: fresh physical evidence suggests the requested arrangement may be complete, and always before finish episode(outcome=success); a planner success, closed gripper or visually plausible placement is not a substitute. Effect: read-only call to the trusted RoboTwin checker and no world advance. Returns: task success Boolean when available, or an explicit retryable unavailable result. Does not: explain the predicate, expose numerical tolerances, actor handles, target coordinates, task source or expert trajectory, change the world, or validate infrastructure quality. On error: Refused: any argument (invalid arguments). Wait for a valid state boundary and retry; never infer official success from action submission or visual appearance alone. 
+
+Student (LiteHarness). Ask the official RoboTwin checker whether the task is complete now. No arguments, read-only, no robot decision. Returns task success true or false (or a retryable unavailable result). Call it when fresh evidence suggests the arrangement is complete, and always before finish episode(success). A plausible-looking placement or a closed gripper is not success. 
+
+Figure A2. Teacher and student descriptions of check task .
+
+a shadow can return the table or a neighbour. Refused: a pixel outside the image (whole call), more than 8 points, max candidates outside 1-3. target refs are bound to this observation: after any motion, segment again before grasp plan. 
+
+mark point . Measure 1-8 pixels of one current RGB view as world points in metres. view = the camera the pixels were read from; point ids and points uv are index-aligned and of equal length; each pixel is [u,v] in integer pixels of that view (320x240, origin top-left), well inside the visible surface, not on an edge or shadow. Returns one marks[] entry per pixel (status, xyz m, depth-support counts) and one overlay image. A name already solved from another view is verified against the stored point: a disagreement over 25 mm fails that entry (inconsistent mark) and keeps the stored one. Per-entry failures: depth discontinuity or insufficient depth support → aim farther inside the surface; invalid depth → another pixel. The whole call is refused for more than 8 entries, unequal lengths, repeated or empty names, or negative pixels. A wrist camera moves with its arm: after any motion measure again from the fresh observation. A measured pixel is a point on the visible surface, not the object centre. 
+
+geometry query . Numbers only, from one camera’s published RGB-D and calibration: no image, no mark. Send camera plus exactly ONE of: world points m (1-16 [x,y,z] metres → pixel uv, in front, in frame, scene depth at that pixel and depth residual m; a positive residual means the visible surface is nearer than your point, i.e. it is probably oc-cluded), points (1-16 [u,v] pixels → world xyz m from the median depth in a window of half-width window px, default 3, range 0-15), or region ([x0,y0,x1,y1] with x0 <x1, y0 <y1 → valid depth count and fraction, min/ median/max depth). Optional step reads a saved observation. Refused: none or two of the three operations, a pixel or rectangle outside the image, more than 16 points, window px outside 0-15. Missing depth is reported as valid false, not an error: move the pixel inside the surface or widen win-dow px. Use mark point when the pixel should be kept under a name and cross-checked; use compute for arithmetic on numbers you already hold. 
+
+grasp plan . Generate up to max candidates (1-3) parallel-jaw grasp candidates for a target ref from vision ground or vision segment on the CURRENT observation, for the chosen arm. Returns candidates with candidate id, world-frame pregrasp pose and contact pose (posi-tion m, orientation xyzw), predicted opening, ik reachability {reachable, pregrasp, approach, approach tilt from vertical deg } and review images; reachable candidates and near-vertical approaches are listed first, but rank is not a success probability: inspect the panels. Then either call grasp execute(candidate id, rationale) for the committed open/pregrasp/ 
+
+17 approach/close/lift sequence, or copy a pose into move pose under tar-gets. <arm > with position mode=absolute, orientation mode=absolute quaternion and position m / orientation xyzw unchanged when you need a decision before closing. Any world action stales the candidates: run grasp plan again on the new observation before executing. Refused: target ref unknown (target ref unavailable) or from an earlier observation (stale observation: re-ground first); backend failure (grasp proposal failed: retry once, then another view). status no candidate: every candidate needed an opening over 94.9 mm or lay outside the workspace; take a better view or choose another target. 
+
+align plan . Inverse-kinematics-only check of standoff poses fac-ing a current target ref from one world side: top (above the target, trav-elling -Z), front (at -X travelling +X), back (at +X), left (at +Y), right (at -Y); approach side names a world direction, never an arm. standoff m 0.02-0.30 (default 0.10) from the target’s visible-surface centroid; max candidates (1-6) jaw rolls; arm left, right or both. Returns candidates with align pose {position m, orientation xyzw }, reachable, position error m, orientation error deg. No motion is submitted and nothing is collision checked: a reachable pose can still fail in move pose, and an unreachable one only describes this arm from its present joints. Optional diagnosis; grasp plan does not use it. Refused: stale or unknown target ref, values outside the ranges. 
+
+compute . Evaluate a short block of numeric Python on numbers you already hold. Call it before using any derived number (offset, distance, an-gle, quaternion, unit conversion); never do mental arithmetic. Arguments: bindings = list of {name, value } (a number, boolean, vector or matrix; lists become numpy arrays, so b - a works); expressions = ONE string of straight-line statements separated by \n (no Markdown fences); outputs = the final variable names to return, each one assigned in the block (the last bare expression is also available as result). Prebound names, never import or rebind them: np, Rotation (scipy; quaternions are [x,y,z,w]), math, pi, float, int, abs, max, min, round, and geom with four helpers: geom.unit(v) normalizes a 3-vector; geom.angle deg(a, b) is the unsigned angle 0-180; geom.rotate(q, v) rotates v by quater-nion q; geom.transform point(t, q, p) returns t + rotated p. Correct forms: np.linalg.norm(b - a); np.cross(a, b) (a function: a list or array has no .cross); np.clip(x, -1, 1); Rotation.from quat(q).as matrix() (q has 4 components); Rotation.from euler(’xyz’, [r, p, y], degrees=True).as quat(); Rotation.from rotvec(geom.unit(axis) * math.radians(deg)).as quat(); (Rotation.from quat(q2) * Rotation.from quat(q1)).as quat() ap-plies q1 then q2; math.radians(deg), math.degrees(rad). Examples: {”bindings”:[ {”name”:”a”,”value”:[0.1,0.2,0.3] },
+
+{”name”:”b”,”value”:[0.4,0.6,0.3] }],”expressions”:”distance m =np.linalg.norm(b - a)”,”outputs”:[”distance m”] } returns 0.5. {”bindings”: [{”name”:”p”,”value”:[0.1,0.2,0.3] },{”name”:”q”,”value”:[0,0,0,1] }], ”expressions”:”axis = geom.rotate(q, [1, 0, 0]) \npoint = p + 0.03 * axis \nangle = geom.angle deg(axis, [0, 0, 1])”,”outputs”:[”point”, ”angle”] } returns point [0.13,0.2,0.3] and angle 90. Limits: at most 24 statements, 16 bindings, 12 outputs, 64 elements per value; no loops, comprehensions, if statements, def, lambda, import, print, return, dict literals, augmented assignment (x += 1) or string op-erations. Each call starts fresh: pass every input again in bindings. Arefusal is invalid arguments with field, received and constraints: a Python AttributeError or ValueError in the message means the code itself is wrong (fix the call form), an unknown name means a missing binding, an output name must be assigned in the block. Correct the block; never resend it unchanged. 
+
+grasp execute . Run one committed grasp as one robot deci-sion: open the gripper (this releases anything it holds), move to the candi-date’s pregrasp pose, approach to the contact pose, close, lift 3 cm, verify. candidate id must come from grasp plan on the current observation; ratio-nale is one sentence of at most 200 characters. Before moving, both poses get a read-only IK and collision probe; a grasp pregrasp unreachable re-fusal submits nothing: pick another candidate or move the arm to a bet-ter configuration first. The next observation reports the stage statuses, the measured lift and the jaw opening: command close with measured opening normalized between about 0.05 and 0.95 suggests something is between the jaws (evidence, not proof). A stage that does not arrive ends the sequence there. Refused: stale candidate observation (candidate from an earlier observation: run grasp plan again), candidate unavailable, an-other sequence in flight. Never call it while already holding the object you need: the opening stage drops it. Use move pose plus set gripper instead for a grasp that must not lift, or for handles and articulated parts. 
+
+move to . Translate one or both TCPs to absolute world positions while holding each arm’s current orientation, routed through the collision-aware global planner. targets {left |right: {position m: [x,y,z] metres }} 
+
+and nothing else (no orientation fields: use move pose for those). Refused before submission: a target equal to the current position, a position outside the command workspace x [-0.6,0.6], y [-0.4,0.4], z [0.7,1.45] (workspace bounds). The acknowledgement carries reach along request (approximate IK pre-check) and observed clearance; the receipt in the next observation says reached, planner failed, plan rejected or not reached with residuals. Do not resend a failed target unchanged. 
+
+move pose . Command a full TCP pose for one or both arms un-der targets. <left |right >. Each arm names position mode and orientation mode and sends exactly that mode’s fields: position mode absolute → position m [x,y,z] world metres; delta →
+
+translation m [dx,dy,dz] metres + position frame (world | end effector); hold current → no position fields. orientation mode absolute quaternion → orientation xyzw [x,y,z,w] unit quaternion (norm 0.98-1.02); world axes → approach world (world direction the jaws point along, TCP local +X) + jaw line world (jaw clos-ing line, local +Y); axis angle delta → rotation axis (x |y|z) + rotation angle deg (signed DEGREES, -180..180) + orientation frame (world |
+
+end effector); hold current → no orientation fields. interaction: free space (default; global planner), precision (global planner plus a small local settle; use for placing), contact approach (lo-cal push of up to 10 mm / 5 deg; a longer approach plans to a pre-contact pose first). Two arms in one call must share one interaction. Example: {”targets”: {”right”: {”position mode”:”absolute”,”position m”:[0.1,0.0,0.9],”orientation mode”:”absolute quaternion”,”orientation xyzw”:[0,0,0,1],”interaction”:”precision” }}} . Example lift: {”targets”: 
+
+{”left”: {”position mode”:”delta”,”translation m”:[0,0,0.05],”position frame”:”world”,”orientation mode”:”hold current” }}} .Returns immediately status submitted with compiled pose: target pose xyz xyzw, target axes world, reach along request (approximate IK pre-check: target reachable, and when false the farthest reachable frac-tion of the straight path and nearest reachable orientation) and observed clearance (lowest point of the jaws or held object at the target minus the highest depth surface under it; negative means that surface is higher). The next observation’s receipt says reached, or planner failed (IK FAIL: no collision-free plan; try a nearer intermediate pose, the nearest reachable orientation or the other arm), plan rejected (workspace or inter-arm clear-ance: move the other arm away first), not reached with blocked (stalled on contact: back off along the approach direction or recover pose). Re-fused before submission: an unknown field, a mode without its fields or a field of another mode, hold current for both halves, a target equal to the measured pose, a position outside the command workspace x [-0.6,0.6], y [-0.4,0.4], z [0.7,1.45] (workspace bounds). Numbers must come from measurements or compute. Read the fresh observation before the next ac-tion; do not resend the same failed target. 
+
+set gripper . Open or close one or both grippers in one call: tar-gets {left: open |close, right: open |close }; an omitted gripper keeps its current directive. One robot decision; the arm poses are held. Optional target ref is only your note of what you are closing on. Returns status 
+
+18 submitted; the next observation gives the measured opening (0 closed, 1 open). A closed jaw is not proof of a grasp; opening releases whatever is held. To grasp a planned candidate prefer grasp execute. Refused: empty targets, an arm other than left/right, a directive other than open/close. 
+
+rotate wrist . Roll one or both TCPs about their own ap-proach axis (local +X) by signed degrees while holding position: targets 
+
+{left |right: degrees in [-180,180], not 0 }. Changes only the jaw line. Up to 15 deg is local control; larger rolls use the global planner. Refused while that TCP is outside the command workspace. Use move pose when position must change too. 
+
+rotate pitch . Tilt one or both TCPs about their jaw axis (lo-cal +Y) by signed degrees while holding position: targets {left |right: de-grees in [-180,180], not 0 }. Changes the approach direction; the result-ing world direction depends on the current orientation (+90 is not always world-down), so read target axes world in the acknowledgement. Up to 15 deg is local; larger tilts use the global planner. Refused while outside the command workspace. 
+
+recover pose . Plan one or both arms to a safe joint configu-ration, keeping every gripper command: targets {left |right: previous |
+
+home }. previous = the last safely reached configuration of a successful pose action; home = the task’s start joints. Use after a blocked or failed motion (after a blocked failure it first retreats 20 mm opposite the recorded approach); prefer one arm at a time. It does not restore moved objects or undo anything in the scene. 
+
+wait ticks . Hold every command and let simulated time pass: ticks 1-20, one tick = 40 ms. One robot decision. Use when a released object is settling or a scripted scene animation is running; not a fix for a pose residual (move pose) or a stalled jaw (set gripper). 
+
+check task . Ask the official RoboTwin checker whether the task is complete now. No arguments, read-only, no robot decision. Returns task success true or false (or a retryable unavailable result). Call it when fresh evidence suggests the arrangement is complete, and always before finish episode(success). A plausible-looking placement or a closed gripper is not success. 
+
+finish episode . End the episode. outcome: success (only af-ter check task returned true at the current state), give up (requires cate-gory: unreachable | object lost | scene damaged | repeated failure | other) or abort (only for an infrastructure failure the harness recorded; planner failures, stalls, refused calls and check task false are NOT infrastructure). reason: at least 24 characters and 4 words; for success cite the evidence and its source (check task, an image, a measured value), for give up state what was observed and attempted. Refused: task success not confirmed, finish category required, finish reason insufficient, action pending fresh observation (wait for the observation first). 
+
+report issue . Record one concrete tool or interface defect (message): a malformed result, a stale binding, contradictory camera evi-dence. No robot decision, the episode continues, nothing is repaired. Or-dinary task difficulty is not an issue. 
+
+artifact read . Read exact text or JSON behind an artifact:// reference from a <recoverable artifact > pointer: ref plus either a byte range (offset, limit up to 8192) or a json pointer. Images are reopened with observe(ref=...) instead. 
+
+B.4. Hierarchical Memory 
+
+LiteHarness builds each context from the recorded interac-tion by deterministic rules, without additional model calls. The same rules render teacher recordings into student con-texts for SFT. 
+
+Recent memory Rt. The window contains the current step and the K = 3 preceding steps, where a step is the interaction between two consecutive observations. Each ob-servation’s text body is shortened to at most 2,500 charac-ters; image retention follows the separate rule below. Robot actions and their results are kept, with numbers rounded to four decimals. Within each step, the last two read-only queries are kept exactly. Earlier queries are compressed: the model’s text and the call arguments are shortened to at most 300 characters, and each result is replaced by a di-gest of at most 900 characters. The digest keeps the fields needed for later tool use, including status and failure codes, candidate IDs and target references, scores, 3D centers and extents, bounding boxes, support heights, positions, orien-tations, and task success, with at most eight items per list. 
+
+Historical summaries St. Steps older than the window are reduced to their action. The observation is replaced by a single line naming the last action and its outcome, the action call is kept with its arguments shortened to 300 characters, and its result is replaced by a digest. Read-only queries of these steps are removed. 
+
+Failure record Ft. The failure record lists every failed action and every rejected call from completed steps, with the step index, the tool, compressed arguments, and the re-ported cause. It keeps the 20 most recent entries and is placed immediately before the steps shown in full. Fig-ure A3 shows the formats of the step summaries and the failure record. 
+
+Images. Images are retained only from the current step and the two preceding steps, a shorter window than the tex-tual recent memory. Images from older steps are omitted even when their text remains in Rt. Images returned by tools before the current observation are replaced by a place-holder, so tool-generated previews do not persist across steps. If more than Bimg = 24 images remain, whole mes-sages lose their images, oldest first, until at most 24 remain. 
+
+Teacher view. The teacher and student use the same memory rules, including the recent window, historical sum-maries, failure record, observation limits, and image cap. The teacher receives full tool descriptions, while the stu-dent uses concise descriptions. SFT samples are rendered in the student view. 19 Summary of an older step.                                                                
+
+> [earlier step: actual sequence 7] last action move pose, "right arm 486 mm /0.0° from target, planner failed, not moved", failure code planner failed. Observation body and images omitted.
+> Failure record.
+> Failed attempts so far (a record kept by the harness, oldest first; not advice): -step 0: grasp plan target ref=target-x, arm=left refused: stale observation (re-ground on the current observation) -step 0: move pose right -> (-0.25, 0.08, 0.90) -> right arm 486 mm /0.0° from target, planner failed, not moved [planner failed]
+
+Figure A3. Formats of the historical summaries St and the failure record Ft, with example entries in the format produced by Lite-Harness. 
+
+B.5. Example of Memory Construction 
+
+Figures A4 and A5 illustrate how LiteHarness constructs a model input from a real interaction history. We use a 
+
+stack blocks two episode of the round-25 RL policy in a clean scene (seed 100011), which succeeds after 20 model calls. The snapshot is taken immediately before call 18, at observation step 10: the policy has moved the red block to the table center and lowered the green block above it. The next response opens both grippers; calls 19 and 20 check success and finish the episode. Step indices identify the observation at which an action is issued, with its physi-cal outcome reported in the next observation. 
+
+From history to context. Figure A4 compares recorded interactions with their retained representation. Historical memory St covers steps 0–6. The top row follows step 3: its observation becomes a short summary of the preced-ing action’s outcome, and the compute query and result are removed. The subsequent move pose call retains the computed placement target, together with a compact tool result. The middle row traces the step-1 transfer and its step-2 feedback into the separate failure record Ft, retaining the attempted target and its outcome; the complete record also contains the attempts at steps 5 and 9. The bottom row shows the shorter image window within recent memory Rt:text spans steps 7–10, while step 8 contributes four camera views plus two grasp-baseline images (head and left wrist, captured after closing and before lifting), and steps 9 and 10 each contribute four camera views. Step-7 images and tool-preview images are removed; the remaining 14 images are below the 24-image cap. Failure records can overlap either history window; step 9 also remains in recent memory. 
+
+The resulting model input. Figure A5 groups request ex-cerpts into task and retained background, latest interaction and feedback, and the subsequent model response. Fixed in-structions and the task precede St, the three failure entries in 
+
+Ft, and recent interactions in Rt. The recent excerpt distin-guishes the immediate submitted acknowledgement of call 17 from the next observation, which reports that the de-scent was blocked by contact. The actual call-18 response opens both grippers and is shown separately, outside the in-put. The full request contains 45 messages and 14 images, with 20 tool definitions supplied separately. JSON excerpts omit fields and abbreviate nesting; four head/front camera crops contrast the scene before the descent with the next observation. 20 Compress old observations; preserve actions and failures. 
+
+Before call 18 / step 10. Matched excerpts and image scales; (...) marks fields omitted from both sides. 
+
+Original interaction history Retained in the model input 
+
+Older steps 0-6 / step 3 example St Historical memory 
+
+Observation after call 6 
+
+move_pose: reached; right arm 4.0 mm / 0.6° 
+
+Full robot/scene state + camera images  
+
+> Step 3 / head Step 3 / front
+
+[earlier step: actual_sequence 3] last action move_pose, "right arm 4.0 mm / 0.6° from target, reached, executed". 
+
+> SUMMARIZE
+
+Call 7: compute 
+
+place = [0.002, 0.0071, 0.7986+0.003] outputs: ["place"] result: [0.002, 0.0071, 0.8016] 
+
+> DROP
+
+Call 8: move_pose / action arguments 
+
+targets.right: position_mode: absolute position_m: [0.002, 0.0071, 0.8016] orientation_mode: hold_current interaction: contact_approach targets.right: position_mode: absolute position_m: [0.002, 0.0071, 0.8016] orientation_mode: hold_current interaction: contact_approach 
+
+> KEEP
+
+Tool result: observed_clearance excerpt Tool result: observed_clearance excerpt 
+
+status: measured clearance_m: -0.0066 footprint_lowest_m: [0.0229,0.0343,0.7341] footprint_observed_fraction: 1.0 radius_m: 0.02; robot_points_excluded: 21897 highest_surface: camera: front_camera; depth_points: 2745 position_m: [0.0256,0.0825,0.7407] ... status: measured highest_surface: camera: front_camera position_m: [0.026,0.083,0.741] ... 
+
+> COMPACT
+
+Attempt and next-observation feedback Ft Failure memory / step 1 example 
+
+Step 1 / call 5: move_to right 
+
+position_m: [0.002, 0.0071, 0.86] 
+
+Step 2: 210 mm / 0.0°; planner failed, not moved. 
+
+step 1: move_to right -> (0.00,0.01,0.86) right arm 210 mm / 0.0° from target, planner failed, not moved [planner_failed] 
+
+> RECORD
+
+Recent steps 7-10 Rt Recent memory 
+
+Observation text + tool calls + results Observation text + tool calls + results KEEP       
+
+> Step 7 Step 8 Step 9 Step 10 Step 8 Step 9 Step 10
+> FILTER
+> Camera tiles use the same scale. Right: 6 + 4 + 4 = 14 images (<24 cap). Tool-preview images are not shown.
+
+Figure A4. Memory construction before call 18. Arrows map recorded interactions (left) to historical, failure, and recent memory (right). Recent images use matching steps, views, and scales on both sides. Step 8 adds two pre-lift grasp baselines to its four camera views; steps 9 and 10 have four views each. Text excerpts omit fields and abbreviate nesting. 
+
+21 Model input before call 18 and the next response 
+
+Selected excerpts: task, retained background, latest interaction, and physical feedback. 
+
+1 Task and retained background 
+
+Take red block and green block, move them to the table's center, then stack green block on red block. 
+
+Completion condition: green centrally on red, with both grippers open. 
+
+St Earlier observation and action 
+
+Step 3 / observation summary 
+
+Right arm reached the target; 4.0 mm / 0.6° error, executed. 
+
+Retained action: move_pose / right arm 
+
+position_m: [0.002,0.0071,0.8016] absolute; hold_current; contact_approach 
+
+Tool acknowledgement: submitted 
+
+Ft Three recorded failed attempts 
+
+Step 1 / move_to right -> (0.00,0.01,0.86) 
+
+210 mm / 0.0°; planner_failed; not moved 
+
+Step 5 / move_pose right; delta (0.00,0.00,0.12) 
+
+120 mm / 0.0°; planner_failed; not moved 
+
+Step 9 / move_pose left -> (-0.02,0.00,0.80) 
+
+32 mm / 3.7°; blocked by contact; executed 
+
+2 Latest interaction: descent and physical feedback Rt
+
+Attempt: lower the green block 
+
+Step 9 / call 17 / move_pose 
+
+Feedback: blocked by contact 
+
+Step 10 / next observation    
+
+> Head camera Front camera Head camera Front camera
+
+targets.left: position_m: [-0.022,0.0047,0.7986] position_mode: absolute orientation_mode: hold_current interaction: contact_approach 
+
+Immediate tool acknowledgement: 
+
+action: move_pose; status: submitted 
+
+last_action_effect: status: not_reached failure_code: blocked physical_cause: blocked_by_contact 
+
+Left-arm residual: 32 mm / 3.7° 
+
+Left gripper opening: 0.654 
+
+Normalized scale: 0 = closed, 1 = open.  
+
+> End of model input Four recorded camera crops shown.
+
+3 Next model response / call 18 Open both grippers 
+
+set_gripper {"targets": {"left": "open", "right": "open"}} Figure A5. Input before call 18 and the next model response. Background excerpts (messages 13–15 and 25) precede the latest interaction (41–44): the descent is submitted, then reported as blocked by contact. The next response opens both grippers. Four recorded camera crops are shown; excerpts omit fields and abbreviate nesting. 
+
+22 C. Teacher Demonstrations and Supervised Fine-Tuning 
+
+C.1. Teacher Data Collection 
+
+The teacher is GPT-6 Astra, accessed through an OpenAI-compatible API with high reasoning effort and the provider’s default sampling. It acts in the same harness as the student and follows the same memory rules, while re-ceiving full tool descriptions as detailed in Appendix B.4. Teacher episodes use ORA’s default budgets of 200 model calls and 80 robot decisions. On RoboTwin, demonstrations are collected in clean scenes on qualified seeds that are disjoint from the eval-uation seeds and from the RL seed pool (Appendix A.1). On LIBERO-Pro, they are collected on initial states 11– 49 of all 80 task cells, adding initial states until a cell has ten successful demonstrations. Among teacher episodes that ran to completion, 88.7% succeed on RoboTwin and 88.1% on LIBERO-Pro; the remaining episodes end with the teacher giving up or exhausting the robot-action budget. On LIBERO-Pro, success is lower in later batches, which target the cells that remained short of ten demonstrations. Because the teacher is served through an external API, we monitored each collection batch for changes in its be-havior. For every batch, we tracked the success rate, the mean numbers of model calls and robot decisions per episode, and the change in success between the first and sec-ond halves of the batch. A batch was stopped and inspected when any of these left its reference range, for example when RoboTwin success fell below 70% or the mean number of model calls exceeded 60 per episode. 
+
+C.2. From Teacher Episodes to SFT Samples 
+
+Only episodes that pass the official success check are used. Successful episodes with more than 80 model calls on RoboTwin, or more than 120 on LIBERO-Pro, are dis-carded, as such successes are typically reached only af-ter extended unproductive interaction; this removes 11 and 2 episodes, respectively. On RoboTwin, eight further episodes are held out for validation, leaving the 393 train-ing episodes reported in Sec. 4.1. Each remaining model call yields one training sample. The input is the context the student would receive at that call, produced by applying the deterministic LiteHarness rendering of Appendix B.4 to the recorded teacher request, and the target is the teacher’s re-sponse, including its text and tool calls. Three kinds of calls are excluded as targets: responses rejected by the harness, calls whose tool result was a refusal, and responses con-taining neither text nor a tool call. Excluding refused calls prevents the student from imitating invalid arguments, while the teacher’s corrected call that follows is kept. Images are resized to at most 81,920 pixels, matching the resolution at which the inference server processes them. Each sample is rendered with the student’s chat template before training to confirm that it matches the input the student receives during evaluation. Table A6 summarizes the resulting datasets. Each train-ing episode contributes one sample per model call except for excluded calls, which account for 91 calls on RoboTwin and 569 on LIBERO-Pro. RoboTwin samples are longer and contain more images, because two arms and four cam-eras produce larger observations. The longest samples reach 37.9K tokens on RoboTwin and 43.7K on LIBERO-Pro, both below the training limit of 49,152 tokens.                         
+
+> Table A6. SFT datasets built from successful teacher episodes. Token counts use the Qwen3.5-9B processor and chat template; image tokens follow the processor’s resizing. Statistics cover all 401 RoboTwin episodes before the validation split.
+> RoboTwin LIBERO-Pro Successful episodes in the SFT pool 412 783 Discarded (too many model calls) 11 2Held out for validation 80Training episodes 393 781 Training samples 10,306 25,210 Model calls / episode (mean, median) 26.3, 22 33.0, 26 Robot decisions / episode (mean, median) 10.7, 8 16.0, 11 Prompt tokens / sample (mean) 22.8K 18.9K median, 95th percentile 23.0K, 29.5K 18.4K, 26.5K of which image tokens (mean) 930 425 Images / sample (mean, max) 11.7, 24 6.6, 20
+
+C.3. Supervised Fine-Tuning 
+
+SFT applies LoRA with rank 16, α = 32 , and dropout 0.05 to all linear projections of the language model, includ-ing the attention, MLP, and linear-attention projections of Qwen3.5; the vision encoder is frozen. The loss is the cross-entropy of the teacher response tokens only, with no loss on the context. We use AdamW with a constant learning rate of 10 −4, weight decay 0.01, gradient clipping at norm 1.0, and eight samples per update, and train for two epochs. Samples longer than 49,152 tokens are skipped. Training runs data-parallel on eight NVIDIA H200 GPUs with gra-dient checkpointing. The resulting adapter is merged into the base model, which initializes RL and is served for eval-uation. 
+
+## D. Agentic RL Training 
+
+D.1. Training Procedure 
+
+Each RL round alternates between collecting rollouts with the current policy and updating it on the recorded model calls (Algorithm 1). During collection, the policy is served by vLLM behind a recording proxy that stores the token IDs and log-probabilities of every model call, while Lite-Harness runs unchanged. Each model call of an episode be-23 Algorithm 1 One RoboHarness-RL training round.                                
+
+> Require: policy πθ, ordered pool of task–initial-state pairs, group size G
+> 1: Take the next 12 pairs from the pool
+> 2: for each pair (x, s 0), in parallel do
+> 3: Run Gepisodes of πθold in LiteHarness from s0at tem-perature 1.0; record every model call
+> 4: Compute each episode’s reward ri(Eq. 6)
+> 5: Discard groups whose rewards span less than 0.05
+> 6: Compute advantages bAi,t for every recorded call (Eqs. 3 and 7)
+> 7: Rebuild every prompt and verify it token by token against the recording
+> 8: Update θfor one epoch over the rows with the loss of Eq. 5, 512 rows per update
+> 9: Merge the LoRA adapter into πθ
+> 10: Postpone tasks whose group in this round was solved by all G
+> episodes (Appendix D.4)
+
+comes one training row, consisting of the context received at that call and the response generated. Before the update, the trainer rebuilds the prompt of every row from the recorded request with the student’s chat template and checks that it matches the recorded token IDs exactly, so the policy is op-timized on the same inputs it received during collection. Af-ter the update, the LoRA adapter is merged into the policy, which collects the rollouts of the next round. 
+
+D.2. Reward and Advantage 
+
+Reward. The reward of episode i is its official success, reduced by a bounded penalty for stalling after a failed com-pletion check: 
+
+ri = ⊮[success i] − λ min( ei, c )
+
+c , (6) where ei counts read-only calls made after a negative 
+
+check task result and before the next robot action, be-yond the first four of each such run, summed over the episode. We use λ = 0 .5 and c = 160 , so the penalty never exceeds half of the success reward and successful episodes always rank above failed ones within a group. The penalty targets the most common failure of the SFT policies: af-ter a negative check, the policy keeps querying without act-ing until the model-call budget is exhausted. Such episodes frequently form groups in which every rollout fails, which yield no gradient under success alone; the penalty separates failures that keep acting from failures that stall. Groups whose rewards span less than 0.05 are treated as uninfor-mative and excluded from the update, so a group of fail-ures enters training only when the stall penalty separates its episodes noticeably. 
+
+Advantage. Advantages are computed within each group of G = 8 episodes as in Eq. 3, with the baseline taken over episodes rather than over model calls and without normal-ization by the group’s standard deviation. Every response of an episode receives the episode’s advantage, from which the invalid-call penalty is subtracted and to which the episode weight is applied: 
+
+bAi,t = ¯MMi
+
+(Ai − pi,t ) , (7) where pi,t = 0.05 if call t of episode i is invalid and 
+
+pi,t = 0 otherwise. A call is invalid when it names a tool that does not exist or cannot be parsed; the summed penalty per episode is capped at 0.5. The weight ¯M /M i reduces the influence of episodes with more training responses on the token-averaged loss. Without it, failed episodes, which contain about 60 model calls compared with about 25 for successful ones, would dominate the gradient. In our im-plementation, rewards, advantages, and penalties are multi-plied by 10; all values in this section and in Table A7 are given before this scaling, with a success reward of 1. 
+
+Policy loss. The loss in Eq. 5 uses the clipped surrogate of PPO with ϵ = 0 .2 and dual clipping [63], which bounds the loss of tokens with negative advantage at 3 bAi,t when the probability ratio becomes large. The loss is averaged over response tokens, and no KL penalty is used. Rollouts are sampled at temperature 1.0 without top-p or top-k trun-cation, and training log-probabilities are computed under the same distribution. Because the inference engine and the trainer compute slightly different probabilities for the same tokens, each token is weighted by the truncated importance ratio 
+
+wi,t,j = min 
+
+ πθold (yi,t,j | xi, h i,t , y i,t,<j )
+
+πvLLM (yi,t,j | xi, h i,t , y i,t,<j ) , 2
+
+
+
+, (8) where πvLLM denotes the probability recorded during col-lection. 
+
+D.3. Hyperparameters 
+
+Table A7 lists the RL hyperparameters; SFT settings are given in Appendix C.3. 
+
+D.4. Interaction Budgets and Task Scheduling 
+
+Budgets. For each task, the model-call budget Bcall is chosen from 80, 120, 160, and 200 calls so that it covers the longest successful teacher and SFT episodes. This gives 
+
+Bcall = 80 for most RoboTwin tasks, with the exceptions listed in Table A8, and Bcall = 200 for all LIBERO-Pro tasks. The robot-action budget is Bact = 80 on both bench-marks, and training and evaluation use the same budgets. 
+
+Scheduling. The pool is an ordered list of task–initial-state pairs that cycles through all tasks, and each round takes 24 Table A7. RL hyperparameters.                                                              
+
+> RoboTwin LIBERO-Pro Initialization SFT, 393 episodes SFT, 781 episodes Reported checkpoint (RL round) 25 25 Pairs per round / group size G12 / 8 12 / 8 Rows per update / epochs per round 512 / 1 512 / 1 Learning rate 3×10 −53×10 −5;5×10 −5from round 16 LoRA rank / α16 / 32 16 / 32 LoRA targets all linear layers of the language model Clipping ϵ/ dual-clip constant 0.2 / 3.0 0.2 / 3.0 Entropy coefficient β10 −310 −3
+> KL penalty none none Stall penalty λ/ cap c/ free calls 0.5 / 160 / 4 0.5 / 160 / 4 Invalid-call penalty / cap 0.05 / 0.5 0.05 / 0.5 Min. reward spread of a trained group 0.05 0.05 Reward scale 10 10 Rollout sampling temperature 1.0, no truncation Rollout correction token-level truncated ratio, threshold 2.0 Max prompt / response tokens 45,056 / 4,096 53,248 / 4,096 Model-call budget Bcall 80–200 per task 200 Robot-action budget Bact 80 80 Evaluation sampling temperature 0.7, top-p0.8, top-k20 Hardware 8×NVIDIA H200
+
+Table A8. RoboTwin tasks with a model-call budget Bcall above 80.     
+
+> Task Bcall
+> open laptop, blocks ranking size, blocks ranking rgb 120 put bottles dustbin, handover block, place can basket, place mouse pad, pick diverse bottles, pick dual bottles 160 place cans plasticbox, scan object 200
+
+the next 12 pairs. On both benchmarks, a task whose most recent group is solved by all eight rollouts is postponed by one cycle, and it is sampled again before it can be postponed a second time. At a stage boundary, tasks whose rollouts failed in two sampled groups are removed from the pool. On RoboTwin, this removal takes place at round 15 and leaves 45 of the 50 tasks; postponement is used throughout. LIBERO-Pro additionally balances task difficulty, be-cause SFT already succeeds on most episodes of the Spa-tial and Object suites while Goal and Long remain difficult. Rounds 1–11 cycle through the task cells with postpone-ment. From round 12, each round samples eight groups from Goal and Long and four from Spatial and Object, af-ter removing six cells whose rollouts failed in two sampled groups. In all stages, evaluation states are never sampled. 
+
+D.5. Compute 
+
+Each RL round runs on a single node with eight NVIDIA H200 GPUs, alternating between rollout collection and the policy update on the same GPUs. During collection on RoboTwin, the policy is served by vLLM on three GPUs, one GPU hosts eight instances each of SAM 3 and Contact-GraspNet, and six GPUs run the simulators with eight episodes each, giving 48 parallel episodes; two of the vLLM GPUs also run simulators. LIBERO-Pro uses two GPUs for vLLM and runs twelve episodes per simulator GPU from round 3, giving 72 parallel episodes. The update uses verl with FSDP2 on all eight GPUs. SFT runs data-parallel on the same type of node. 
+
+Table A9. Wall-clock time and compute. Round times are means over all rounds; GPU hours count eight GPUs over the wall-clock time of training and exclude evaluation.                  
+
+> RoboTwin LIBERO-Pro Rollout collection / round (min) 39.6 30.2 Policy update / round (min) 84.7 94.3 Total / round (min) 124.4 124.5 Episode time, success / failure (min) 4.9 / 13.5 4.2 / 15.5 RL: rounds / wall clock (h) 25 / 51.8 25 / 51.9 RL GPU hours 415 415 SFT: wall clock (h) / samples per second 4.9 / 1.18 10.5 / 1.33 SFT GPU hours 39 84
+
+Table A9 summarizes the cost. A round takes about two hours on both benchmarks, of which rollout collection ac-counts for 32% on RoboTwin and 24% on LIBERO-Pro. The update dominates because every model call of a long episode is a separate training row with its own multimodal prompt, averaging 27.5K tokens on RoboTwin and 23.7K on LIBERO-Pro. Failed episodes take three to four times as long as successful ones, as most of them run until a budget is exhausted. The teacher is accessed through an API, so teacher collection uses local GPUs only for simulation and 25 perception. 
+
+Table A10. Cost of one policy update on the same three RoboTwin task groups (24 rollouts per setting) under hierarchical memory and ORA’s compressed full history. GPU-hours measure scoring and gradient-update computation, while wall-clock times also in-clude startup and reconstruction overhead.                  
+
+> Hierarchical Full history Ratio Rows (dropped as too long) 1,227 (0) 981 (98) –Tokens in the update 32.3M 48.4M 1.50 ×
+> Mean prompt tokens per row 26K 56K 2.1 ×
+> Update compute (GPU hours) 2.43 4.00 1.65 ×
+> Update wall clock (min) 33 51 1.55 ×
+
+Training cost of memory. To measure how memory af-fects training cost, we take the round-25 RoboTwin pol-icy and the next three task groups in its schedule (lift pot, shake bottle, and stack blocks two; eight rollouts each). For hierarchical memory, we use the 24 rollouts recorded during training; for ORA’s compressed full history, we sam-ple 24 new rollouts from the same policy on the same groups. We then run one complete update, scoring and gradient step, on the same eight-GPU node and record to-kens and time per batch; the updated weights are discarded. The full-history rows require raising the prompt limit from 45,056 to 77,824 tokens, and 10% of them still exceed it (Table A10). Over the prompts of the 250 clean evalua-tion episodes, 76% of full-history calls exceed 45,056 to-kens, whereas no hierarchical row is dropped in the update. Per million tokens, the longer sequences cost only 3–12% more, so most of the difference comes from the 1.5 × as many tokens entering the update. Since the update accounts for more than two thirds of each round, a complete round would cost about 1.45 × as much under the compressed full history. This is a single measurement on RoboTwin used only for timing; it does not compare the success of policies trained under each memory. 
+
+D.6. Training Dynamics 
+
+Figure A6 shows the training statistics of every round. Roll-out success is measured on the training pairs of each round, which change with the schedule, so it fluctuates more than evaluation success. On LIBERO-Pro, it rises from 31% over the first three rounds to 65% over the last five, although the later stages concentrate on difficult cells; on RoboTwin, it rises from 28% to 38% over the same spans. Each round yields 7.4 informative groups out of 12 on RoboTwin and 8.6 on LIBERO-Pro on average, and every round contains at least four. Episodes become shorter on LIBERO-Pro, from 110 to 75 model calls on average, consistent with the lower execution overhead in Sec. 4.4, while the invalid-call rate stays below 1.6% on both benchmarks. The optimization stays close to the rollout policy. Token entropy remains between 0.19 and 0.30 on RoboTwin and between 0.12 and 0.17 on LIBERO-Pro without a down-ward trend, so the policy does not collapse onto a narrow set of responses. The approximate KL divergence between consecutive policies stays below 2 × 10 −3 per round, the fraction of clipped tokens below 0.5%, and the mean impor-tance weight of the rollout correction within 10 −4 of one. Each round performs 4 to 16 optimizer updates, depending on the number of rows in informative groups. 
+
+## E. Qualitative Examples 
+
+This section complements Fig. 5 with an RL episode on RoboTwin that recovers from repeated failures, four paired SFT and RL episodes on LIBERO-Pro, and an analysis of where RL episodes still fail. The RoboTwin example in-cludes a call-level table; the paired LIBERO-Pro cases align key events and subsequent actions across policies. The ex-amples illustrate the statistics in Sec. 4.4 and are not repre-sentative samples. 
+
+E.1. Recovery in a RoboTwin Episode 
+
+Table A11 traces the open microwave episode of Fig. 3 (round-25 policy, seed 100018, clean scene), whose instruc-tion is “Pull the medium-sized microwave with angled walls open with the left arm.” The episode contains 38 model calls over 20 observation steps, each response containing exactly one tool call. Figure A7 highlights three concrete changes, with call numbers starting at 1. First, call 3 re-jects the top-grasp candidate before motion; call 6 changes the gripper orientation and approaches the handle from the side, followed by closing and short outward pulls in calls 8–10. Second, after further pulls remain blocked, includ-ing call 19, the policy opens the gripper in call 22, returns the arm home in call 26, re-approaches through calls 27–33, and closes on the handle again in call 34. Third, call 35 is still blocked; call 36 commands a world-frame translation of [−0.06 , −0.08 , 0] m together with a −30 ◦ rotation about the world z axis, continuing the opening motion. Call 37 checks success and call 38 finishes the episode. Seven of the 38 responses include a short statement be-fore the tool call, reproduced verbatim:        
+
+> 2: I’ll use the left gripper to grasp the vertical handle, then pull gently and follow the door’s swing. I’ll check that the door moves with the gripper before continuing to a wide-open position. 6: The proposed grasp was rejected before any motion. I’ll try a side approach to the handle instead, keeping the jaws across its width and pulling outward. 8: The approach stopped short with the gripper visibly touching the door, so I won’t push farther. I’ll close at this position, then make a short outward pull to test whether the handle follows. 11: The door moved outward with the gripper, and a gap is now visible. I’ll follow a curved path around the microwave’s left edge, pulling farther while keeping the handle between the jaws. 19: The door has swung open, but the gripper stopped short of the requested pose. I’ll change the pull direction to follow the remaining arc around
+
+26 1 5 10 15 20 25                      
+
+> RL round
+> 20 40 60
+> Rollout success (%) 1510 15 20 25
+> RL round
+> 036912
+> Informative groups (of 12) 1510 15 20 25
+> RL round
+> 60 80 100 120
+> Model calls per episode 1510 15 20 25
+> RL round
+> 0.15 0.20 0.25 0.30
+> Token entropy 1510 15 20 25
+> RL round
+> 0.5 1.0 1.5
+> Invalid calls (%)
+> RoboTwin LIBERO-Pro
+
+Figure A6. RL training dynamics per round, computed from the training rollouts (96 episodes per round) and the update logs. The vertical line marks the LIBERO-Pro scheduling stage starting at round 12. Change the approach, re-grasp, then verify success. 
+
+Task: open the microwave with the left arm. 38 calls, 20 observations; call numbers start at 1. 
+
+1 Change approach direction 2 Establish a new grasp 3 Translate and rotate 
+
+Call 3: top grasp unreachable 
+
+> Rejected before any motion.
+
+Call 19: pull blocked 
+
+> Call 20: task check is still false.
+
+Call 35: target pose not reached 
+
+> Contact blocks the commanded motion.
+> CHANGE / CALL 6
+
+Approach from the side; change the gripper orientation. 
+
+> CHANGE / CALLS 22-34
+
+Open (22) -> home (26) -> re-approach (27-33) -> close (34). 
+
+> CHANGE / CALL 36
+
+Translate: [-6,-8,0] cm Rotate: -30° about world z. 
+
+Call 6: side approach executed 
+
+> Then close and pull (calls 8-10).
+
+Call 34: close on the handle again 
+
+> Following release, reset and re-approach.
+
+Call 36: door opens farther 
+
+> Call 37: check passes; call 38: finish.
+
+Figure A7. Recovery in one open microwave episode (Table A11). Each column pairs a failed attempt with the subsequent adjustment: change approach direction, release/reset/re-grasp, or translate and rotate. The middle strip specifies the action and call numbers. All images are recorded head-camera crops after the labelled calls; the rejected grasp leaves the initial scene unchanged. 
+
+the visible hinge, rather than repeat the blocked straight-line pull. 21: The door is still only partially open. I’ll measure the exposed upper hinge area, then pull along its arc using a fresh grasp rather than pushing farther with the current grip. 36: The door is visibly farther open, and the gripper is now positioned around the exposed handle. I’ll continue along the same arc toward a wide-open position. 
+
+These statements are brief plans stated together with the tool call; thinking is disabled, and no response contains step-by-step reasoning. 
+
+E.2. Paired Episodes on LIBERO-Pro 
+
+Figures A8–A11 compare SFT and RL episodes from the same task and initial state; call indices start at 0, and the captions quote the task instructions. Cases A–C were se-lected from 52 pairs read in full, spanning episodes where only RL succeeds, where only SFT succeeds, and where both fail. Case D was selected from pairs where only RL succeeds because the two policies issue nearly identical calls up to the same negative feedback, so the episodes dif-fer only in the response to it. These cases illustrate differ-27 Table A11. Model calls of the open microwave episode, grouped by observation step. Outcomes of world-changing calls appear in the next observation.                                                              
+
+> Step Calls Tools and outcomes 01–6 vision ground ,grasp plan ,
+> grasp execute (refused: pre-grasp unreach-able), mark point ,compute ,move pose (side approach) 17move pose toward the handle; stops 76 mm short, blocked by contact 28set gripper : close on the handle 3–4 9–10 move pose : short outward pulls; the door opens a gap 511 move pose along a curved path; blocked 612–15 vision ground ,mark point ,observe ,
+> move pose ; blocked 716 move pose ; blocked 817–19 check task (false), mark point ,move pose
+> with a new pull direction; blocked 920–22 check task (false), mark point on the hinge area, set gripper
+> 10 23–25 vision ground ,grasp plan ,move pose
+> 11 26 recover pose
+> 12–15 27–31 move pose (four times), with vision ground at step 14 16 32–34 mark point ,compute ,set gripper
+> 17–18 35–36 move pose (twice), continuing along the arc 19 37–38 check task (true), finish episode
+
+ences between SFT and RL in target selection and responses to execution feedback. Each figure aligns the starting scene, a key event, the response, subsequent follow-up actions, and the episode outcome; the aligned events need not occur at the same call index. 
+
+E.3. Where RL Episodes Still Fail 
+
+On LIBERO-Pro, we categorize failed episodes by the fur-thest stage reached (Table A12), counting a grasp as held when the gripper does not fully close after closing on an object. After RL, nearly all failures reach the placement stage: in 88% of failed episodes the policy has grasped and placed an object, yet the official check fails, compared with 77% for SFT. Episodes that never close the gripper or never place a held object nearly disappear (58 versus 8), whereas closing without holding an object remains similar (20 ver-sus 18). On the 183 initial states that both policies fail, RL performs more pick-and-place attempts (3.2 versus 2.4 per episode, p = 8 × 10 −8) and tries more grasp locations (2.9 versus 2.2, p = 3 × 10 −7), so RL failures result from at-tempts that do not reach the required placement rather than from stopping early. Neither policy declares success prema-turely: no LIBERO-Pro episode ends with a success claim that the official check rejects. 
+
+## F. Limitations 
+
+Simulation. All experiments are conducted in simulation. Agentic RL collects many multi-call rollouts in every round, which simulation provides at scale but would be difficult to collect on real robots; evaluating transfer to real robots is 
+
+Table A12. Furthest stage reached in failed LIBERO-Pro episodes. 
+
+SFT RL Failed episodes 338 214 Never closed the gripper 20 2Closed but never held an object 20 18 Held but never placed 38 6Placed, yet the check fails 260 (77%) 188 (88%) 
+
+left to future work. 
+
+Dependence on the teacher. We initialize RL from teacher demonstrations because the base model rarely suc-ceeds on its own: the untrained Qwen3.5-9B reaches 20.0% on clean RoboTwin and 1.8% on LIBERO-Pro, which leaves too few successful rollouts for RL to learn from. RL therefore inherits the coverage of the demonstrations to some extent. 
+
+Remaining failure modes. RL improves how the policy uses the tools, while perception, grasp proposals, and mo-tion planning come from fixed external models. Most re-maining LIBERO-Pro failures place the object near, but not at, the required pose (Appendix E.3), and long-horizon tasks and randomized bimanual scenes show the largest re-maining gaps (Secs. 4.2 and 4.3). 
+
+Statistical scope. Each RL run of 25 rounds takes about 415 GPU hours (Table A9), and evaluating one checkpoint takes 250 or 800 multi-call episodes. We therefore train one RL run per benchmark and evaluate each reported check-point once; the paired tests in Appendix A.6 capture varia-tion across episodes, not across training seeds. 28 A | After blocked descent: repeat the motion or close in place 
+
+Task: Pick the ketchup and place it in the basket. 
+
+1 Start 2 Key event 3 Response 4 Follow-up 5 Outcome 
+
+SFT 
+
+Initial state 
+
+> Same scene and task.
+
+Call 9: blocked 
+
+> Descent stops 3.6 cm short.
+
+Call 12: retry 
+
+> Still short; call 13 lifts away.
+
+Calls 26-92: loop 
+
+> Approach, blocked descent, lift again.
+
+FAILURE 
+
+93 calls 
+
+Never closes the gripper. Action budget exhausted. 
+
+RL 
+
+Initial state 
+
+> Same scene and task.
+
+Call 9: blocked 
+
+> Same descent; retry (11) also blocked.
+
+Call 12: close 
+
+> Grip the neck in place; call 13 lifts.
+
+Call 16: carry 
+
+> Move the held bottle to the basket.
+
+SUCCESS 
+
+20 calls 
+
+Placement succeeds during call 17. Figure A8. Case A. Object, Task variant, task 3, initial state 10. After the same blocked descent, SFT repeats approach/lift motions without closing the gripper, while RL closes in place and completes placement. Columns align event stages; call indices start at 0. B | Target choice: the other bowl or the bowl next to the ramekin 
+
+Task: Pick the akita black bowl next to the ramekin and place it on the plate. 
+
+1 Start 2 Key event 3 Response 4 Follow-up 5 Outcome 
+
+SFT 
+
+Initial state 
+
+> Same three target candidates.
+
+Call 4: select 
+
+> Candidate 0: the other bowl.
+
+Call 9: close 
+
+> Grasp the wrong bowl; call 13 carries it.
+
+Call 16: release 
+
+> Place the wrong bowl on the plate.
+
+FAILURE 
+
+200 calls 
+
+88 negative checks; no further action. Call budget exhausted. 
+
+RL 
+
+Initial state 
+
+> Same three target candidates.
+
+Call 4: select 
+
+> Candidate 1: next to the ramekin.
+
+Call 12: close 
+
+> Grasp the target bowl; call 13 lifts it.
+
+Call 16: carry 
+
+> Move to the plate; call 18 lowers it.
+
+SUCCESS 
+
+21 calls 
+
+Call 19: check passes after lowering. 
+
+Figure A9. Case B. Spatial, Task variant, task 8, initial state 9. The policies choose different bowls from the same candidate set. SFT places the wrong bowl and repeats checks; RL selects the bowl next to the ramekin and succeeds. Columns align event stages; call indices start at 0. 
+
+29 C | After off-center placement: repeat checks or re-grasp 
+
+Task: Pick the akita black bowl on the stove and place it on the plate. 
+
+1 Start 2 Key event 3 Response 4 Follow-up 5 Outcome 
+
+SFT 
+
+Initial state 
+
+> Same scene and task.
+
+Call 28: release 
+
+> About 9 cm away from plate center.
+> TOOL FEEDBACK
+
+check_task 
+
+Result: false 
+
+Call 30: check 
+
+> Negative feedback; no new grasp plan.
+
+Calls 31-199: loop 
+
+> Segment the stale step-0 image; recheck.
+
+FAILURE 
+
+200 calls 
+
+82 negative checks; one further action. Call budget exhausted. 
+
+RL 
+
+Initial state 
+
+> Same scene and task.
+
+Call 34: release 
+
+> Also off center; check (36) fails.
+
+Call 46: re-grasp 
+
+> Fresh localization and planning (37-43).
+
+Call 50: lower 
+
+> Place again using the newly measured target.
+
+SUCCESS 
+
+55 calls 
+
+Call 51: release; task succeeds. Figure A10. Case C. Spatial, Task variant, task 6, initial state 1. Both first placements are off center. SFT mostly repeats checks using an old observation; RL re-localizes, re-grasps, and places again successfully. Columns align event stages; call indices start at 0. D | Both lift the plate; placement and recovery diverge 
+
+Task: Put the plate on the stove. 
+
+1 Start 2 Key event 3 Response 4 Follow-up 5 Outcome 
+
+SFT 
+
+Initial state 
+
+> Same scene and task.
+
+Call 10: blocked 
+
+> Descent stops short.
+
+Call 14: lift 
+
+> Close (13), then lift; carry over stove (19-21).
+
+Call 31: release 
+
+> After negative checks, plate lands beside stove.
+
+FAILURE 
+
+130 calls 
+
+13 later grasps; never lifted again. Action budget exhausted. 
+
+RL 
+
+Initial state 
+
+> Same scene and task.
+
+Call 9: blocked 
+
+> The same descent stops short.
+
+Call 12: lift 
+
+> Observe (10), close in place (11), then lift.
+
+Call 15: carry 
+
+> Move onto the stove; success detected.
+
+SUCCESS 
+
+18 calls 
+
+Call 16: check passes. Plate reaches stove. 
+
+Figure A11. Case D. Goal, Task variant, task 1, initial state 10. Both policies lift the plate. SFT releases it beside the stove and fails to lift it again; RL carries it onto the stove and passes the success check. Columns align event stages; call indices start at 0. 
+
+30

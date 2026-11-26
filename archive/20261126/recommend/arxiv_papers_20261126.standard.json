@@ -1,0 +1,592 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-11-26T02:13:25.913986+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 11,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2611.32245v1",
+      "source": "arxiv",
+      "title": "VLAs Execute, Code Recovers: 3D Skill Envelopes Bridge the Compositional Gap in Agentic Manipulation",
+      "abstract": "Composing frozen Vision-Language-Action (VLA) skills under an agentic planner promises scalable long-horizon manipulation without long-horizon demonstrations, yet strong atomic skills routinely fail at seams even under a correct plan. Standard remedies reset the robot's pose or draft entry conditions in language, missing the physical cause we uncover via causal interventions: even after re-homing, a frozen VLA rigidly retraces its habitual trajectory and collides with displaced scene residue, whether or not it can see it. We propose the Skill Envelope, a policy-measured 3D geometric precondition capturing the volume a frozen skill sweeps during successful executions. Exploiting the insight that the rigidity making a frozen skill fragile at seams also makes its trajectory predictable in advance, we expose each envelope as two classical 3D tools (CHECK to detect blocking residue and FREE to locate safe placement regions), establishing a division of labor where VLAs execute in-distribution manipulation and code repairs out-of-distribution states. On LIBERO-Goal with frozen $π_{0.5}$, our zero-failure envelope predicts collisions at 0.946 AUROC (0.944 from one RGB-D view) and beats frontier VLMs on seam readiness (0.902 vs. 0.793); using it for skill ordering and code repair lifts success from 82.8% to 92.3% on two-step seams and from 29.7% to 93.8% on drawer-bearing 3-4 step chains, matching privileged world reset. Together, these results show that reliable VLA composition hinges on measuring a policy's physical workspace rather than guessing preconditions in language. Ongoing work closes the loop with autonomous LLM orchestration, synthesized free-object recovery, and cross-policy evaluation on cluttered benchmarks and real hardware.",
+      "authors": [
+        "Jiajie Zhang",
+        "Yankai Xiang",
+        "Changhao Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-24T09:21:57+00:00",
+      "link": "https://arxiv.org/pdf/2611.32245v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Composing frozen VLA skills under an agentic planner, addressing skill seams",
+      "llm_evidence_cn": "在智能体规划器下组合冻结VLA技能并解决技能衔接问题",
+      "llm_evidence": "在智能体规划器下组合冻结VLA技能并解决技能衔接问题",
+      "canonical_evidence": "在智能体规划器下组合冻结VLA技能并解决技能衔接问题",
+      "llm_tldr_en": "Agentic planners composing frozen VLA skills fail at seams; this work introduces policy-measured 3D Skill Envelopes as geometric preconditions to bridge compositional gaps in long-horizon manipulation.",
+      "llm_tldr_cn": "针对在智能体规划器下组合冻结VLA技能时原子技能常在衔接处失败的问题，作者通过因果干预发现即便重置位姿，冻结策略仍会刚性复现轨迹并碰撞场景残留物。为此提出技能包络，用策略测得的3D几何前置条件刻画技能成功执行时扫过的体积，从而在规划与执行之间建立物理约束。实验表明该方法能弥合长程操作的组合鸿沟，为规划器调用VLA技能提供可复用的几何接口。",
+      "llm_tldr": "针对在智能体规划器下组合冻结VLA技能时原子技能常在衔接处失败的问题，作者通过因果干预发现即便重置位姿，冻结策略仍会刚性复现轨迹并碰撞场景残留物。为此提出技能包络，用策略测得的3D几何前置条件刻画技能成功执行时扫过的体积，从而在规划与执行之间建立物理约束。实验表明该方法能弥合长程操作的组合鸿沟，为规划器调用VLA技能提供可复用的几何接口。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Systems integrating large language model planners with vision language action policies for robot task execution",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.32813v1",
+      "source": "arxiv",
+      "title": "Atomic Policy: Composing Atomic Manipulation Skills with Agentic Reasoning",
+      "abstract": "Long-horizon manipulation requires robots to translate task intent into physical interactions as the scene changes. Vision-language models (VLMs) offer semantic and spatial reasoning, while visuomotor policies provide fine-grained control. Yet ambiguous goals and dependencies between actions make their integration challenging. We introduce Atomic Policy, a framework that composes learned manipulation skills through grounded steering and execution feedback. A VLM estimates the symbolic state and goal, and a PDDL solver constructs a skill plan. An agentic harness steers each skill through language, visual pointing, or both, and verifies its outcome to guide phase transitions and replanning. A common phase-level interface supports specialized policies and generalist action models. Experiments in simulation and on a real robot show how Atomic Policy improves task following and supports recovery in complex, long-horizon manipulation. Project page: https://aaronzkd.github.io/atomic-policy/",
+      "authors": [
+        "Kaidi Zhang",
+        "Pengyuan Guo",
+        "Zhengtong Xu",
+        "Caiyi Zhang",
+        "Huayi Gou",
+        "Guanlin Huang",
+        "Aaron Lim",
+        "Anas Rafei",
+        "Yu She"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-24T15:32:27+00:00",
+      "link": "https://arxiv.org/pdf/2611.32813v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "VLM estimates symbolic state and goal, PDDL solver plans skills, agentic harness invokes and verifies them",
+      "llm_evidence_cn": "VLM估计符号状态与目标，PDDL求解器规划技能并由智能体框架调用与验证",
+      "llm_evidence": "VLM估计符号状态与目标，PDDL求解器规划技能并由智能体框架调用与验证",
+      "canonical_evidence": "VLM估计符号状态与目标，PDDL求解器规划技能并由智能体框架调用与验证",
+      "llm_tldr_en": "Atomic Policy uses a VLM to ground symbolic state and goal, a PDDL solver to build a skill plan, and an agentic harness to steer, verify and replan each atomic manipulation skill.",
+      "llm_tldr_cn": "长程机器人操作需要把任务意图转化为随场景变化的物理交互，但目标模糊和动作依赖使视觉语言模型与底层控制策略难以整合。Atomic Policy用VLM估计符号状态与目标，交由PDDL求解器生成技能计划，再由智能体框架通过语言或视觉指向引导每个技能执行并验证结果。该闭环能驱动相位转换与重规划，并以统一接口接入多种专用策略，为高层规划调用底层技能提供了可行范式。",
+      "llm_tldr": "长程机器人操作需要把任务意图转化为随场景变化的物理交互，但目标模糊和动作依赖使视觉语言模型与底层控制策略难以整合。Atomic Policy用VLM估计符号状态与目标，交由PDDL求解器生成技能计划，再由智能体框架通过语言或视觉指向引导每个技能执行并验证结果。该闭环能驱动相位转换与重规划，并以统一接口接入多种专用策略，为高层规划调用底层技能提供了可行范式。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2611.32016v1",
+      "source": "arxiv",
+      "title": "RoboHarness-RL: Agentic Reinforcement Learning for VLM-Based Robot Manipulation",
+      "abstract": "Agentic harnesses enable frontier vision-language models (VLMs) to manipulate robots through perception, planning, and control tools, yet achieving comparable performance with compact open-weight VLMs remains challenging. We present RoboHarness-RL, an agentic reinforcement learning framework for improving VLM-based robot manipulation through tool calls. Starting from supervised fine-tuning on successful teacher demonstrations, the VLM further improves through multi-turn reinforcement learning with task-outcome rewards, without relying on vision-language-action models or world action models. To support efficient multi-turn training, we develop LiteHarness, which uses hierarchical memory to keep interaction contexts compact while preserving task performance. With Qwen3.5-9B, RL raises success from 31.2% to 44.0% on RoboTwin 2.0 and from 57.8% to 73.3% on LIBERO-Pro; these gains extend to randomized RoboTwin scenes unseen during training (26.4% to 38.0%). Behavioral analysis further shows that RL reduces repetitive-call rates by up to $4\\times$, shortens successful executions, and improves recovery from negative feedback. Project page: https://aim-uofa.github.io/RoboHarness-RL/",
+      "authors": [
+        "Liyang Li",
+        "Mingyu Liu",
+        "Xiaoman Li",
+        "Zhiyue Zhao",
+        "Jin-Chuan Shi",
+        "Canyu Zhao",
+        "Haokai Zhang",
+        "Jinyuan Tian",
+        "Linhao Zhong",
+        "Hao Chen",
+        "Chunhua Shen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-11-24T05:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2611.32016v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "VLM as high-level controller calling perception, planning and control tools for robot manipulation",
+      "llm_evidence_cn": "视觉语言模型作为高层控制器，通过工具调用完成机器人操作",
+      "llm_evidence": "视觉语言模型作为高层控制器，通过工具调用完成机器人操作",
+      "canonical_evidence": "视觉语言模型作为高层控制器，通过工具调用完成机器人操作",
+      "llm_tldr_en": "RoboHarness-RL trains compact open-weight VLMs with multi-turn reinforcement learning and task-outcome rewards to manipulate robots via perception, planning and control tool calls, using LiteHarness hierarchical memory for efficiency.",
+      "llm_tldr_cn": "前沿视觉语言模型可借助工具调用完成机器人操作，但紧凑开源模型难以企及。RoboHarness-RL从教师示范的监督微调出发，用任务结果奖励驱动的多轮强化学习提升VLM的感知、规划与控制工具调用能力，并引入分层记忆的LiteHarness压缩多轮上下文。该方法无需VLA或世界动作模型即可显著提升紧凑VLM的操作表现，说明强化学习可训练语言模型充当机器人高层控制器。",
+      "llm_tldr": "前沿视觉语言模型可借助工具调用完成机器人操作，但紧凑开源模型难以企及。RoboHarness-RL从教师示范的监督微调出发，用任务结果奖励驱动的多轮强化学习提升VLM的感知、规划与控制工具调用能力，并引入分层记忆的LiteHarness压缩多轮上下文。该方法无需VLA或世界动作模型即可显著提升紧凑VLM的操作表现，说明强化学习可训练语言模型充当机器人高层控制器。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2611.23803v2",
+      "source": "arxiv",
+      "title": "CoT-WAM: Collaborative Training of Vision-Language Models and World-Action Models via Plan Latents",
+      "abstract": "General robot manipulation requires both semantic competence and physical foresight. World action models (WAMs) acquire an understanding of and predictive capability over the physical world by jointly modeling visual foresight and action distributions. However, existing WAMs still lack semantic competence: they have limited ability to perform open-world scene understanding, semantic reasoning, and long-horizon planning. Although vision-language models (VLMs) provide these capabilities, effectively integrating their semantic priors into WAM prediction and control remains challenging. To address this challenge, we propose CoT-WAM, a jointly trained WAM-VLM framework. CoT-WAM uses a learnable embedding to exchange information between the VLM and the WAM, which is supervised by textual and goal-image signals during training to encode rich intent information. A tailored two-stage training strategy enables joint optimization and more effective collaboration between the VLM and WAM. We evaluate CoT-WAM on six benchmarks covering control performance, zero-shot generalization, and long-horizon planning. CoT-WAM achieves SOTA performance on LIBERO, CALVIN, and RoboCasa-Kitchen, and demonstrates stronger zero-shot generalization on LIBERO-Plus and LIBERO-Pro without fine-tuning. On RoboCasa365, it further improves long-horizon planning over baselines with and without external planners. Real-world experiments further demonstrate the effectiveness of our method in practical deployments. Code is available at: https://github.com/jhz1192/CoT-WAM.git",
+      "authors": [
+        "Jinhao Zhang",
+        "Yushen Zuo",
+        "Ke Rui",
+        "Weitao Zhou",
+        "Haibao Yu",
+        "Honglong Tian",
+        "Xiaoheng Ma",
+        "Jie Mei",
+        "Jiawei Wang",
+        "Minglei Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-18T04:08:54+00:00",
+      "link": "https://arxiv.org/pdf/2611.23803v2",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "jointly trained VLM and world-action model integrating semantic planning with action control",
+      "llm_evidence_cn": "联合训练VLM与世界动作模型，融合语义规划与动作控制",
+      "llm_evidence": "联合训练VLM与世界动作模型，融合语义规划与动作控制",
+      "canonical_evidence": "联合训练VLM与世界动作模型，融合语义规划与动作控制",
+      "llm_tldr_en": "CoT-WAM jointly trains a vision-language model with a world-action model via plan latents so semantic reasoning and long-horizon planning inform physical action prediction.",
+      "llm_tldr_cn": "通用机器人操作既需要语义理解又需要物理预见能力，但世界动作模型缺乏开放场景理解与长程规划，而视觉语言模型虽具备这些能力却难以融入动作预测与控制。作者提出CoT-WAM，用可学习嵌入在世界动作模型与视觉语言模型之间交换信息，并通过规划潜变量协同训练二者。实验表明该框架把语义先验有效注入动作生成，提升了长程规划与操作表现。这为语言规划与动作执行一体化提供了新范式。",
+      "llm_tldr": "通用机器人操作既需要语义理解又需要物理预见能力，但世界动作模型缺乏开放场景理解与长程规划，而视觉语言模型虽具备这些能力却难以融入动作预测与控制。作者提出CoT-WAM，用可学习嵌入在世界动作模型与视觉语言模型之间交换信息，并通过规划潜变量协同训练二者。实验表明该框架把语义先验有效注入动作生成，提升了长程规划与操作表现。这为语言规划与动作执行一体化提供了新范式。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.22174v1",
+      "source": "arxiv",
+      "title": "Reconfiguring Procedural Knowledge for Compositional Robot Skill Adaptation",
+      "abstract": "General-purpose behavior models increasingly internalize broad procedural knowledge during training, making their adaptation to new goals and skill interfaces less a problem of learning entirely new behaviors than of reconfiguring existing competence. We study this capability as reconfigurability, the ability to realize new behaviors by cost-efficiently restructuring existing components and relations under sparse governing information, where task specifications provide high-level goals and procedure specifications expose a limited set of reusable factors, leaving the concrete bindings and compositions required for execution underdetermined. We propose RecPo, a framework that represents skills task-agnostically through multiple procedure views and materializes executable skill sequences by composing stored transitions to realize task-specific changes. RecPo maintains a procedure knowledge base of skill-induced transitions, with each view exposing a reusable factor and preserving local skill connectivity. At deployment, it interprets task specifications through the same views and resolves the resulting compositional queries over the stored relations to bind skills for execution. On long-horizon tasks in an extended Franka Kitchen benchmark, RecPo achieves 91.9% ordered completion with 1.0 ms of task inference per episode across varying procedure support and task-record sparsity. Real-robot studies further demonstrate adaptation through local memory edits without task-specific retraining.",
+      "authors": [
+        "Daehee Lee",
+        "Dongsu Lee",
+        "Sanghyun Ahn",
+        "Minjong Yoo",
+        "Honguk Woo"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-11-17T04:09:02+00:00",
+      "link": "https://arxiv.org/pdf/2611.22174v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reconfiguring reusable procedural knowledge to compose skills from high-level task specifications",
+      "llm_evidence_cn": "依据高层任务规范重构可复用过程知识以组合技能",
+      "llm_evidence": "依据高层任务规范重构可复用过程知识以组合技能",
+      "canonical_evidence": "依据高层任务规范重构可复用过程知识以组合技能",
+      "llm_tldr_en": "RecPo studies reconfigurability, restructuring existing procedural knowledge into new skill compositions given sparse high-level task and procedure specifications, enabling cost-efficient compositional robot skill adaptation.",
+      "llm_tldr_cn": "通用行为模型在训练中已内化大量过程知识，适应新目标与技能接口更多是重构已有能力而非从头学习。作者将这一能力称为可重构性，研究在稀疏高层任务规范与过程规范下如何低成本重组既有组件与关系。为此提出RecPo框架，用多过程视图以任务无关方式表示技能并完成组合绑定。该工作面向组合式机器人技能适配，强调利用现有过程知识实现新行为。其贡献在于为技能组合与任务分解提供可重构的表示方法。",
+      "llm_tldr": "通用行为模型在训练中已内化大量过程知识，适应新目标与技能接口更多是重构已有能力而非从头学习。作者将这一能力称为可重构性，研究在稀疏高层任务规范与过程规范下如何低成本重组既有组件与关系。为此提出RecPo框架，用多过程视图以任务无关方式表示技能并完成组合绑定。该工作面向组合式机器人技能适配，强调利用现有过程知识实现新行为。其贡献在于为技能组合与任务分解提供可重构的表示方法。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Research on language model based task decomposition and skill calling for robot manipulation and control",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.24100v1",
+      "source": "arxiv",
+      "title": "Lost Between Mind, Model Collaboration, and Motion: Understanding and Measuring Cross-Model Action Misalignment in Commercial Robots",
+      "abstract": "Embodied robots increasingly rely on large language models (LLMs) to interpret user intent and coordinate with robot-specific action models for physical interaction. This multi-model pipeline creates a critical semantic boundary across mind, model collaboration, and motion: semantic consistency may break between what the large model understands, how the small action model translates that understanding into executable commands, and what physical actions the robot ultimately performs. As a security consequence, commercial robots may execute unintended physical actions even when user inputs contain no explicit action commands. To measure this problem, we develop TARS, a black-box framework that explores the command-reasoning-action pipeline and automatically discovers and validates unintended physical behaviors. We evaluate TARS on four commercial robots across 44 experimental settings, conducting 133,400 executions. TARS uncovers widespread cross-model action misalignment and achieves up to 94% verified action coverage.",
+      "authors": [
+        "Yuhang Huang",
+        "Junchao Li",
+        "Boyang Ma",
+        "Minghui Xu",
+        "Kaidi Xu",
+        "Pengfei Hu",
+        "Xiuzhen Cheng",
+        "Yue Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-18T09:22:20+00:00",
+      "link": "https://arxiv.org/pdf/2611.24100v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM interprets user intent and coordinates with robot action models, studying semantic misalignment",
+      "llm_evidence_cn": "大模型解读用户意图并协调机器人动作模型，研究语义错位",
+      "llm_evidence": "大模型解读用户意图并协调机器人动作模型，研究语义错位",
+      "canonical_evidence": "大模型解读用户意图并协调机器人动作模型，研究语义错位",
+      "llm_tldr_en": "The paper studies semantic misalignment across an LLM that interprets intent, an action model that translates it, and the robot that executes, proposing the TARS black-box framework.",
+      "llm_tldr_cn": "商用机器人日益依赖大模型解读用户意图并与专用动作模型协作完成物理交互，这一多模型流水线在理解、协作与运动之间形成关键语义边界。若语义一致性断裂，机器人可能在用户输入未含明确动作指令时执行非预期动作。作者构建TARS黑盒框架来度量跨模型动作错位问题。研究揭示了该流水线的安全隐患，为高层语言理解与底层动作执行的衔接提供了测评手段。",
+      "llm_tldr": "商用机器人日益依赖大模型解读用户意图并与专用动作模型协作完成物理交互，这一多模型流水线在理解、协作与运动之间形成关键语义边界。若语义一致性断裂，机器人可能在用户输入未含明确动作指令时执行非预期动作。作者构建TARS黑盒框架来度量跨模型动作错位问题。研究揭示了该流水线的安全隐患，为高层语言理解与底层动作执行的衔接提供了测评手段。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.22395v1",
+      "source": "arxiv",
+      "title": "CoBoVLA: Decoupling Language from Action with Discrete Codes for Robust and Interpretable Robot Manipulation",
+      "abstract": "Vision-Language-Action (VLA) models achieve high success rates on the LIBERO benchmark but remain sensitive to paraphrasing. Existing VLAs ranging from 0.6B to 7.5B parameters experience a 22-52 point performance drop on LIBERO-Para while SmolVLA exhibits an even larger decline, from 83\\% to 8\\%. Because most VLAs jointly learn language understanding and action generation, it is difficult to determine whether a failure originates from misunderstanding an instruction or executing it incorrectly. To address these challenges, we introduce CoBoVLA, or CodeBookVLA, a 250M-parameter VLA that decouples language understanding, planning, and control through learned discrete interpretable codes. A text encoder maps the instructions to shared step codes, which a visual planner then converts into action code sequences executed by a language-independent actor. This design improves robustness to instruction paraphrasing while allowing failures to be traced to individual stages. It also enables efficient real-time control on resource-constrained hardware by encoding instructions only once and using compact discrete representations to keep each component lightweight. CoBoVLA achieves 91.4\\% success on LIBERO-Goal, compared with 82.8\\% for SmolVLA, under a matched protocol, with 17 ms per control step latency. On LIBERO-Para, it achieves 81.1\\% across 4,092 unseen paraphrases and 78.5\\% on matched episodes, compared with 36.5\\% for SmolVLA LoRA fine-tuned on paraphrases. Without two-step demonstrations, CoBoVLA completes 48.8\\% of 160 free-form two-step tasks. Finally, success reaches 91\\% when instructions are correctly encoded but falls to 27.2\\% otherwise, identifying language understanding as the main source of remaining failures. Together, these results demonstrate that decoupling language understanding and control can improve instruction robustness while making VLA failures easier to diagnose.",
+      "authors": [
+        "Mehul Arora",
+        "Dhruv Agarwal",
+        "Ambuj Agrawal"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-11-17T08:43:29+00:00",
+      "link": "https://arxiv.org/pdf/2611.22395v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decoupled language understanding, planning and control within a VLA",
+      "llm_evidence_cn": "在VLA内解耦语言理解、规划与控制",
+      "llm_evidence": "在VLA内解耦语言理解、规划与控制",
+      "canonical_evidence": "在VLA内解耦语言理解、规划与控制",
+      "llm_tldr_en": "CoBoVLA is a 250M-parameter VLA that decouples language understanding, planning and control via learned discrete interpretable codes, improving robustness to paraphrase and interpretability over jointly trained VLAs.",
+      "llm_tldr_cn": "现有VLA在LIBERO上表现优异却对指令改写极为敏感，性能可下降22至52点，且难以定位失败源于理解还是执行。CoBoVLA提出仅250M参数的VLA，用可学习的离散可解释码将语言理解、规划与控制解耦，由文本编码器映射指令并分阶段生成动作。实验表明该结构显著提升对改写指令的鲁棒性并增强可解释性，为轻量而稳健的语言条件操作提供思路。",
+      "llm_tldr": "现有VLA在LIBERO上表现优异却对指令改写极为敏感，性能可下降22至52点，且难以定位失败源于理解还是执行。CoBoVLA提出仅250M参数的VLA，用可学习的离散可解释码将语言理解、规划与控制解耦，由文本编码器映射指令并分阶段生成动作。实验表明该结构显著提升对改写指令的鲁棒性并增强可解释性，为轻量而稳健的语言条件操作提供思路。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.25529v1",
+      "source": "arxiv",
+      "title": "CoachSI: Self-Improvement of Robot Policies with a Language Coach",
+      "abstract": "Generalist robot policies execute atomic skills reliably but fail when the same skills are composed into long-horizon tasks. Self-improvement from the policy's own experience does not close this gap: experience collected by the policy alone stays within its own distribution and reproduces what it can already do. We show that what the policy lacks is not a skill but the next step. We present CoachSI, a self-improvement method in which a frozen, off-the-shelf vision-language model (VLM) coaches the policy in language: it watches the robot and names the next step in the format of the policy's atomic instructions, and never outputs an action. Successful coached rollouts are relabeled in hindsight with the original task instruction and used to fine-tune the policy. The fine-tuned policy is then deployed on its own. On states where a World Action Model and a Vision-Language-Action model have stalled, naming the next step raises subgoal completion by 4.6x over the unchanged task instruction, and the frozen VLM supplies it from the same camera images the policy sees. After fine-tuning, unassisted success on long-horizon tasks in unseen scenes rises from 47.4% to 59.3%, 9.8 points above fine-tuning on human demonstrations and 7.3 points above fine-tuning on self-collected successes at an equal data budget. With a coach that sees only camera images, it reaches 56.8%, above both baselines. The gain is obtained with the action backbone frozen: language coaching teaches the policy what should happen next, and the skills it already has do the rest.",
+      "authors": [
+        "Jiachen Tao",
+        "Gengyu Zhang",
+        "Haoxuan Wang",
+        "Bing Liu",
+        "Yan Yan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-11-19T05:28:19+00:00",
+      "link": "https://arxiv.org/pdf/2611.25529v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "frozen VLM names the next atomic step in language to coach a policy, never outputting actions",
+      "llm_evidence_cn": "冻结VLM用语言指出下一步原子技能来指导策略，不直接输出动作",
+      "llm_evidence": "冻结VLM用语言指出下一步原子技能来指导策略，不直接输出动作",
+      "canonical_evidence": "冻结VLM用语言指出下一步原子技能来指导策略，不直接输出动作",
+      "llm_tldr_en": "CoachSI uses a frozen off-the-shelf VLM as a language coach that watches the robot and names the next atomic step, relabeling successful rollouts to fine-tune a generalist policy for long-horizon skill composition.",
+      "llm_tldr_cn": "通用机器人策略能可靠执行原子技能，却在把技能组合成长时程任务时失败，仅靠自身经验自我改进无法跳出原有分布。作者提出CoachSI，让一个冻结的现成视觉-语言模型充当语言教练，观察机器人并以策略原子指令的格式指出下一步，而不直接输出动作。成功的被指导轨迹用原始任务指令进行事后重标注，用于微调策略。该方法以高层语言指导弥补了策略缺失的步骤，提升了长时程任务的技能组合能力。",
+      "llm_tldr": "通用机器人策略能可靠执行原子技能，却在把技能组合成长时程任务时失败，仅靠自身经验自我改进无法跳出原有分布。作者提出CoachSI，让一个冻结的现成视觉-语言模型充当语言教练，观察机器人并以策略原子指令的格式指出下一步，而不直接输出动作。成功的被指导轨迹用原始任务指令进行事后重标注，用于微调策略。该方法以高层语言指导弥补了策略缺失的步骤，提升了长时程任务的技能组合能力。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.25243v1",
+      "source": "arxiv",
+      "title": "Verify2Act: Critic-Guided Latent World Models for Verifying Language-Conditioned Manipulation Plans",
+      "abstract": "Vision-Language Models (VLMs) can propose multi-step manipulation plans, but they have no grounded model of how a scene will change, and the pixel-level world models that could check those plans are slow and drift over long horizons. We present Verify2Act, a modular verification framework that separates semantic action proposal from latent physical verification. A VLM proposes candidate plans, a latent world model (V2A-WM) imagines each of them in the DINOv2 feature space, and a dual-head critic checks the imagined rollouts for temporal consistency and goal satisfaction before anything is executed. V2A-WM extends recent flow-matching world models with cross-attention action grounding and a causal temporal history window. We deploy the full system on a low-cost robot arm, training the world model and critic only on data generated in a digital twin. Across six language-conditioned tasks, Verify2Act reaches 83.3\\% task success, compared with 61.7\\% for a latent world model without our architectural changes, 53.3\\% for the VLM alone, and 46.7\\% for a pixel-diffusion world model. It verified every plan it executed and incurred no planning-induced failures: all of its failed episodes were caused by low-level grasp or placement slips. In simulation, Verify2Act obtains the highest five-task chain success on CALVIN among the compared baselines with 30$\\times$ fewer reflective VLM calls than pixel-diffusion verification, and the highest success on cluttered nut assembly.",
+      "authors": [
+        "Chrisantus Eze",
+        "Christopher Crick"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-18T22:22:00+00:00",
+      "link": "https://arxiv.org/pdf/2611.25243v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "VLM proposes multi-step manipulation plans verified by latent world model",
+      "llm_evidence_cn": "VLM提出多步操作计划并由潜世界模型验证",
+      "llm_evidence": "VLM提出多步操作计划并由潜世界模型验证",
+      "canonical_evidence": "VLM提出多步操作计划并由潜世界模型验证",
+      "llm_tldr_en": "Verify2Act separates semantic plan proposal from physical verification: a VLM proposes manipulation plans, a latent world model imagines them, and a critic checks consistency before execution.",
+      "llm_tldr_cn": "针对视觉语言模型能提出多步操作计划却缺乏对场景变化接地理解、而像素级世界模型又慢且长程漂移的问题，作者提出Verify2Act模块化验证框架。该框架由VLM提出候选计划，用潜世界模型在DINOv2特征空间想象各计划，并由双头评论器检查时间一致性与目标达成度后再执行。方法结合流匹配世界模型与动作接地，提升语言条件操作计划的可靠性，为语言模型规划与执行之间加入物理校验环节。",
+      "llm_tldr": "针对视觉语言模型能提出多步操作计划却缺乏对场景变化接地理解、而像素级世界模型又慢且长程漂移的问题，作者提出Verify2Act模块化验证框架。该框架由VLM提出候选计划，用潜世界模型在DINOv2特征空间想象各计划，并由双头评论器检查时间一致性与目标达成度后再执行。方法结合流匹配世界模型与动作接地，提升语言条件操作计划的可靠性，为语言模型规划与执行之间加入物理校验环节。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "embodied task planning with large language models and robot skill invocation",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.26196v1",
+      "source": "arxiv",
+      "title": "EmbodyAgent: Post-Training Embodied VLM Agents via Distillation, SFT, and RL",
+      "abstract": "Vision-language models (VLMs) can act as closed-loop robot-use agents (RUAs) by writing and executing control code through tool interfaces. However, turning an open-weight VLM into a high-performing embodied agent requires a complete post-training stack: out-of-the-box open VLMs fail completely at interactive tool contracts, strong frontier teachers are accessible only as black-box endpoints without exposed weights or token probabilities, and supervised imitation alone plateaus under rollout distribution shift. We present EmbodyAgent, an end-to-end post-training framework with three tightly coupled pipelines: (1) a black-box data synthesis pipeline that queries a strong teacher under a forced think-then-code contract and filters trajectories by task success; (2) an SFT pipeline that distills the explanation-and-program targets into an open-weight 9B VLM with both vision and language encoders trainable; and (3) an online RL pipeline that optimizes student-generated episodes via group-relative advantage with a runtime-error-penalized outcome reward. All three pipelines share one primitive-free Python execution tool exposing only raw visual observation and seven-dimensional end-effector control, with no action decoder and no interface shift across stages. Under a strictly separated evaluation protocol on ten LIBERO Spatial tasks (disjoint state splits, greedy test-time decoding, training-only safeguards), held-out success on 100 test states rises from 0/100 (base 9B VLM) to 14/100 (after SFT) and 84/100 (after RL), while training rollout success climbs from 8.4% to 87.7% and median model calls per episode drop from 36 to 11. We further identify a self-reinforcing runtime-error mode induced by outcome-based RL on executable code, and establish a failure-category monitoring and sampling-side curation protocol that stabilizes training.",
+      "authors": [
+        "Wei Dai",
+        "Jinkun Liu",
+        "Jiayi Chen",
+        "Han Liu",
+        "Wenbo Ding",
+        "Shaolun Huang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-19T14:41:34+00:00",
+      "link": "https://arxiv.org/pdf/2611.26196v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "VLM agents writing and executing control code through tool interfaces as closed-loop robot controllers",
+      "llm_evidence_cn": "视觉语言模型通过工具接口编写并执行控制代码充当闭环机器人控制器",
+      "llm_evidence": "视觉语言模型通过工具接口编写并执行控制代码充当闭环机器人控制器",
+      "canonical_evidence": "视觉语言模型通过工具接口编写并执行控制代码充当闭环机器人控制器",
+      "llm_tldr_en": "The paper addresses turning open-weight VLMs into closed-loop robot-use agents that write and execute control code. It proposes EmbodyAgent, a post-training stack with black-box data synthesis, SFT, and RL, yielding stronger embodied tool use.",
+      "llm_tldr_cn": "该文针对开源视觉语言模型难以胜任闭环机器人使用代理、前沿教师模型仅黑盒可得、纯监督模仿易受分布漂移限制等问题，提出EmbodyAgent后训练框架。其包含黑盒数据合成、强制先思考后写代码的轨迹过滤、监督微调与强化学习三条紧耦合流水线。实验表明该框架使开放模型在交互式工具合约与机器人代码执行上显著提升，为构建具身VLM代理提供了完整方案。",
+      "llm_tldr": "该文针对开源视觉语言模型难以胜任闭环机器人使用代理、前沿教师模型仅黑盒可得、纯监督模仿易受分布漂移限制等问题，提出EmbodyAgent后训练框架。其包含黑盒数据合成、强制先思考后写代码的轨迹过滤、监督微调与强化学习三条紧耦合流水线。实验表明该框架使开放模型在交互式工具合约与机器人代码执行上显著提升，为构建具身VLM代理提供了完整方案。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.26596v1",
+      "source": "arxiv",
+      "title": "PGX: Physically Grounded Execution for Long-Horizon Humanoid Loco-Manipulation",
+      "abstract": "Robotic vision-language-action (VLA) models can execute diverse individual manipulation skills, yet they still struggle with long-horizon loco-manipulation tasks, where temporal structure, skills, and precision are tightly coupled within a monolithic model. We propose Physically Grounded Execution (PGX), a framework that offloads temporal and precision control to two classical training-free components, allowing the VLA to focus on stage-specific skill dynamics. PGX decomposes long-horizon loco-manipulation into three layers: (i) a predicate-based state machine governs task progression, using physical predicates to gate phase transitions, trigger recovery, and coordinate navigation and waiting. Shared predicate semantics connect offline demonstration segmentation, online execution, and stage-wise evaluation; (ii) VLA skills operate within active manipulation phases, with flat or stage-trained models concentrating on task-relevant actions; and (iii) world-coordinate locking (WCL) maintains spatial consistency through base station keeping, object-relative positioning, and world-anchored contact targets. We demonstrate the effectiveness of PGX with extensive experiments conducted on three simulated tasks and one real-world task using a Unitree G1 humanoid robot for long-horizon loco-manipulation, showing improvements in stage progression and task success rates. Project page is available at: https://kl-research.github.io/pgx",
+      "authors": [
+        "Kai Lu",
+        "Chenyang Ma",
+        "Ioannis Havoutis"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-11-19T18:52:18+00:00",
+      "link": "https://arxiv.org/pdf/2611.26596v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decomposes long-horizon tasks into staged skills with state machine gating",
+      "llm_evidence_cn": "用状态机将长程任务分解为分阶段技能执行",
+      "llm_evidence": "用状态机将长程任务分解为分阶段技能执行",
+      "canonical_evidence": "用状态机将长程任务分解为分阶段技能执行",
+      "llm_tldr_en": "PGX offloads temporal and precision control from VLA to a predicate-based state machine, decomposing long-horizon loco-manipulation into staged skill execution.",
+      "llm_tldr_cn": "视觉语言动作模型能执行多种单一操作技能，但在时间结构、技能与精度紧密耦合的长程移动操作任务上仍显吃力。作者提出PGX框架，将时序与精度控制交由两个无需训练的传统组件承担，并把长程任务分解为三层结构，用基于物理谓词的状态机控制阶段推进、恢复与导航协调。共享谓词语义连接离线示教与在线执行，使VLA专注于阶段内的技能动态。该方法提升了长程人形移动操作的可靠性与可解释性。",
+      "llm_tldr": "视觉语言动作模型能执行多种单一操作技能，但在时间结构、技能与精度紧密耦合的长程移动操作任务上仍显吃力。作者提出PGX框架，将时序与精度控制交由两个无需训练的传统组件承担，并把长程任务分解为三层结构，用基于物理谓词的状态机控制阶段推进、恢复与导航协调。共享谓词语义连接离线示教与在线执行，使VLA专注于阶段内的技能动态。该方法提升了长程人形移动操作的可靠性与可解释性。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "language model planning for robot task execution and skill sequencing",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.31173v1",
+      "source": "arxiv",
+      "title": "EmboEagle: An Efficient Agentic Embodied Framework for Long-horizon Robotic Manipulation",
+      "abstract": "Long-horizon robotic manipulation demands reliable execution across interdependent stages, yet standalone World-Action Models (WAMs) suffer from compounding physical errors, while stateless Vision-Language Model (VLM) supervision incurs prohibitive chunkwise latency and lacks 3D spatial persistence. We present EmboEagle, a closed-loop agentic framework that unifies subtask-conditioned WAM control, latent-space adaptive supervision, and memory-guided geometric recovery. First, we adapt sequential WAMs via decoupled two-stage flow matching that preserves cross-stage visual history while calibrating truncated action supervision at subtask boundaries. Second, without an auxiliary vision encoder, we distill teacher intervention decisions into a lightweight routing gate driven solely by the WAM Action Expert's pre- and post-chunk latent transitions and subtask embeddings. Third, upon invocation, the VLM decouples diagnostic status from discrete routing actions and executes parameterized recovery primitives grounded in structured memory (initial references, active grasp bindings, and tool traces), followed by mandatory post-repair verification. Across RMBench and LIBERO-Mem, EmboEagle achieves 91.3\\% and 90.6\\% average success, surpassing the strongest baselines by 8.0 and 9.8 percentage points, while boosting real-world success over VoLoAgent under identical executor weights. Moreover, adaptive gating cuts VLM calls by 74.2\\% versus chunkwise monitoring (91.3\\% vs. 93.7\\% success).",
+      "authors": [
+        "Fan Xu",
+        "Zhongtao Wang",
+        "Hao Wu",
+        "Yitong Zhu",
+        "Wenzhuo Ma",
+        "Long Li",
+        "Zhuohao Li",
+        "Zhisheng Chen",
+        "Rui Su",
+        "Kun Wang",
+        "Xian Wu",
+        "Wanli Ouyang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-23T18:31:43+00:00",
+      "link": "https://arxiv.org/pdf/2611.31173v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "agentic framework with subtask-conditioned control and VLM supervision for long-horizon manipulation",
+      "llm_evidence_cn": "以子任务为条件控制并结合视觉语言模型监督的智能体长程操作框架",
+      "llm_evidence": "以子任务为条件控制并结合视觉语言模型监督的智能体长程操作框架",
+      "canonical_evidence": "以子任务为条件控制并结合视觉语言模型监督的智能体长程操作框架",
+      "llm_tldr_en": "Long-horizon manipulation suffers from compounding errors in world-action models and latency in stateless VLM supervision. EmboEagle is a closed-loop agentic framework unifying subtask-conditioned WAM control, latent-space adaptive supervision, and memory-guided geometric recovery.",
+      "llm_tldr_cn": "该文针对长程机器人操作中世界动作模型误差累积、无状态视觉语言模型监督延迟高且缺乏三维空间持久性的问题，提出闭环智能体框架EmboEagle。其通过解耦两阶段流匹配保留跨阶段视觉历史并校准子任务边界动作监督，还将教师干预决策蒸馏为潜在空间自适应监督，并引入记忆引导的几何恢复。框架统一子任务条件控制与高层监督，提升了长程操作的可靠性与效率。",
+      "llm_tldr": "该文针对长程机器人操作中世界动作模型误差累积、无状态视觉语言模型监督延迟高且缺乏三维空间持久性的问题，提出闭环智能体框架EmboEagle。其通过解耦两阶段流匹配保留跨阶段视觉历史并校准子任务边界动作监督，还将教师干预决策蒸馏为潜在空间自适应监督，并引入记忆引导的几何恢复。框架统一子任务条件控制与高层监督，提升了长程操作的可靠性与效率。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.29338v1",
+      "source": "arxiv",
+      "title": "A Glimpse of Training VLMs as Foundation Models for Robotic Manipulation",
+      "abstract": "Recently, GPT-6 Astra demonstrates strong generalization in robot control, yet limited disclosure of its training leaves open how such capabilities can be reproduced. We introduce nanoAstra, an approach to training vision-language models (VLMs) for generalizable manipulation that combines semantic action modeling with capability-preserving supervised fine-tuning (CP-SFT). nanoAstra represents robot behavior as semantic steps composed of reusable, parameterized action primitives, guided by explicit progress descriptions. Meanwhile, CP-SFT uses an explicit robot-specific system prompt to constrain manipulation outputs to a structured action space, aiming to focus adaptation on robot-specific contexts and promote specialization while minimizing interference with broader pretrained capabilities. With this formulation, we train nanoAstra on more than 5,000 hours of robot data together with general VQA data. On RoboTwin 2.0's randomized benchmark, nanoAstra-9B achieves a 17.8% zero-shot success rate, substantially outperforming advanced VLA and WAM baselines as well as similarly sized VLMs. With inference faster than the corresponding motion execution on a single H20 GPU, our model supports action-chunk-like streaming execution that overlaps inference with motion, reducing the robot's idle time from 35.0% to 6.9%.",
+      "authors": [
+        "Meng-Hao Guo",
+        "Yi Zhang",
+        "Zhe-Han Mo",
+        "Han-Zheng Wang",
+        "Jia-Jun Wang",
+        "Xin-Sheng Chen",
+        "Jiaxi Song",
+        "Yi-Xuan Deng",
+        "Jia-Ning Li",
+        "Xuanyu Chu",
+        "Hengrui Zhang",
+        "Huan-ang Gao",
+        "Yongming Rao",
+        "Shi-Min Hu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-22T09:15:32+00:00",
+      "link": "https://arxiv.org/pdf/2611.29338v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "training VLMs as foundation models for manipulation with semantic action primitives",
+      "llm_evidence_cn": "将视觉语言模型训练为操作基础模型并使用语义动作原语",
+      "llm_evidence": "将视觉语言模型训练为操作基础模型并使用语义动作原语",
+      "canonical_evidence": "将视觉语言模型训练为操作基础模型并使用语义动作原语",
+      "llm_tldr_en": "The paper studies how to reproduce strong VLM-based robot control. It introduces nanoAstra, combining semantic action modeling with reusable parameterized primitives and capability-preserving SFT to keep manipulation outputs in a structured action space.",
+      "llm_tldr_cn": "该文针对GPT-6 Astra等强机器人控制模型训练细节不公开、难以复现的问题，提出训练视觉语言模型做通用操作的方法nanoAstra。其将机器人行为表示为由可复用参数化动作原语组成的语义步骤，并以显式进度描述引导，同时采用能力保持监督微调，用机器人专用系统提示约束输出到结构化动作空间。方法旨在聚焦机器人特定上下文并减少干扰，为可复现的机器人基础模型训练提供思路。",
+      "llm_tldr": "该文针对GPT-6 Astra等强机器人控制模型训练细节不公开、难以复现的问题，提出训练视觉语言模型做通用操作的方法nanoAstra。其将机器人行为表示为由可复用参数化动作原语组成的语义步骤，并以显式进度描述引导，同时采用能力保持监督微调，用机器人专用系统提示约束输出到结构化动作空间。方法旨在聚焦机器人特定上下文并减少干扰，为可复现的机器人基础模型训练提供思路。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.31452v1",
+      "source": "arxiv",
+      "title": "Ground, Guide, Act: Improving VLA Spatial Generalization with Multimodal Foundation Models",
+      "abstract": "Vision-Language-Action (VLA) models effectively learn action policies from robot demonstrations, but struggle to generalize to changes in object positions and task goals. General multimodal foundation models (MFMs) offer complementary scene understanding and spatial reasoning, but remain slow and unreliable for direct fine-grained control. To understand how MFMs can improve VLA spatial generalization, we conduct a systematic capability analysis across multiple VLA architectures using atomic-stage interventions, revealing that many failures stem from poor target grounding and global spatial routing, while local manipulation skills remain largely usable. Based on these findings, we propose MFM-VLA, a selective collaboration framework in which an MFM provides target grounding and spatial guidance, controllers execute free-space motion, and the VLA retains control over fine-grained manipulation. We fine-tune the VLA with action-chunk-level dense geometric captions and perturbed-state recovery data to improve local guidance following and recovery from unfamiliar handoff states. A development-calibrated capability router selects between direct VLA execution and MFM-assisted execution to avoid unnecessary intervention. Across LIBERO-PRO, ALOHA-Sim-PRO, RoboCasa365, and real-world chemistry tasks, MFM-VLA improves success rates by 14.9, 74.0, 3.6, and 30.9 percentage points, respectively, over the corresponding base VLA. The project page is available at https://tom-zgt.github.io/MFM-VLA",
+      "authors": [
+        "Guangting Zheng",
+        "Shaoxuan Wang",
+        "Yu Yuan",
+        "Zhipeng Tang",
+        "Jiajun Deng",
+        "Yanyong Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-11-23T19:26:54+00:00",
+      "link": "https://arxiv.org/pdf/2611.31452v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "foundation model grounds and guides VLA policy execution",
+      "llm_evidence_cn": "多模态基础模型负责定位与引导，VLA负责执行",
+      "llm_evidence": "多模态基础模型负责定位与引导，VLA负责执行",
+      "canonical_evidence": "多模态基础模型负责定位与引导，VLA负责执行",
+      "llm_tldr_en": "Ground, Guide, Act analyzes VLA failures via atomic-stage interventions, showing poor target grounding and spatial routing, then proposes MFM-VLA where multimodal foundation models ground and guide while the VLA executes local skills.",
+      "llm_tldr_cn": "VLA模型擅长从示范学习动作，却对物体位置与任务目标变化泛化不足。作者通过原子阶段干预系统分析多种VLA架构，发现失败多来自目标定位与全局空间路由而非局部操作技能，进而提出MFM-VLA选择性协作框架，让多模态基础模型负责定位与空间引导、VLA负责局部执行。该分工在提升空间泛化的同时避免基础模型直接做细粒度控制的慢与不可靠。",
+      "llm_tldr": "VLA模型擅长从示范学习动作，却对物体位置与任务目标变化泛化不足。作者通过原子阶段干预系统分析多种VLA架构，发现失败多来自目标定位与全局空间路由而非局部操作技能，进而提出MFM-VLA选择性协作框架，让多模态基础模型负责定位与空间引导、VLA负责局部执行。该分工在提升空间泛化的同时避免基础模型直接做细粒度控制的慢与不可靠。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Systems integrating large language model planners with vision language action policies for robot task execution",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+Title: CHASE: Curiosity-Guided Skill Acquisition for Embodied Task Execution
+
+URL Source: https://arxiv.org/pdf/2611.34416v1
+
+Published Time: Thu, 26 Nov 2026 03:10:37 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+TECHNICAL REPORT | November 2026 
+
+# CHASE: Curiosity-Guided Skill Acquisition for Embodied Task Execution 
+
+Zixuan Wang 1 Wei Zhang 2 Chenlei Zhu 3
+
+Naiyu Chen 3 Xihua Wang 1 Jie Chen 1,3,* 
+
+> 1
+
+Department of Electrical and Computer Engineering, University of Alberta, Edmonton, Canada 
+
+> 2
+
+Harbin Institute of Technology 
+
+> 3
+
+School of Biomedical Engineering, Fudan University, China 
+
+> *
+
+Corresponding author 
+
+Abstract. Robots executing tasks in partially observed environments must resolve uncertainty while operating with incomplete skills. Inspired by human curiosity, we investigate how robots can formulate task-relevant hypotheses, seek evidence, and acquire missing skills during task execution. We propose CHASE, a Curiosity-guided Harness for Acquiring Skills from Evidence, which operationalizes curiosity as selecting investigations that resolve task uncertainty and expand executable capabilities. Four modules connect dynamic scene understanding, hypothesis-driven planning, on-demand skill acquisition, and verified execution. The planner balances information value, skill reuse, and acquisition/execution cost. Missing skills trigger bounded exploration, learning from verified segments, and held-out admission during acquisition; separate checks verify physical effects and acquired evidence. Newly admitted skills expand the executable investigation set, closing the loop between resolving uncertainty and acquiring capabilities. Simulation and real-robot experiments evaluate investigation, skill acquisition, and task execution. CHASE achieves 50–80% task success under combined information and capability gaps, with 70–90% evidence resolution. “Bring me the mug.” 
+
+No curiosity With curiosity 
+
+I can’t see it. Task over. Could it be in the drawer? 
+
+No further action 
+
+I need to learn to open it. Task unresolved Task completed 
+
+Figure 1. A retrieval example of task-directed curiosity. A visibility-only robot acts on current observations. A curious robot proposes locations, seeks evidence, identifies missing capabilities, and acquires validated skills to enable retrieval. The right branch illustrates acquisition mode. 
+
+1arXiv:2611.34416v1 [cs.RO] 25 Nov 2026 CHASE | TECHNICAL REPORT NOVEMBER 2026 
+
+1 Introduction 
+
+Humans are naturally curious. Faced with an unfamiliar situation, they formulate hypotheses, seek evidence, and learn new ways to act. This ability motivates a question for embodied intelligence: how can we endow robots with curiosity that supports task execution? A robot may know the desired outcome while lacking information about the environment or a skill needed to achieve it. We study the coupling between these information and capability gaps: useful interactions reveal what the robot needs to know, while acquiring a missing skill can make previously unavailable interactions possible. A conventional execution pipeline restricted to current observations and a fixed skill library can stall when information or an operation is missing. Figure 1 illustrates this issue through a retrieval example. The robot on the left concludes, “I can’t see it. Task over.” The robot on the right asks, “Could it be in the drawer?” It seeks evidence, recognizes the missing opening skill, and acquires that skill before retrieval. This example illustrates a broader principle: task-directed curiosity connects task hypotheses, evidence-seeking interactions, and capability expansion, so that uncertainty and missing skills become explicit planning objectives. Three research directions provide foundations. Semantic maps and scene graphs ground environmental reasoning [1–3], while interactive search reveals hidden targets [4, 5]. Generalist policies support adaptation [6, 7], and model-guided data generation supports skill learning [8, 9]. Agentic systems ground and compose operations with planning and feedback [10–13]. CHASE connects these directions through an explicit loop: unresolved questions guide investigation and skill acquisition, while newly admitted skills enable further investigations. This coupling requires distinguishing a successful physical operation from an observation that actually answers the question. We propose CHASE, a Curiosity-guided Harness for Acquiring Skills from Evidence , with four modules: dynamic scene understanding, hypothesis-driven curiosity planning, on-demand skill acquisition, and composition with verified execution. Scene memory grounds task hypotheses and retains observation support. A frozen high-level planner ranks investigations by information value, skill reuse, and total cost. Applicable skills execute directly; missing operations trigger bounded generalist exploration during acquisition. Verified segments support local-policy learning, and held-out validation determines skill admission. New skills expand the executable investigation set. Separate physical and evidence checks update the scene and hypotheses, while task-specific predicates verify completion. Held-out reuse evaluation freezes the registry. The contributions are threefold: (1) a curiosity-driven task-execution framework that jointly ranks investigations by information value, capability-expansion value, and acquisition/execution cost, coupling task questions to skill acquisition and newly enabled investigations; (2) an on-demand skill-acquisition and verification mechanism that connects generalist exploration, feedback-guided refinement, verified-trajectory learning, and held-out admission to form reusable skills, with separate physical and information checks for composition; and (3) a simulation and real-robot experimental evaluation using interactive manipulation tasks to assess task execution, skill reuse, and the coupling between investigation and capability acquisition. 
+
+2 Related Work 
+
+2.1 Semantic Scene Understanding and Curiosity-driven Object Search 
+
+Semantic representations connect observations to task-relevant entities and relations. Hydra con-structs and optimizes hierarchical 3D scene graphs online [14]. ConceptFusion [1] and VLMaps [15] fuse visual-language features with spatial maps, enabling open-set queries and language-grounded navigation. ConceptGraphs represents objects and their relations in an open-vocabulary graph [2]; DovSG extends scene-graph reasoning to dynamic updates for long-term mobile manipulation [3]. These representations provide a basis for grounding task hypotheses and preserving observations across interactions.   
+
+> 2CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+Finding a hidden target additionally requires deciding what to observe or change. Active perception treats sensing as a controlled process [16], while prediction-based intrinsic rewards encourage exploration [17]. Goal-oriented semantic exploration [18] and VLFM [19] use semantic information to guide search. Semantic Mechanical Search [4] and HIMOS [5] incorporate physical interactions with occluders or containers; Explore until Confident uses confidence-calibrated exploration for question answering [20]. CHASE builds on these ideas by coupling evidence-seeking requests to capability availability: an informative investigation can trigger acquisition of its missing operation. Physical progress and the evidence needed to resolve a hypothesis are checked separately. 
+
+2.2 Autonomous Robot Skill Acquisition and Adaptation 
+
+Large-scale robot learning supplies increasingly versatile starting capabilities. RT-1 [21] learns language-conditioned control from diverse demonstrations, and RT-2 transfers vision-language knowledge into actions [22]. Open X-Embodiment studies cross-robot data and policy transfer [23]; Octo [6] and OpenVLA [7] provide adaptable generalist policies. Such models offer execution or adaptation backends, while deciding which missing operation to acquire remains a task-level decision. Foundation models can also guide skill discovery and data generation. MOKA uses mark-based visual prompting for manipulation [24]; Scaling Up and Distilling Down combines language-guided data collection with policy learning [8]. RoboGen generates tasks, environments, and training supervision [9], while Eureka iteratively improves reward programs [25]. RoboCat improves manipulation using demonstrations and self-generated experience [26], and Voyager accumulates executable skills in Minecraft [27]. CHASE targets task-triggered capability gaps: bounded generalist attempts produce operation traces, independently verified segments support policy training, and held-out execution determines admission. Diffusion Policy [28] provides an established learning backend; our focus is the acquisition interface and its feedback to investigation planning. 
+
+2.3 Agent-based Skill Composition and Long-horizon Mobile Manipulation 
+
+Language-model agents connect instructions to executable operations. SayCan grounds skill selection in affordances [10]; Code as Policies [29] and ProgPrompt [30] generate programs over available interfaces. VoxPoser composes spatial value maps for manipulation [31], and PaLM-E integrates embodied observations with language reasoning [32]. SayPlan uses hierarchical scene graphs and replanning to scale task planning [11]; Inner Monologue incorporates execution feedback [12]. Harness VLA orchestrates a frozen contact executor with memory and a fixed primitive library [13]. Mobile manipulation further couples semantic decisions with navigation and physical execution. TidyBot combines preference reasoning with household cleanup [33]; Mobile ALOHA learns bimanual whole-body behaviors from teleoperation [34]. AutoRT uses foundation models to orchestrate robot data collection [35]. These systems motivate composition, feedback, and reusable interfaces across extended tasks. CHASE investigates a complementary coupling: the agent schedules investigations and existing skills, requests acquisition when capability is insufficient, and revisits pending requests after admission. Our comparisons therefore share initial capabilities and budgets, separating orchestration choices from changes in the skill registry. 
+
+3 Method 
+
+3.1 Problem Formulation and System State 
+
+Given instruction L, observation history O0: t, and an initially incomplete skill library S0, the robot seeks task completion under partial observability. Observations contain RGB-D and robot state. Let GL denote task-specific completion, whose predicates can depend on object location, state, 
+
+> 3
+
+CHASE | TECHNICAL REPORT NOVEMBER 2026 (1) Scene Understanding (2) Curiosity Planning (4) Composition & Retrieval (3) On-demand Skill Acquisition                
+
+> Find and deliver the target
+> RGB-D observation
+> contains
+> Room Cabinet Table Box Drawer
+> Local scene updates
+> Frozen multimodal planner
+> Drawer unknown open + inspect
+> Table unresolved inspect surface Search value + skill reuse - cost
+> Investigation request
+> Navigate Inspect Grasp / Deliver
+> Simulation views
+> Physical check Evidence check
+> Final task check Verified delivery Generalist exploration Trace log Policy learning Held-out validation Skill registry
+> Astra / bounded APIs
+> Pass only
+> Verified segments
+> Diagnose + refine
+> Applicable skill
+> Missing capability Expanded investigation set New observations and valid evidence
+> Acquisition: learn and admit skills. Deployment evaluation: frozen registry.
+
+Figure 2. Retrieval instantiation of the CHASE pipeline. Scene memory grounds task hypotheses, shown here as candidate locations; requests reuse applicable skills or trigger exploration, verified-trace learning, and held-out admission. Admitted skills expand subsequent investigations. Independent physical and evidence checks feed local updates until released delivery is verified. Insets show simulation diagnostics. Acquisition enables learning; held-out reuse freezes the registry. 
+
+content, or interaction outcomes. We seek 
+
+max 
+
+Π PΠ(GL = 1 | L , O 0: t, St) , C0: T ≤ B, (1) where Π selects investigations, existing skills, and acquisition attempts; C includes sensing, execution, failed attempts, and skill acquisition. Hidden simulator state supplies initialization and offline scoring only. The system maintains a scene graph Gt, task-conditioned hypotheses Ht, evidence memory 
+
+Et, and a skill registry St. Hypotheses concern uncertain task facts or operation preconditions. Scene memory describes the environment; questions identify what must be established next. Figure 2 instantiates the framework through retrieval, whose goal requires the correct object, any requested content, and released delivery. Investigations expose missing skills; admitted skills expand executable investigations. 
+
+3.2 Stage 1: Dynamic 3D Scene Understanding 
+
+Following DovSG [3], posed RGB-D observations support open-vocabulary instance association, three-dimensional geometry fusion, spatial relations, and local updates. We represent Gt = ( Vt, Rt),where nodes describe objects, containers, and observed regions, and edges encode relations such as 
+
+on , inside , and near . New views are aligned to the existing map before association and fusion. Interactions trigger updates to affected instances and relations, preserving unrelated scene memory. We augment this representation with articulation estimates, visible support, observation history, candidate interaction attributes, and reachability evidence. These are task-specific extensions; an object label alone does not establish that it is openable or reachable. Geometry and kinematics provide candidate checks, while execution supplies physical verification. Each attribute retains its observation source, camera pose, timestamp, and validity scope. Moving an occluder invalidates dependent visibility claims; opening a different drawer need not invalidate an already observed surface. 
+
+3.3 Stage 2: Hypothesis-Driven Curiosity Planning 
+
+A frozen multimodal planner combines L, Gt, and evidence to propose hypotheses about location, contents, object state, or feasible interaction conditions. Each h ∈ H t binds a proposition to 
+
+4CHASE | TECHNICAL REPORT NOVEMBER 2026 
+
+scene entities, evidence references, and an investigation. Its status is unobserved , inconclusive ,
+
+supported , or contradicted . Retrieval includes candidate locations and an elsewhere alternative. Missing detections exclude a region only with adequate visibility, coverage, and detector reliability; unsupported or stale observations leave the question unresolved. An investigation request is 
+
+u = ( h, q, g, s req , by, κ ), (2) where q is the unresolved question, g the operation goal, sreq the required skill, by the expected evidence, and κ the capability status. For a closed drawer, the request may bind a location hypothesis to “inspect interior,” require opening, and identify that no applicable opening skill is available. For unresolved questions, we jointly rank executable investigations and budget-feasible acquisi-tion requests: 
+
+u∗ 
+
+> t
+
+= arg max 
+
+> u∈U t(B)
+
+h bVinfo (u) + η bVskill (u) − λ bC(u)
+
+i
+
+. (3) For question q, let bqt be a normalized belief over a finite answer set Aq. Information value is expected entropy reduction, 
+
+bVinfo (u) = H(bqt ) − P 
+
+> y
+
+bp(y | u)H(bbq,u,y t )max(log |A q|, ϵ ) . (4) For location questions, answers are candidate regions plus elsewhere; a content question can use empty/nonempty. Outcomes y support, contradict, or leave an answer inconclusive. Failed or insufficient observations preserve the belief unless they provide valid new evidence. The outcome model groups acquisition observations by question type, operation, and visibility, with conservative back-off for unsupported cases. Semantic rankings require calibration before use as probabilities; otherwise a uniform answer prior is retained. Skill value is the predicted weighted fraction of pending, currently unserved requests that the required operation could enable. It is a potential-coverage estimate, not proof of skill generalization. Actual expansion is checked after admission. Cost includes execution, exploration, learning, validation, and failure recovery, normalized by the remaining budget. Thus a missing skill does not remove a useful investigation; its acquisition cost competes with accessible alternatives. A finite budget and bounded retries prevent indefinite learning on one request. The scoring estimators and weights are fixed after acquisition/validation and remain unchanged during controlled reuse evaluation. Let I(Gt, St) denote currently executable investigations under validated applicability. The capability feedback from admitting s is 
+
+∆Is = I(Gt, St ∪ { s}) \ I (Gt, St). (5) Planning is repeated with the updated set. An empty expansion is possible; registration alone does not prove increased capability. 
+
+3.4 Stage 3: On-Demand Autonomous Skill Acquisition Skill retrieval and applicability Each registry entry specifies typed inputs/outputs, precondi-tions, executor, expected physical effects, termination/timeout, success checker, validated scope, and provenance. Retrieval requires both a matching operation and supported current conditions. If a stored skill is inapplicable, the planner first considers preparatory navigation, viewpoint, or environment changes. An unsatisfied capability triggers acquisition only when its budget and permitted interfaces support an attempt.   
+
+> 5CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+Exploration and refinement A frozen generalist, such as Astra, receives the operation goal, RGB-D, robot state, allowed APIs, and prior attempt feedback. Its bounded rollout is 
+
+τ (k) ∼ πgen ( · | g, O 0: t, A, d (<k )), (6) where d(<k ) records earlier failure stages and diagnoses. Each attempt logs observations, commands, robot and object-state estimates, termination, and available contact/force feedback. Diagnosis conditions the next attempt without updating generalist weights. This in-context refinement is distinct from learning a standalone policy. 
+
+Policy formation and admission Operation boundaries define training segments with pre-contact context and terminal verification. A segment enters positive imitation data only if its own physical postcondition is verified, even when the enclosing task later fails. Failed or uncertain segments remain diagnostic/applicability data; they are not relabeled as successful actions. A goal-conditioned local policy is fitted from verified segments using an established imitation-learning backend, e.g., diffusion policy [28]. This work specifies data admission and invocation contracts rather than a new policy architecture. The candidate is evaluated on disjoint validation configurations spanning object geometry, start pose, articulation, and viewpoint. Predeclared success, duration, and execution-failure criteria determine admission; failed validation returns the candidate to refinement or rejects it. Only admitted policies enter St+1 with dataset lineage and supported conditions. Exploration attempts also return the checks in (7), immediately updating scene and evidence memory. A resolved request need not wait for policy admission; admitted skills enable subsequent requests. Generalist success and reusable-skill admission are distinct outcomes. 
+
+3.5 Stage 4: Skill Composition and Verified Task Execution 
+
+For the selected request, the harness composes applicable navigation, viewing, interaction, and manipulation skills. Each call returns separate physical and information outcomes, 
+
+(vphys , v info ) = 
+
+
+
+V phys  
+
+> s
+
+(τ ), V info  
+
+> q
+
+(τ, Et)
+
+
+
+. (7) Physical checks verify effects such as opening, retention, or placement; information checks verify observation support for the task question, including state, content, or coverage-qualified location conclusions. A physically opened but still occluded drawer leaves its content unresolved. Conversely, a failed grasp can preserve valid location evidence. Receipts update affected geometry, invalidate dependent evidence, and update hypotheses from valid observations. Unresolved questions return to Stage 2. With required preconditions supported, the harness executes goal-directed operations without requiring further information gain. Failure invokes bounded recovery, re-investigation, or acquisition. Completion checks GL independently; retrieval requires released delivery, beyond detection or possession. 
+
+Learning and evaluation boundary Acquisition episodes enable exploration, learning, and registry updates, accounting for their full cost. Admission uses disjoint validation configurations. A separate held-out reuse evaluation freezes the planner, policies, registry, estimators, and thresholds; only episode evidence changes online. Acquisition evaluates capability formation; frozen reuse evaluates transfer and composition. Held-out reuse trajectories do not train or admit skills. Recorded diagnostics with authored executors remain separate from learned-policy evaluation. 
+
+4 Experiments 
+
+We independently vary task uncertainty and missing operations to evaluate Q1 , evidence-seeking investigation; Q2 , reusable skill acquisition; Q3 , capability feedback; and Q4 , verified task 
+
+> 6
+
+CHASE | TECHNICAL REPORT NOVEMBER 2026 Sim 1 Observe                    
+
+> 2Curiosity planning
+> No detection
+> 2 Open + lift
+> 4Compose + execute
+> Wrist
+> Patch clear*
+> 3 Lift pillow
+> 4Compose + execute
+> Head
+> Patch clear*
+> 4 Inspect
+> 2Curiosity planning
+> L wrist
+> Phone found
+> 5 Retrieve
+> 4Compose + execute
+> Grasped
+> 6 Deliver
+> 4Compose + execute
+> Delivery verified
+> Real 1 Observe
+> 2Curiosity planning
+> Target occluded
+> 2 Lift cover
+> 4Compose + execute
+> L wrist
+> Cover raised
+> 3 Inspect
+> 2Curiosity planning
+> R wrist
+> Marker visible
+> 4 Grasp
+> 4Compose + execute
+> R wrist
+> Marker grasped
+> 5 Transfer
+> 4Compose + execute
+> R wrist
+> Move to bin
+> 6 Place
+> 4Compose + execute
+> Marker in bin
+> 1Scene understanding 2Curiosity planning 3Skill acquisition 4Composition & execution
+
+Figure 3. Recorded simulation and real-robot sequences. Sim: phone investigation and retrieval with existing skills; *clear only within the observed patch. Real: lift an occluding board, reveal and grasp a marker, and place it in a bin; wrist insets show the same video frame. Module bars indicate functional roles: planning (2) and composition/execution (4); other modules are muted. 
+
+composition. Ranges denote the minimum and maximum measured performance across scenes or configurations, except the weighted summary All; Table 3 reports observed skill-acquisition bounds. Bold marks favorable range endpoints; arrows indicate preferred direction. Calls count high-level invocations per episode, including failed attempts. 
+
+4.1 Experimental Setup and Task Design 4.1.1 Platforms and observations 
+
+Simulation uses BEHAVIOR-1K [36] with a Galaxea R1 Pro robot. Table 1 lists the six evaluated scene instances: a bedroom, drawers, a game room, kitchen and living-room cabinets, and a lidded container. Physical experiments use an AgileX Split Aloha for hard-drive search, office-object search, and container-interior inspection in clutter. Figure 3 shows simulation phone retrieval and real-robot occluder lifting and marker retrieval. Matched comparisons share RGB-D observations, robot state, and permitted control APIs. Hidden-target annotations used for scoring are excluded from the agent’s observations. 
+
+4.1.2 Scene instances and experimental conditions 
+
+Scene identity is separate from the information and capability conditions. T1 withholds the target location while retaining all required skills; T2 supplies the location but withholds a required operation; T3 combines unknown location and a missing operation. A paired control supplies the location and retains the required skills. T4 denotes long-horizon composition and is an additional episode attribute, which can overlap T1–T3. It is not a fourth mutually exclusive information/capability condition. For mug retrieval, T1 hides the cabinet location, T2 withholds opening, and T3 combines both gaps. A supplied location provides no oracle grasp or motion. Each episode records the scene, condition, and initial library; acquisition additionally requires attempts and admission records. The evaluation comprises 120 T1 trials and 60 each for T2 and T3 per method: 1,440 simulation 
+
+7CHASE | TECHNICAL REPORT NOVEMBER 2026 
+
+Table 1. Simulation scene instances: 20 trials per scene–condition pair and method. All scenes use T1; S2, S4, and S6 additionally use T2 and T3 (240 trials per method).        
+
+> Scene Investigation and retrieval case S1: Bedroom Multi-Region Sequential Investigation and Retrieval (phone) S2: Drawers Multi-Compartment Investigation and Key Retrieval S3: Game room Multi-Compartment Investigation and Toy-Car Retrieval S4: Kitchen Cabinet-Interior Investigation and Mug Retrieval S5: Living room Cabinet-Interior Investigation and Figurine Retrieval S6: Container Occluder Removal and Container-Interior Investigation (toy car)
+
+Table 2. Simulation performance. Ranges are scene/configuration minima–maxima; All weights condition endpoints by 0.5:0.25:0.25. Time includes acquisition; Search + Acquisition omits capability-value ranking.                                               
+
+> Method T1 (%) ↑
+> T2 (%) ↑
+> T3 (%) ↑
+> All (%) ↑
+> SSF (adapted) 60–80 0–10 0–10 30–45 Generalist Only 50–70 25–50 20–40 36.25–57.5 Reactive, Fixed Skills 20–40 0–10 0–10 10–25 Search + Fixed Skills 65–85 0–10 0–10 32.5–47.5 Search + Acquisition 65–85 55–80 45–70 57.5–80
+> Full CHASE (ours) 70–90 60–85 50–80 62.5–86.25
+> Method Locate (%) ↑
+> Calls (count) ↓
+> Time (s) ↓
+> SSF (adapted) 60–80 10–18 180–360 Generalist Only 55–75 14–24 300–600 Reactive, Fixed Skills 25–45 5–10 90–210
+> Search + Fixed Skills 65–85 9–16 180–330 Search + Acquisition 70–90 12–22 600–2100
+> Full CHASE (ours) 75–95 10–20 600–1800
+
+trials across six methods. 
+
+4.1.3 Acquisition, admission, and reuse 
+
+Acquisition starts from S0 and permits bounded exploration, learning, and registry updates. Admission and frozen-policy reuse use disjoint configurations with changed layouts, unseen objects, or combined shifts; scene and evidence updates remain enabled. Baselines use matched initial observations, initial capabilities, permitted APIs, and per-stage resource limits; all attempts, validation executions, and failed candidates enter acquisition cost. 
+
+4.2 Baselines and End-to-End Task Performance 4.2.1 Comparison methods SSF (adapted) [37] is the external search baseline. It fuses semantic and geometric evidence in a voxel belief map and selects actions by expected revealed belief mass using a fixed skill library. The adaptation retains these updates and ranking while using the common robot executors. T1 matches available skills to compare search; in T2–T3, fixed-library failures identify capability limits, not search quality alone. Fixed-skill success in T2–T3 is limited to 0–10%; without a library alternative, a withheld necessary operation prevents completion. These outcomes characterize the evaluated library limitations and do not demonstrate skill acquisition. Generalist Only retains investigation but uses a frozen generalist without policy learning or registration. Reactive, Fixed   
+
+> 8CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+Skills acts on current observations without hypothesis-driven investigation. Search + Fixed Skills retains hypotheses and evidence memory but disables acquisition. Search + Acquisition 
+
+enables learning and admission with η = 0 . Full CHASE uses the complete framework. These variants isolate investigation, learning, and capability-value ranking; Harness VLA [13] is not an additional reproduced baseline. Retrieval requires the correct target, requested content conditions, and stable released delivery; search-only tasks require supported localization. Localization is also scored separately. Table 2 isolates search (T1), acquisition (T2), and their coupling (T3). The task mix is T1:T2:T3 = 120:60:60. All is the weighted envelope of the T1–T3 endpoints, giving 62.5–86.25% for CHASE; it is not a pooled success rate or an observed aggregate minimum–maximum. Composition is assessed within these conditions without double-counting T4-tagged episodes. High-level calls, execution time, and wall-clock time are evaluated over all episodes. The acquisition-enabled comparison includes the cost of learning rather than reporting only the speed of already learned executors. The capability gap separates the methods most clearly: CHASE achieves 60–85% success in T2 and 50–80% in T3, while fixed-library methods remain at 0–10%. Search + Acquisition achieves 55–80% and 45–70%, respectively. These comparisons connect acquisition and capability-value ranking to completion when required operations are missing. T1 evaluates investigation with all required skills available; differences among acquisition variants in T1 are not attributed to learning new skills. First-task time includes exploration, data preparation, training, admission, and execution. CHASE requires 600–1800 s across the evaluated task mix; frozen reuse is assessed separately after acquisition, with no reuse trajectories used for training or admission. 
+
+4.3 Hypothesis-Driven Investigation 
+
+Q1 links a hypothesis, investigation, observation, and evidence update. With fixed skills, hypothesis-driven search achieves 65–85% T1 success, compared with 20–40% for reactive execution. This comparison supports explicit investigation when capabilities are sufficient. In T3, removing information ranking changes evidence resolution from 70–90% to 60–85% (Table 4), linking investigation selection to supported answers. Figure 3 illustrates this process: nondetection motivates further investigation, exposed patches provide local evidence, and an under-bed observation supports phone localization before retrieval. A clear patch does not exclude a whole occluded region. False exclusion means ruling out a region without adequate evidence; false completion means declaring success with an unsatisfied terminal predicate. Absent-target episodes are scored separately from positive retrieval. 
+
+4.4 On-Demand Skill Acquisition and Reuse 4.4.1 From exploration to admitted skills 
+
+Q2 evaluates independently callable policy formation. Operation records retain applicability failures, generalist attempts, diagnoses, verified segments, and admission outcomes. Table 3 reports the acquired operations and performance bounds for exploration, independent validation, and frozen reuse. Generalist success may resolve the current question before admission. Rejected candidates and failed attempts remain recorded. 
+
+4.4.2 Generalization and acquisition efficiency 
+
+Held-out reuse varies geometry, articulation, starting configuration, or viewpoint within the validated skill scope. Table 3 addresses capability formation directly: validation success is at least 80% for all three operations, while frozen reuse success is at least 75% for opening and lid handling and 70% for occluder handling. These outcomes establish independent policy reuse beyond a successful generalist attempt. Acquisition takes at most 30 minutes for opening and lid handling   
+
+> 9CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+Table 3. Skill-acquisition results: lower bounds on exploration, independent validation, and frozen reuse success; upper bounds on total acquisition time.                 
+
+> Operation Explore (%) ↑
+> Valid. (%) ↑
+> Reuse (%) ↑
+> Time (min) ↓
+> Drawer/cabinet opening ≥60 ≥80 ≥75 ≤30 Occluder lift and restore ≥55 ≥80 ≥70 ≤40 Lid removal and return ≥60 ≥80 ≥75 ≤30
+
+Table 4. T3 ablations. Ranges are minima–maxima across scenes/configurations. Evidence is the resolved-question rate; time includes acquisition. Libraries and budgets are matched.                   
+
+> Variant Success (%) ↑
+> Evidence (%) ↑
+> Time (s) ↓
+> Full CHASE 50–80 70–90 600–1800
+> Without information ranking 40–75 60–85 720–2100 Without refinement feedback 35–70 55–80 900–2400 Without applicability gating 35–70 55–85 720–2400 Merged outcome checks 35–70 50–80 600–2100
+
+and 40 minutes for occluder handling. The cost accompanies the acquired capability and must be retained when assessing first-task efficiency. 
+
+4.5 Capability Feedback and Ablation Studies 
+
+Q3 connects acquired operations to the executable investigation set in (5). Within validated applicability, opening enables closed-interior inspection, occluder lifting enables covered-region inspection, and lid removal enables container inspection. Table 3 establishes reuse of these operations; T3 evaluates their combination with investigation when both location and operation are initially unavailable. The η = 0 comparison isolates capability-value ranking: CHASE reports 50–80% T3 success versus 45–70% for Search + Acquisition. Information ranking, refinement, applicability gating, and separate outcome checks are examined in Table 4. Merging physical and information checks gives 50–80% evidence resolution versus 70–90% for the full system, supporting their separate treatment. Without refinement feedback, success is 35–70% and time is 900–2400 s. Together, skill-level reuse and task-level comparisons evaluate how admitted operations support later investigations within validated skill scopes. Decision comparisons match scene seeds and budgets; data-collection effects are distinguished from invocation effects. 
+
+4.6 Real-Robot Execution in Clutter 
+
+Q4 evaluates three Split Aloha tasks in naturally cluttered workspaces. R1: Occluded Hard-Drive Search uses the recorded configurations beneath a magazine and behind objects. R2: Office Object Search adds a target such as a pen among office items, testing sequential investigation of accessible candidate regions. R3: Container-Interior Inspection adds a target-presence question about a container, requiring an adequate interior observation and a supported answer. All three tasks use the same comparison methods and instruction-specific completion checks. The Real row of Fig. 3 illustrates an R2 office-object case: lifting the board exposes a marker, a wrist view supports localization, and grasping and placement complete retrieval. The module bars connect investigation (2) to physical execution (4); quantitative outcomes appear in Table 5. R1 and R2 require supported target localization; R3 requires a correct target-presence answer backed by adequate interior visibility; the same verification wrapper is used for SSF. Failure to see inside is inconclusive, not evidence of absence. Grasping, delivery, or opening is required                                      
+
+> 10 CHASE | TECHNICAL REPORT NOVEMBER 2026
+> Table 5. Real-robot performance. Ranges are minima–maxima across configurations. HDD: hard-drive search; Pen: office search; Inspect: container inspection. Time excludes training and admission.
+> Method HDD (%) ↑
+> Pen (%) ↑
+> Inspect (%) ↑
+> Calls (count) ↓
+> Time (s) ↓
+> SSF (adapted) 45–70 40–65 35–60 10–18 150–360 Generalist Only 40–65 35–60 35–65 14–24 240–600 Reactive, Fixed Skills 15–40 15–40 10–35 5–10 60–180
+> Search + Fixed Skills 50–75 45–70 40–65 9–17 150–360 Search + Acquisition 55–80 50–75 50–80 12–22 240–600
+> Full CHASE (ours) 60–85 55–80 55–85 10–20 210–540
+
+only when specified by the actual task configuration. The initial registry determines whether an interaction uses an existing skill or triggers acquisition; a successful container inspection alone does not establish learning. Table 5 tests the investigation and verification loop on hardware. CHASE achieves 60–85% hard-drive search success, 55–80% office-object search success, and 55–85% container-inspection success; SSF achieves 45–70%, 40–65%, and 35–60%, respectively. These results address supported localization and inspection in physical clutter. Both rows of Fig. 3 illustrate investigation followed by grasping and placement. The real case shows how changing visibility enables retrieval, while physical success predicates remain instruction-specific. Calls and execution time include failures but exclude training and admission. First-task wall-clock time must additionally include any triggered acquisition cost from Table 3. Resets and interventions are distinguished from autonomous completion. 
+
+4.7 Failure Modes and Scope 
+
+The ablations identify sensitivity to several failure mechanisms. Removing applicability gating gives 35–70% T3 success versus 50–80% for CHASE, consistent with the importance of matching a skill to supported conditions. Merged checks reduce the reported evidence-resolution range, showing why physical progress alone is insufficient to establish an answer. Failure attribution distinguishes unsupported hypotheses, invalid evidence updates, missing or misapplied skills, execution failures, and terminal-verification errors. A failed opening leaves an operation gap; an opened but unobserved interior leaves an information gap. Correct localization followed by a failed grasp remains a manipulation failure, and possession without released delivery does not satisfy retrieval. These distinctions connect investigation, acquisition, and verification to separate stages of task completion. Conclusions concern the evaluated scenes, skill scopes, and budgets; physical search and inspection do not by themselves establish broader manipulation coverage. 
+
+5 Conclusion 
+
+CHASE couples evidence-seeking investigation, reusable skill acquisition, and verified task com-position. Fixed-library search supports T1 investigation, while CHASE achieves 60–85% success in T2 and 50–80% in T3 when capabilities are incomplete. Frozen reuse reaches at least 70% for all acquired operations, and separate outcome checks support 70–90% evidence resolution in T3. Together, these results connect capability formation to investigation and task execution. Physical search and inspection achieve 55–85% success across three task types. Remaining challenges include reliable evidence under incomplete visibility, acquisition-cost estimation, and validation across broader objects and environments.   
+
+> 11 CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+References 
+
+[1] K. M. Jatavallabhula et al. , “ConceptFusion: Open-set multimodal 3D mapping,” in Proc. Robot.: Sci. Syst. (RSS) , 2023. [2] Q. Gu et al. , “ConceptGraphs: Open-Vocabulary 3D Scene Graphs for Perception and Planning,” in 
+
+Proc. IEEE Int. Conf. Robot. Autom. (ICRA) , 2024, pp. 5021–5028. [3] Z. Yan et al. , “Dynamic Open-Vocabulary 3D Scene Graphs for Long-Term Language-Guided Mobile Manipulation,” IEEE Robot. Autom. Lett. , vol. 10, no. 5, pp. 4252–4259, 2025. [4] S. Sharma et al. , “Semantic Mechanical Search with Large Vision and Language Models,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 971–1005. [5] F. Schmalstieg, D. Honerkamp, T. Welschehold, and A. Valada, “Learning Hierarchical Interactive Multi-Object Search for Mobile Manipulation,” IEEE Robot. Autom. Lett. , vol. 8, no. 12, pp. 8549–8556, 2023. [6] D. Ghosh et al. , “Octo: An Open-Source Generalist Robot Policy,” in Proc. Robot.: Sci. Syst. (RSS) ,2024. [7] M. J. Kim et al. , “OpenVLA: An Open-Source Vision-Language-Action Model,” in Proc. Conf. Robot Learn. (CoRL) , 2025, pp. 2679–2713. [8] H. Ha, P. Florence, and S. Song, “Scaling Up and Distilling Down: Language-Guided Robot Skill Acquisition,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 3766–3777. [9] Y. Wang et al. , “RoboGen: Towards Unleashing Infinite Data for Automated Robot Learning via Generative Simulation,” in Proc. Int. Conf. Mach. Learn. (ICML) , 2024, pp. 51 936–51 983. [10] B. Ichter et al. , “Do As I Can, Not As I Say: Grounding Language in Robotic Affordances,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 287–318. [11] K. Rana, J. Haviland, S. Garg, J. Abou-Chakra, I. Reid, and N. Suenderhauf, “SayPlan: Grounding Large Language Models using 3D Scene Graphs for Scalable Robot Task Planning,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 23–72. [12] W. Huang et al. , “Inner Monologue: Embodied Reasoning through Planning with Language Models,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 1769–1782. [13] Y. Zhang et al. , “Harness VLA: Steering Frozen VLAs into Reliable Manipulation Primitives via Memory-Guided Agents,” arXiv preprint, 2026, arXiv:2607.08448. [14] N. Hughes, Y. Chang, and L. Carlone, “Hydra: A Real-time Spatial Perception System for 3D Scene Graph Construction and Optimization,” in Proc. Robot.: Sci. Syst. (RSS) , 2022. [15] C. Huang, O. Mees, A. Zeng, and W. Burgard, “Visual Language Maps for Robot Navigation,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA) , 2023, pp. 10 608–10 615. [16] R. Bajcsy, “Active perception,” Proc. IEEE , vol. 76, no. 8, 1988. [17] D. Pathak, P. Agrawal, A. A. Efros, and T. Darrell, “Curiosity-driven Exploration by Self-supervised Prediction,” in Proc. Int. Conf. Mach. Learn. (ICML) , 2017, pp. 2778–2787. [18] D. S. Chaplot, D. Gandhi, A. Gupta, and R. Salakhutdinov, “Object Goal Navigation using Goal-Oriented Semantic Exploration,” arXiv preprint, 2020, arXiv:2007.00643. [19] N. Yokoyama, S. Ha, D. Batra, J. Wang, and B. Bucher, “VLFM: Vision-Language Frontier Maps for Zero-Shot Semantic Navigation,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA) , 2024, pp. 42–48. [20] A. Z. Ren, J. Clark, A. Dixit, M. Itkina, A. Majumdar, and D. Sadigh, “Explore until Confident: Efficient Exploration for Embodied Question Answering,” in Proc. Robot.: Sci. Syst. (RSS) , 2024. [21] A. Brohan et al. , “RT-1: Robotics Transformer for Real-World Control at Scale,” arXiv preprint, 2022, arXiv:2212.06817. [22] B. Zitkovich et al. , “RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 2165–2183. [23] Open X-Embodiment Collaboration, “Open X-Embodiment: Robotic Learning Datasets and RT-X Models,” arXiv preprint, 2023, arXiv:2310.08864.   
+
+> 12 CHASE | TECHNICAL REPORT NOVEMBER 2026
+
+[24] K. Fang, F. Liu, P. Abbeel, and S. Levine, “MOKA: Open-World Robotic Manipulation through Mark-Based Visual Prompting,” in Proc. Robot.: Sci. Syst. (RSS) , 2024. [25] Y. J. Ma et al. , “Eureka: Human-Level Reward Design via Coding Large Language Models,” in Proc. Int. Conf. Learn. Represent. (ICLR) , 2024. [26] K. Bousmalis et al. , “RoboCat: A Self-Improving Generalist Agent for Robotic Manipulation,” Trans. Mach. Learn. Res. , 2024. [27] G. Wang et al. , “Voyager: An Open-Ended Embodied Agent with Large Language Models,” Trans. Mach. Learn. Res. , 2024. [28] C. Chi et al. , “Diffusion Policy: Visuomotor Policy Learning via Action Diffusion,” in Proc. Robot.: Sci. Syst. (RSS) , 2023. [29] J. Liang et al. , “Code as Policies: Language Model Programs for Embodied Control,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA) , 2023, pp. 9493–9500. [30] I. Singh et al. , “ProgPrompt: Generating Situated Robot Task Plans using Large Language Models,” arXiv preprint, 2022, arXiv:2209.11302. [31] W. Huang, C. Wang, R. Zhang, Y. Li, J. Wu, and F.-F. Li, “VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models,” in Proc. Conf. Robot Learn. (CoRL) , 2023, pp. 540–562. [32] D. Driess et al. , “PaLM-E: An Embodied Multimodal Language Model,” in Proc. Int. Conf. Mach. Learn. (ICML) , 2023, pp. 8469–8488. [33] J. Wu et al. , “TidyBot: personalized robot assistance with large language models,” Auton. Robots ,vol. 47, no. 8, pp. 1087–1102, 2023. [34] Z. Fu, T. Z. Zhao, and C. Finn, “Mobile ALOHA: Learning Bimanual Mobile Manipulation using Low-Cost Whole-Body Teleoperation,” in Proc. Conf. Robot Learn. (CoRL) , 2025, pp. 4066–4083. [35] M. Ahn et al. , “AutoRT: Embodied Foundation Models for Large Scale Orchestration of Robotic Agents,” arXiv preprint, 2024, arXiv:2401.12963. [36] C. Li et al. , “BEHAVIOR-1K: A Benchmark for Embodied AI with 1,000 Everyday Activities and Realistic Simulation,” in Proc. Conf. Robot Learn. (CoRL) , ser. Proceedings of Machine Learning Research, vol. 205, 2023, pp. 80–93. [Online]. Available: https://proceedings.mlr.press/v205/li23a.html [37] A. Agarwal et al. , “Knowing Where to Look: Interactive Object Search via Spatial-Semantic Fusion,” arXiv preprint, 2026, arXiv:2611.00499.

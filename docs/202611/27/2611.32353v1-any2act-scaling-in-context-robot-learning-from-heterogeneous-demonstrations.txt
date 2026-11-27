@@ -1,0 +1,861 @@
+Title: Any2Act: Scaling In-Context Robot Learning from Heterogeneous Demonstrations
+
+URL Source: https://arxiv.org/pdf/2611.32353v1
+
+Published Time: Wed, 25 Nov 2026 02:52:16 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# Any2Act: Scaling In-Context Robot Learning from Heterogeneous Demonstrations 
+
+## Ziang Ren 1,5,* Zifan Wang 2,5,* Zhuoyang Li 5,* Benhao Qin 5 Haoyang Li 5 Qingtao Liu 5
+
+## Xuchuan Chen 2,5 Zekun Qi 2,5 He Wang 3,5 Yanchao Yang 1,† Li Yi 2,4,5,† 
+
+> 1
+
+The University of Hong Kong 2Tsinghua University 3Peking University 4Shanghai Qi Zhi Institute 5Galbot 
+
+> *
+
+Equal contribution †Corresponding authors 
+
+https://any2act.github.io Multi-Source Demonstrations In-Context Following Real-World Generalization 
+
+10k tasks 1.2M trajectories 10k hours  
+
+> Demo frames Future frame Action chunk
+> Human Video UMI Simulation Other Robots Teleoperation
+> Demo State Current obs
+
+Long-Horizon Skill Extension 
+
+> World Action Model
+> Demo Timeline Current Timeline Progress tracking & recovery
+
+Following Heterogeneous Demos Mobile Manipulation 
+
+> Unified embodiment-grounded representation
+
+Figure 1. Any2Act lets an executor robot follow any demonstrator , whether teleoperator, simulator, UMI, human, or another robot, via a unified embodiment-grounded representation for real-world long-horizon mobile manipulation. 
+
+## Abstract 
+
+Robot in-context learning (ICL) enables a policy to per-form unseen tasks by following contextual demonstrations, without task-specific fine-tuning. This is increasingly valu-able as large language models reasoning at low frequency can specify tasks through demonstrations and delegate high-frequency execution to such a policy. However, methods conditioned on human videos are bounded by scarce human– robot pairs, while those conditioned on robot demonstrations accept only one or two source types at limited scale. We present Any2Act , a foundation model for robot ICL. Our key insight is that a demonstration should be expressed in the camera layout and action space of the robot that performs it (the executor ), not of whoever provided it (the demon-strator ). This unified embodiment-grounded representation decouples learning to follow from admitting a new source. Any2Act learns to follow once, from robot-to-robot pairs that already take this form in 1.2M real trajectories spanning 10K tasks. Human videos, simulation, UMI, and other robots are then translated into this representation, and source-routed adapters trained on only a few hundred pairs each absorb the residual gap while the pretrained model stays frozen. For long horizons, a training-free tracker feeds only the demon-stration window around the executor’s progress, bounding the context and rolling back to redo failed steps. From a single demonstration, Any2Act achieves 57.5% success on unseen tasks without fine-tuning, exceeding VLAs fine-tuned on 50 demonstrations per task; other demonstrators retain 74–91% of the success achieved with the executor’s own demonstrations. 
+
+1arXiv:2611.32353v1 [cs.RO] 24 Nov 2026 1. Introduction 
+
+Humans can acquire new skills simply by watching video demonstrations, a capability that robot learning has long aspired to. Toward this goal, robot in-context learning (ICL) has recently emerged [3, 7, 9, 16, 41, 49]: conditioned on a few contextual examples, such as robot trajectories or hu-man videos, a policy can directly perform unseen tasks that are semantically consistent with the given context, without any task-specific fine-tuning. This capability becomes even more important as large language models (LLMs) acquire stronger embodied reasoning abilities [11, 15, 23]. Since such models typically reason and plan at a low frequency, a promising paradigm is to invoke an in-context policy as a 
+
+tool call : an LLM agent specifies the task through diverse demonstrations, and the policy executes it at a high control frequency. Serving in this role places stringent demands on the policy’s generalizability and scalability. However, existing ICL methods remain far from meet-ing these demands, facing three key challenges. The first is 
+
+scalable supervision for demonstration following. Meth-ods conditioned on human videos must learn from task-aligned human–robot pairs [3, 16, 49], which remain scarce, and the videos themselves lack action labels and often hide hand–object contact behind the hand. Methods conditioned on robot demonstrations avoid such pairing, but are trained on synthetic or benchmark-scale data [6, 31, 33, 41], which limits the range of tasks they can follow. The second is 
+
+demonstration heterogeneity . Each prior method accepts only one or two types of demonstration. In real-world deploy-ment, however, a policy must handle not only diverse scenes and tasks but also heterogeneous demonstrations, such as human videos, simulation rollouts, UMI recordings [5], and trajectories from robots of different embodiments, and admit-ting a new type should not require a new large-scale paired dataset and retraining. The third is generalizable demon-stration following . A demonstration specifies not only what to do but also how, such as the grasp, the order of steps, and the bimanual coordination. Following it thus requires more than replay: the policy must transfer this motion to new objects and scenes, and, when execution deviates or fails, retry and resume over long horizons. In this work, we present Any2Act (Fig. 1), a foundation model for robot in-context learning that addresses these chal-lenges. We call the robot performing the task the executor ,and whatever provides the demonstration (a teleoperated robot, simulator, UMI, human, or another robot) the demon-strator . Our key insight is to express a demonstration in the executor’s camera layout and action space rather than the demonstrator’s; we term this a unified embodiment-grounded representation . A single policy can then follow demonstra-tions from any source, with lightweight adapters bridging the residual gap in appearance and motion. This decouples learning demonstration following, which needs large-scale paired data, from admitting a new source, which needs only a translation pipeline and a few hundred pairs. To learn demonstration following at scale, we pretrain Any2Act on robot-to-robot demonstration pairs. Teleoper-ated collection records each task many times, and any two recordings of the same task form a pair with accurate ac-tions and wrist and head views. Our corpus comprises 1.2M real trajectories (10K hours) spanning 10K tasks. No other demonstrator is involved at this stage: the following ability is learned once, in the executor’s own space, and is shared by every source later translated into it. To handle demonstration heterogeneity, we admit new sources in two steps. First, every source is translated into the unified embodiment-grounded representation. For example, an agentic ego2sim pipeline re-enacts a human video on a simulated executor, completing the wrist views and recov-ering the actions that egocentric videos lack. Second, to absorb the residual gap in appearance and motion without compromising the foundation model, we attach a plug-in source-routed adapter to each source, activated only on its translated yet still imperfect demonstration tokens. We show that a few hundred paired demonstrations suffice to adapt to a new source, while the base model’s behavior remains unchanged. Paired data are thus needed only at this small scale per source, rather than to learn following itself. For generalizable demonstration following, Any2Act reads not the whole demonstration as global context but a window around the executor’s current progress, located by a training-free tracker, keeping the context focused and bounded over long horizons. This window also enables re-covery: a failure such as a missed grasp or a slipped object often returns the scene close to an earlier phase, so the tracker rolls the window back to redo the failed step. In real-world experiments, Any2Act performs unseen tasks with 57.5% success without fine-tuning, exceeding VLAs fine-tuned on 50 demonstrations per task, while prior in-context policies reach at most 19.7%. Demonstrations from simulation, human videos, UMI, and other robots re-tain 74–91% of the success achieved with the executor’s own demonstrations, each through adapters trained on only 200 pairs. We contribute: (1) Any2Act, a foundation model for demonstration following, pretrained at scale; (2) a unified embodiment-grounded representation with source-routed adapters, which admits heterogeneous demonstrations with-out changing the pretrained model; and (3) a training-free progress tracker that bounds the context over long horizons and enables failure recovery. 
+
+## 2. Related Work 
+
+2.1. World Action Models 
+
+World action models (WAMs) jointly predict future states and robot actions, and have emerged as a new architec-2Table 1. Comparison with open-source robot in-context learning policies. We report the data used for pretraining and mid-training, excluding additional data used to fine-tune each model for a specific evaluation domain. syn : synthetic data; /: unused or unreported.                                                
+
+> Method Pretrain / Mid-train Data Demo Sources for Real-Robot Inference Demo Conditioning Human–Robot Pairs Robot Trajectories Human Video UMI Simulation Robot Same Emb. Robot Cross Emb. w/ State/Action Injection Mechanism SynthICL [33] /3M syn ✓Global frames + cross-attn. BPP [31] //✓✓✓Global memory + cross-attn. HOST [3] 5,847 193,462 (229 tasks) ✓✓Progress-guided window Zero-WAM [49] 71,435 syn (8.6K tasks) ≈400K ( >6K tasks) ✓Full-demo prefix ContextFlow [6] //✓✓Global context + blockwise attn. SimpleICL [22] //✓Global context + cross-attn.
+> Any2Act /1.2M (10K tasks) ✓✓✓✓✓✓Tracked window + rollback
+
+ture for generalist robot policies [19, 25, 42, 43]. With large-scale pretraining, they exhibit strong generalization: DreamZero [46] generalizes zero-shot to unseen tasks af-ter learning from non-repetitive robot data, Motus [2] learns from human and multi-robot data via latents, and GR00T 2 [30] transfers tasks zero-shot across embodiments. The architecture is also flexible, supporting unified policy and dynamics modeling [50], value-based planning [18], autoregressive closed-loop control [21], inference without future generation [47], and steering by human videos [8, 49]. Any2Act is likewise pretrained at scale, but in context: it learns to perform tasks specified by a demonstration. Whereas such pretraining usually absorbs heterogeneous data into model weights, Any2Act admits heterogeneous sources at inference time as demonstrations. To our knowl-edge, it is the first WAM to do so for multiple sources. 
+
+2.2. In-Context Learning for Robot Manipulation 
+
+Demonstrations can specify spatial and temporal details that language leaves ambiguous. Robot in-context learning uses them to guide execution without task-specific parameter up-dates [7, 14, 16, 26]. Recent industrial systems such as GEN-1.5 [12] and Skild S1 [38] perform new tasks from a single demonstration, highlighting the potential of this paradigm. Tab. 1 compares recent open-source policies along three axes. 
+
+Training data: prior methods rely on synthetic pairs [33], benchmark imitation data [6, 31], human–robot pairs [3], or generated human videos [49]; Any2Act is pretrained on robot-to-robot pairs drawn from 1.2M real trajectories, which are collected naturally from routine data collection with accu-rate actions. Demonstration sources: each prior method ac-cepts one or two; Any2Act is the only one that admits all five, including simulation and cross-embodiment robots, through a unified embodiment-grounded representation. Condition-ing: prior methods encode the whole demonstration as global context [6, 22, 31, 33] or a full prefix [49], or track progress with a learned aligner, without demonstration states and roll-back [3]; Any2Act pairs a training-free tracker that rolls back after failures with dense demonstration states, keeping the context bounded while conveying the motion. 
+
+## 3. Method 
+
+Any2Act drives a target robot, the executor , to perform a task specified by a demonstration. The demonstrator that per-formed it, whether a person using bare hands or a handheld UMI gripper, a simulated robot, or another real-world robot, need not share the executor’s body. Given the executor’s current multi-view observation ot, its proprioceptive history 
+
+q≤t, a language instruction ℓ, and a demonstration D of the intended task from source k, the Any2Act policy π generates, without task-specific parameter updates, an H-step action chunk for the arms, grippers, and mobile base, together with a prediction of the scene h steps ahead: 
+
+ at:t+H , o t+h
+
+ ∼ πθ,ϕ k
+
+  · | ot, q ≤t, ℓ, W(Tk(D), o ≤t) .
+
+(1) Any2Act follows heterogeneous demonstrations in three steps. The translation Tk maps the demonstration into the executor’s camera layout and action space, a unified embodiment-grounded representation (Sec. 3.1). Progress tracking W then crops the window that matches the execu-tor’s current progress, and rolls it back when a step fails (Sec. 3.2). The model reads this window with the current observation and predicts the actions and the future frame (Sec. 3.3). Training proceeds in two stages: θ is pretrained once on robot-to-robot pairs, for which Tk is the identity and 
+
+ϕk is empty (Sec. 3.4), and each new source then adds only source-routed adapters ϕk, with θ frozen (Sec. 3.5). 
+
+3.1. Embodiment-Grounded Representation 
+
+Demonstrations from different demonstrators differ in what they show and what they record. They are captured from different views and bodies, such as human hands, handheld grippers, rendered scenes, or other robots. Most also lack the executor’s actions: a human video records none, a UMI recording only end-effector poses, and another robot its own joint layout. Feeding them to the policy as they are would require learning a separate mapping for each source from scarce paired data. To bridge these differences, we map every demonstration with a source-specific translation Tk
+
+into a unified embodiment-grounded representation: a head 3Robot pairs   
+
+> Pretraining  demo → query pairs
+> robot teleoperation
+> VLM label & filter
+> Group & pair or Skill-balanced
+
+1.2M 
+
+> trajectories
+
+10K 
+
+> total hours
+
+10K     
+
+> task groups
+> Tasks and scenes
+> One task group
+> same task, different scenes; any two form a demo → query pair
+> Task types
+> outer ring by hours inner ring by trajectories Object transfer Textile handling Storage & org. Surface cleaning Device operation Food & liquid Other
+> UMI
+> handheld grippers
+> Pose tracking Retarget (IK)
+> robot-native
+> ego2sim
+> human video
+> reconstruct
+> hand → grasp
+> Plan & simulate
+> robot-native
+> Other robots
+> Native views
+> Shared state layout
+> robot-native
+> SRA source-routed adapters: one per source, applied only to demonstration tokens
+
+Figure 2. Demonstration sources. Top: robot-to-robot pairs from routine data collection supply pretraining; recordings of the same task are VLM-filtered and grouped, and any two form a pair. Bottom: human videos (via agentic ego2sim), UMI, and other robots are translated into the unified embodiment-grounded representation and read through source-routed adapters. 
+
+view and two wrist views that follow the executor’s camera layout, paired with motion in the executor’s action space of the arms and mobile base. Following is thus learned once in this space (Sec. 3.4) and shared by every source. Apart from teleoperated recordings on the executor, which need no translation, demonstrations are translated in three ways (Fig. 2). (1) Simulation. Following recent real-to-sim pipelines [20, 48], we quickly model the current scene in a physics simulator from a head-camera image or video and an asset library; an LLM agent [11] then rolls out the task on the simulated executor, generating its actions directly (Sec. E.3). This yields views and actions in the executor’s layout, and failed attempts can be retried freely, returning a verified demonstration in minutes; the cost is an appearance gap and inaccurate physics. (2) Human videos. 
+
+Our agentic ego2sim pipeline (Sec. E.2) builds on recent work that reconstructs egocentric hand–object interaction in simulation [24]: it estimates hand and object poses from the video, rebuilds the scene, transfers the grasp to the robot gripper, and executes the human trajectory on the simulated executor. This recovers the actions and wrist views that egocentric videos lack, at the cost of errors in hand–object tracking and retargeting. (3) Other real-world bodies. UMI recordings and other robots’ data already contain a head view and two wrist views, so only their motion needs to be mapped into the executor’s action space, from end-effector poses for UMI and joint layouts for other robots. Translated demonstrations share the executor’s format but not its distribution: UMI frames still show a handheld gripper, simulated rollouts carry rendering artifacts and inac-curate physics, and converted motion inherits tracking and kinematic errors. We absorb these residual differences with source-routed adapters (Sec. 3.5). 
+
+3.2. Progress Tracking and Recovery 
+
+Once translated, a demonstration is followed step by step, so encoding it in full would make the context grow with its length. The policy instead reads only a short window around the executor’s current progress. Placing this window requires knowing which demonstration step the executor has reached, which is hard in the real world: at deployment only the past is observed; the executor moves at a different speed, pauses, 4and deviates; and demonstrations come from other bodies and unseen tasks. Rather than a learned aligner [3], which would need retraining for every source, we split alignment in two: a rough, training-free tracker only places the current moment inside the window, and the policy, trained to tolerate its errors, pinpoints its progress within it. Concretely, at each execution step t the tracker finds an anchor, the demonstration step that best matches the execu-tor’s current observation, using frozen DINOv3 [37] fea-tures f . Besides the head view, we match the wrist views, which add the gripper–object relation that the head view often misses [35], especially across sources (Sec. 4.6). The matching cost between execution step t and demonstration step s is ct(s) = P 
+
+> v
+
+wv
+
+ 1 − cos( f (ovt ), f (dvs )) , where ovt
+
+and dvs are the executor’s and the translated demonstration’s frames from view v, weighted by wv (values in Sec. B.1). Since progress normally moves forward, the anchor follows a monotonic path, as in dynamic time warping [36]: between consecutive execution steps it may stay, while the executor pauses, or advance by at most K demonstration steps; a penalty λ(δ) on the advance δ discourages stalling and skip-ping. Let Ft(s) be the lowest accumulated cost of such a path over execution steps up to t and ending at demonstration step s, and Bt(s) the lowest cost of continuing it to the end of the execution: 
+
+Ft(s) = ct(s) + min 
+
+> 0≤δ≤K
+
+ Ft−1(s − δ) + λ(δ) ,Bt(s) = min 
+
+> 0≤δ≤K
+
+ ct+1 (s + δ) + λ(δ) + Bt+1 (s + δ) .
+
+(2) During training, the full execution is in view, and the anchor 
+
+τt = arg min s[Ft(s) + Bt(s)] lies on the globally optimal path; it is computed once per pair, offline (Sec. B.2). At deployment only the past is observed, so the tracker gives an approximate anchor ˆτt = arg min s Ft(s), and W returns the demonstration window [ˆ τt − Wp, ˆτt + Wf ]. To cover the deviation of ˆτt from τt and differences in speed, during training the window is centered at a perturbed anchor τt + ϵ,with ϵ spanning the typical deviation while keeping τt inside the window, and randomly stretched or compressed in time; the policy thus learns to locate its own progress by comparing the demonstration with the current observation. Because the policy reads only the window, the anchor acts as its pointer into the demonstration, which also enables recovery. The policy itself absorbs small deviations, such as a displaced object, since pretraining pairs already differ in layout. A failure, however, often returns the scene to a state the demonstration has already shown: after a missed grasp, the object stays around the original place; after a slip, it lies back on the table. Since the monotonic tracker does not move back by itself, we re-localize the anchor to an earlier phase when it explains the current observation clearly better (details in Sec. B.3), so the robot redoes the failed step without recovery data or additional training. 
+
+3.3. Model Architecture 
+
+Given the demonstration window and the current observa-tion, Any2Act predicts how the scene should evolve and the actions that make it so (Fig. 3). This follows world action models [46, 50], which predict future video alongside actions so that the priors of video pretraining carry over to action generation. In context, this prediction is harder and more important: the future must follow the demonstration while fitting a current scene with a different layout and objects. We therefore build Any2Act on the pretrained video model Cosmos-Predict2 [27] and cast demonstration following as conditional continuation. The demonstration window is given in two complemen-tary forms: sparse visual tokens, encoded from a few frames of the three views to convey the scene, and dense state tokens, summarizing the proprioception over the window to convey motion and timing. The executor is given likewise, by its current views and its proprioceptive history; the language instruction enters through cross-attention. Figure S1 details the token layout. Two streams produce the two outputs. The video model places the demonstration tokens and the current views in one sequence, so that the two can be compared directly, and predicts the future frame. A lightweight action expert takes the executor’s proprioceptive history and the demonstration state tokens, reads the video model’s features through cross-attention, and predicts the action chunk. The two outputs are generated jointly to stay consistent. At deployment, demonstration latents are precomputed and the context is encoded once per control step and reused across denoising steps, yielding a two-second 30 Hz action chunk in 180 ms on one H200 GPU (Sec. A.5). 
+
+3.4. Demonstration-Following Pretraining 
+
+Learning to follow demonstrations at all requires numer-ous demonstration-following pairs. Human–robot pairs with accurate action labels are scarce, so prior work resorts to synthetic human videos [49] or a few thousand real pairs [3]. Our unified representation removes the need for such pairs: the policy only needs to learn to follow demonstrations within it, and robot-to-robot pairs already come in this form, with Tk the identity. Such pairs are also easy to obtain at scale: teleoperated data collection usually records each task many times, and any two recordings of the same task form a pair with accurate actions and all three views. Our corpus contains 1.2M trajectories over 10K hours in 10K tasks (Fig. 2), labeled and filtered by a VLM [34] and grouped by task. Recordings of the same task span dif-ferent environments, object instances, and placements, so the policy must carry the demonstrated behavior over to the present scene rather than replay it. It is the demonstration, not a memorized task identity, that tells the policy what to do: removing it sharply degrades performance (Sec. 4.4). We 5Demonstration window  
+
+> anchor τ t
+> demo frames (sparse) current
+> head
+> left wrist
+> right wrist
+
+Video Encoder (VAE)    
+
+> Proprioception
+> left arm right arm base embodiment adapter (other robots)
+> State tokenizer SRA
+> Video Decoder
+> future frame
+
+Video Model · Cosmos-Predict2-2B 
+
+FFN Cross-Attn 
+
+> Language
+
+Self-Attn   
+
+> SRA +SRA +Action chunk · 2 s
+> arms · grippers · base x, y, yaw
+
+Action Expert 
+
+FFN Cross-Attn 
+
+> Video Model layers
+
+Self-Attn             
+
+> history · demo state · actions
+> SRA +SRA +
+> cross-attn
+> demo frames demo state current obs Noisy future proprio history demo state Noisy actions
+> Progress tracking & recovery Source-routed adapter (SRA)
+> output input
+> 𝑾 𝟎 (frozen, shared) +mk
+> Ak
+> Bk
+> video token proprio token language token noisy target demonstration token (routed to SRA)
+> SRA source-routed adapter token mask m k
+> execution → demonstration →  low 3-view cost anchor τt
+> window rollback
+> after a failure
+> language
+
+Figure 3. Model overview. Top: from a demonstration window, given as sparse multi-view frames and dense proprioception, together with the current observation and the language, the video model predicts the future frame, and the action expert, cross-attending to its layers, denoises the action chunk. Bottom left: progress tracking advances the window along the execution and rolls it back to an earlier phase after a failure. Bottom middle: source-routed adapters (SRA) act only on demonstration tokens, leaving the pretrained model unchanged. 
+
+pretrain θ end to end on the perturbed windows of Sec. 3.2, with language randomly dropped so that the demonstration remains the primary task specification. The pair construc-tion and data sampling (Sec. D.2), the training objective (Sec. A.4), and all hyperparameters (Tab. S2) are detailed in the appendix. 
+
+3.5. Source-Routed Adapters for New Sources 
+
+With θ pretrained on robot pairs, a demonstration trans-lated from a new source already arrives in the executor’s format, yet its residual differences in appearance and motion (Sec. 3.1) change how the policy should interpret it. Fine-tuning θ directly is risky: paired data for a new source are scarce, and fully fine-tuning on so few pairs risks overfitting and degrading the demonstration-following ability learned from robot data (Tab. S9). We therefore keep θ frozen and propose source-routed adapters (SRAs), which adapt only how the policy interprets each source’s demonstrations, us-ing a few hundred pairs per source. Each SRA is a low-rank residual branch [13] attached to the frozen model and acti-vated only on the demonstration tokens of its source k:
+
+h′ = W0h + mk BkAkh, (3) where h is a token feature, W0 is a frozen linear layer, Ak
+
+and Bk are the low-rank factors of source k at that layer, which over all layers form ϕk, and mk ∈ { 0, 1} indicates whether the token belongs to a demonstration of source k.Adapters are inserted into layers of both the video model and the action expert, covering the visual and the state tokens of the demonstration. For other robots, whose kinematics also differ, an additional embodiment adapter is trained on the same pairs (Sec. C.2). Demonstrations recorded on the executor itself pass through no adapter, so following them behaves exactly as before adaptation. Adapters of different sources act on different demonstrations and can thus be attached, removed, or combined without retraining. We show that each new source needs only a few hundred pairs to gain the ability to follow its demonstrations (Sec. 4.5). 
+
+## 4. Experiments 
+
+We first specify how Any2Act is compared with VLAs and prior in-context policies (Sec. 4.1). We then compare it with these methods in the real world (Sec. 4.2) and on RoboTwin 2.0 (Sec. 4.3), and examine how its in-context ability scales with robot-to-robot pretraining and which com-ponents it relies on (Sec. 4.4). Finally, we turn to other demonstrators: we test whether simulation, human videos, UMI recordings, and other robots can specify tasks once translated and read through source-routed adapters (Sec. 4.5), and how accurately the training-free tracker locates progress (Sec. 4.6). Unless stated otherwise, all real-world experi-ments run on the same dual-arm mobile robot, in scenes unseen during pretraining, and each success rate is measured over 100 trials per task. 6Table 2. Real-world success rate (%) . In-context policies run without fine-tuning on Task Generalization and are adapted with 20 demonstrations per task on Skill Extension; VLAs are fine-tuned on 50 per task on both. † Long-horizon ( ≥5 steps).                                                                                                       
+
+> Task Generalization Skill Extension Method Discarding Lidding Gathering Pinching Filling †Packing †Avg Relaying †Sorting †Storing †Bagging Extracting †Pouring †Avg All
+> π0.5[32] 37 41 43 24 57 56 43.0 63 19 48 29 61 39 43.2 43.1 GR00T N1.7 [28] 62 33 57 28 44 61 47.5 42 39 67 45 69 23 47.5 47.5 HOST [3] 19 26 013 11 25 15.7 13 33 35 13 31 25 25.0 20.3 Zero-WAM [49] 24 16 17 19 834 19.7 21 46 65 733 27 33.2 26.4 Any2Act 64 47 77 38 56 63 57.5 61 88 79 55 84 69 72.7 65.1 Task Generalization  Discarding Lidding Gathering Pinching Filling Packing
+> Skill Extension  Relaying Sorting Storing Bagging Extracting Pouring
+
+Figure 4. Real-world benchmarks. Task Generalization (top) composes pretrained skills into new tasks, while Skill Extension (bottom) requires skills beyond pretraining. None of the twelve tasks appears in pretraining, and all are evaluated in unseen scenes. 
+
+4.1. Comparison Protocol 
+
+Comparing in-context policies with prior methods is subtle, because they differ in what they receive at test time and in what they must be trained on beforehand. Language-conditioned VLAs need no demonstration at inference, but acquire a new task only through fine-tuning on data from the same environment; we therefore fine-tune them on every evaluation task. In-context policies need no task-specific fine-tuning in principle, but their generalization is bounded by the tasks, skills, visual inputs, and embodiment they were trained on, so their released checkpoints cannot be evaluated directly on our robot. We therefore retrain them with their own methods on all of our robot pairs, and evaluate them with their required demonstrations and no fine-tuning. Some settings, however, lie beyond what any pretraining corpus covers: a simulator differs from the real world in appear-ance and physics, and some tasks require skills or object properties absent from pretraining, such as deformable or articulated objects. A single demonstration specifies what to do but cannot supply such a skill. In these settings, all in-context policies, including ours, are first adapted by su-pervised fine-tuning on a small in-domain set, and are still conditioned on a demonstration at test time. 
+
+4.2. Evaluating in the Real World 
+
+Platform and benchmark. All real-world experiments run on a Galbot G1 [10] dual-arm mobile robot with a head camera and two wrist cameras. We construct two bench-marks of six tasks each (Fig. 4; descriptions and success criteria in Tab. S3), none of which appears in pretraining. Both span a range of difficulty; they differ in whether the required skills are covered by pretraining. The Task Gen-eralization benchmark tests whether a policy can perform a new task from a demonstration alone: its tasks compose skills largely seen in pretraining into new goals, step or-ders, and object combinations, and Any2Act executes them without fine-tuning. The Skill Extension benchmark tests whether a policy can acquire skills beyond pretraining, such as handling deformable objects or atomic actions never seen before; here every in-context policy is first adapted as in Sec. 4.1. In both benchmarks, object instances, layouts, and backgrounds differ substantially from those in pretraining, adaptation, and the given demonstration, so the policy must transfer the demonstrated behavior to a new scene. 
+
+Baselines. We compare with two language-conditioned VLAs, π0.5 [32] and GR00T N1.7 [28, 29], and two in-context policies, HOST [3] and Zero-WAM [49]. The VLAs are fine-tuned on 50 demonstrations per task on both bench-marks, since 20 proved insufficient for them (Sec. F.2). HOST and Zero-WAM are retrained on our robot pairs, and 7Table 3. Success rate (%) on seven unseen RoboTwin 2.0 tasks.                           
+
+> Task WAN-Action [49] Zero-WAM [49] Any2Act Place object scale 3.0 24.7 59.3
+> Stamp seal 7.3 47.0 61.7
+> Open microwave 2.3 59.0 25.3 Move stapler pad 10.7 69.1 80.3
+> Place bread basket 15.3 35.0 37.7
+> Place empty cup 38.3 84.9 87.7
+> Stack blocks three 0.0 9.0 20.0
+> Average 11.0 47.0 53.1
+
+like ours, run without fine-tuning on Task Generalization and are adapted with 20 demonstrations per task on Skill Extension. We report success rate (%) over 100 trials per task (protocol in Sec. F.1). 
+
+Evaluation. Table 2 reports the results; Tab. S4 adds confi-dence intervals. On Task Generalization , Any2Act reaches 57.5% without any fine-tuning, above both VLAs even though they are fine-tuned on 50 demonstrations of each task. We observe a clear gain on Gathering , a multi-step task, and Pinching , which requires an unusual grasp: the demonstration conveys the step sequence and the intended grasp, which a language instruction leaves implicit. On Skill Extension , Any2Act reaches 72.7% after adaptation with 20 demonstrations per task, against 47.5% for GR00T N1.7 fine-tuned on 50. The gain is largest on the long-horizon 
+
+Sorting and the bimanual Pouring , where the demonstration specifies the order of steps and the coordination between the two arms. HOST and Zero-WAM are trained on the same robot pairs and given the same demonstrations, yet reach only 15.7% and 19.7% on Task Generalization , so the gain comes from how Any2Act uses the demonstration rather than from the training data. 
+
+4.3. Evaluating in Simulation 
+
+We follow the cross-task protocol of Zero-WAM [49] on RoboTwin 2.0 [4], with 43 seen tasks for RoboTwin post-training and 7 unseen tasks for evaluation. Any2Act re-ceives a simulation video for each unseen task. Success rate is averaged over three seeds of 100 rollouts, and baseline numbers are taken from [49]; Sec. F.5 details the protocol. As shown in Table 3, Any2Act reaches 53.1% on average, against 47.0% for Zero-WAM and 11.0% for its language-conditioned counterpart WAN-Action. 
+
+4.4. Scaling and Ablations 
+
+We next examine where this in-context ability comes from. We pretrain the same configuration on 400, 2,000, and 10,000 hours of robot pairs. Ablations use the 400-hour model and are compared against it (Table 4; per-task results and two ablations of the 10K-hour model in Tab. S7).                             
+
+> Table 4. Data scaling and ablations , average success rate (%). Ablations are applied to the 400 h model. ∗Without pretraining. Task Generalization Skill Extension All 0 h ∗–12.3 –400 h 13.3 35.2 24.2 2,000 h 32.3 52.8 42.6 10,000 h 57.5 72.7 65.1
+> w/o demo wrist views 10.2 24.7 17.4 w/o demo state 9.7 29.0 19.3 w/o rollback 11.5 30.5 21.0 w/o demonstration 8.5 9.5 9.0
+
+Performance increases with data at every scale. On Task Generalization , which involves no fine-tuning, the average grows fourfold from 400 to 10K hours, against twofold on 
+
+Skill Extension , so pretraining scale matters most when no task data is available. Without the demonstration, a language-conditioned WAM trained on the same data drops from 24.2% to 9.0%, and to 9.5% on Skill Extension, so the gain comes from the demonstration rather than the data, even after task-specific training. Removing the wrist views or the state tokens from the demonstration costs 6.8 and 4.9 points, and disabling rollback (Sec. 3.2) costs 3.2 points, as failed steps are no longer redone. 
+
+4.5. Evaluating on Heterogeneous Demonstrations 
+
+We next test whether demonstrations from other demonstra-tors can specify tasks for the executor once translated into its embodiment-grounded representation (Sec. 3.1) and read through source-routed adapters (Sec. 3.5). We consider five sources: rollouts generated by an LLM agent [11] in simula-tion, human videos converted by the ego2sim pipeline, UMI recordings with a handheld gripper, and trajectories from two other robots, Astribot S1 [1] and Spirit Moz1 [39]. Both robots are wheeled dual-arm humanoids that differ from our executor in arm kinematics, torso articulation, and camera placement. For each source, we train one adapter on 200 paired trajectories from 20 tasks disjoint from the evaluation tasks for 500 steps, keeping the pretrained model frozen. The adapter is then fixed, and the 12 tasks of Sec. 4.2 are evaluated under the same protocol, each specified only by a demonstration from that source; w/o SRA feeds the trans-lated demonstration to the frozen model directly. Demon-strations recorded on the executor pass through no adapter. Section F.7 further compares SRAs with full fine-tuning on the same pairs (Tab. S9) and measures their effect on the predicted actions (Tab. S8). Translation alone already lets the frozen model follow simulated and human demonstrations, and with SRA, demon-strations from all five sources retain 74–91% of the success obtained with robot demonstrations, although each adapter 8Table 5. Demonstrations from other sources executed on the robot. Success rate (%), mean ± std over the 12 tasks. Demo source w/o SRA w/ SRA Same-emb. (Galbot G1) – 65.1 ± 14.4 Sim. (LLM agent) 31.8 ± 16.3 59.1 ± 14.0 Human (ego2sim) 32.2 ± 15.4 57.9 ± 14.9 UMI 13.1 ± 7.7 55.1 ± 15.7 Cross-emb. (Astribot S1) 1.5 ± 2.6 51.0 ± 16.3 Cross-emb. (Spirit Moz1) 1.4 ± 2.2 48.2 ± 14.3 Table 6. Window coverage (%) by demonstration source ; Cross-emb.: averages Astribot S1 and Spirit Moz1. Method Same-emb. Human UMI Cross-emb. HOST [3] 85.5 60.2 56.2 42.8 Any2Act, head view only 78.4 66.5 52.1 46.9 Any2Act 85.7 73.2 64.1 53.1 
+
+is trained on only 200 pairs. Simulated and human demon-strations retain the most: both are performed by a simulated copy of the executor, leaving only rendering errors and, for human videos, tracking errors. UMI recordings follow, as they show a handheld gripper rather than the executor, and the two other robots retain the least, as both their appearance and their kinematics differ from the executor’s. 
+
+4.6. Progress Tracking Across Sources 
+
+Since the policy is trained with perturbed anchors (Sec. 3.2), the tracker only needs to place the correct demonstration content inside the window. We thus measure window cov-erage : annotators mark the matching demonstration time of each execution frame, and we report how often it falls inside the window tracked online as deployed. We annotate 1,000 pairs spanning multiple demonstration sources and tasks (annotation protocol in Sec. F.8). On same-embodiment pairs, our training-free tracker matches HOST’s learned aligner retrained on our robot pairs. On other sources HOST degrades sharply, to 42.8 on cross-embodiment robots, while ours stays 8–13 points higher. Wrist views improve coverage on every source, by up to 12.0 points on UMI. Coverage follows the source order of success in Table 5, suggesting that locating progress is a major part of the remaining cost of a new source. Figure S7 shows a real-world recovery by rollback after a disturbance. 
+
+## 5. Conclusion 
+
+We presented Any2Act, a world action model for robot in-context learning that follows demonstrations from human videos, simulation, UMI recordings, and other robots by translating them into a unified embodiment-grounded repre-sentation. Pretrained on robot pairs from 1.2M real trajecto-ries, it performs unseen tasks from a single demonstration; source-routed adapters admit new sources without altering it, and a training-free tracker keeps the context bounded and rolls back to redo failed steps. Limitations, future directions, and broader impact are discussed in Sec. G. 
+
+## References 
+
+[1] Astribot. Astribot S1. https://www.astribot.com/ en/product/ , n.d. Accessed: 2026-11-16. 8, 19 [2] Hongzhe Bi, Hengkai Tan, Shenghao Xie, Zeyuan Wang, Shuhe Huang, Haitian Liu, Ruowen Zhao, Yao Feng, Chen-dong Xiang, Yinze Rong, Hongyan Zhao, Hanyu Liu, Zhizhong Su, Lei Ma, Hang Su, and Jun Zhu. Motus: A Unified Latent Action World Model. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 35101–35113, 2026. 3 [3] Guangyan Chen, Meiling Wang, Te Cui, Zichen Zhou, Qi Shao, Shalfun Li, Hang Su, Roy Gan, Hao Wang, Mengyin Fu, Yi Yang, and Yufeng Yue. HOST: Robots Acquire Manip-ulation Skills in Seconds from a Single Human Video. arXiv preprint arXiv:2607.20033 , 2026. 2, 3, 5, 7, 9, 20 [4] Tianxing Chen, Zanxin Chen, Baijun Chen, Zijian Cai, Yibin Liu, Zixuan Li, Qiwei Liang, Xianliang Lin, Yiheng Ge, Zhenyu Gu, Weiliang Deng, Yubin Guo, Tian Nian, Xuan-bing Xie, Qiangyu Chen, Kailun Su, Tianling Xu, Guodong Liu, Mengkang Hu, Huan-Ang Gao, Kaixuan Wang, Zhixuan Liang, Yusen Qin, Xiaokang Yang, Ping Luo, and Yao Mu. RoboTwin 2.0: A Scalable Data Generator and Benchmark with Strong Domain Randomization for Robust Bimanual Robotic Manipulation. In International Conference on Ma-chine Learning , pages 13673–13699. PMLR, 2026. 8, 20 [5] Cheng Chi, Zhenjia Xu, Chuer Pan, Eric Cousineau, Ben-jamin Burchfiel, Siyuan Feng, Russ Tedrake, and Shuran Song. Universal Manipulation Interface: In-The-Wild Robot Teaching Without In-The-Wild Robots. In Proceedings of Robotics: Science and Systems , 2024. 2, 19 [6] Jian Ding, Xianjie Dai, Roei Herzig, Nussair Hroub, Jinjie Mai, Dengxin Dai, Bernard Ghanem, and Mohamed Elho-seiny. ContextFlow: In-Context Flow Matching for Robot Manipulation. arXiv preprint arXiv:2609.06852 , 2026. 2, 3 [7] Yan Duan, Marcin Andrychowicz, Bradly C. Stadie, Jonathan Ho, Jonas Schneider, Ilya Sutskever, Pieter Abbeel, and Woj-ciech Zaremba. One-Shot Imitation Learning. In Advances in Neural Information Processing Systems , 2017. 2, 3 [8] Yusen Feng, Bingchen Han, Jiangran Lyu, Kai Liu, Yixin Zheng, Yuxuan Wan, Weiheng Liu, Sun Han, Ruiqin Li, Yu-long Zhang, Fangfu Liu, Xuesong Shi, Libin Liu, Yizhou Wang, Zhizheng Zhang, and He Wang. WAM-TTT: Steering World-Action Models by Watching Human Play at Test Time. 
+
+arXiv preprint arXiv:2607.06988 , 2026. 3 [9] Letian Fu, Huang Huang, Gaurav Datta, Lawrence Yunliang Chen, William Chung-Ho Panitch, Fangchen Liu, Hui Li, and Ken Goldberg. In-Context Imitation Learning via Next-Token Prediction. arXiv preprint arXiv:2408.15980 , 2024. 2 [10] Galbot. Galbot G1. https://galbot.com/g1/ , n.d. Accessed: 2026-11-16. 7, 12 
+
+9[11] Galbot Team, Xuchuan Chen, Xiaoqian Cheng, Yu Deng, Lihe Ding, Shaocong Dong, Xiangjun Gao, Haozhe Jia, Zekai Li, Zhoujian Li, Yunrui Lian, Sikai Liang, Chenghuai Lin, Dairu Liu, Jiahang Liu, Qingtao Liu, Yuxuan Ma, Zekun Qi, Jiayi Su, He Wang, Ruochen Xu, Tianyu Xu, Xudong Xu, Zhe Xu, Mi Yan, Siming Yan, Li Yi, Ruixi Yu, Jinlu Zhang, Yintianrun Zhang, Zhikai Zhang, Zhizheng Zhang, Yixin Zheng, and Weiyi Zhu. Systematically Exploring the Capabilities of GPT-6 Astra as Embodied Policies. arXiv preprint arXiv:2609.38537 , 2026. 2, 4, 8, 17, 19 [12] Generalist Team. GEN-1.5: Embodied Foundation Models are One-Shot Learners. https://generalistai.com/ blog/gen-1.5 , 2026. Accessed: 2026-11-16. 3 [13] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-Rank Adaptation of Large Language Models. In 
+
+International Conference on Learning Representations , 2022. 6[14] Haojian Huang et al. In-Context Learning for Robots: Meth-ods and Applications. arXiv preprint arXiv:2609.36012 , 2026. 3[15] Brian Ichter, Anthony Brohan, Yevgen Chebotar, Chelsea Finn, Karol Hausman, Alexander Herzog, Daniel Ho, Julian Ibarz, Alex Irpan, Eric Jang, Ryan Julian, Dmitry Kalash-nikov, Sergey Levine, Yao Lu, Carolina Parada, Kanishka Rao, Pierre Sermanet, Alexander T Toshev, Vincent Van-houcke, Fei Xia, Ted Xiao, Peng Xu, Mengyuan Yan, Noah Brown, Michael Ahn, Omar Cortes, Nicolas Sievers, Clay-ton Tan, Sichun Xu, Diego Reyes, Jarek Rettinghouse, Jor-nell Quiambao, Peter Pastor, Linda Luu, Kuang-Huei Lee, Yuheng Kuang, Sally Jesmonth, Nikhil J. Joshi, Kyle Jeffrey, Rosario Jauregui Ruano, Jasmine Hsu, Keerthana Gopalakr-ishnan, Byron David, Andy Zeng, and Chuyuan Kelly Fu. Do As I Can, Not As I Say: Grounding Language in Robotic Af-fordances. In Conference on Robot Learning , pages 287–318. PMLR, 2023. 2 [16] Vidhi Jain, Maria Attarian, Nikhil J. Joshi, Ayzaan Wahid, Danny Driess, Quan Vuong, Pannag R. Sanketi, Pierre Ser-manet, Stefan Welker, Christine Chan, Igor Gilitschenski, Yonatan Bisk, and Debidatta Dwibedi. Vid2Robot: End-to-end video-conditioned policy learning with cross-attention transformers. In Robotics: Science and Systems (RSS) , 2024. 2, 3 [17] Tero Karras, Miika Aittala, Timo Aila, and Samuli Laine. Elucidating the design space of diffusion-based generative models. In Advances in Neural Information Processing Sys-tems , 2022. 13 [18] Moo Jin Kim, Yihuai Gao, Tsung-Yi Lin, Yen-Chen Lin, Yunhao Ge, Grace Lam, Percy Liang, Shuran Song, Ming-Yu Liu, Chelsea Finn, and Jinwei Gu. Cosmos Policy: Fine-Tuning Video Models for Visuomotor Control and Planning. In International Conference on Learning Representations ,2026. 3 [19] Baoyu Li, Xinchen Yin, Mengying Lin, Yixin Zhang, and Danfei Xu. EgoWAM: World Action Models Beyond Pixels with In-the-Wild Egocentric Human Data. arXiv preprint arXiv:2607.08436 , 2026. 3 [20] Bowei Li, Yuner Zhang, and Changliu Liu. ARSTAG: An Agentic Real2Sim2Real System for Task-Specific Robot Data Generation. arXiv preprint arXiv:2609.24563 , 2026. 4, 19 [21] Lin Li, Qihang Zhang, Yiming Luo, Shuai Yang, Ruilin Wang, Fei Han, Mingrui Yu, Zelin Gao, Nan Xue, Xing Zhu, Yujun Shen, and Yinghao Xu. Causal World Modeling for Robot Control. In Proceedings of Robotics: Science and Systems ,2026. 3 [22] Minxing Li, Minghao Han, Weizhi Zhao, Hanwen Wang, Xiangshuo Liu, Shuyao Shang, Jingxiang Zhou, Mingchao Sun, Hongyu Pan, Mu Xu, Yu Liu, Lue Fan, and Zhaox-iang Zhang. In-context Robot Learning Made Simple: A Democratized Recipe for Manipulation Tasks. arXiv preprint arXiv:2609.38173 , 2026. 3 [23] Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Haus-man, Brian Ichter, Pete Florence, and Andy Zeng. Code as Policies: Language Model Programs for Embodied Control. 
+
+arXiv preprint arXiv:2209.07753 , 2022. 2 [24] Yangcen Liu, Shuo Cheng, Xinchen Yin, Woo Chul Shin, Alfred Cueva, Yiran Yang, Zhenyang Chen, Chuye Zhang, and Danfei Xu. EgoEngine: From Egocentric Human Videos to High-Fidelity Dexterous Robot Demonstrations. arXiv preprint arXiv:2606.12604 , 2026. 4, 17 [25] Zuxing Lu, Hongjia Zhai, Guanzhi Wang, Huajian Zeng, Jiaqi Yang, Jingyu Liu, Lei Cheng, Yuantai Zhang, Yuheng Qiu, Zezhou Cheng, Ivan Laptev, Danfei Xu, Benjamin Riviere, Giuseppe Loianno, Eric Xing, and Xingxing Zuo. World-Action Models for Robot Learning and Control: A Survey. 
+
+arXiv preprint arXiv:2609.16074 , 2026. 3 [26] Zhao Mandi, Fangchen Liu, Kimin Lee, and Pieter Abbeel. Towards More Generalizable One-shot Visual Imitation Learn-ing. In IEEE International Conference on Robotics and Au-tomation , 2022. 3 [27] NVIDIA. Cosmos-Predict2: World Simulation Model for Physical AI. https://github.com/nvidia-cosmos/cosmos-predict2 , 2025. 5, 12 [28] NVIDIA. GR00T N1.7 3B: Model Card. https:// huggingface.co/nvidia/GR00T-N1.7-3B , 2026. Accessed: 2026-11-16. 7, 20 [29] NVIDIA, Johan Bjorck, Fernando Casta˜ neda, Nikita Cher-niadev, Xingye Da, Runyu Ding, Linxi ”Jim” Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, Joel Jang, Zhenyu Jiang, Jan Kautz, Kaushil Kundalia, Lawrence Lao, Zhiqi Li, Zongyu Lin, Kevin Lin, Guilin Liu, Edith Llontop, Loic Magne, Ajay Mandlekar, Avnish Narayan, Soroush Nasiriany, Scott Reed, You Liang Tan, Guanzhi Wang, Zu Wang, Jing Wang, Qi Wang, Jiannan Xiang, Yuqi Xie, Yinzhen Xu, Zhen-jia Xu, Seonghyeon Ye, Zhiding Yu, Ao Zhang, Hao Zhang, Yizhou Zhao, Ruijie Zheng, and Yuke Zhu. GR00T N1: An Open Foundation Model for Generalist Humanoid Robots. 
+
+arXiv preprint arXiv:2503.14734 , 2025. 7 [30] NVIDIA et al. GR00T 2: Scaling Robot Foundation Mod-els for Generalization, Dexterity, and Adaptation. Whitepa-per, NVIDIA, 2026. https://research.nvidia. com / labs / gear / gr00t - 2 / assets / gr00t2 _ whitepaper.pdf . 3 [31] Austin Patel, Ben Pekarek, Joel Enrique Castro Hernandez, and Shuran Song. What Enables In-Context Behavior Prompt-
+
+10 ing for Manipulation? arXiv preprint arXiv:2606.30457 ,2026. 2, 3 [32] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Gal-liker, Dibya Ghosh, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. π0.5: a Vision-Language-Action Model with Open-World Generalization. 
+
+arXiv preprint arXiv:2504.16054 , 2025. 7, 20 [33] Cheng Qian, Ruomeng Fan, Yifei Ren, Yilong Wang, and Ed-ward Johns. SynthICL: Scalable In-context Imitation Learn-ing with Synthetic Data. arXiv preprint arXiv:2606.08154 ,2026. 2, 3 [34] Qwen Team. Qwen3.8-Max: A New Bar for Coding and Cowork. https://qwen.ai/blog?id=qwen3.8 ,2026. Accessed: 2026-11-16. 5, 16 [35] Ziang Ren, Zike Yan, Raymond Zhang, Xuguo He, and Zhongyu Li. Fisheye-VLA: Decoupling coverage and acuity for manipulation with a single fisheye camera. arXiv preprint arXiv:2609.25750 , 2026. 5 [36] Hiroaki Sakoe and Seibi Chiba. Dynamic Programming Al-gorithm Optimization for Spoken Word Recognition. IEEE Transactions on Acoustics, Speech, and Signal Processing , 26 (1):43–49, 1978. 5 [37] Oriane Sim´ eoni, Huy V. Vo, Maximilian Seitzer, Federico Baldassarre, Maxime Oquab, Cijo Jose, Vasil Khalidov, Marc Szafraniec, Seungeun Yi, Micha¨ el Ramamonjisoa, Francisco Massa, Daniel Haziza, Luca Wehrstedt, Jianyuan Wang, Tim-oth´ ee Darcet, Th´ eo Moutakanni, Leonel Sentana, Claire Roberts, Andrea Vedaldi, Jamie Tolan, John Brandt, Camille Couprie, Julien Mairal, Herv´ e J´ egou, Patrick Labatut, and Pi-otr Bojanowski. DINOv3. arXiv preprint arXiv:2508.10104 ,2025. 5, 14 [38] Skild AI. Introducing S1: In-Context Learning for Robotics. 
+
+https://www.skild.ai/blogs/s1 , 2026. Accessed: 2026-11-16. 3 [39] Spirit AI. Moz1 Robot User Manual. https://docs. spirit-ai.com/moz1/product-intro.html , n.d. Accessed: 2026-11-16. 8, 19 [40] Emanuel Todorov, Tom Erez, and Yuval Tassa. MuJoCo: A physics engine for model-based control. In IEEE/RSJ International Conference on Intelligent Robots and Systems ,pages 5026–5033, 2012. 19 [41] Vitalis Vosylius and Edward Johns. Instant Policy: In-Context Imitation Learning via Graph Diffusion. In International Conference on Learning Representations , 2025. 2 [42] Siyin Wang, Junhao Shi, Zhaoyang Fu, Xinzhe He, Feihong Liu, Chenchen Yang, Yikang Zhou, Zhaoye Fei, Jingjing Gong, Jinlan Fu, Mike Zheng Shou, Xuanjing Huang, Xipeng Qiu, and Yu-Gang Jiang. World Action Models: The Next Frontier in Embodied AI. arXiv preprint arXiv:2605.12090 ,2026. 3 [43] Yuran Wang, Siqiao Huang, Mingleyang Li, Chenhao Zhang, Jiaqi Liang, Weiyang Jin, Yue Chen, Xuemin Chi, Donghao Zhou, Qize Yu, Yu-Kai Wang, Yuhan Rui, Shenzhe Yao, Zhen Yuan, Zhenhao Shen, Kefei Zhu, Zijie Zhu, Ning Gao, Xi-aowei Chi, Guanqi He, Shanghang Zhang, Hao Dong, Lin Shao, and Hang Zhao. OpenWAM: An Open, Modular Explo-ration Towards Systematic World-Action Model Pretraining. 
+
+arXiv preprint arXiv:2609.07398 , 2026. 3 [44] Zifan Wang, Junyu Chen, Ziqing Chen, Pengwei Xie, Rui Chen, and Li Yi. GenH2R: Learning generalizable human-to-robot handover via scalable simulation, demonstration, and imitation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 16362–16372, 2024. 19 [45] Zifan Wang, Ziqing Chen, Junyu Chen, Jilong Wang, Yuxin Yang, Yunze Liu, Xueyi Liu, He Wang, and Li Yi. Mo-bileH2R: Learning generalizable human to mobile robot han-dover exclusively from scalable and diverse synthetic data. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 17315–17325, 2025. 19 [46] Seonghyeon Ye, Yunhao Ge, Kaiyuan Zheng, Shenyuan Gao, Sihyun Yu, George Kurian, Suneel Indupuru, You Liang Tan, Chuning Zhu, Jiannan Xiang, Ayaan Malik, Kyungmin Lee, William Liang, Nadun Ranawaka, Jiasheng Gu, Yinzhen Xu, Guanzhi Wang, Fengyuan Hu, Avnish Narayan, Johan Bjorck, Jing Wang, Gwanghyun Kim, Dantong Niu, Ruijie Zheng, Yuqi Xie, Jimmy Wu, Qi Wang, Ryan Julian, Danfei Xu, Yilun Du, Yevgen Chebotar, Scott Reed, Jan Kautz, Yuke Zhu, Linxi ”Jim” Fan, and Joel Jang. World Action Models are Zero-shot Policies. In International Conference on Learning Representations , 2026. 3, 5 [47] Tianyuan Yuan, Zibin Dong, Yicheng Liu, and Hang Zhao. Fast-WAM: Do World Action Models Need Test-time Future Imagination? In Advances in Neural Information Processing Systems , 2026. 3 [48] Siheng Zhao, Jiageng Mao, Wei Chow, Zeyu Shangguan, Tianheng Shi, Rong Xue, Yuxi Zheng, Yijia Weng, Yang You, Daniel Seita, Leonidas Guibas, Sergey Zakharov, Vitor Cam-pagnolo Guizilini, and Yue Wang. Robot Learning from Any Images. In Conference on Robot Learning , pages 4226–4245. PMLR, 2025. 4, 19 [49] Jiaming Zhou, Qihang Zhang, Gangwei Xu, Cunxin Fan, Yujie Zhao, Ruilin Wang, Yiming Luo, Shuai Yang, Xing Zhu, Yujun Shen, Junwei Liang, and Yinghao Xu. Zero-WAM: In-Context World-Action Modeling from Human Videos for Open-Ended Task Generalization. arXiv preprint arXiv:2608.26103 , 2026. 2, 3, 5, 7, 8, 20 [50] Chuning Zhu, Raymond Yu, Siyuan Feng, Benjamin Burch-fiel, Paarth Shah, and Abhishek Gupta. Unified World Models: Coupling Video and Action Diffusion for Pretraining on Large Robotic Datasets. In Proceedings of Robotics: Science and Systems (RSS) , 2025. 3, 5 
+
+11 Appendix 
+
+## Overview 
+
+This appendix complements the main paper in two ways. First, it specifies Any2Act completely enough to be reimple-mented: the token layout of the model, the progress tracker and its rollback rule, the source-routed adapters, the construc-tion of robot-to-robot pairs, the translation pipeline of ev-ery demonstration source, and all hyperparameters (Secs. A to E). Second, it details the experiments of Sec. 4 (Sec. F): the real-world benchmark and baselines, the results of Tab. 2 and Tab. 4 per task, and two further analyses, of how the predicted actions depend on the demonstration and of source-routed adapters against full fine-tuning. We close with a discussion (Sec. G). 
+
+Contents         
+
+> Overview 12 A. Model Details 12 B. Progress Tracking and Rollback 13 C. Source-Routed Adapters 15 D. Pretraining Data and Recipe 16 E. Translating Demonstrations 16 F. Experiments 19 G. Discussion 22
+
+## A. Model Details 
+
+This section specifies what the policy reads and how it is computed; Fig. S1 summarizes the token layout. 
+
+A.1. Executor Representation 
+
+Views. The executor, a Galbot G1 [10], carries a head camera and two wrist cameras. Head images are resized to 320 ×320 and wrist images to 224 ×224 . A translated demonstration is stored in exactly this format. 
+
+State and action space. Every state and action is a 19-D vector at 30 Hz: seven joint angles per arm, one opening per gripper (0 closed, 1 open), and the mobile-base pose 
+
+(x, y, ψ ). The base pose is always expressed relative to the body frame at a reference time (the current time for the executor, the window start for the demonstration), so that the policy never sees absolute odometry and a demonstration recorded elsewhere in a room is directly comparable. 
+
+Prediction. An action is a chunk of H=60 absolute states covering the next 2 s; the model jointly predicts the three camera frames 2 s ahead, i.e . h=60 in Eq. (1). 
+
+A.2. Demonstration Window and Tokens 
+
+Window. Given an anchor ˆτ from the tracker (Sec. B), the window samples five images at the nominal times ˆτ +
+
+γ · {− 1, 0, 1, 2, 3} s, each snapped to the nearest recorded frame, i.e . Wp=γ and Wf =3 γ in Sec. 3.2, where γ is a speed factor. At deployment γ=1 ; during training γ is drawn log-uniformly from [0 .8, 1.25] to cover speed differences between demonstrator and executor. Near the start or end of a demonstration the grid is shifted inside the episode instead of being truncated, so the window always holds five real frames when the demonstration is long enough. 
+
+Visual tokens. The five frames of each camera are encoded by the frozen causal Wan VAE of Cosmos-Predict2 [27], which compresses time by a factor of four and encodes the first frame on its own, so that 1+4 n frames give 1+ n latents. Five frames thus give the two demonstration latents d0 (first frame) and d1 (remaining four) per camera (Fig. S1a). Each latent is placed on the temporal axis of the rotary embedding at its time in the window; the current and predicted frames sit at 0 and +2 s. 
+
+State tokens. The demonstrator’s 30 Hz states inside the window, expressed in the executor’s state space, (at most 151 rows) are split into 12 equal time bins. Each bin yields a pose 
+
+token (the per-channel mean; grippers take their last value) and a motion token (the change over the bin divided by its duration; grippers take their open/close change), giving 24 tokens that convey timing and motion far more densely than the two visual latents. The executor contributes its 16 most recent states. 
+
+A.3. Video Model and Visibility Rule 
+
+The video model is the 2B-parameter DiT of Cosmos-Predict2 [27] (28 blocks, width 2048). Its sequence concate-nates, for each of the three cameras, the patchified latents 
+
+[d0, d 1, current , future ], followed by the 24 demonstration-state tokens (Fig. S1b). Learned embeddings mark the role of a token (demonstration or query), its camera, and, for demonstration tokens, their time; state tokens are embedded per hand (seven joints and gripper) and for the base. All demonstration tokens pass through a gated attention block, the DemoAdapter , which is part of the pretrained weights 
+
+θ and distinct from the source-routed adapters of Sec. C. The language instruction enters every block through cross-attention to frozen T5 embeddings. 
+
+Visibility rule. Demonstration, demonstration-state and current tokens are clean : they attend only to clean tokens; the noisy future attends to all tokens (Fig. S1c). Because the clean tokens’ inputs and keys do not depend on the denoising step, their activations in the video model are identical across denoising steps, which allows them to be computed once per 12 (a) Demonstration window            
+
+> head
+> −γ
+> head
+> anchor
+> head
+> +γ
+> head
+> +2γ
+> head
+> +3γ
+> latent 0 latent 1 (causal VAE, 4× in time)
+> demo states in executor format (30 Hz)
+> 12 time bins
+> pose tokens (top), motion tokens (bottom)
+> (b) Token streams
+> Video model (Cosmos-Predict2-2B DiT, 28 blocks)
+> d₀ d₁ cur fut
+> head
+> L wrist
+> R wrist
+> demo state ×2
+> language
+> cross-attention
+> Action expert (16 layers)
+> 16 history 24 demo state 60 noisy actions
+> cross-attention to
+> blocks 7, 14, 21, 28
+> video state noisy target demo token
+> (c) Visibility rule
+> keys
+> clean future
+> clean
+> future
+
+✓ ✗ 
+
+> ✓✓
+> queries
+> clean = demo frames, demo state, current frame
+
+Figure S1. Inputs and token layout. (a) The tracked window holds five three-view frames at ˆτ + γ{− 1, . . . , 3} and the executor-format states between them, which are pooled into 12 pose and 12 motion tokens. (b) The video model reads, per camera, two demonstration latents, the current latent and the noisy future latent, followed by the 24 demonstration-state tokens; the action expert reads the executor history, the same demonstration-state tokens and the noisy action chunk, and cross-attends to four depths of the video model. Orange outlines mark demonstration tokens, the only tokens a source-routed adapter acts on. (c) Clean tokens never attend to the noisy future, so the context is computed once per control step. 
+
+control step (Sec. A.5). 
+
+A.4. Action Expert and Objective 
+
+The action expert is a 16-layer transformer (width 1536, 12 heads, ≈0.5B parameters) over the sequence [16 executor-history tokens, 24 demonstration-state tokens, 60 noisy ac-tion tokens]. Every fourth layer cross-attends to the hidden states of the video model after blocks 7, 14, 21 and 28, so it reads both low-level geometry and the model’s anticipation of the future. The demonstration-state tokens are shared with the video model and give the expert direct access to the demonstrated motion. 
+
+Objective. Both outputs are trained with rectified flow. For the action chunk a with noise ϵ and t ∼ U [0 , 1] , the network predicts the velocity ϵ − a from (1 − t)a + tϵ; the squared error weighs the first second of the chunk by 1, the second by 0.5, and the gripper channels twice. The video term follows Cosmos-Predict2 (log-normal σ with log σ ∼ N (0 , 1) and EDM weighting [17]) and is averaged over the three cameras. The total loss is L = 2 Laction + Lvideo , with the action term normalized over the global batch. 
+
+A.5. Inference and Latency 
+
+At each control step the tracker updates the anchor, the win-dow is assembled, and actions and future frames are sampled 
+
+jointly : a Karras schedule ( σ ∈ [0 .002 , 80] , ρ=7 ) with a second-order RES multistep update for the video and Euler steps for the actions. We use 4 denoising steps. The robot executes the first second (30 rows) of each 2 s chunk before the next chunk is applied, so the policy re-plans at 1 Hz while every executed action remains conditioned on a two-second look-ahead. Three caches follow from the visibility rule. The VAE la-tents of the demonstration window are kept on the GPU and reused across chunks while the window does not change; the keys and values of the clean tokens (demonstration, demon-stration state, current views) are computed once per observa-tion and reused across the denoising steps; the cross-attention keys and values of the instruction are computed once per demonstration. Table S1 shows how the chunk latency of 180 ms reported in Sec. 3.3 is reached on one H200 GPU at batch size 1. Each row is the median of 50 timed calls after warm-up, covering preprocessing, encoding of the current views, denoising and the transfer of the actions to the CPU. The tracker update (DINOv3 on the current and previous frame of the three views, DTW update and rollback test) adds 19.4 ms per chunk. For reference, in the same harness GR00T N1.7 takes 108 ms per chunk, π0.5 176 ms, HOST 2,142 ms and Zero-WAM 6,952 ms. 
+
+## B. Progress Tracking and Rollback 
+
+Section 3.2 splits alignment in two: a rough, training-free tracker places the current moment inside the window, and the policy, trained to tolerate the tracker’s errors, pinpoints its progress within it. We follow the order of the main paper: the deployed tracker (Sec. B.1), the training anchors and their perturbation (Sec. B.2), and the recovery by rollback, whose details the main paper defers to this section (Sec. B.3). Figure S2 and Alg. S1 summarize the procedure. 
+
+B.1. Tracking at Deployment 
+
+References. When a demonstration is loaded, its frames are subsampled to R reference times at 1 Hz. For each reference 13 (a) Forward tracking and rollback 
+
+> demonstration time →
+> execution time →
+> anchor
+> after rollback
+> window read
+> by the policy
+> low coarse cost
+> (b) Rollback test on the dense cost
+> candidates
+> next grasp not
+> yet performed
+> demonstration time →
+> dense cost
+> gain
+> margin
+> forward anchor
+> earlier phase
+> rival
+
+Figure S2. Progress tracking (schematic). (a) Coarse cost between execution and demonstration (light: low), the monotone anchor found by online DTW (blue), a rollback after a failed step (arrow), and the anchors that follow (orange). The dashed box is the window the policy reads. (b) The rollback test. Among earlier phases that precede the next grasp the executor has not yet performed (shaded), the minimum of the dense cost must undercut the forward anchor by a gain and every rival minimum by a margin .Table S1. Chunk latency (60 actions, 2 s) on one H200 GPU, batch size 1; each row adds to the previous one. Rows above the line use the 10-step sampler.                     
+
+> Configuration Median (ms) P95 (ms) FP32 weights, BF16 autocast 1215.9 2058.3 + demonstration VAE cache 1195.0 2123.1 + clean-token K/V cache 1167.0 2183.8 + compact conditioning path, CUDA graph 730.1 883.4 + BF16 weights 450.6 660.2 + smaller kernel changes ∗409.7 558.4 + whole sampler in one CUDA graph 358.4 370.4 + compiled video model and action expert 220.3 231.4 + 4 denoising steps (deployed) 180.3 192.7
+> ∗Plain linear layers in the FFN, text embeddings and text K/V on the GPU, fused QKV projection, batched VAE encoding of the wrist views, output head only for the future tokens.
+
+and each of the three views we store frozen DINOv3 ViT-B/16 features [37], both as 4×4 average-pooled descriptors (coarse) and as patch features (dense). 
+
+Coarse cost and update. At execution step t, the coarse cost to reference s is the mean over the three views of 1−cos 
+
+between pooled descriptors, which is the matching cost ct(s)
+
+of Sec. 3.2 with wv =1 /3. Since only the past is observed, only the forward part of Eq. (2) is computed: 
+
+Ft(s) = ct(s) + min 
+
+> 0≤δ≤K
+
+Ft−1(s − δ) + λ(δ), (S1) with K=4 , a stay penalty λ(0)=0 .01 and a skip penalty 
+
+λ(δ)=0 .03( δ − 1) for δ ≥ 1; entries before the current anchor are never revisited, so the deployed anchor ˆτt =arg min s Ft(s) is monotone, and the window is [ˆ τt−Wp, ˆτt+
+
+Wf ] with Wp=1 s and Wf =3 s (Sec. A). If ct(ˆ τt) > 0.7 the match is marked unreliable: the forward anchor is still used, but the rollback test below is skipped. 
+
+B.2. Training Anchors and Perturbation 
+
+Training anchors. During training the whole query record-ing is in view, so Eq. (2) is evaluated in both directions and the anchor τt = arg min s[Ft(s)+ Bt(s)] lies on the globally optimal path. We evaluate it once per pair, offline, when the pair is built (Sec. D.2). Since the path is optimized glob-ally rather than estimated greedily from the past, this offline evaluation does not need the step limit and penalties that stabilize the deployed tracker, and its matching cost can also compare the gripper events of the two recordings, which are both known in advance; Sec. D.2 gives the exact cost. 
+
+Perturbation. The window is anchored at the perturbed anchor τt + ϵ. The deviation ϵ is drawn from N (0 , 0.4 s),which spans the typical deviation of the deployed tracker, and truncated to [−2.9γ, 0.9γ] s so that τt stays inside the window [τt + ϵ − γ, τ t + ϵ + 3 γ]. With probability 0.2 it is instead drawn far behind ( [−2.9γ, −2.6γ] s) or far ahead ([0 .6γ, 0.9γ] s), the cases that a lagging or overshooting tracker produces. The window is randomly stretched or compressed in time by the speed factor γ (Sec. A). 
+
+Consequence for the tracker. Because the policy learns to locate its own progress inside the window, the deployed tracker only needs coverage : the correct demonstration time must fall inside the window. Since the window extends 3γ
+
+ahead of the anchor and γ behind it, it tolerates an anchor that lags the true progress by up to 3 s but leads it by at most 1 s. Table 6 reports this coverage for every source (Sec. F.8). 
+
+B.3. Rollback 
+
+The monotone tracker cannot move back by itself, yet a fail-ure often returns the scene to a phase the demonstration has already shown. Section 3.2 therefore re-localizes the anchor to an earlier phase when it explains the current observation clearly better. Below, “clearly better” is made precise by a 14 gain and a margin, measured with a cost that is sensitive to the task-relevant part of the scene. 
+
+Motion-weighted dense cost. For each reference we build a patch-weighting that concentrates on what changes in the demonstration. On the head view, 80% of the weight is spread over the patches whose features move within ±2 sof the reference (above the 85th percentile, dilated by one patch) and 20% is uniform. On each wrist view, the weight is proportional to how much the corresponding arm moves within ±0.5 s; an arm with less than 15% of the motion is dropped, and the bottom quarter of the wrist image, which shows mostly the gripper itself, is down-weighted to 0.25. The dense cost compares the weighted patch features of the current and the 0.1 s earlier frame with each reference, which suppresses single-frame noise. 
+
+Candidates. The dense cost is minimized over the ref-erences from Lrb before the current anchor up to the next grasp of the demonstration that the executor has not yet performed. Grasps are counted from the executor’s gripper and re-synchronized with the anchor, so this upper bound always lies after the anchor; its role is to keep phases be-yond an unperformed grasp, which may look similar to the present scene, out of the comparison. Let τ ∗ be the mini-mizer. A rollback is considered only if τ ∗ lies between 1 s and Lrb before the previous anchor ˆτt−1. The look-back length Lrb =15 s bounds how far back a failure may set the task. 
+
+Acceptance. Let κ be the dense cost, σloc the 10–90 per-centile spread of κ over the recent references, and τf the forward anchor. The rollback is accepted if 
+
+κ(τf ) − κ(τ ∗)
+
+σloc 
+
+| {z }
+
+> gain
+
+≥ 0.15 , κ(τ ∗) ≤ 0.7,
+
+min |τ −τ ∗|>1 s κ(τ ) − κ(τ ∗)
+
+σloc 
+
+| {z }
+
+> margin
+
+≥ 0.08 ,
+
+(S2) 
+
+i.e . the earlier phase must beat the forward anchor (gain), be unambiguous among all candidates more than 1 s away (margin), and be a valid match. On acceptance the DTW is restarted at τ ∗ and the window is re-centered there. No past action is replayed: the policy simply reads an earlier part of the demonstration and, because it was trained to locate its own progress inside the window, redoes the step from the current state. 
+
+## C. Source-Routed Adapters 
+
+Section 3.5 keeps the pretrained parameters θ frozen and adapts only how the policy interprets the demonstrations of a new source k, through low-rank residual branches that are active only on the demonstration tokens of that source 
+
+Algorithm S1 Tracker update at execution step t                                                                         
+
+> Require: references {gs,Gs}Rs=1 (pooled, weighted dense), state
+> Ft−1, anchor ˆτt−1, grasps done ng
+> 1: ct(s)←coarse cost; update Ftby Eq. (S1); τf←
+> arg min sFt(s)
+> 2: if ct(τf)>0.7then return τf▷unreliable: no rollback test
+> 3: update ngfrom the executor’s gripper (re-synced so that
+> smax >ˆτt−1); smax ←time of the (ng+1) -th demo grasp
+> 4: κ(s)←dense cost of current and previous frame to Gs
+> 5: τ∗←arg min {κ(s) : ˆ τt−1−Lrb ≤s < s max }
+> 6: if 1<ˆτt−1−τ∗≤Lrb and Eq. (S2) holds then
+> 7: Ft←δτ∗;ng←grasps before τ∗;return τ∗
+> 8: return τf
+
+(Eq. (3)). This section gives where the branches are placed, the embodiment adapter used for other robots, and how both are trained. 
+
+C.1. Placement and Routing 
+
+Each branch in Eq. (3) has rank 32; we use the scaling α=32 ,so α/r =1 and the update is exactly mkBkAkh. In the video model, branches are attached to the query, key, value and output projections of every self-attention and to both linear layers of every feed-forward block; in the action expert, to the same layers of every block, plus a rank-16 branch on the projection of the demonstration-state tokens. Together these form ϕk, with ≈47.2M trainable parameters per source, about 1.9% of the 2.46B-parameter policy. The routing mask mk is 1 exactly for the tokens of a demonstration from source k: its visual latents and its state tokens, in both the video model and the action expert, as in Sec. 3.5. Current-observation, language, history, future and action tokens never pass through a branch. Cross-attention layers are left untouched, so the action expert reads the adapted demonstration only through the video model’s fea-tures and its own adapted state tokens. 
+
+Exactness. Because every branch is multiplied by mk, a demonstration recorded on the executor ( mk=0 ) produces exactly the same activations with or without the adapter, so following it behaves exactly as before adaptation. Section F.7 compares this with full fine-tuning on the same pairs. 
+
+C.2. Embodiment Adapter 
+
+For another robot, joint angles do not mean the same thing as the executor’s even after reordering into the shared 19-D layout. The embodiment adapter of Sec. 3.5 is a residual MLP ( 14 →128 →128 →14 , SiLU, last layer zero-initialized; 20K parameters) that maps the 14 arm joints of a routed demonstration toward the executor’s joint space before the state tokens are pooled. Being zero-initialized, it starts as the identity. It is trained jointly with the source’s SRA on the same pairs and is the only component that differs between robot and non-robot sources. 15 C.3. Training 
+
+As in Sec. 4.5, each adapter is trained for 500 steps on 200 paired trajectories from 20 tasks that are disjoint from the 12 evaluation tasks, with θ frozen: 10 source demonstrations per task, each paired with one executor recording of the same task in a different scene. In every pair the query is an executor trajectory and the demonstration comes from source 
+
+k, so the supervision (actions and future frames) is always the executor’s own. Training anchors τt are obtained with Eq. (2) offline, as for pretraining pairs (Sec. D.2). Because cross-source pairs are already noisier than same-source ones, the perturbation of the anchor is milder ( ϵ ∼ N (0 , 0.2 s),truncated to ±0.5 s, same range of γ). Language is never dropped and tasks are sampled uniformly. The remaining hyperparameters are in Tab. S2. 
+
+## D. Pretraining Data and Recipe 
+
+D.1. Corpus 
+
+The corpus consists of 1.2M teleoperated trajectories (10K hours, 30 s on average) recorded on Galbot G1 robots during routine data collection, in various environments (homes, of-fices, retail stores, kitchens and laboratories). Each recording is labeled by a VLM (Qwen3.8 [34]) with a canonical instruc-tion and a task identity. Recordings that share a task identity form a task group; the 10K groups follow a long-tailed size distribution and the task-type composition of Fig. 2. No recording of the twelve evaluation tasks, in any scene, is part of the corpus (Sec. F.1). 
+
+D.2. Pair Construction 
+
+Figure S3 shows how recordings become training pairs. 
+
+Candidates. Two recordings form a candidate pair if they share task group and have the same gripper signature : the same initial gripper states and the same ordered sequence of grasp and release events (interleaved over both arms). The signature removes pairs in which the two operators solved the task with a different strategy ( e.g . a different arm), whose alignment would be ill-defined. 
+
+Alignment. Each pair is aligned with Eq. (2), evaluated offline over the full query recording, which plays the role of the execution, against the partner recording, which plays the role of the demonstration. Frames are described by the 
+
+4×4 pooled DINOv3 features of the three views, mixed as 
+
+0.8× appearance and 0.2× change relative to the episode median, which emphasizes what moves. The matching cost 
+
+ct(s) is the cosine distance between these descriptors plus 
+
+2× the difference in stage , the number of gripper events so far in each recording, which strongly penalizes matching a frame before a grasp to a frame after it. Because the whole path is optimized at once, the advance is not limited (K unbounded, λ ≡ 0). For every query frame t, τt =arg min s[Ft(s) + Bt(s)] is the training anchor (Sec. B.2). 
+
+Table S2. Hyperparameters. Values follow our configuration files.                                                    
+
+> Pretraining Source-routed adapter Trainable all (DiT + new modules) routed LoRA (+ emb. adapter) Pairs same source, robot–robot robot query, source-kdemo Sampling uniform over query times task-balanced Optimizer AdamW (0.9, 0.999), wd 0.01 AdamW, wd 0 Peak LR DiT 2×10 −5, new 5×10 −55×10 −5
+> Schedule warm-up 2K, hold to 20K, warm-up 100, cosine linear decay to 25K, then to 10% of peak constant ( 5×10 −6/10 −5)Batch 768 ( 32 ×24 )192 ( 3×64 )Steps 200K 500 Window anchor N(0 ,0.4s); 20% far offsets N(0 ,0.2s),| · | ≤ 0.5sSpeed factor γlogU[0.8, 1.25] logU[0.8, 1.25] Language dropout 0.2 0LoRA rank / α–32 / 32 (state proj. 16) Loss 2Laction +Lvideo same
+
+Quality check. A query (demonstration) frame is reliable if at least 75% of the frames it is matched to have an appearance distance ≤ 0.25 and the same stage. Only reliable intervals are used as query times or matched demonstration times, and a pair is dropped entirely if more than 85% of its path steps advance only one of the two recordings, which indicates that one recording stalls while the other progresses. 
+
+Sampling. A training sample draws a reliable query time uniformly over the corpus, one of its partners, and a window around the matched demonstration time with the perturba-tions of Sec. B.2. Language is replaced by the empty string with probability 0.2. 
+
+D.3. Recipe and Hyperparameters 
+
+Table S2 lists all hyperparameters. The pretrained DiT and the newly initialized modules (action expert, embeddings, DemoAdapter) use separate learning rates; training uses FSDP in bf16 with activation checkpointing. 
+
+## E. Translating Demonstrations 
+
+Every source is translated into the unified representation of Sec. 3.1: a head view and two wrist views in the executor’s camera layout and a 19-D executor state trajectory. An overview is given in Fig. 2. The translations differ in what they must recover: simulation and human videos lack the executor’s actions and wrist views, UMI recordings lack joint-space actions, and other robots have the views but a different body. What remains after translation, the residual gap , is what the source-routed adapter absorbs. 
+
+Overview. Section E.1 describes the asset library and physics shared by the two simulation-based sources. Sec-tion E.2 converts human videos with ego2sim, and Sec. E.3 generates demonstrations with an LLM agent when no hu-man video is available; both pipelines are illustrated in Figs. S4 to S6. Sections E.4 and E.5 map UMI record-ings and other robots, whose views are kept and only whose motion is translated. 
+
+Two sources, one simulator. Human videos and simu-16 demonstration    
+
+> (recording A)
+> query
+> (recording B)
+> grasp
+> grasp
+> release
+> release
+> window: τ(t) − 1 s … τ(t) + 3 s
+> targets: actions over 2 s, frames at t + 2 s
+> t
+> before grasp holding after release unreliable
+
+Figure S3. From recordings to demonstration →query pairs. Two recordings of the same task are aligned once, offline; at training time a query time is sampled and the matched demonstration time defines the (perturbed) window. τ (t) is the training anchor τt of Eq. (2) at query time t, not the deployed anchor ˆτt. Schematic. 
+
+lation, (2) and (1) in Sec. 3.1, are translated through the same real-to-sim backbone. The scene is rebuilt in a physics simulator from a head-camera image or video and a shared asset library (Sec. E.1), and the task is then executed on a simulated executor, a model of the Galbot G1, which directly yields the actions and the three views in the executor’s lay-out. The library also contains models of other robots, so the same rollout can be produced on another body. The two sources differ only in what specifies the task . In ego2sim, a person has performed the task in an egocentric video, and the pipeline transfers what the hand does to the objects onto the robot (Sec. E.2). When no human video of the task is available, the instruction alone specifies it: the LLM agent GPT-6 Astra [11] plans the task in the rebuilt scene and rolls it out on the simulated executor (Sec. E.3). ego2sim thus turns abundant human videos, which record how a task is actually done, into demonstrations the executor can follow, and the LLM agent covers tasks for which no such video exists, at no recording cost. 
+
+E.1. Assets and Physics 
+
+The asset library (Fig. S4) contains hundreds of registered assets (objects, robots and fixtures), many of them instances of shared parametric templates. Frequently used classes can be called by name, with resting poses, joint definitions, annotated grasp candidates and operation points on lids, doors and knobs. 
+
+Rigid and articulated assets. An asset is built from cali-brated robot views of the real object. An LLM describes its parts, joints and openings, citing the frames that show them and marking what cannot be seen ( e.g . wall thickness) as unknown. The description is compiled into a short shape pro-gram (revolved, lofted and swept profiles, boxes and hinges) that produces the visual and the collision mesh from the same parameters. The program is then scaled to metric size using the calibrated cameras, silhouettes and the table plane. Before use, we check each asset for manipulation: openings must be clear, cavities connected, handles must leave room for the fingers (probe points in Fig. S4), and joints must have the observed range. A person then inspects the asset and refines it where needed. 
+
+Bags and liquids. Cloth, paper and open bags are trian-gle shells simulated with position-based dynamics (PBD) in Genesis, and filled pouches use implicit FEM. For pouring, the source container holds a finite amount of liquid; when it is tilted over the target, particles are emitted at the spout and their free flow is simulated with DFSPH. Material param-eters (stiffness, density, viscosity) are nominal values, not measurements. 
+
+E.2. Human Videos via ego2sim 
+
+Our agentic ego2sim builds on EgoEngine [24], which recon-structs egocentric hand–object interaction in simulation. As in Sec. 3.1, it estimates hand and object poses from the video, rebuilds the scene, transfers the grasp to the robot gripper and executes the human trajectory on the simulated executor (Fig. S5). A human hand and a two-finger gripper cannot follow the same path, so the trajectory is transferred at the level of the objects: ego2sim keeps what the human does to the objects , namely which object is touched, at which part, by which hand, in which order and to which end state, and solves again how the robot achieves it. For example, when a person grasps a screwdriver by its handle, puts it into a case and closes the lid, ego2sim keeps three facts: the contact is on the handle, the tool ends up fully inside the case, and the lid is then closed. The grasp, the path over the case wall and the arm pose for pushing the lid are solved for the robot. 
+
+(1) Hand poses and events. Hand keypoints are tracked in the video, and an LLM drafts the events: objects and their roles, the contact part, the acting hand, grasp and release times, and the target relation (“inside”, “on”, “lid closed”). A reviewer checks the draft against the video, especially contacts hidden by the hand, which takes 3.5 min per video on average. Ordering constraints are kept explicitly: in a direct handover the receiving hand must hold the object before the giving hand releases it, whereas a handover via 17 Shape program → simulation asset    
+
+> editable mesh textured asset
+> Function check
+> cavity / handle probes
+> Articulated
+> hinged lid, latches
+> Cloth bag (PBD)
+> object inserted mouth gathered
+> Pouring (DFSPH)
+> free stream captured in pot
+
+Figure S4. Assets and physics shared by both simulation-based sources. Rigid and articulated assets are compiled from editable shape programs and checked for usable openings and grasp channels; bags and liquids are simulated in Genesis. 1 Video & events  
+
+> LLM draft → human check
+> objects, contact parts, hands, timing
+> 2
+
+Object anchors  
+
+> hand contact expressed in the object frame
+> 3
+
+Gripper fit  
+
+> two-finger grasp re-solved on the handle
+> 4
+
+Arm motion 
+
+> IK; retimed to velocity / accel. limits
+
+Representative transferred tasks (simulated executor)     
+
+> tool into case, then close lid bimanual handover stem into narrow vase tissue pulled out (PBD) pouring (DFSPH)
+
+Figure S5. Human-video source (ego2sim). Top: what the human does to each object is extracted from the video (steps 1–2) and re-solved for the robot’s gripper and arm (steps 3–4). Bottom: transferred tasks on the simulated executor. 1 Input  
+
+> first head-camera frame + instruction
+> 2
+
+Match assets  
+
+> case
+> lid closed, fixed
+> cup
+> upright, on table
+> asset id, rough position, stance, joints
+> 3
+
+Assemble scene  
+
+> heights from support; poses returned
+> 4
+
+Plan   
+
+> place_on(right,
+> cup, case)
+> check:
+> supported
+> ordered primitives with success checks
+> 5
+
+Execute 
+
+> MuJoCo; grasp only after pad contact
+> on failure: local search, then one-action patch
+
+Figure S6. Simulation source (LLM agent) , used when no human video is available, for the instruction “put the cup on the case”. One head-camera frame and the instruction are turned into a simulated demonstration with two LLM calls (steps 2 and 4); heights and contacts are computed by the simulator and trajectories by a local motion planner. 
+
+the table requires the object to rest on the table in between. 
+
+(2) Object poses and scene. The objects are matched to library assets, or reconstructed (Sec. E.1), and registered in the scene with the calibrated cameras and the reviewed table layout. Each contact is stored in the frame of the object, or of the moving part such as a lid, so it moves with the object and stays valid if the object starts at a different pose. 
+
+(3) Grasp transfer. Around each contact anchor we sample grasps (approach direction, rotation, opening) and solve the seven arm joints and the gripper opening by bounded least squares, so that both finger pads land on opposite faces of the object without other collisions. A grasp is accepted only if the same grasp also works for the rest of the carry (lift, transfer, place) on one continuous IK branch; a grasp that is 18 reachable on the table but hits the case wall later is replaced by another candidate. 
+
+(4) Execution. While an object is held, its target poses (from the reviewed end relation and waypoints) are converted into gripper poses through the fixed grasp transform. IK is solved frame by frame, starting from the previous solution; the redundant degree of freedom of the 7-DoF arm is used to avoid self-collision, and in narrow spaces a joint-space planner (RRT-Connect) takes over. The motion is retimed to the robot’s velocity and acceleration limits, and the mapping between robot time and video time is kept (Fig. S5, step 4). Rigid objects are attached to the gripper only after both pads pass a contact check, and fall under free dynamics after release; bags and liquids are simulated as in Sec. E.1, with the robot and the held container as moving boundaries. A translated demonstration is accepted if the arm motion is valid (joint limits, pad contact, clearance) and the task outcome matches the video (end relations and event order). Human and UMI demonstrators are static in our data, so their base channels are zero (Sec. A.1). 
+
+E.3. Simulation via an LLM Agent 
+
+When no human video of a task is available, a demonstration can still be produced from the instruction alone. Following recent real-to-sim pipelines [20, 48], we model the current demonstration scene from one head-camera frame, and the LLM agent GPT-6 Astra [11] rolls out the task on the simu-lated executor, generating its actions directly, as in Sec. 3.1 (Fig. S6). The agent is called twice, once to recognize the scene and once to plan. It gives only a rough layout and an ordered plan; heights and contacts are computed by the simulator, and trajectories by a local motion planner [44, 45], which also lets failed attempts be retried freely. 
+
+(1) Input. A head-camera frame of the current demonstra-tion scene and the instruction. 
+
+(2) Matching. The first call receives the frame, the instruc-tion and the catalog of callable assets (Sec. E.1). For every visible object it returns the asset id, an approximate position on the table, the yaw, a discrete resting pose, the initial joint state, e.g . an open case lid, and support relations such as “on the case”. The resting pose matters: a pack of wipes standing on its side cannot be obtained from a lying one by a yaw rotation. 
+
+(3) Assembly. The scene is built in MuJoCo [40]. Heights follow from collision geometry and support relations, so an object on top of the case is placed on the case’s top surface. The resulting poses, hinge axes and annotated grasp and operation points are passed on to the planner. 
+
+(4) Planning. The second call receives these ac-tual coordinates and writes an ordered list of primi-tives ( place in , place on , open lid , close lid ,
+
+open door , close door , pour , handover , brace )for the two arms of the executor, each with an arm, an object, a target and, where needed, a sub-goal such as “fully inside” before a lid is closed. Each primitive comes with its own success checks (contained, supported, upright, joint angle). 
+
+(5) Execution. A local controller picks a feasible annotated grasp, computes a collision-free joint trajectory for the sim-ulated executor and executes it in MuJoCo. A grasp holds the object only after both finger pads have touched it from opposite sides for 30 ms, so the simulator cannot carry an object the gripper did not reach. When a primitive fails, the controller first tries other grasps or trajectories on a copy of the current state, and only then is the planner asked to replace the failed primitive, without changing the other primitives or the goal. A verified demonstration takes about 1.2 min. 
+
+E.4. UMI 
+
+UMI recordings [5] already contain a head view and two wrist views, but their motion is a 6-DoF gripper pose and a gripper width. We express the poses in the executor’s base frame with a fixed calibration between the UMI head rig and the executor’s head camera, solve IK on the executor’s arms with the solver of Sec. E.2, and map the width linearly to the executor’s gripper opening. The views are kept as recorded; the handheld gripper and the human arm remain visible, which is the residual gap the adapter must absorb. 
+
+E.5. Other Robots 
+
+Astribot S1 [1] and Spirit Moz1 [39] are wheeled dual-arm humanoids with a head camera and two wrist cameras. Their views are used as recorded. Their joint states are re-ordered into the shared layout (seven joints per arm, one opening per gripper, base x, y, ψ ), and the base is expressed relative to the body frame as for the executor. Arm kinematics, torso articulation and camera placement still differ, which is why the embodiment adapter (Sec. C) is trained together with these sources’ SRAs. 
+
+## F. Experiments 
+
+This section follows Sec. 4. We first define the real-world benchmark and the baselines (Secs. F.1 and F.2) and give the results of Tab. 2 per task (Sec. F.3). We then show how the predicted actions and the executed behavior depend on the demonstration (Sec. F.4), give the RoboTwin 2.0 protocol (Sec. F.5), and expand scaling and ablations per task, including two ablations of the full model (Sec. F.6). Finally, we turn to the source-routed adapters that admit other demonstrators (Sec. F.7) and to progress tracking and recovery (Sec. F.8). 
+
+F.1. Real-World Benchmark 
+
+Tasks. Table S3 describes the twelve tasks of Fig. 4. Task Generalization composes skills seen in pretraining into new 19 goals, step orders and object combinations; Skill Extension requires skills beyond pretraining, such as handling a cloth bag, an articulated cabinet or bimanual pouring. A task is long-horizon ( †) if its demonstration has at least five steps. 
+
+Properties. The twelve tasks were defined after the pre-training corpus was frozen, and no recording of them, in any scene, is part of it. For each task we also retrieved the 20 corpus task groups with the most similar instruction (Qwen3-Embedding-8B) and inspected them by hand: none has the same goal and object combination. 
+
+Trials. Each task is evaluated in 100 trials per method, split over five demonstrations and five test scenes. The demon-strations were recorded once, before any policy was run, in scenes different from all test scenes. Within a scene, object instances and placements are re-randomized from a fixed list for every trial, the same for all methods, and methods are evaluated in interleaved blocks of ten trials. An operator scores each trial with the criteria of Tab. S3, within a time limit of twice the demonstration duration. 
+
+F.2. Baselines 
+
+VLAs. π0.5 [32] and GR00T N1.7 [28] are fine-tuned from their public checkpoints on 50 teleoperated demonstrations of each evaluation task. With 20 demonstrations per task, the number given to the in-context policies on Skill Extension, they reach only 19.2% and 23.5% on average, so we report the 50-demonstration setting. 
+
+In-context policies. HOST [3] and Zero-WAM [49] are retrained with their official architectures and recipes on our robot pairs; HOST’s learned aligner is trained on our DTW alignments, and Zero-WAM receives the full demonstration as a prefix. On Skill Extension they are adapted with the same 20 demonstrations per task as Any2Act. 
+
+F.3. Real-World Results per Task 
+
+Table S4 repeats Tab. 2 with 95% Wilson intervals for Any2Act. Over the 600 trials of each benchmark, Any2Act exceeds the strongest baseline, GR00T N1.7, by 10.0 points on Task Generalization and by 25.2 points on Skill Extension (p < 0.001 for both, one-sided Fisher exact test). The largest margins are on Gathering, Sorting and Pouring, where the demonstration conveys the order of the steps and the coordi-nation of the two arms. 
+
+F.4. Sensitivity to the Demonstration 
+
+An in-context policy should change its behavior when the demonstration shows something different, but not when an-other demonstration of the same task is given. We test this offline on the predicted actions and on the real robot. 
+
+Action error. On the six Task Generalization tasks, which share one set of weights, we take 50 query chunks (2 s, 14 arm joints) per task from 10 executor recordings of the task, disjoint from its demonstrations, and predict every chunk with each of the five demonstrations of the task ( same task )and with the 25 demonstrations of the other five tasks ( other task ); the window is placed by the deployed tracker. Table S5 shows that the five demonstrations of a task lead to nearly the same error (32.0–35.7 ×10 −3 rad on average), whereas a demonstration of another task raises it by 20.1 ×10 −3 rad (59%), with every interval above zero. 
+
+Correct vs . wrong demonstrations. On the real robot, we give the policy either a correct demonstration of the instructed task or a wrong one that conflicts with the instruc-tion, e.g . by showing another object or another step order. We use six tasks: two pick-and-place tasks, two long-horizon placing tasks whose step order is easily confused, book ex-traction and pouring, with 50 trials per task and condition. With the correct demonstration (Tab. S6), the robot keeps the instructed order in 96.3% of the trials and succeeds in 67.3%. With a wrong one, success falls to 23.7%, and on the two order-sensitive tasks only 14 and 32% of the trials keep the instructed order. Both offline and on the robot, the policy executes what the demonstration shows, not only what the instruction or the current scene suggests. 
+
+F.5. RoboTwin 2.0 
+
+We follow the cross-task protocol of Zero-WAM [49] on RoboTwin 2.0 [4]. Starting from the 10K-hour checkpoint, Any2Act is post-trained on demonstration →query pairs of the 43 seen tasks (50 demonstrations per task, 20K steps) and evaluated on the 7 unseen tasks with three seeds of 100 rollouts. Each rollout receives as its demonstration one simulated execution of the unseen task, recorded with a different seed and rendered from RoboTwin’s head and wrist cameras, with its joint states. No adapter is used, since simulation is the post-training domain. Baseline numbers are taken from [49]. 
+
+F.6. Scaling and Ablations per Task 
+
+Table S7 expands Tab. 4 per task and adds two ablations of the full 10K-hour model. The gain from scale is not carried by a few tasks: from 400 to 10K hours every Task Generalization task improves by 38 to 54 points, and this zero-shot benchmark grows 4.3×, against 2.1× for Skill Extension. At 400 hours, removing the demonstration hurts most on three long-horizon Skill Extension tasks, Relaying (40 to 0), Storing (39 to 0) and Extracting (54 to 5), even though the language-conditioned model is fine-tuned on the same 20 demonstrations per task: there the demonstration carries what the fine-tuning data does not, the order of the steps. Both components matter more as the model scales. At 10K hours, removing the demonstration lowers success from 65.1 to 26.2%; on Task Generalization the gap to the language-conditioned model grows from 4.8 points at 400 20 Table S3. Real-world tasks. Steps: annotated subtasks of the demonstration. †: long-horizon. 
+
+Task Task description Steps Success criterion 
+
+Discarding Discard the trash scattered on the table into the trash bin. 2 All target trash is inside the bin. 
+
+Lidding Cover the pot with its lid. 2 The lid is properly seated on the pot. 
+
+Gathering Place multiple fruits and vegetables into the basket. 4 All target fruits and vegetables are inside the basket. 
+
+Pinching Put away the napkins and fruit. 4 The napkins and fruit are in their designated storage locations. 
+
+Filling † Place the vegetables into the stainless-steel pot, then cover it with the lid. 5 All target vegetables are inside the pot, and the lid is properly seated. 
+
+Packing † Place the potato chip canisters on the serving plate one by one, then move the plate. 6 The plate reaches the target location with all canisters remaining on it. 
+
+Relaying † Place the corn into the steaming bowl, place the bowl inside the pot, then cover the pot. 6 The corn is inside the bowl, the bowl is inside the pot, and the lid is properly seated. 
+
+Sorting † Put away assorted items and use the watering can. 6 All target items are in their designated storage locations, and the water-ing action is completed. 
+
+Storing † Place the shoes into the shoe cabinet one by one, then close the cabinet door. 8 All target shoes are inside the cabinet, and the door is closed. 
+
+Bagging Place the hair dryer into the cloth bag. 4 The hair dryer is fully inside the cloth bag. 
+
+Extracting † Remove the books from the bookshelf one by one and pack them into the box. 6 All target books have been transferred from the bookshelf into the box. 
+
+Pouring † Pour water into the mug through coordinated use of both arms. 6 Water is successfully transferred into the mug. 
+
+Table S4. Real-world success (%) per task , as in Tab. 2, with 95% Wilson intervals for Any2Act. Bold: best per row. †: long-horizon. 
+
+Task π0.5 GR00T N1.7 HOST Zero-WAM Any2Act [95% CI] Task Gen.  Discarding 37 62 19 24 64 [54, 73] Lidding 41 33 26 16 47 [38, 57] Gathering 43 57 0 17 77 [68, 84] Pinching 24 28 13 19 38 [29, 48] Filling † 57 44 11 8 56 [46, 65] Packing † 56 61 25 34 63 [53, 72] Skill Ext.  Relaying † 63 42 13 21 61 [51, 70] Sorting † 19 39 33 46 88 [80, 93] Storing † 48 67 35 65 79 [70, 86] Bagging 29 45 13 7 55 [45, 64] Extracting † 61 69 31 33 84 [76, 90] Pouring † 39 23 25 27 69 [59, 77] Task Gen. avg 43.0 47.5 15.7 19.7 57.5 [53.5, 61.4] Skill Ext. avg 43.2 47.5 25.0 33.2 72.7 [69.0, 76.1] All 43.1 47.5 20.3 26.4 65.1 [62.3, 67.7] 
+
+hours to 43.8 points, so scale benefits a policy that reads demonstrations far more than one that reads only language. Disabling rollback costs 11.0 points at 10K hours, against 3.2 points at 400 hours (Tab. 4), most on Extracting (84 to 46), Packing (63 to 42) and Bagging (55 to 35). 
+
+F.7. Source-Routed Adapters 
+
+Protocol of Tab. 5. For each source and task, five source demonstrations, recorded or generated in scenes that differ from the test scenes, are used for the 100 trials, as in Sec. F.1. 
+
+Adapter off vs . on. Beyond success, we measure what the adapter changes in the predicted actions. For each source 
+
+Table S5. Action error with same- and other-task demonstra-tions (10 −3 rad, 14 arm joints; 50 chunks from 10 executor record-ings per task). Same task: mean and range over the five demonstra-tions of the task. Other task: mean over the 25 demonstrations of the other tasks. ∆: difference, with 95% bootstrap interval over query recordings. 
+
+Task Same task Range Other task ∆ [95% CI] Discarding 22.6 22.2–23.2 30.2 +7.6 [+5.3, +10.1] Lidding 25.1 23.7–26.3 67.2 +42.1 [+37.1, +46.8] Gathering 32.1 30.4–33.1 42.3 +10.2 [+7.7, +12.8] Pinching 25.3 24.7–25.8 43.0 +17.7 [+14.3, +21.3] Filling † 36.8 34.9–37.9 67.2 +30.4 [+19.4, +43.5] Packing † 62.1 56.2–68.1 74.9 +12.9 [+3.8, +21.3] Average 34.0 32.0–35.7 54.1 +20.1 [+17.4, +23.0] 
+
+we take 100 held-out query chunks (2 s, 14 arm joints), give the policy the matching demonstration from that source, and predict once with the adapter off and once with it on; for the two robot sources the switch covers both the SRA and the embodiment adapter. Table S8 shows that the adapter lowers the arm-joint error by 16–38% for every source, also on tasks outside its training pairs (UMI 41.3 to 36.0, human videos 66.4 to 53.2, 10 −3 rad). With the executor’s own demonstrations the routing leaves the adapter inactive, and the output equals that of the frozen model, as the construction requires (Sec. C). 
+
+SRA vs . full fine-tuning. Section 3.5 keeps θ frozen be-cause fully fine-tuning it on a few hundred pairs risks overfit-ting. We test this for human videos and UMI by fine-tuning 21 third            
+
+> person
+> head
+> camera
+> 0 s grasp 3 s bag pulled away 9 s tracker rolls back 18 s re-grasp 27 s transfer 39 s place
+
+Figure S7. Recovery after a disturbance (real robot, third-person and head views). At 3 s the bag is pulled out of the gripper and moved; the tracker returns the window to the grasp phase, and the policy grasps again, transfers and places the bag. Table S6. Correct vs . wrong demonstrations on the real robot 
+
+(50 trials per task and condition). Succ.: success on the instructed task (%). Order: trials whose steps follow the instructed order (%).                                      
+
+> Correct demo Wrong demo Task Succ. Order Succ. Order Pick tissue box 78 100 14 100 Pick chip canister 66 100 42 80 Apple, pumpkin, gourd →pot 86 96 24 14 Vase, cup →storage box 74 100 40 32 Extract books into box 52 90 822 Pour water 48 92 14 12 Average 67.3 96.3 23.7 43.3
+
+all 2.46B parameters of θ on the same 200 pairs as the SRA. Both are evaluated with demonstrations from the source on 
+
+seen tasks, four of the 20 tasks of the pairs in new scenes, and on unseen tasks, the six Task Generalization tasks. Table S9 shows that full fine-tuning matches the SRA on seen tasks (58.3 vs . 62.8% for human videos, 78.0 vs . 75.5% for UMI), but on unseen tasks it drops to 9.3 and 13.5%, close to or below the frozen model, whereas the SRA reaches 49.3 and 46.3%. With all parameters free, the 200 pairs are fitted as behavior on their own tasks; the SRA, which changes only how the source’s demonstration tokens are read, carries over to new tasks and leaves the executor’s own demonstrations untouched. 
+
+F.8. Progress Tracking and Recovery 
+
+Window coverage. For Tab. 6, annotators mark, for ev-ery execution frame at 1 Hz, the demonstration time that shows the same phase of the task, on 1,000 demonstration– execution pairs across sources and tasks. A frame is covered if this time lies inside the window [ˆ τt − 1 s, ˆτt + 3 s] placed by the tracker run online, as deployed (Sec. B.1). Two anno-tators labeled 10% of the pairs independently, with a median disagreement of 0.23 s. The tracker uses the same hyperpa-rameters for all sources and tasks. 
+
+Recovery. Figure S7 shows a real-world rollout in which a person pulls the bag out of the gripper and moves it. The tracker rolls the window back to the grasp phase (Sec. B.3), and the policy grasps the bag again and completes the task, without any recovery data. At 10K hours, disabling rollback costs 11.0 points (Tab. S7). Further rollouts, rollback events and failure cases are shown on the project page. 
+
+## G. Discussion 
+
+In-context learning and task data. On Task Generaliza-tion, Any2Act uses no task data: each task is performed from a single demonstration with the pretrained weights. Skill Extension asks for skills beyond pretraining; there every method, including the baselines, receives executor data of the task, and Any2Act receives less than the VLAs (20 vs . 50 demonstrations per task). The demonstration remains essen-tial after this adaptation: without it, a language-conditioned model fine-tuned on the same 20 demonstrations falls from 35.2% to 9.5% at 400 hours, and to 0% on Relaying and Storing (Tab. S7). 
+
+Cost of a new source. A translation pipeline is built once per source and reused for every task. Its adapter is trained once, on 200 pairs from 20 tasks disjoint from the evaluation tasks, for 500 steps with the pretrained model frozen (Sec. 4.5). Because each adapter acts only on its own source’s demonstration tokens, adding a source leaves the other sources and the executor’s own demonstrations exactly unchanged (Sec. C), and unlike full fine-tuning it carries over to unseen tasks (Sec. F.7). 
+
+Robustness of progress tracking. The tracker only needs to keep the correct phase of the demonstration inside the window; the policy, trained on perturbed and time-rescaled windows, locates its progress within it (Sec. B.2). The win-dow tolerates a lag of up to 3 s, and rollback returns it to an earlier phase after a failed step, so pauses, retries and speed differences between demonstrator and executor are handled without a learned aligner per source (Tab. 6). 
+
+Other executors. The representation is defined by the executor, not by the Galbot G1: any robot with routinely col-lected teleoperation data provides its own robot-to-robot 22 Table S7. Scaling and ablations per task (success, %), expanding Tab. 4 and adding two ablations of the 10,000-hour model. †: long-horizon. Setting Disc. Lid. Gath. Pinch. Fill. † Pack. † Avg Relay. † Sort. † Stor. † Bag. Extr. † Pour. † Avg All 
+
+400 h 10 7 27 0 13 23 13.3 40 53 39 9 54 16 35.2 24.2 2,000 h 26 44 38 21 34 31 32.3 46 62 63 31 74 41 52.8 42.6 10,000 h (full) 64 47 77 38 56 63 57.5 61 88 79 55 84 69 72.7 65.1 
+
+Ablations of the 400-hour model 
+
+w/o demo wrist views 11 13 11 0 9 17 10.2 37 42 21 12 23 13 24.7 17.4 w/o demo state 7 8 23 3 6 11 9.7 36 45 28 7 46 12 29.0 19.3 w/o demonstration 14 0 20 0 10 7 8.5 0 25 0 10 5 17 9.5 9.0 w/o pretraining – – – – – – – 6 0 15 8 37 8 12.3 –
+
+Ablations of the 10,000-hour model 
+
+w/o rollback 51 33 75 27 51 42 46.5 60 85 77 35 46 67 61.7 54.1 w/o demonstration 13 0 31 23 4 11 13.7 44 23 68 28 14 55 38.7 26.2 Table S8. Arm-joint error with the adapter off and on (10 −3 rad, 100 held-out chunks per source). ∆: paired reduction, with 95% bootstrap interval over query recordings (Rec.).                           
+
+> Source Rec. Off On ∆[95% CI] Rel. UMI 25 46.8 37.3 9.5 [5.1, 14.5] 20% Human (ego2sim) 37 50.2 42.1 8.1 [5.0, 11.6] 16% Astribot S1 38 47.0 33.5 13.5 [10.1, 16.8] 29% Spirit Moz1 48 48.1 29.8 18.3 [12.4, 24.5] 38%
+
+Table S9. SRA vs . full fine-tuning on the same 200 pairs per source. Success (%) with demonstrations from the source on seen tasks (tasks of the pairs, new scenes) and unseen tasks (Task Gener-alization).                  
+
+> Seen tasks Unseen tasks Model Human UMI Human UMI Frozen (no adaptation) 19.0 24.5 29.3 12.3 Full fine-tuning 58.3 78.0 9.3 13.5 SRA (ours) 62.8 75.5 49.3 46.3
+
+pairs. On RoboTwin 2.0, Any2Act is post-trained for RoboTwin’s simulated dual-arm robot and outperforms Zero-WAM on six of the seven unseen tasks (Tab. 3); conversely, two other real robots serve as demonstrators of the Galbot G1 (Tab. 5). 
+
+Limitations and future work. Two directions remain open. First, the interface to an LLM agent is still narrow: the agent passes one demonstration of the intended task, whereas a more general interface would let it compose demonstrations of several subtasks, edit them, or generate them for tasks nobody has shown, as our simulation source begins to do. Second, the unified representation conveys what a demon-stration looks like and how the arms move, but not how hard the hands press. Contact-rich tasks, such as inserting, wiping or tightening, depend on forces and touch that neither views nor joint trajectories record. Admitting force and tactile demonstrations, and recovering them from human videos through full 3D modeling of hand–object interaction rather than the object-level contacts ego2sim keeps today, would let a demonstration specify not only the motion but also the contact. 
+
+Broader impact. Following demonstrations from human videos makes it easier to instruct robots without program-ming, which can make assistive robotics more accessible. The same ease raises the question of whose demonstrations a robot should follow; deployment should restrict the accepted sources and keep a human able to stop the robot at any time. All human videos used in this work were recorded by con-senting participants, and no faces are stored in the released material. 23

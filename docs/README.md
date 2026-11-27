@@ -6,62 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-11-26
-- 运行时间：2026-11-26 02:22:41 UTC
+- 最新运行日期：2026-11-27
+- 运行时间：2026-11-27 02:40:15 UTC
 - 运行状态：成功
-- 本次总论文数：14
-- 精读区：3
-- 速读区：11
+- 本次总论文数：6
+- 精读区：0
+- 速读区：6
 
 ### 今日简报（AI）
-今日扫描 14 篇机器人操作前沿论文，精读 3 篇、速读 11 篇，重点聚焦 VLA 模型如何补齐组合式操作的短板。最值得看的是两篇 9.0 分精读：一篇用 3D 技能包络让 VLA 执行、代码兜底恢复，另一篇用智能体推理把原子操作技能组合起来，思路互补。普通读者可先读这两篇的框架图，再顺着 CoT-WAM 与 CoachSI 了解训练与自改进路线。
-- 详情：[/202611/26/README](/202611/26/README)
+今日速读6篇具身智能与机器人方向论文，聚焦技能获取、自我进化与长程任务规划三条主线。
+最值得关注的是CHASE用好奇心驱动技能习得、RoboEvo²让机器人在“执行器—策略”协同中递归自我改进（均7.0分），而RePlan-VLA则以进度感知重规划补足长程视觉—语言—动作模型的短板（6.0分）。
+普通读者可先从两篇7分论文入手，理解“机器人自己找任务练技能、自己迭代变强”的思路，再带着“长程任务如何不跑偏”的问题回看RePlan-VLA。
+- 详情：[/202611/27/README](/202611/27/README)
 
 ### 精读区论文标签
-1. [VLAs Execute, Code Recovers: 3D Skill Envelopes Bridge the Compositional Gap in Agentic Manipulation](/202611/26/2611.32245v1-vlas-execute-code-recovers-3d-skill-envelopes-bridge-the-compositional-gap-in-agentic-manipulation)  
-   标签：评分：9.0/10、query:llm-robotics
-   evidence：在智能体规划器下组合冻结VLA技能并解决技能衔接问题
-2. [Atomic Policy: Composing Atomic Manipulation Skills with Agentic Reasoning](/202611/26/2611.32813v1-atomic-policy-composing-atomic-manipulation-skills-with-agentic-reasoning)  
-   标签：评分：9.0/10、query:llm-robotics
-   evidence：VLM估计符号状态与目标，PDDL求解器规划技能并由智能体框架调用与验证
-3. [RoboHarness-RL: Agentic Reinforcement Learning for VLM-Based Robot Manipulation](/202611/26/2611.32016v1-roboharness-rl-agentic-reinforcement-learning-for-vlm-based-robot-manipulation)  
-   标签：评分：8.0/10、query:llm-robotics
-   evidence：视觉语言模型作为高层控制器，通过工具调用完成机器人操作
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [CoT-WAM: Collaborative Training of Vision-Language Models and World-Action Models via Plan Latents](/202611/26/2611.23803v2-cot-wam-collaborative-training-of-vision-language-models-and-world-action-models-via-plan-latents)  
+1. [CHASE: Curiosity-Guided Skill Acquisition for Embodied Task Execution](/202611/27/2611.34416v1-chase-curiosity-guided-skill-acquisition-for-embodied-task-execution)  
    标签：评分：7.0/10、query:llm-robotics
-   evidence：联合训练VLM与世界动作模型，融合语义规划与动作控制
-2. [Lost Between Mind, Model Collaboration, and Motion: Understanding and Measuring Cross-Model Action Misalignment in Commercial Robots](/202611/26/2611.24100v1-lost-between-mind-model-collaboration-and-motion-understanding-and-measuring-cross-model-action-misalignment-in-commercial-robots)  
+   evidence：规划器选择复用技能并按需获取缺失技能以执行具身任务
+2. [RoboEvo$^2$: Recursive Robot Self-Improvement via Harness-Policy Co-Evolution](/202611/27/2611.34675v1-roboevo2-recursive-robot-self-improvement-via-harness-policy-co-evolution)  
    标签：评分：7.0/10、query:llm-robotics
-   evidence：大模型解读用户意图并协调机器人动作模型，研究语义错位
-3. [CoachSI: Self-Improvement of Robot Policies with a Language Coach](/202611/26/2611.25529v1-coachsi-self-improvement-of-robot-policies-with-a-language-coach)  
-   标签：评分：7.0/10、query:llm-robotics
-   evidence：冻结VLM用语言指出下一步原子技能来指导策略，不直接输出动作
-4. [EmbodyAgent: Post-Training Embodied VLM Agents via Distillation, SFT, and RL](/202611/26/2611.26196v1-embodyagent-post-training-embodied-vlm-agents-via-distillation-sft-and-rl)  
-   标签：评分：7.0/10、query:llm-robotics
-   evidence：视觉语言模型通过工具接口编写并执行控制代码充当闭环机器人控制器
-5. [EmboEagle: An Efficient Agentic Embodied Framework for Long-horizon Robotic Manipulation](/202611/26/2611.31173v1-emboeagle-an-efficient-agentic-embodied-framework-for-long-horizon-robotic-manipulation)  
-   标签：评分：7.0/10、query:llm-robotics
-   evidence：以子任务为条件控制并结合视觉语言模型监督的智能体长程操作框架
-6. [Ground, Guide, Act: Improving VLA Spatial Generalization with Multimodal Foundation Models](/202611/26/2611.31452v1-ground-guide-act-improving-vla-spatial-generalization-with-multimodal-foundation-models)  
-   标签：评分：7.0/10、query:llm-robotics
-   evidence：多模态基础模型负责定位与引导，VLA负责执行
-7. [Reconfiguring Procedural Knowledge for Compositional Robot Skill Adaptation](/202611/26/2611.22174v1-reconfiguring-procedural-knowledge-for-compositional-robot-skill-adaptation)  
+   evidence：推理智能体借助机器人控制API求解并把验证方案沉淀为可复用技能供VLA执行
+3. [RePlan-VLA: Progress-Aware Replanning for Long-Horizon Vision-Language-Action Models](/202611/27/2611.23843v1-replan-vla-progress-aware-replanning-for-long-horizon-vision-language-action-models)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：依据高层任务规范重构可复用过程知识以组合技能
-8. [CoBoVLA: Decoupling Language from Action with Discrete Codes for Robust and Interpretable Robot Manipulation](/202611/26/2611.22395v1-cobovla-decoupling-language-from-action-with-discrete-codes-for-robust-and-interpretable-robot-manipulation)  
+   evidence：面向长时程机器人执行的VLA策略进度感知重规划框架
+4. [A$^2$-VLA: Adapting Vision-Language-Action Policies to New Tools through Agentic Affordance Discovery](/202611/27/2611.25656v1-a2-vla-adapting-vision-language-action-policies-to-new-tools-through-agentic-affordance-discovery)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：在VLA内解耦语言理解、规划与控制
-9. [Verify2Act: Critic-Guided Latent World Models for Verifying Language-Conditioned Manipulation Plans](/202611/26/2611.25243v1-verify2act-critic-guided-latent-world-models-for-verifying-language-conditioned-manipulation-plans)  
+   evidence：具身智能体提出假设并调用VLA策略执行工具操作
+5. [Embodied-Harness: Towards Recursive Self-Improvement for Robotic Manipulation](/202611/27/2611.27689v2-embodied-harness-towards-recursive-self-improvement-for-robotic-manipulation)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：VLM提出多步操作计划并由潜世界模型验证
-10. [PGX: Physically Grounded Execution for Long-Horizon Humanoid Loco-Manipulation](/202611/26/2611.26596v1-pgx-physically-grounded-execution-for-long-horizon-humanoid-loco-manipulation)  
+   evidence：双智能体框架中Actor通过机器人控制接口与视觉语言模型引导交互
+6. [Any2Act: Scaling In-Context Robot Learning from Heterogeneous Demonstrations](/202611/27/2611.32353v1-any2act-scaling-in-context-robot-learning-from-heterogeneous-demonstrations)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：用状态机将长程任务分解为分阶段技能执行
-11. [A Glimpse of Training VLMs as Foundation Models for Robotic Manipulation](/202611/26/2611.29338v1-a-glimpse-of-training-vlms-as-foundation-models-for-robotic-manipulation)  
-   标签：评分：6.0/10、query:llm-robotics
-   evidence：将视觉语言模型训练为操作基础模型并使用语义动作原语
+   evidence：大模型低频指定任务，交由上下文机器人策略高频执行
 
 
 <div class="dpr-home-promo-card">

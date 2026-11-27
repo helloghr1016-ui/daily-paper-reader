@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-26T02:13:25.914991+00:00",
-  "updated_date": "20261126",
+  "generated_at": "2026-11-27T02:37:11.449554+00:00",
+  "updated_date": "20261127",
   "carryover_days": 9,
   "tag_states": {
     "locoWBC": {
@@ -120,7 +120,7 @@
       "items": []
     },
     "llm-robotics": {
-      "updated_date": "20261126",
+      "updated_date": "20261127",
       "carryover_days": 9,
       "items": []
     }

@@ -1,0 +1,277 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-11-27T02:37:11.448855+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2611.34416v1",
+      "source": "arxiv",
+      "title": "CHASE: Curiosity-Guided Skill Acquisition for Embodied Task Execution",
+      "abstract": "Robots executing tasks in partially observed environments must resolve uncertainty while operating with incomplete skills. Inspired by human curiosity, we investigate how robots can formulate task-relevant hypotheses, seek evidence, and acquire missing skills during task execution. We propose CHASE, a Curiosity-guided Harness for Acquiring Skills from Evidence, which operationalizes curiosity as selecting investigations that resolve task uncertainty and expand executable capabilities. Four modules connect dynamic scene understanding, hypothesis-driven planning, on-demand skill acquisition, and verified execution. The planner balances information value, skill reuse, and acquisition/execution cost. Missing skills trigger bounded exploration, learning from verified segments, and held-out admission during acquisition; separate checks verify physical effects and acquired evidence. Newly admitted skills expand the executable investigation set, closing the loop between resolving uncertainty and acquiring capabilities. Simulation and real-robot experiments evaluate investigation, skill acquisition, and task execution. CHASE achieves 50-80% task success under combined information and capability gaps, with 70-90% evidence resolution.",
+      "authors": [
+        "Zixuan Wang",
+        "Wei Zhang",
+        "Chenlei Zhu",
+        "Naiyu Chen",
+        "Xihua Wang",
+        "Jie Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-11-25T14:08:37+00:00",
+      "link": "https://arxiv.org/pdf/2611.34416v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "planner selecting and reusing skills, acquiring missing skills for embodied task execution",
+      "llm_evidence_cn": "规划器选择复用技能并按需获取缺失技能以执行具身任务",
+      "llm_evidence": "规划器选择复用技能并按需获取缺失技能以执行具身任务",
+      "canonical_evidence": "规划器选择复用技能并按需获取缺失技能以执行具身任务",
+      "llm_tldr_en": "CHASE turns curiosity into selecting uncertainty-resolving investigations, coupling scene understanding, hypothesis-driven planning, on-demand skill acquisition and verified execution so robots gain missing skills during task execution.",
+      "llm_tldr_cn": "在部分可观测环境中执行任务的机器人，必须在技能不完整的情况下解决不确定性。作者提出CHASE框架，把好奇心操作化为选择能消解任务不确定性的探究行为，用四个模块连接动态场景理解、假设驱动规划、按需技能获取与验证执行，规划器权衡信息价值、技能复用与获取执行成本，缺失技能时触发有界探索并从中学习。实验表明该机制能扩展机器人在不确定环境中的可执行能力，为执行中按需获取与复用技能提供了新范式。",
+      "llm_tldr": "在部分可观测环境中执行任务的机器人，必须在技能不完整的情况下解决不确定性。作者提出CHASE框架，把好奇心操作化为选择能消解任务不确定性的探究行为，用四个模块连接动态场景理解、假设驱动规划、按需技能获取与验证执行，规划器权衡信息价值、技能复用与获取执行成本，缺失技能时触发有界探索并从中学习。实验表明该机制能扩展机器人在不确定环境中的可执行能力，为执行中按需获取与复用技能提供了新范式。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.23843v1",
+      "source": "arxiv",
+      "title": "RePlan-VLA: Progress-Aware Replanning for Long-Horizon Vision-Language-Action Models",
+      "abstract": "Vision-Language-Action (VLA) models have emerged as a promising paradigm for general-purpose robotic manipulation, yet their performance often degrades on long-horizon tasks that require multiple interdependent manipulations. Instead of burdening the VLA policies with long-horizon reasoning, memory, action generation, progress tracking, and error recovery, we argue for leveraging their short-horizon manipulation capabilities within an execution-aware framework. To this end, we introduce \\textnormal{\\textbf{RePlan-VLA}}, a VLA-agnostic framework that translates a VLA's short-horizon capabilities into reliable long-horizon execution. RePlan-VLA explicitly monitors the robot's motion for progress evaluation, and adaptively revises the future plan based on observed outcomes. We preserve the underlying VLA policy entirely, requiring no additional fine-tuning. Experiments on RoboCasa365 and CALVIN benchmarks show an improvement of 21.9% and 10.4% in success rate over the next strongest baseline. We also validate our approach for real-world deployment on a Franka Research 3 robot.",
+      "authors": [
+        "Apoorva Vashisth",
+        "Manav Kulshrestha",
+        "Damon Conover",
+        "Zachary Kingston",
+        "Aniket Bera"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-11-18T04:49:41+00:00",
+      "link": "https://arxiv.org/pdf/2611.23843v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Progress-aware replanning framework that coordinates VLA policies for long-horizon robot execution",
+      "llm_evidence_cn": "面向长时程机器人执行的VLA策略进度感知重规划框架",
+      "llm_evidence": "面向长时程机器人执行的VLA策略进度感知重规划框架",
+      "canonical_evidence": "面向长时程机器人执行的VLA策略进度感知重规划框架",
+      "llm_tldr_en": "RePlan-VLA addresses long-horizon VLA degradation by adding an execution-aware replanning layer that monitors motion progress and revises future actions, enabling short-horizon VLA policies to support reliable multi-stage manipulation.",
+      "llm_tldr_cn": "针对视觉-语言-动作模型在长时程多阶段操作中性能下降的问题，本文提出RePlan-VLA，将VLA的短时程操作能力嵌入执行感知框架。该方法实时监测机器人运动进度，并自适应修正后续动作规划，从而在不加重VLA长时程推理负担的情况下完成多阶段任务。该框架与具体VLA无关，为长时程机器人执行提供了可复用的重规划思路。",
+      "llm_tldr": "针对视觉-语言-动作模型在长时程多阶段操作中性能下降的问题，本文提出RePlan-VLA，将VLA的短时程操作能力嵌入执行感知框架。该方法实时监测机器人运动进度，并自适应修正后续动作规划，从而在不加重VLA长时程推理负担的情况下完成多阶段任务。该框架与具体VLA无关，为长时程机器人执行提供了可复用的重规划思路。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Systems integrating large language model planners with vision language action policies for robot task execution",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.34675v1",
+      "source": "arxiv",
+      "title": "RoboEvo$^2$: Recursive Robot Self-Improvement via Harness-Policy Co-Evolution",
+      "abstract": "Robots should adapt to unfamiliar environments and acquire new skills through interaction, then execute those skills efficiently with practice. Vision-language-action policies provide efficient control, but often need additional human demonstrations to handle unfamiliar settings; reasoning agents can discover solutions using broad prior knowledge and robot-control APIs, but repeated deliberation and repair are costly. Inspired by human learning through reasoning and practice, we propose RoboEvo$^2$, a framework for recursive harness-policy co-evolution. In Policy-to-Harness (P2H) evolution, policy failures guide a coding agent to search complementary Code, Code+ICL, and Code+Policy routes, consolidating verified solutions into reusable skills, routing strategies, and experience memory. In Harness-to-Policy (H2P) evolution, verified trajectories provide supervised training, while Counterfactual Preference Distillation (CPD) teaches the policy to favor successful corrections over failures from the same starting state. The improved policy provides stronger motor skills for subsequent search, while its remaining failures redirect harness evolution, closing the reciprocal loop. Through recursive co-evolution without additional human demonstrations, RoboEvo$^2$ improves standalone success from 11.0% to 84.1% and hybrid success from 30.4% to 90.5% on LIBERO-PRO, with similar gains and reduced agentic costs on RoboTwin C2R. Further experiments demonstrate autonomous task acquisition, cross-embodiment harness transfer, and 95.0% hybrid success on the Unitree G1-D. Our models and code will be publicly released.",
+      "authors": [
+        "Chenzhi Liu",
+        "Jiehong Lin",
+        "Wei Huang",
+        "Xuzhao Huang",
+        "Haoyuan Li",
+        "Yang Zhang",
+        "Junchao Huang",
+        "Chenyeyang Cai",
+        "Bo Wang",
+        "Kazuhiro Kosuge",
+        "Zhongrui Wang",
+        "Xiaojuan Qi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-11-25T16:39:10+00:00",
+      "link": "https://arxiv.org/pdf/2611.34675v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reasoning agents using robot-control APIs, consolidating verified solutions into reusable skills for VLA execution",
+      "llm_evidence_cn": "推理智能体借助机器人控制API求解并把验证方案沉淀为可复用技能供VLA执行",
+      "llm_evidence": "推理智能体借助机器人控制API求解并把验证方案沉淀为可复用技能供VLA执行",
+      "canonical_evidence": "推理智能体借助机器人控制API求解并把验证方案沉淀为可复用技能供VLA执行",
+      "llm_tldr_en": "Proposes RoboEvo2, a harness-policy co-evolution framework where a coding agent turns VLA policy failures into reusable skills via code, in-context learning and policy routes.",
+      "llm_tldr_cn": "视觉-语言-动作策略控制高效，但遇到陌生环境往往需要额外人类示范；推理智能体虽能借助先验知识与机器人控制API发现解法，反复推敲与修复却代价高昂。作者提出RoboEvo²，通过策略到外壳的演化，让编码智能体依据策略失败搜索代码、代码加示例与代码加策略等路线，把验证过的解法沉淀为可复用技能。实验表明策略与外壳协同进化可提升新环境下的技能获取与执行效率。该框架为机器人递归自我改进提供了推理与实践结合的路径。",
+      "llm_tldr": "视觉-语言-动作策略控制高效，但遇到陌生环境往往需要额外人类示范；推理智能体虽能借助先验知识与机器人控制API发现解法，反复推敲与修复却代价高昂。作者提出RoboEvo²，通过策略到外壳的演化，让编码智能体依据策略失败搜索代码、代码加示例与代码加策略等路线，把验证过的解法沉淀为可复用技能。实验表明策略与外壳协同进化可提升新环境下的技能获取与执行效率。该框架为机器人递归自我改进提供了推理与实践结合的路径。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.25656v1",
+      "source": "arxiv",
+      "title": "A$^2$-VLA: Adapting Vision-Language-Action Policies to New Tools through Agentic Affordance Discovery",
+      "abstract": "Tools with different shapes can have similar functions, but transferring manipulation skills across tools requires understanding how tool geometry relates to the specific task and adjusting the manipulation strategy accordingly. The key challenge is to discover the common affordances that contribute to task completion across different tools and verify whether they support new tools in performing similar work. We present A$^2$-VLA, a tool-adaptation framework that combines an embodied agent with a VLA policy. It treats tool affordances as hypotheses the agent can construct, test, and revise. Given teleoperated demonstrations with a few source tools, the agent reconstructs the scenes in simulation and autonomously determines task-relevant affordance features: functional regions and their key geometric properties. It develops affordance-extraction skills and refines both the features and skills through autonomous experiments in the reconstructed scenes. Validated extraction skills accumulate in a reusable skill library for unseen tools. Finally, A$^2$-VLA uses encoded functional-region features as conditioning inputs to a $π_{0.5}$ backbone during training and inference. Evaluation examines affordance reliability in reconstructed scenes and real-robot task success on unseen tools. Our method achieves 86.1% success in simulated cross-tool trajectory retargeting based on affordances. On three real-robot tool-use tasks, A$^2$-VLA improves task success by 30.7 percentage points over $π_{0.5}$.",
+      "authors": [
+        "Chenyuan Zhou",
+        "Chaoyi Huang",
+        "Zibo Wang",
+        "Zhiyuan Li",
+        "Yong-Lu Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-11-19T07:38:47+00:00",
+      "link": "https://arxiv.org/pdf/2611.25656v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "embodied agent forms hypotheses and invokes a VLA policy to execute tool manipulation",
+      "llm_evidence_cn": "具身智能体提出假设并调用VLA策略执行工具操作",
+      "llm_evidence": "具身智能体提出假设并调用VLA策略执行工具操作",
+      "canonical_evidence": "具身智能体提出假设并调用VLA策略执行工具操作",
+      "llm_tldr_en": "A2-VLA couples an embodied agent with a VLA policy for tool adaptation: the agent treats tool affordances as hypotheses to construct, test and revise in simulation, then drives the VLA to execute manipulation.",
+      "llm_tldr_cn": "不同形状的工具可能具有相似功能，但跨工具迁移操作技能需要理解工具几何与具体任务的关系。本文提出A2-VLA，将工具可供性视为具身智能体可以构建、验证与修正的假设，在给定少量源工具示教后于仿真中重建场景并自主探索。智能体再把验证过的可供性转化为VLA策略可执行的操作方案。方法实现了面向新工具的操作技能迁移与执行。",
+      "llm_tldr": "不同形状的工具可能具有相似功能，但跨工具迁移操作技能需要理解工具几何与具体任务的关系。本文提出A2-VLA，将工具可供性视为具身智能体可以构建、验证与修正的假设，在给定少量源工具示教后于仿真中重建场景并自主探索。智能体再把验证过的可供性转化为VLA策略可执行的操作方案。方法实现了面向新工具的操作技能迁移与执行。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.27689v2",
+      "source": "arxiv",
+      "title": "Embodied-Harness: Towards Recursive Self-Improvement for Robotic Manipulation",
+      "abstract": "Vision-language model (VLM)-based agents offer a promising approach to robotic manipulation, yet remain limited by inadequate memory organization, uncertain failure attribution, and limited reuse of execution experience. We propose Embodied-Harness, a dual-agent framework that improves manipulation by refining the execution harness without updating model parameters. The Actor interacts with the environment through a robot-control interface, while the Reflector converts execution evidence into reusable operational guidance. Hierarchical Memory Architecture maintains short-term execution context and long-term experiential knowledge to support execution and reflection. Evidence-based Experience Reflection grounds failure diagnosis in observed interactions, while Recursive Harness Self-Improvement refines operational guidance across successive attempts. Experiments on RoboTwin 2.0, RoboSPA, and RMBench demonstrate the effectiveness of Embodied-Harness in generalization under environmental variations, spatial reasoning, long-horizon planning, and memory-dependent manipulation. Our method achieves success rates of 82.4%, 76.7%, and 94.4% on the three benchmarks, respectively. Real-world evaluation further yields an average success rate of 96.7% across three manipulation tasks. These results highlight the potential of Embodied-Harness to improve robotic manipulation through experience-driven harness self-improvement.",
+      "authors": [
+        "Zhenxuan Fan",
+        "Zhuoya Wang",
+        "Yuqian Yuan",
+        "Wenqiao Zhang",
+        "Juncheng Li",
+        "Jun Xiao",
+        "Siliang Tang",
+        "Yueting Zhuang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV",
+        "cs.MA"
+      ],
+      "published": "2026-11-20T14:55:07+00:00",
+      "link": "https://arxiv.org/pdf/2611.27689v2",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "dual-agent framework where an Actor interacts through a robot-control interface guided by VLM agents",
+      "llm_evidence_cn": "双智能体框架中Actor通过机器人控制接口与视觉语言模型引导交互",
+      "llm_evidence": "双智能体框架中Actor通过机器人控制接口与视觉语言模型引导交互",
+      "canonical_evidence": "双智能体框架中Actor通过机器人控制接口与视觉语言模型引导交互",
+      "llm_tldr_en": "Embodied-Harness is a dual-agent framework where an Actor manipulates via a robot-control interface and a Reflector turns execution evidence into reusable guidance, improving VLM-based manipulation without retraining.",
+      "llm_tldr_cn": "视觉语言模型驱动的机器人操作智能体常受限于记忆组织差、失败归因不清与经验复用不足。论文提出Embodied-Harness双智能体框架，Actor通过机器人控制接口与环境交互，Reflector将执行证据转化为可复用操作指导，并以分层记忆维护短期上下文与长期经验。该方法无需更新模型参数即可持续改进操作表现，为语言模型作为机器人控制器提供了可递归自改进的执行框架。",
+      "llm_tldr": "视觉语言模型驱动的机器人操作智能体常受限于记忆组织差、失败归因不清与经验复用不足。论文提出Embodied-Harness双智能体框架，Actor通过机器人控制接口与环境交互，Reflector将执行证据转化为可复用操作指导，并以分层记忆维护短期上下文与长期经验。该方法无需更新模型参数即可持续改进操作表现，为语言模型作为机器人控制器提供了可递归自改进的执行框架。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.32353v1",
+      "source": "arxiv",
+      "title": "Any2Act: Scaling In-Context Robot Learning from Heterogeneous Demonstrations",
+      "abstract": "Robot in-context learning (ICL) enables a policy to perform unseen tasks by following contextual demonstrations, without task-specific fine-tuning. This is increasingly valuable as large language models reasoning at low frequency can specify tasks through demonstrations and delegate high-frequency execution to such a policy. However, methods conditioned on human videos are bounded by scarce human-robot pairs, while those conditioned on robot demonstrations accept only one or two source types at limited scale. We present Any2Act, a foundation model for robot ICL. Our key insight is that a demonstration should be expressed in the camera layout and action space of the robot that performs it (the executor), not of whoever provided it (the demonstrator). This unified embodiment-grounded representation decouples learning to follow from admitting a new source. Any2Act learns to follow once, from robot-to-robot pairs that already take this form in 1.2M real trajectories spanning 10K tasks. Human videos, simulation, UMI, and other robots are then translated into this representation, and source-routed adapters trained on only a few hundred pairs each absorb the residual gap while the pretrained model stays frozen. For long horizons, a training-free tracker feeds only the demonstration window around the executor's progress, bounding the context and rolling back to redo failed steps. From a single demonstration, Any2Act achieves 57.5% success on unseen tasks without fine-tuning, exceeding VLAs fine-tuned on 50 demonstrations per task; other demonstrators retain 74-91% of the success achieved with the executor's own demonstrations.",
+      "authors": [
+        "Ziang Ren",
+        "Zifan Wang",
+        "Zhuoyang Li",
+        "Benhao Qin",
+        "Haoyang Li",
+        "Qingtao Liu",
+        "Xuchuan Chen",
+        "Zekun Qi",
+        "He Wang",
+        "Yanchao Yang",
+        "Li Yi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-24T10:28:46+00:00",
+      "link": "https://arxiv.org/pdf/2611.32353v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM specifies tasks at low frequency and delegates execution to an in-context robot policy",
+      "llm_evidence_cn": "大模型低频指定任务，交由上下文机器人策略高频执行",
+      "llm_evidence": "大模型低频指定任务，交由上下文机器人策略高频执行",
+      "canonical_evidence": "大模型低频指定任务，交由上下文机器人策略高频执行",
+      "llm_tldr_en": "Any2Act is a foundation model for robot in-context learning that expresses demonstrations in the executor robot's camera layout and action space, scaling learning from heterogeneous human and robot demonstrations.",
+      "llm_tldr_cn": "机器人上下文学习让策略通过上下文示教完成未见任务而无需针对任务微调，这在大语言模型低频推理指定任务、策略负责高频执行的分工下愈发重要，但现有方法受限于稀缺的人机配对或有限的示教来源与规模。作者提出Any2Act机器人上下文学习基础模型，核心思想是示教应表达为实际执行机器人的相机布局与动作空间，而非示教者的。该设计可规模化利用异构示教，提升策略对未见任务的上下文适应能力，为语言模型指定任务加策略执行的分工提供可扩展基础。",
+      "llm_tldr": "机器人上下文学习让策略通过上下文示教完成未见任务而无需针对任务微调，这在大语言模型低频推理指定任务、策略负责高频执行的分工下愈发重要，但现有方法受限于稀缺的人机配对或有限的示教来源与规模。作者提出Any2Act机器人上下文学习基础模型，核心思想是示教应表达为实际执行机器人的相机布局与动作空间，而非示教者的。该设计可规模化利用异构示教，提升策略对未见任务的上下文适应能力，为语言模型指定任务加策略执行的分工提供可扩展基础。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "foundation models for robotics integrating language planning and action execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

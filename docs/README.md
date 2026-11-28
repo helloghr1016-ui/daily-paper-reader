@@ -6,41 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-11-27
-- 运行时间：2026-11-27 02:40:15 UTC
+- 最新运行日期：2026-11-28
+- 运行时间：2026-11-28 02:34:28 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：0
-- 速读区：6
+- 本次总论文数：4
+- 精读区：1
+- 速读区：3
 
 ### 今日简报（AI）
-今日速读6篇具身智能与机器人方向论文，聚焦技能获取、自我进化与长程任务规划三条主线。
-最值得关注的是CHASE用好奇心驱动技能习得、RoboEvo²让机器人在“执行器—策略”协同中递归自我改进（均7.0分），而RePlan-VLA则以进度感知重规划补足长程视觉—语言—动作模型的短板（6.0分）。
-普通读者可先从两篇7分论文入手，理解“机器人自己找任务练技能、自己迭代变强”的思路，再带着“长程任务如何不跑偏”的问题回看RePlan-VLA。
-- 详情：[/202611/27/README](/202611/27/README)
+今天精读1篇、速读3篇，共4篇，聚焦机器人智能体与前沿模型安全评测。最值得看的是《Toward Agentic Robotics》对机器人智能体“执行框架设计”的大规模研究（8.0分），以及《SayDo》从对话到闭环机器人控制的 safety 基准（7.0分）。普通读者可先读精读篇了解框架设计要点，再用《SayDo》的安全视角检查实际部署风险。
+- 详情：[/202611/28/README](/202611/28/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Toward Agentic Robotics: A Large-Scale Study of Harness Design for Robot-Use Agents](/202611/28/2611.34778v1-toward-agentic-robotics-a-large-scale-study-of-harness-design-for-robot-use-agents)  
+   标签：评分：8.0/10、query:llm-robotics
+   evidence：VLM推理感知结合VLA控制，通过策略框架编排
 
 ### 速读区论文标签
-1. [CHASE: Curiosity-Guided Skill Acquisition for Embodied Task Execution](/202611/27/2611.34416v1-chase-curiosity-guided-skill-acquisition-for-embodied-task-execution)  
+1. [SayDo: Benchmarking the Safety of Frontier Models from Chat to Closed-Loop Robot Control](/202611/28/2611.30957v1-saydo-benchmarking-the-safety-of-frontier-models-from-chat-to-closed-loop-robot-control)  
    标签：评分：7.0/10、query:llm-robotics
-   evidence：规划器选择复用技能并按需获取缺失技能以执行具身任务
-2. [RoboEvo$^2$: Recursive Robot Self-Improvement via Harness-Policy Co-Evolution](/202611/27/2611.34675v1-roboevo2-recursive-robot-self-improvement-via-harness-policy-co-evolution)  
-   标签：评分：7.0/10、query:llm-robotics
-   evidence：推理智能体借助机器人控制API求解并把验证方案沉淀为可复用技能供VLA执行
-3. [RePlan-VLA: Progress-Aware Replanning for Long-Horizon Vision-Language-Action Models](/202611/27/2611.23843v1-replan-vla-progress-aware-replanning-for-long-horizon-vision-language-action-models)  
+   evidence：前沿视觉语言模型作为高层机器人控制器，沿具身梯度进行安全评测
+2. [AgentRoboCritic: Understanding the Capability of Frontier Agents on Direct Robot Control](/202611/28/2611.26613v1-agentrobocritic-understanding-the-capability-of-frontier-agents-on-direct-robot-control)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：面向长时程机器人执行的VLA策略进度感知重规划框架
-4. [A$^2$-VLA: Adapting Vision-Language-Action Policies to New Tools through Agentic Affordance Discovery](/202611/27/2611.25656v1-a2-vla-adapting-vision-language-action-policies-to-new-tools-through-agentic-affordance-discovery)  
+   evidence：前沿多模态语言智能体直接控制机器人并进行动作级评估
+3. [Embo-Harness: Towards Understanding Frontier-Model-as-Policy Harness](/202611/28/2611.31201v1-embo-harness-towards-understanding-frontier-model-as-policy-harness)  
    标签：评分：6.0/10、query:llm-robotics
-   evidence：具身智能体提出假设并调用VLA策略执行工具操作
-5. [Embodied-Harness: Towards Recursive Self-Improvement for Robotic Manipulation](/202611/27/2611.27689v2-embodied-harness-towards-recursive-self-improvement-for-robotic-manipulation)  
-   标签：评分：6.0/10、query:llm-robotics
-   evidence：双智能体框架中Actor通过机器人控制接口与视觉语言模型引导交互
-6. [Any2Act: Scaling In-Context Robot Learning from Heterogeneous Demonstrations](/202611/27/2611.32353v1-any2act-scaling-in-context-robot-learning-from-heterogeneous-demonstrations)  
-   标签：评分：6.0/10、query:llm-robotics
-   evidence：大模型低频指定任务，交由上下文机器人策略高频执行
+   evidence：研究机器人智能体循环中的规划与动作执行
 
 
 <div class="dpr-home-promo-card">

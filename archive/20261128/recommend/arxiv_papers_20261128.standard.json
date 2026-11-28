@@ -1,0 +1,195 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-11-28T02:31:12.886246+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2611.34778v1",
+      "source": "arxiv",
+      "title": "Toward Agentic Robotics: A Large-Scale Study of Harness Design for Robot-Use Agents",
+      "abstract": "Recent vision-language models (VLMs) can act as robot-use agents that understand diverse scenes and control robots through policy code and tools. However, they predict 3D gripper poses poorly even with extended reasoning, struggling with precise manipulation. Vision-language-action (VLA) and world-action (WAM) models are the opposite: they execute fast, smooth control on trained tasks, yet fail under domain shifts or when tasks require long-horizon memory and reasoning. Agentic robots therefore combine VLM reasoning and perception with precise VLA/WAM control through a policy harness. Yet harness design spans thousands of configurations, shifting success by tens of points with the same models. Moreover, testing even one design takes thousands of rollouts at high API and GPU cost, so prior works often commit to a single design chosen from few alternatives. To guide harness design, we evaluate over 470,000 rollouts across eight simulation benchmarks, six VLMs, and 15 VLA/WAM checkpoints. Seven controlled studies show effective harnesses must adapt to both VLM and VLA/WAM capabilities. Our findings specify what structure the VLM's policy code needs, where VLA manipulation needs help from tools and policy code, and when to involve the VLM at test time. The reference recipe X-Harness shows that these findings compose without weight updates, lifting base policies up to $+42.8$ points across memory, reasoning, and domain shifts.",
+      "authors": [
+        "Yuxiang Lai",
+        "Jike Zhong",
+        "Yu-Jhe Li",
+        "Lan Wang",
+        "Chengzhi Liu",
+        "Youbao Tang",
+        "Ming Li",
+        "Xi Xiao",
+        "Xiaofeng Yang",
+        "Liang Zhao",
+        "Zheda Mai",
+        "Ruixi Fan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-25T17:39:10+00:00",
+      "link": "https://arxiv.org/pdf/2611.34778v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "VLM reasoning and perception combined with VLA control via policy harness",
+      "llm_evidence_cn": "VLM推理感知结合VLA控制，通过策略框架编排",
+      "llm_evidence": "VLM推理感知结合VLA控制，通过策略框架编排",
+      "canonical_evidence": "VLM推理感知结合VLA控制，通过策略框架编排",
+      "llm_tldr_en": "VLMs reason well but control poorly while VLA models control precisely but lack long-horizon reasoning; the authors study harness designs that combine VLM planning with VLA/WAM execution for agentic robots.",
+      "llm_tldr_cn": "视觉语言模型能理解场景却难以精确操作，而视觉语言动作模型控制流畅却缺乏长程推理能力。作者研究如何通过策略框架（harness）把VLM的推理感知与VLA/WAM的精确控制结合起来，构建智能体式机器人。大规模实验显示框架设计配置差异可使同一模型的成功率相差数十分。该工作系统揭示了上层模型规划与底层动作策略耦合设计的关键因素。",
+      "llm_tldr": "视觉语言模型能理解场景却难以精确操作，而视觉语言动作模型控制流畅却缺乏长程推理能力。作者研究如何通过策略框架（harness）把VLM的推理感知与VLA/WAM的精确控制结合起来，构建智能体式机器人。大规模实验显示框架设计配置差异可使同一模型的成功率相差数十分。该工作系统揭示了上层模型规划与底层动作策略耦合设计的关键因素。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Systems integrating large language model planners with vision language action policies for robot task execution",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2611.30957v1",
+      "source": "arxiv",
+      "title": "SayDo: Benchmarking the Safety of Frontier Models from Chat to Closed-Loop Robot Control",
+      "abstract": "Frontier vision-language models (VLMs) are increasingly used as high-level robot controllers, yet their safety is evaluated almost entirely in text. We introduce SayDo, a benchmark that assesses the propensity of frontier models to cause harm in embodied contexts. SayDo comprises eleven laboratory and household tasks that pair a benign instruction with a hazard latent in the scene. Tasks are implemented in six settings along an embodiment gradient, from chat questions about an imagined robot to closed-loop control of a simulated robot arm. Benign controls, safe-alternative variants and scripted operator pushback complement each task. Across six open- and closed-weight VLMs and 11,480 episodes, hazardous-action rates rise from 14% in chat to 47% in the simulator, and from 2% to 80% for the most affected model. The increase is largely driven by open-weight models. We find that models flag hazards before acting in 73% of unsafe episodes and give way to pushback about twice as often when controlling robots as in chat. The safest models also show signs of overcaution on benign controls. Safety evaluations run in text therefore do not predict the safety behavior of the same models when used as robot controllers.",
+      "authors": [
+        "Benjamin Alt"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-11-23T16:31:02+00:00",
+      "link": "https://arxiv.org/pdf/2611.30957v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "frontier VLMs as high-level robot controllers evaluated along an embodiment gradient",
+      "llm_evidence_cn": "前沿视觉语言模型作为高层机器人控制器，沿具身梯度进行安全评测",
+      "llm_evidence": "前沿视觉语言模型作为高层机器人控制器，沿具身梯度进行安全评测",
+      "canonical_evidence": "前沿视觉语言模型作为高层机器人控制器，沿具身梯度进行安全评测",
+      "llm_tldr_en": "SayDo benchmarks whether frontier vision-language models used as high-level robot controllers cause harm in embodied settings, spanning chat questions to closed-loop simulated arm control across eleven hazardous tasks.",
+      "llm_tldr_cn": "前沿视觉语言模型正被用作高层机器人控制器，但其安全性几乎只在文本层面被评估。作者提出SayDo基准，构造十一个实验室与家庭任务，每个任务把良性指令与场景中潜藏的危险配对，并沿具身梯度在六种设置中实现，从关于想象机器人的对话问答一直到仿真机械臂的闭环控制，同时配有安全替代变体与操作者反驳。对六个开源与闭源模型共一万一千余回合的测试显示危险动作率随具身程度上升，凸显高层语言控制器在真实机器人中的安全风险。",
+      "llm_tldr": "前沿视觉语言模型正被用作高层机器人控制器，但其安全性几乎只在文本层面被评估。作者提出SayDo基准，构造十一个实验室与家庭任务，每个任务把良性指令与场景中潜藏的危险配对，并沿具身梯度在六种设置中实现，从关于想象机器人的对话问答一直到仿真机械臂的闭环控制，同时配有安全替代变体与操作者反驳。对六个开源与闭源模型共一万一千余回合的测试显示危险动作率随具身程度上升，凸显高层语言控制器在真实机器人中的安全风险。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "robot skill execution controlled by high-level language model planners",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2611.26613v1",
+      "source": "arxiv",
+      "title": "AgentRoboCritic: Understanding the Capability of Frontier Agents on Direct Robot Control",
+      "abstract": "Frontier multimodal language agents such as GPT-6 Astra have demonstrated strong capabilities in controlling robots directly via low-level numerical actions without high-level primitives. However, existing benchmarks report only episode-level success rates, which show neither how these agents succeed nor where they fail. In this paper, we present a systematic action-level analysis of frontier agents on direct robot control across 12 manipulation benchmarks. We introduce AgentRoboCritic, an intent-grounded critique framework in which the policy agent states a local intent alongside each action, and a critic evaluates the action's outcome and failure mode against this intent. Our action-level analysis demonstrates the promising capabilities of frontier agents on direct robot control, including closed-loop recovery from local execution failures, reliable semantic grounding across diverse scenes, and strong zero-shot manipulation without task-specific adaptation. It also identifies their current limitations, including task-relevant physical execution bottlenecks such as grasping and alignment, and uneven recovery across failure modes. Finally, we validate our critic on a 400-action human-annotated benchmark and release a dataset of 12,844 annotated actions alongside a fine-tuned open-source critic, Muse-Glimmer-30B, whose failure-mode accuracy rises from 32.58% to 74.24%, enabling low-cost action-level analysis.",
+      "authors": [
+        "Yiyang Du",
+        "Yuxuan Kuang",
+        "Qitao Zhao",
+        "Yixuan Wang",
+        "Zhanqiu Guo",
+        "Yi Xu",
+        "Xin Li",
+        "Wenbin He",
+        "Liu Ren",
+        "Chenyan Xiong"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-11-19T18:57:25+00:00",
+      "link": "https://arxiv.org/pdf/2611.26613v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "frontier multimodal language agents directly controlling robots with action-level critique",
+      "llm_evidence_cn": "前沿多模态语言智能体直接控制机器人并进行动作级评估",
+      "llm_evidence": "前沿多模态语言智能体直接控制机器人并进行动作级评估",
+      "canonical_evidence": "前沿多模态语言智能体直接控制机器人并进行动作级评估",
+      "llm_tldr_en": "AgentRoboCritic introduces an intent-grounded critique framework to analyze frontier multimodal language agents controlling robots directly via low-level actions across 12 manipulation benchmarks, beyond episode-level success rates.",
+      "llm_tldr_cn": "现有基准只报告回合级成功率，无法说明前沿多模态语言智能体直接以低层数值动作控制机器人时如何成功或失败。作者提出AgentRoboCritic意图锚定的评估框架，要求策略智能体在每一步动作旁声明局部意图，再由评审器依据该意图判断动作结果与失效模式。在十二个操作基准上的动作级分析显示这类智能体具备可观的直接控制能力，同时揭示了具体失败环节，为大模型直接充当机器人控制器的能力边界提供了细粒度诊断手段。",
+      "llm_tldr": "现有基准只报告回合级成功率，无法说明前沿多模态语言智能体直接以低层数值动作控制机器人时如何成功或失败。作者提出AgentRoboCritic意图锚定的评估框架，要求策略智能体在每一步动作旁声明局部意图，再由评审器依据该意图判断动作结果与失效模式。在十二个操作基准上的动作级分析显示这类智能体具备可观的直接控制能力，同时揭示了具体失败环节，为大模型直接充当机器人控制器的能力边界提供了细粒度诊断手段。",
+      "llm_tags": [
+        "query:llm-robotics:composite"
+      ],
+      "matched_query_tag": "query:llm-robotics:composite",
+      "matched_query_text": "Papers central to 查找用GPT等大模型直接控制机器人执行任务，由大模型做上层任务理解与规划并调用技能/VLA模型控制机器人执行任务的论文研究, especially work that connects or combines: language model planning for robot task execution and skill sequencing; robot skill execution controlled by high-level language model planners; embodied task planning with large language models and robot skill invocation; language-conditioned robot control using large language model task understanding; robot manipulation skills selected and called by large language model planners; foundation models for robotics integrating language planning and action execution; Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks; Methods that use large language models as robot controllers selecting and sequencing skills for embodied task execution; Research on language model based task decomposition and skill calling for robot manipulation and control; Systems integrating large language model planners with vision language action policies for robot task execution.",
+      "matched_requirement_id": "req-composite-llm-robotics",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2611.31201v1",
+      "source": "arxiv",
+      "title": "Embo-Harness: Towards Understanding Frontier-Model-as-Policy Harness",
+      "abstract": "Frontier multimodal models exhibit extraordinary generalization in generating robot actions from observations and instructions, enabling a new paradigm in which they serve directly as policies within closed-loop robotic harnesses. However, the design principles of such harnesses, and the capabilities underlying their strong performance, remain unclear. We present Embo-Harness, a framework for systematically studying frontier-model-as-policy harnesses. We investigate four components of the robotic agentic loop, namely, prompting, planning, action execution, and tool use, and distill six empirical findings into a practical recipe. This recipe prioritizes interfaces that exploit the model's native visual reasoning and tool-use capabilities over handcrafted plans, skills, or action priors, and identifies effective choices for action representation, chunking, reasoning effort, visual observations, short multi-action sequences, and policy refinement. On RoboLab-120, Embo-Harness achieves an 83.3\\% success rate, outperforming the strongest reported baseline by 26.2 percentage points. It also succeeds in 15 of 20 zero-shot trials across four real-world manipulation tasks. Beyond performance, controlled interventions indicate that the studied model depends more strongly on accurate spatial target estimation than on explicit low-level joint or trajectory generation. These results provide both a practical recipe for building strong frontier-model-as-policy harnesses and a clearer account of the capabilities that drive their performance.",
+      "authors": [
+        "Xiao-Ming Wu",
+        "Kang Liao",
+        "Yuexiao Ma",
+        "Taolin Zhang",
+        "Mingqian Zhou",
+        "Nuo Chen",
+        "Ziming Li",
+        "Yihang Luo",
+        "Rui Li",
+        "Zhonghua Wu",
+        "Tianyu Xie",
+        "Xiawu Zheng",
+        "Zhongang Cai",
+        "Zhi Hou",
+        "Chen Change Loy"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-11-23T18:48:54+00:00",
+      "link": "https://arxiv.org/pdf/2611.31201v1",
+      "tags": [
+        "keyword:llm-robotics",
+        "query:llm-robotics"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "studies planning and action execution in robotic agentic loop",
+      "llm_evidence_cn": "研究机器人智能体循环中的规划与动作执行",
+      "llm_evidence": "研究机器人智能体循环中的规划与动作执行",
+      "canonical_evidence": "研究机器人智能体循环中的规划与动作执行",
+      "llm_tldr_en": "Presents Embo-Harness to systematically study frontier-model-as-policy robotic loops, analyzing prompting, planning, action execution, and tool use to distill six findings into a practical design recipe.",
+      "llm_tldr_cn": "针对前沿多模态模型直接充当机器人闭环策略但设计原则与能力来源不明的问题，作者提出Embo-Harness框架，系统剖析机器人智能体循环中的提示、规划、动作执行与工具使用四个组件，并将六条经验提炼为实用配方。结果表明优先利用模型原生视觉推理与工具使用能力的接口优于手工设计接口，为模型即策略的系统设计提供系统性指导。",
+      "llm_tldr": "针对前沿多模态模型直接充当机器人闭环策略但设计原则与能力来源不明的问题，作者提出Embo-Harness框架，系统剖析机器人智能体循环中的提示、规划、动作执行与工具使用四个组件，并将六条经验提炼为实用配方。结果表明优先利用模型原生视觉推理与工具使用能力的接口优于手工设计接口，为模型即策略的系统设计提供系统性指导。",
+      "llm_tags": [
+        "query:llm-robotics"
+      ],
+      "matched_query_tag": "query:llm-robotics",
+      "matched_query_text": "Papers where a large language model performs high level task understanding and planning and invokes robot skills or vision language action models to execute tasks",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
